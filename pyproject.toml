@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "df-designer"
+version = "0.1.0"
+description = ""
+authors = ["optk2"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0.post1"
+dff = "^0.6.3"
+aiofiles = "^23.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pudb = "^2023.1"
+ptpython = "^3.0.23"
+httpx = "^0.25.2"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
