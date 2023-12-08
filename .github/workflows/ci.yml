@@ -19,6 +19,7 @@ jobs:
                 python -m pip install --upgrade pip
                 pipx install poetry
                 poetry install
+                poetry shell
             - name: tests
               run: pytest
 
