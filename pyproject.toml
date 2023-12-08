@@ -19,6 +19,7 @@ pudb = "^2023.1"
 ptpython = "^3.0.23"
 httpx = "^0.25.2"
 pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.23.2"
 
 [build-system]
 requires = ["poetry-core"]

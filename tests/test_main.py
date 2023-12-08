@@ -1,7 +1,8 @@
 from pathlib import Path
-from fastapi.testclient import TestClient
-from df_designer import settings
 
+from fastapi.testclient import TestClient
+
+from df_designer import settings
 from df_designer.main import app
 
 client = TestClient(app)
@@ -15,13 +16,13 @@ def test_main_main_page():
 def test_main_alive():
     response = client.get("/alive")
     assert response.status_code == 200
-    assert response.json() == {"status": "true"}
+    assert response.json() == {"status": "ok"}
 
 
 def test_main_save():
     response = client.post("/save", json={"key": "value"})
     assert response.status_code == 200
-    assert response.json() == {"status": "true"}
+    assert response.json() == {"status": "ok"}
 
 
 def test_main_get():

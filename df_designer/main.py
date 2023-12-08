@@ -15,14 +15,14 @@ async def main_page() -> RedirectResponse:
 @app.get("/alive")
 async def alive() -> dict[str, str]:
     """Is alive service."""
-    return {"status": "true"}
+    return {"status": "ok"}
 
 
 @app.post("/save")
 async def save(request: Request):
     """Save data."""
     await save_data(request)
-    return {"status": "true"}
+    return {"status": "ok"}
 
 
 @app.get("/get")

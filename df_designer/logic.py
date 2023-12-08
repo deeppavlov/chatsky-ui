@@ -1,7 +1,11 @@
 import json
+import os
+from typing import Any
 
 import aiofiles
 from fastapi import Request
+from pydantic import Json
+
 from df_designer.settings import path_to_save
 
 
@@ -12,11 +16,10 @@ async def save_data(request: Request):
         await file.write(json.dumps(result))
 
 
-async def get_data():
+async def get_data() -> Json[Any]:
     """Get the json config."""
-    try:
+    if os.path.exists(path_to_save):
         async with aiofiles.open(path_to_save, "r", encoding="utf-8") as file:
-            result = json.loads(await file.read())
-        return {"status": "true", "message": result}
-    except FileNotFoundError as e:
-        return {"status": "error", "message": f"{e.strerror} {e.filename}"}
+            return json.loads(await file.read())
+    else:
+        return {}
