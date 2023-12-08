@@ -17,9 +17,11 @@ jobs:
             - name: install dependencies
               run: |
                 python -m pip install --upgrade pip
+                echo python -V
                 pipx install poetry
                 poetry install
                 poetry shell
+                echo python -V
             - name: tests
               run: pytest
 
