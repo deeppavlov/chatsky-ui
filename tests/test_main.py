@@ -9,8 +9,8 @@ client = TestClient(app)
 
 
 def test_main_main_page():
-    response = client.get("/", follow_redirects=False)
-    assert response.status_code == 307
+    response = client.get("/")
+    assert response.status_code == 200
 
 
 def test_main_alive():
@@ -29,6 +29,36 @@ def test_main_get():
     response = client.get("/get")
     assert response.status_code == 200
     # assert response.json() == {"status": "true"} # make mock request
+
+
+def test_projects_get():
+    response = client.get("/projects")
+    assert response.status_code == 200
+
+
+def test_projects_post():
+    response = client.post("/projects")
+    assert response.status_code == 200
+
+
+def test_projects_patch():
+    response = client.patch("/projects")
+    assert response.status_code == 200
+
+
+def test_projects_delete():
+    response = client.delete("/projects")
+    assert response.status_code == 200
+
+
+def test_projects_upload_post():
+    response = client.post("/projects/upload")
+    assert response.status_code == 200
+
+
+def test_projects_download_get():
+    response = client.get("/projects/download")
+    assert response.status_code == 200
 
 
 def test_settings():
