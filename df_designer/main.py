@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from df_designer.logic import get_data, save_data
+from df_designer.settings import path_to_save
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -29,15 +30,16 @@ async def alive() -> dict[str, str]:
 @app.post("/save")
 async def save(request: Request):
     """Save data."""
-    await save_data(request)
+    data = await request.json()
+    await save_data(path=path_to_save, data=data)
     return {"status": "ok"}
 
 
 @app.get("/get")
 async def get():
     """Get data."""
-    result = await get_data()
-    return result
+    result = await get_data(path_to_save)
+    return {"status": "ok", "data": result}
 
 
 ################################################################
@@ -45,39 +47,39 @@ async def get():
 ################################################################
 
 
-# /projects
-@app.get("/projects")
-async def projects_get() -> dict[str, str]:
-    """(get projects from db) - returns JSON of all saved projects"""
+# /flows
+@app.get("/flows")
+async def flows_get() -> dict[str, str]:
+    """(get flows from db) - returns JSON of all saved flows"""
     return {"status": "ok"}
 
 
-@app.post("/projects")
-async def projects_post() -> dict[str, str]:
-    """(add new project) - receives JSON of new project"""
+@app.post("/flows")
+async def flows_post() -> dict[str, str]:
+    """(add new flows) - receives JSON of new flows"""
     return {"status": "ok"}
 
 
-@app.patch("/projects")
-async def projects_patch() -> dict[str, str]:
-    """(edit all projects list) - receives JSON of edited projects"""
+@app.patch("/flows")
+async def flows_patch() -> dict[str, str]:
+    """(edit all flows list) - receives JSON of edited flows"""
     return {"status": "ok"}
 
 
-@app.delete("/projects")
-async def projects_delete() -> dict[str, str]:
-    """@delete (delete project) - receives projectID by query param"""
+@app.delete("/flows")
+async def flows_delete() -> dict[str, str]:
+    """@delete (delete flows) - receives flowsID by query param"""
     return {"status": "ok"}
 
 
-@app.post("/projects/upload")
-async def projects_upload_post() -> dict[str, str]:
+@app.post("/flows/upload")
+async def flows_upload_post() -> dict[str, str]:
     """upload"""
     return {"status": "ok"}
 
 
-@app.get("/projects/download")
-async def projects_download_get() -> dict[str, str]:
+@app.get("/flows/download")
+async def flows_download_get() -> dict[str, str]:
     """upload"""
     return {"status": "ok"}
 
@@ -89,6 +91,8 @@ async def service_health_get() -> dict[str, str]:
     return {"status": "ok"}
 
 
+# TODO: rename meta :do
+# TODO: команды для Максима
 @app.get("/service/version")
 async def service_version_get() -> dict[str, str]:
     """(get dff curr version)"""
