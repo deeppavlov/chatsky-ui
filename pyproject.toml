@@ -6,11 +6,12 @@ authors = ["optk2"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.10"
+python = "^3.10"
 fastapi = "^0.104.1"
 uvicorn = "^0.24.0.post1"
-dff = "^0.6.3"
 aiofiles = "^23.2.1"
+dff = "^0.6.3"
+
 
 
 [tool.poetry.group.dev.dependencies]
@@ -20,6 +21,7 @@ ptpython = "^3.0.23"
 httpx = "^0.25.2"
 pytest-cov = "^4.1.0"
 pytest-asyncio = "^0.23.2"
+
 
 [build-system]
 requires = ["poetry-core"]
