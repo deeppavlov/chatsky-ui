@@ -131,13 +131,15 @@ async def dff_tests_condition_post() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# TODO: compile (сериализация), build, runtime
+# TODO: compile (сериализация в питон), build, runtime
 # /build
 @app.post("/build")
 async def build_post() -> dict[str, str]:
     """(send flag to compile and connect user's bot ??)"""
     return {"status": "ok"}
 
+
+# TODO: другие эндпоинты (git, bot)
 
 """
 /git ??
