@@ -9,4 +9,4 @@ reload = True
 
 
 # app settings
-path_to_save = Path().home().joinpath("flows.json")
+path_to_save = Path().home().joinpath("data.json")

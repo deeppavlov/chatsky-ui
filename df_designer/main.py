@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from df_designer.logic import get_data, save_data
-from df_designer.settings import path_to_save
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -30,16 +29,15 @@ async def alive() -> dict[str, str]:
 @app.post("/save")
 async def save(request: Request):
     """Save data."""
-    data = await request.json()
-    await save_data(path=path_to_save, data=data)
+    await save_data(request)
     return {"status": "ok"}
 
 
 @app.get("/get")
 async def get():
     """Get data."""
-    result = await get_data(path_to_save)
-    return {"status": "ok", "data": result}
+    result = await get_data()
+    return result
 
 
 ################################################################
@@ -47,39 +45,39 @@ async def get():
 ################################################################
 
 
-# /flows
-@app.get("/flows")
-async def flows_get() -> dict[str, str]:
-    """(get flows from db) - returns JSON of all saved flows"""
+# /projects
+@app.get("/projects")
+async def projects_get() -> dict[str, str]:
+    """(get projects from db) - returns JSON of all saved projects"""
     return {"status": "ok"}
 
 
-@app.post("/flows")
-async def flows_post() -> dict[str, str]:
-    """(add new flows) - receives JSON of new flows"""
+@app.post("/projects")
+async def projects_post() -> dict[str, str]:
+    """(add new project) - receives JSON of new project"""
     return {"status": "ok"}
 
 
-@app.patch("/flows")
-async def flows_patch() -> dict[str, str]:
-    """(edit all flows list) - receives JSON of edited flows"""
+@app.patch("/projects")
+async def projects_patch() -> dict[str, str]:
+    """(edit all projects list) - receives JSON of edited projects"""
     return {"status": "ok"}
 
 
-@app.delete("/flows")
-async def flows_delete() -> dict[str, str]:
-    """@delete (delete flows) - receives flowsID by query param"""
+@app.delete("/projects")
+async def projects_delete() -> dict[str, str]:
+    """@delete (delete project) - receives projectID by query param"""
     return {"status": "ok"}
 
 
-@app.post("/flows/upload")
-async def flows_upload_post() -> dict[str, str]:
+@app.post("/projects/upload")
+async def projects_upload_post() -> dict[str, str]:
     """upload"""
     return {"status": "ok"}
 
 
-@app.get("/flows/download")
-async def flows_download_get() -> dict[str, str]:
+@app.get("/projects/download")
+async def projects_download_get() -> dict[str, str]:
     """upload"""
     return {"status": "ok"}
 
@@ -91,8 +89,6 @@ async def service_health_get() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# TODO: rename meta :do
-# TODO: команды для Максима
 @app.get("/service/version")
 async def service_version_get() -> dict[str, str]:
     """(get dff curr version)"""
@@ -100,8 +96,6 @@ async def service_version_get() -> dict[str, str]:
     return {"status": "ok", "version": version}
 
 
-# TODO: здесь подгружается namespaces (funcs, vars, ...)
-# TODO: подумать, может быть назвать через config vs namespaces
 # /library
 @app.get("/library/functions")
 async def library_functions_get() -> dict[str, str]:
@@ -109,15 +103,12 @@ async def library_functions_get() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# TODO: здесь вычитывание конфигурации (не только LLM)
-# TODO: нет сохранения конфигурации для моделей (API-s, API-KEY-s)
-# TODO: нет сохранения общей конфигурации (hotkeys, git creds, ports, index_paths, paths to additional configs)
 @app.get("/library/llms")
 async def library_llms_get() -> dict[str, str]:
     """(get available llm models) - JSON of llm models"""
     return {"status": "ok"}
 
-# TODO: rename runtime (здесь нет DFF, здесь используются модели)
+
 # /dff
 @app.post("/dff/tests/prompt")
 async def dff_tests_prompt_post() -> dict[str, str]:
@@ -131,15 +122,12 @@ async def dff_tests_condition_post() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# TODO: compile (сериализация в питон), build, runtime
 # /build
 @app.post("/build")
 async def build_post() -> dict[str, str]:
     """(send flag to compile and connect user's bot ??)"""
     return {"status": "ok"}
 
-
-# TODO: другие эндпоинты (git, bot)
 
 """
 /git ??
