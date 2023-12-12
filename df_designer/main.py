@@ -100,6 +100,8 @@ async def service_version_get() -> dict[str, str]:
     return {"status": "ok", "version": version}
 
 
+# TODO: здесь подгружается namespaces (funcs, vars, ...)
+# TODO: подумать, может быть назвать через config vs namespaces
 # /library
 @app.get("/library/functions")
 async def library_functions_get() -> dict[str, str]:
@@ -107,12 +109,15 @@ async def library_functions_get() -> dict[str, str]:
     return {"status": "ok"}
 
 
+# TODO: здесь вычитывание конфигурации (не только LLM)
+# TODO: нет сохранения конфигурации для моделей (API-s, API-KEY-s)
+# TODO: нет сохранения общей конфигурации (hotkeys, git creds, ports, index_paths, paths to additional configs)
 @app.get("/library/llms")
 async def library_llms_get() -> dict[str, str]:
     """(get available llm models) - JSON of llm models"""
     return {"status": "ok"}
 
-
+# TODO: rename runtime (здесь нет DFF, здесь используются модели)
 # /dff
 @app.post("/dff/tests/prompt")
 async def dff_tests_prompt_post() -> dict[str, str]:
@@ -126,6 +131,7 @@ async def dff_tests_condition_post() -> dict[str, str]:
     return {"status": "ok"}
 
 
+# TODO: compile (сериализация), build, runtime
 # /build
 @app.post("/build")
 async def build_post() -> dict[str, str]:
