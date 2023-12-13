@@ -1,3 +1,5 @@
+from pathlib import Path
+import aiofiles
 import dff
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -16,8 +18,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def main_page() -> HTMLResponse:
-    """Main."""
-    html = "main page"
+    """Return frontend."""
+    start_page = "static/index.html"
+    if not Path(start_page).exists():
+        html = "frontend is not build"
+    else:
+        async with aiofiles.open(start_page) as file:
+            html = await file.read()
     return HTMLResponse(content=html, status_code=200)
 
 
@@ -116,6 +123,7 @@ async def library_functions_get() -> dict[str, str]:
 async def library_llms_get() -> dict[str, str]:
     """(get available llm models) - JSON of llm models"""
     return {"status": "ok"}
+
 
 # TODO: rename runtime (здесь нет DFF, здесь используются модели)
 # /dff

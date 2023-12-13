@@ -23,6 +23,7 @@ def test_main_save():
     response = client.post("/save", json={"key": "value"})
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+    Path(settings.path_to_save).unlink()
 
 
 def test_main_get():
