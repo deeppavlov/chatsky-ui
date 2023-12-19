@@ -13,33 +13,16 @@ def test_main_main_page():
     assert response.status_code == 200
 
 
-def test_main_alive():
-    response = client.get("/alive")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
-
-
-def test_main_save():
-    response = client.post("/save", json={"key": "value"})
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
-    Path(settings.path_to_save).unlink()
-
-
-def test_main_get():
-    response = client.get("/get")
-    assert response.status_code == 200
-    # assert response.json() == {"status": "true"} # make mock request
-
-
 def test_flows_get():
     response = client.get("/flows")
     assert response.status_code == 200
 
 
 def test_flows_post():
-    response = client.post("/flows")
+    response = client.post("/flows", json={"key": "value"})
     assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+    Path(settings.path_to_save).unlink()
 
 
 def test_flows_patch():

@@ -28,42 +28,19 @@ async def main_page() -> HTMLResponse:
     return HTMLResponse(content=html, status_code=200)
 
 
-@app.get("/alive")
-async def alive() -> dict[str, str]:
-    """Is alive service."""
-    return {"status": "ok"}
-
-
-@app.post("/save")
-async def save(request: Request):
-    """Save data."""
-    data = await request.json()
-    await save_data(path=path_to_save, data=data)
-    return {"status": "ok"}
-
-
-@app.get("/get")
-async def get():
-    """Get data."""
+# /flows
+@app.get("/flows")
+async def flows_get():
+    """(get flows from db) - returns JSON of all saved flows"""
     result = await get_data(path_to_save)
     return {"status": "ok", "data": result}
 
 
-################################################################
-# new methods
-################################################################
-
-
-# /flows
-@app.get("/flows")
-async def flows_get() -> dict[str, str]:
-    """(get flows from db) - returns JSON of all saved flows"""
-    return {"status": "ok"}
-
-
 @app.post("/flows")
-async def flows_post() -> dict[str, str]:
+async def flows_post(request: Request) -> dict[str, str]:
     """(add new flows) - receives JSON of new flows"""
+    data = await request.json()
+    await save_data(path=path_to_save, data=data)
     return {"status": "ok"}
 
 
