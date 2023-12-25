@@ -1,19 +1,38 @@
+import dff
+import typer
 import uvicorn
-from df_designer import settings
+
+from df_designer.settings import app
+
+cli = typer.Typer()
 
 
-def main():
+@cli.command()
+def build():
+    print("in developing ...")
+
+
+@cli.command()
+def meta():
+    print(f"dff version: {dff.__version__}")
+
+
+@cli.command()
+def run_app(
+    ip_address: str = app.conf_host,
+    port: int = app.conf_port,
+):
     """Run the application."""
     config = uvicorn.Config(
-        app=settings.app,
-        host=settings.host,
-        port=settings.port,
-        log_level=settings.log_level,
-        reload=settings.reload,
+        app=app.conf_app,
+        host=ip_address,
+        port=port,
+        log_level=app.conf_log_level,
+        reload=app.conf_reload,
     )
     server = uvicorn.Server(config)
     server.run()
 
 
 if __name__ == "__main__":
-    main()
+    cli()

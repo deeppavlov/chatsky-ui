@@ -1,16 +1,17 @@
-from pathlib import Path
 import aiofiles
 import dff
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from df_designer.logic import get_data, save_data
-from df_designer.settings import path_to_save
+from df_designer.settings import app
 
-app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
+app.mount(
+    "/static",
+    StaticFiles(directory=app.static_files),
+    name="static",
+)
 # TODO: добавить версию v1
 # TODO: заглушка для dff
 # TODO: тесты дописать
@@ -19,11 +20,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def main_page() -> HTMLResponse:
     """Return frontend."""
-    start_page = "static/index.html"
-    if not Path(start_page).exists():
+    if not app.start_page.exists():
         html = "frontend is not build"
     else:
-        async with aiofiles.open(start_page) as file:
+        async with aiofiles.open(app.start_page) as file:
             html = await file.read()
     return HTMLResponse(content=html, status_code=200)
 
@@ -32,7 +32,7 @@ async def main_page() -> HTMLResponse:
 @app.get("/flows")
 async def flows_get():
     """(get flows from db) - returns JSON of all saved flows"""
-    result = await get_data(path_to_save)
+    result = await get_data(app.path_to_save)
     return {"status": "ok", "data": result}
 
 
@@ -40,7 +40,7 @@ async def flows_get():
 async def flows_post(request: Request) -> dict[str, str]:
     """(add new flows) - receives JSON of new flows"""
     data = await request.json()
-    await save_data(path=path_to_save, data=data)
+    await save_data(path=app.path_to_save, data=data)
     return {"status": "ok"}
 
 
@@ -75,9 +75,8 @@ async def service_health_get() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# TODO: rename meta :do
 # TODO: команды для Максима
-@app.get("/service/version")
+@app.get("/meta")
 async def service_version_get() -> dict[str, str]:
     """(get dff curr version)"""
     version = dff.__version__

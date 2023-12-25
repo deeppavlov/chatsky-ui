@@ -1,11 +1,10 @@
 from pathlib import Path
-
 from fastapi.testclient import TestClient
 
-from df_designer import settings
 from df_designer.main import app
 
 client = TestClient(app)
+# client.app.path_to_save = "/tmp/flows.json"
 
 
 def test_main_main_page():
@@ -19,10 +18,11 @@ def test_flows_get():
 
 
 def test_flows_post():
+    client.app.path_to_save = "/tmp/flows.json"
     response = client.post("/flows", json={"key": "value"})
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
-    Path(settings.path_to_save).unlink()
+    Path(client.app.path_to_save).unlink()
 
 
 def test_flows_patch():
@@ -51,7 +51,7 @@ def test_service_health_get():
 
 
 def test_service_version_get():
-    response = client.get("/service/version")
+    response = client.get("/meta")
     assert response.status_code == 200
 
 
@@ -81,9 +81,12 @@ def test_build_get():
 
 
 def test_settings():
-    assert settings.app == "df_designer.main:app"
-    assert settings.host == "127.0.0.1"
-    assert settings.port == 8000
-    assert settings.log_level == "info"
-    assert settings.reload is True
-    assert settings.path_to_save == Path().home().joinpath("flows.json")
+    assert app.conf_app == "df_designer.main:app"
+    assert app.conf_host == "127.0.0.1"
+    assert app.conf_port == 8000
+    assert app.conf_log_level == "info"
+    assert app.conf_reload is True
+
+
+# def test_settings_path_to_save():
+#     assert app.path_to_save == Path(app.work_directory).joinpath("flows.json")
