@@ -48,6 +48,7 @@ import { Link } from "../../icons/FormatTextIcons/Link";
 import { Title } from "@radix-ui/react-dialog";
 import { PlayIcon } from "../../icons/PlayIcon";
 import { Play2Icon } from "../../icons/Play2Icon";
+import { darkContext } from "../../contexts/darkContext";
 
 
 export default function EditResponseModal({ data }: { data: NodeDataType }) {
@@ -69,6 +70,7 @@ export default function EditResponseModal({ data }: { data: NodeDataType }) {
 
   const { closePopUp } = useContext(PopUpContext);
   const { types } = useContext(typesContext);
+  const { dark } = useContext(darkContext)
   const [custom, setCustom] = useState(true);
   const { tabId, flows, saveFlow } = useContext(TabsContext)
 
@@ -123,7 +125,7 @@ export default function EditResponseModal({ data }: { data: NodeDataType }) {
             </DialogTitle>
             <label className="flex flex-row mr-4 items-center" htmlFor="">
               <span className={`${custom && 'text-neutral-400'}  flex flex-row items-center`}>
-                <Custom_cnd_icon className="" fill={` ${custom ? '#8D96B5' : 'black'} `} />
+                <Custom_cnd_icon className="" fill={` ${dark ? (custom ? '#888' : 'white') : (custom ? '#8D96B5' : 'black')} `} />
                 Custom
               </span>
               <ToggleShadComponent
@@ -134,7 +136,7 @@ export default function EditResponseModal({ data }: { data: NodeDataType }) {
                 disabled={false}
                 size="small" />
               <span className={`${!custom && 'text-neutral-400'} flex flex-row items-center`}>
-                <LLM_cnd_icon className="mr-1" fill={` ${!custom ? '#8D96B5' : 'black'} `} />
+                <LLM_cnd_icon className="mr-1" fill={` ${dark ? (!custom ? '#888' : 'white') : (!custom ? '#8D96B5' : 'black')} `} />
                 Using llm
               </span>
             </label>

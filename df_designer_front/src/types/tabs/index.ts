@@ -1,7 +1,9 @@
 import { Dispatch, SetStateAction } from "react";
-import { FlowType } from "../flow";
+import { FlowType, NodeType } from "../flow";
 
 export type TabsContextType = {
+  targetNode: NodeType | null;
+  setTargetNode: (state: NodeType) => void;
   saveFlow: (flow: FlowType) => Promise<void>;
   save: () => void;
   tabId: string;
@@ -40,6 +42,7 @@ export type TabsContextType = {
   getTweak: any;
   lastSelection: { nodes: any[], edges: any[] }
   setLastSelection: (selection: { nodes: any; edges: any }) => void;
+  goToNodeHandler: (currFlow: FlowType, currNodeId: string) => void;
 };
 
 export type TabsState = {

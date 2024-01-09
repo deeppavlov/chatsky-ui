@@ -16,6 +16,7 @@ import {
   getRandomName,
   flow_colors,
   findUnPickedColor,
+  getCurrNode,
 } from "../utils";
 import { alertContext } from "./alertContext";
 import { typesContext } from "./typesContext";
@@ -33,10 +34,13 @@ import {
   saveAllFlowsToDatabase,
 } from "../controllers/API";
 import _, { uniqueId } from "lodash";
+import { useNavigate } from "react-router-dom";
 
 const uid = new ShortUniqueId({ length: 5 });
 
 const TabsContextInitialValue: TabsContextType = {
+  targetNode: null,
+  setTargetNode: (state: NodeType) => { },
   save: () => { },
   tabId: "",
   setTabId: (index: string) => { },
@@ -70,7 +74,7 @@ const TabsContextInitialValue: TabsContextType = {
     selection: { nodes: any; edges: any },
     position: { x: number; y: number; paneX?: number; paneY?: number }
   ) => { },
-
+  goToNodeHandler: (currFlow: FlowType, currNodeId: string) => { }
 };
 
 export const TabsContext = createContext<TabsContextType>(
@@ -89,11 +93,34 @@ export function TabsProvider({ children }: { children: ReactNode }) {
   const [lastSelection, setLastSelection] = useState<OnSelectionChangeParams>(null)
   const [tabsState, setTabsState] = useState<TabsState>({});
   const [getTweak, setTweak] = useState({});
+  const [targetNode, setTargetNode] = useState<NodeType>()
+  const navigate = useNavigate()
 
   const newNodeId = useRef(uid());
   function incrementNodeId() {
     newNodeId.current = uid();
     return newNodeId.current;
+  }
+
+  useEffect(() => console.log(targetNode), [targetNode])
+
+  const goToNodeHandler = (currFlow: FlowType, currNodeId: string) => {
+    console.log(1)
+    const node = getCurrNode(flows, currFlow.id, currNodeId)
+    reactFlowInstance.fitBounds({ x: node.position.x, y: node.position.y, width: 384, height: 384 })
+    // setTargetNode(node)
+    // const _flows = flows
+    // navigate(0)
+    // if (tabId === currFlow.id) {
+    // setTabId('')
+    // setTimeout(() => {
+      // navigate(`/flow/${currFlow.id}`)
+      // setTabId(currFlow.id)
+      // setTimeout(() => {
+      // }, 50);
+    // }, 5);
+    // }
+    // console.log(_flows, flows)
   }
 
   function save() {
@@ -204,17 +231,17 @@ export function TabsProvider({ children }: { children: ReactNode }) {
   }
   function processDBData(DbData) {
     console.log(DbData)
-      DbData.forEach((flow) => {
-        try {
-          if (!flow.data) {
-            return;
-          }
-          processFlowEdges(flow);
-          processFlowNodes(flow);
-        } catch (e) {
-          console.error(e);
+    DbData.forEach((flow) => {
+      try {
+        if (!flow.data) {
+          return;
         }
-      });
+        processFlowEdges(flow);
+        processFlowNodes(flow);
+      } catch (e) {
+        console.error(e);
+      }
+    });
   }
 
   function processFlowEdges(flow) {
@@ -550,8 +577,8 @@ export function TabsProvider({ children }: { children: ReactNode }) {
       // deleteFlowFromDatabase(id).then(() => {
       //   setFlows(flows.filter((flow) => flow.id !== id));
       // });
-        setFlows(flows.filter((flow) => flow.id !== id));
-        saveAllFlowsToDatabase(flows.filter((flow) => flow.id !== id))
+      setFlows(flows.filter((flow) => flow.id !== id));
+      saveAllFlowsToDatabase(flows.filter((flow) => flow.id !== id))
     }
   }
   /**
@@ -563,6 +590,7 @@ export function TabsProvider({ children }: { children: ReactNode }) {
     selectionInstance,
     position: { x: number; y: number; paneX?: number; paneY?: number }
   ) {
+    console.log(selectionInstance)
     let minimumX = Infinity;
     let minimumY = Infinity;
     let idsMap = {};
@@ -847,6 +875,7 @@ export function TabsProvider({ children }: { children: ReactNode }) {
     return flows
   };
 
+
   /**
    * Updates an existing flow with new data
    * @param newFlow - The new flow object containing the updated data
@@ -871,30 +900,31 @@ export function TabsProvider({ children }: { children: ReactNode }) {
       // FIXME: OLD
       const response = await saveAllFlowsToDatabase(flows)
       console.log(response)
-      const updatedFlow = await updateFlowInDatabase(newFlow);
-      if (updatedFlow) {
-        // updates flow in state
-        setFlows((prevState) => {
-          const newFlows = [...prevState];
-          const index = newFlows.findIndex((flow) => flow.id === newFlow.id);
-          if (index !== -1) {
-            newFlows[index].description = newFlow.description ?? "";
-            newFlows[index].data = newFlow.data;
-            newFlows[index].name = newFlow.name;
-            newFlows[index].color = newFlow.color ?? findUnPickedColor(flows)[0];
-          }
-          return newFlows;
-        });
-        //update tabs state
-        setTabsState((prev) => {
-          return {
-            ...prev,
-            [tabId]: {
-              isPending: false,
-            },
-          };
-        });
-      }
+      setTabsState((prev) => {
+        return {
+          ...prev,
+          [tabId]: {
+            isPending: false,
+          },
+        };
+      });
+      // const updatedFlow = await updateFlowInDatabase(newFlow);
+      // if (updatedFlow) {
+      //   // updates flow in state
+      //   setFlows((prevState) => {
+      //     const newFlows = [...prevState];
+      //     const index = newFlows.findIndex((flow) => flow.id === newFlow.id);
+      //     if (index !== -1) {
+      //       newFlows[index].description = newFlow.description ?? "";
+      //       newFlows[index].data = newFlow.data;
+      //       newFlows[index].name = newFlow.name;
+      //       newFlows[index].color = newFlow.color ?? findUnPickedColor(flows)[0];
+      //     }
+      //     return newFlows;
+      //   });
+      //   //update tabs state
+
+      // }
 
     } catch (err) {
       setErrorData(err);
@@ -903,7 +933,6 @@ export function TabsProvider({ children }: { children: ReactNode }) {
 
   const [disableCopyPaste, setDisableCopyPaste] = useState(false);
   const [managerMode, setManagerMode] = useState(false)
-
   const [flowMode, setFlowMode] = useState(false)
 
 
@@ -940,6 +969,9 @@ export function TabsProvider({ children }: { children: ReactNode }) {
         paste,
         getTweak,
         setTweak,
+        goToNodeHandler,
+        setTargetNode,
+        targetNode
       }}
     >
       {children}

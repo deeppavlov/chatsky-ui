@@ -1,14 +1,20 @@
 import {
   classNames,
+  conditionTypes,
+  default_types,
+  flowTypes,
+  getCurrNode,
   nodeColors,
   nodeIconsLucide,
+  nodeTransitionTypes,
+  nodeTypes,
   titleNodeColors,
   titleTextNodeColors,
   toTitleCase,
 } from "../../utils";
 import ParameterComponent from "./components/parameterComponent";
 import { typesContext } from "../../contexts/typesContext";
-import React, { useContext, useState, useEffect, useRef, useId, useCallback } from "react";
+import React, { useContext, useState, useEffect, useRef, useId, useCallback, useMemo } from "react";
 import { FlowType, NodeDataType, NodeType } from "../../types/flow";
 import { alertContext } from "../../contexts/alertContext";
 import { PopUpContext } from "../../contexts/popUpContext";
@@ -58,8 +64,9 @@ export default function GenericNode({
   const [activePreRes, setActivePreRes] = useState<string[]>([])
   const [activePreTrans, setActivePreTrans] = useState<string[]>([])
 
-  useEffect(() => {
-  }, [activePreRes, activePreTrans])
+  // useEffect(() => {
+
+  // }, [activePreRes, activePreTrans])
 
 
   const { reactFlowInstance, setReactFlowInstance } =
@@ -68,108 +75,187 @@ export default function GenericNode({
   const { closePopUp, openPopUp } = useContext(PopUpContext);
   const showError = useRef(true);
   const { types, deleteNode } = useContext(typesContext);
-  const { flows, tabId, disableCopyPaste, managerMode, lastCopiedSelection, setLastCopiedSelection, paste, lastSelection, setLastSelection, setTabId } = useContext(TabsContext)
+  const { flows, tabId, disableCopyPaste, managerMode, lastCopiedSelection, setLastCopiedSelection, paste, lastSelection, setLastSelection, setTabId, goToNodeHandler, targetNode, setTargetNode } = useContext(TabsContext)
   const { setViewport, getEdges, setEdges, setNodes } = useReactFlow();
   const navigate = useNavigate()
   const edges = getEdges()
 
-  const goToNodeHandler = (currFlow: FlowType, nodeID: string) => {
-    // navigate()
-    try {
-      setTabId(`${currFlow.id}`)
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setTimeout(() => {
-        if (tabId === currFlow.id) {
-          const nodes = currFlow.data.nodes
-          let node = nodes.find((node) => node.id == nodeID)
-          reactFlowInstance.fitBounds({ x: node.position.x, y: node.position.y, width: node.width, height: node.height })
-        }
-      }, 50);
-    }
+  // const goToNodeHandler = (currFlow: FlowType, nodeID: string) => {
+  //   // setTabId(currFlow.id)
+  //   console.log(flows)
+  //   navigate(`/flow/${currFlow.id}`)
+  //   // try {
+  //   // } catch (error) {
+  //   // } finally {
+  //     // setTimeout(() => {
+  //     //   if (tabId === currFlow.id && window.location.pathname.includes(currFlow.id)) {
+  //     //     const nodes = currFlow.data.nodes
+  //     //     let node = nodes.find((node) => node.id == nodeID)
+  //     //     // reactFlowInstance.fitBounds({ x: node.position.x, y: node.position.y, width: node.width, height: node.height })
+  //     //   }
+  //     // }, 200);
+  //   // }
 
-    // const currNode: NodeType = currFlow.data.nodes.find((node) => node.data.id == nodeID)
-    // setTimeout(() => {
-    //   const nodes = reactFlowInstance.getNodes()
-    //   let node = nodes.find((node) => node.id == nodeID)
-    //   reactFlowInstance.fitBounds({ x: node.position.x, y: node.position.y, width: node.width, height: node.height })
-    //   // node.selected = true
-    // }, 50);
-    // console.log(flows)
-  }
+  //   // const currNode: NodeType = currFlow.data.nodes.find((node) => node.data.id == nodeID)
+  //   // setTimeout(() => {
+  //   //   const nodes = reactFlowInstance.getNodes()
+  //   //   let node = nodes.find((node) => node.id == nodeID)
+  //   //   reactFlowInstance.fitBounds({ x: node.position.x, y: node.position.y, width: node.width, height: node.height })
+  //   //   // node.selected = true
+  //   // }, 50);
+  //   // console.log(flows)
+  // }
 
   const [links, setLinks] = useState<any>()
 
   useEffect(() => {
-    if (data.node.base_classes[0] == 'links') {
+    if (data.node.node_type == nodeTypes.link) {
       data.node.from_links = edges.filter((edge) => edge.target == data.id).map((edge) => {
         return {
           node: edge.source,
-          condition: flows.find((flow) => flow.data.nodes.find((node: NodeType) => node.data.id == edge.source)).data.nodes.find((node: NodeType) => node.data.id == edge.source).data.node.conditions.find((cnd) => `condition${cnd.conditionID}` == edge.sourceHandle.split('|')[1]).name
+          condition: flows.
+            find((flow) => flow.data.nodes?.
+              find((node: NodeType) => node.data.id == edge.source)).data.nodes.
+            find((node: NodeType) => node.data.id == edge.source).data.node.conditions.
+            find((cnd) => `${cnd.type}${cnd.conditionID}` == edge.sourceHandle.split('|')[1]).name
         }
       })
       // console.log(data.node.from_links)
     }
   }, [setEdges, setNodes, edges.length])
 
-  const [globalConditions, setGlobalConditions] = useState<any>(
-    data.id !== 'GLOBAL_NODE' && data.node?.base_classes[0] == 'default_node' && (
-      flows.find(({ id }) => id == 'GLOBAL').data?.nodes?.find((node: NodeType) => node.id == "GLOBAL_NODE")?.data?.node?.conditions?.map((condition: ConditionClassType, idx: number) => {
-        const global_data = flows.find(({ id }) => id == 'GLOBAL').data.nodes.find((node: NodeType) => node.id == "GLOBAL_NODE").data
-        return (
-          <ParameterComponent
-            data={global_data}
-            color={
-              nodeColors[types.default_nodes] ??
-              nodeColors.unknown
-            }
-            title={`GLOBAL_${condition.name}`}
-            info={''}
-            name={`${condition.name}`}
-            tooltipTitle={global_data.type}
-            required={true}
-            id={global_data.id + "|" + `condition${condition.conditionID}` + '|' + global_data.id}
-            left={condition.left}
-            type={`global_condition`}
-            key={global_data.id + 'condition' + `${idx}`}
-            priority={condition.priority}
-            conditionID={condition.conditionID}
-            transitionType={condition.transitionType}
-          />
-        )
-      })
-    )
-  )
+  // all conditions state
+  const [CONDITIONS, setCONDITIONS] = useState<ConditionClassType[]>(data.node.conditions ?? [])
+  const [LOCAL_CONDITIONS, setLOCAL_CONDITIONS] = useState<ConditionClassType[]>(
+    flows.
+      find((flow) => flow.id === tabId)?.data?.nodes?.
+      find((node) => node.id === nodeTypes.LOCAL)?.data?.node?.conditions
+    ?? [])
+  const [GLOBAL_CONDITIONS, setGLOBAL_CONDITIONS] = useState<ConditionClassType[]>(
+    flows.
+      find((flow) => flow.id === flowTypes.GLOBAL)?.data?.nodes?.
+      find((node) => node.id === nodeTypes.GLOBAL)?.data?.node?.conditions
+    ?? [])
 
-  const [localConditions, setLocalConditions] = useState<any>(
-    data.id !== 'LOCAL_NODE' && data.node?.base_classes[0] == 'default_node' && (
-      flows.find(({ id }) => id == tabId).data?.nodes?.find((node: NodeType) => node.id == "LOCAL_NODE")?.data?.node?.conditions?.map((condition: ConditionClassType, idx: number) => {
-        const global_data = flows.find(({ id }) => id == tabId).data.nodes.find((node: NodeType) => node.id == "LOCAL_NODE").data
-        return (
-          <ParameterComponent
-            data={global_data}
-            color={
-              nodeColors[types.default_nodes] ??
-              nodeColors.unknown
-            }
-            title={`LOCAL_${condition.name}`}
-            info={''}
-            name={`${condition.name}`}
-            tooltipTitle={global_data.type}
-            required={true}
-            id={global_data.id + "|" + `condition${condition.conditionID}` + '|' + global_data.id}
-            left={condition.left}
-            type={`local_condition`}
-            key={global_data.id + 'condition' + `${idx}`}
-            priority={condition.priority}
-            conditionID={condition.conditionID}
-            transitionType={condition.transitionType}
-          />
-        )
-      })
-    )
-  )
+  // update condition list when add new condition in global node 
+  useEffect(() => {
+    setGLOBAL_CONDITIONS(flows.
+      find((flow) => flow.id === flowTypes.GLOBAL)?.data?.nodes?.
+      find((node) => node.id === nodeTypes.GLOBAL)?.data?.node?.conditions
+      ?? [])
+  }, [flows.
+    find((flow) => flow.id === flowTypes.GLOBAL)?.data?.nodes?.
+    find((node) => node.id === nodeTypes.GLOBAL)?.data?.node?.conditions.length
+  ])
+
+  // update condition list when add new condition in local node 
+  useEffect(() => {
+    setLOCAL_CONDITIONS(flows.
+      find((flow) => flow.id === tabId)?.data?.nodes?.
+      find((node) => node.id === nodeTypes.LOCAL)?.data?.node?.conditions
+      ?? [])
+  }, [flows.
+    find((flow) => flow.id === tabId)?.data?.nodes?.
+    find((node) => node.id === nodeTypes.LOCAL)?.data?.node?.conditions.length
+  ])
+
+  useEffect(() => {
+    // console.log(CONDITIONS, LOCAL_CONDITIONS, GLOBAL_CONDITIONS)
+
+    // const data_conditions = CONDITIONS.filter((condition) => (LOCAL_CONDITIONS.some((cnd) => cnd.local_id === condition.local_id) || GLOBAL_CONDITIONS.some((cnd) => cnd.global_id === condition.global_id) || (condition.type !== conditionTypes.GLOBAL && condition.type !== conditionTypes.LOCAL)))
+    const data_conditions = CONDITIONS.filter((condition) => ((condition.type !== conditionTypes.GLOBAL && condition.type !== conditionTypes.LOCAL)))
+
+    const local = (data.id !== nodeTypes.LOCAL && data.id !== nodeTypes.GLOBAL) ? LOCAL_CONDITIONS.filter((cnd) => !cnd.global_id).map((cond, idx) => {
+      const ref_cond: ConditionClassType = {
+        ...cond,
+        conditionID: CONDITIONS.length + idx,
+        name: `${default_types.LOCAL}_${cond.name}`,
+        transitionType: nodeTransitionTypes.manual,
+        type: conditionTypes.LOCAL
+      }
+      return ref_cond
+    }) : []
+
+    const global = data.id !== nodeTypes.GLOBAL ? GLOBAL_CONDITIONS.map((cond, idx) => {
+      const ref_cond: ConditionClassType = {
+        ...cond,
+        conditionID: CONDITIONS.length + LOCAL_CONDITIONS.length + idx,
+        name: `${default_types.GLOBAL}_${cond.name}`,
+        transitionType: nodeTransitionTypes.manual,
+        type: conditionTypes.GLOBAL
+      }
+      return ref_cond
+    }) : []
+
+    data.node.conditions = [...data_conditions, ...local, ...global]
+    // console.log(data.node.conditions)
+  }, [LOCAL_CONDITIONS, GLOBAL_CONDITIONS])
+
+  useEffect(() => {
+
+  }, [GLOBAL_CONDITIONS])
+
+  useEffect(() => {
+
+  }, [LOCAL_CONDITIONS])
+
+  // const [globalConditions, setGlobalConditions] = useState<any>(
+  //   data.id !== 'GLOBAL_NODE' && data.node?.base_classes[0] == 'default_node' && (
+  //     flows.find(({ id }) => id == 'GLOBAL').data?.nodes?.find((node: NodeType) => node.id == "GLOBAL_NODE")?.data?.node?.conditions?.map((condition: ConditionClassType, idx: number) => {
+  //       const global_data = flows.find(({ id }) => id == 'GLOBAL').data.nodes.find((node: NodeType) => node.id == "GLOBAL_NODE").data
+  //       return (
+  //         <ParameterComponent
+  //           data={data}
+  //           color={
+  //             nodeColors[types.default_nodes] ??
+  //             nodeColors.unknown
+  //           }
+  //           title={`GLOBAL_${condition.name}`}
+  //           info={''}
+  //           name={`${condition.name}`}
+  //           tooltipTitle={global_data.type}
+  //           required={true}
+  //           id={data.id + "|" + `GLOBAL_condition${condition.conditionID}` + '|' + data.id}
+  //           left={condition.left}
+  //           type={`global_condition`}
+  //           key={data.id + 'GLOBAL_condition' + `${idx}`}
+  //           priority={condition.priority}
+  //           conditionID={condition.conditionID}
+  //           transitionType={condition.transitionType}
+  //         />
+  //       )
+  //     })
+  //   )
+  // )
+
+  // const [localConditions, setLocalConditions] = useState<any>(
+  //   data.id !== 'LOCAL_NODE' && data.node?.base_classes[0] == 'default_node' && (
+  //     flows.find(({ id }) => id == tabId).data?.nodes?.find((node: NodeType) => node.id == "LOCAL_NODE")?.data?.node?.conditions?.map((condition: ConditionClassType, idx: number) => {
+  //       const global_data = flows.find(({ id }) => id == tabId).data.nodes.find((node: NodeType) => node.id == "LOCAL_NODE").data
+  //       return (
+  //         <ParameterComponent
+  //           data={data}
+  //           color={
+  //             nodeColors[types.default_nodes] ??
+  //             nodeColors.unknown
+  //           }
+  //           title={`LOCAL_${condition.name}`}
+  //           info={''}
+  //           name={`${condition.name}`}
+  //           tooltipTitle={global_data.type}
+  //           required={true}
+  //           id={data.id + "|" + `LOCAL_condition${condition.conditionID}` + '|' + data.id}
+  //           left={condition.left}
+  //           type={`local_condition`}
+  //           key={data.id + 'LOCAL_condition' + `${idx}`}
+  //           priority={condition.priority}
+  //           conditionID={condition.conditionID}
+  //           transitionType={condition.transitionType}
+  //         />
+  //       )
+  //     })
+  //   )
+  // )
 
   // console.log(globalConditions)
 
@@ -187,13 +273,15 @@ export default function GenericNode({
         name={condition.name}
         tooltipTitle={data.type}
         required={true}
-        id={data.id + "|" + `condition${condition.conditionID}` + '|' + data.id}
+        id={data.id + "|" + `${condition.type}${condition.conditionID}` + '|' + data.id}
         left={condition.left}
-        type={`condition`}
+        type={condition.type}
         key={data.id + 'condition' + `${idx}`}
         priority={condition.priority}
         conditionID={condition.conditionID}
         transitionType={condition.transitionType}
+        global_id={condition.global_id}
+        local_id={condition.local_id}
       />
     }),
   ] : [])
@@ -208,75 +296,20 @@ export default function GenericNode({
         title={condition.name}
         info={''}
         name={condition.name}
-        tooltipTitle={data.type == 'default_node' || data.type == 'llm_node' ? 'default_node' : data.type == 'default_link' ? 'default_node' : 'default_node'}
+        tooltipTitle={data.type}
         required={true}
-        id={data.id + "|" + `condition${condition.conditionID}` + '|' + data.id}
+        id={data.id + "|" + `${condition.type}${condition.conditionID}` + '|' + data.id}
         left={condition.left}
-        type={`condition`}
+        type={condition.type}
         key={data.id + 'condition' + `${idx}`}
         priority={condition.priority}
         conditionID={condition.conditionID}
         transitionType={condition.transitionType}
+        global_id={condition.global_id}
+        local_id={condition.local_id}
       />
     }) : [])
-    setGlobalConditions(
-      data.id !== 'GLOBAL_NODE' && data.node?.base_classes[0] == 'default_node' && (
-        flows.find(({ id }) => id == 'GLOBAL').data?.nodes?.find((node: NodeType) => node.id == "GLOBAL_NODE")?.data?.node?.conditions?.map((condition: ConditionClassType, idx: number) => {
-          const global_data = flows.find(({ id }) => id == 'GLOBAL').data.nodes.find((node: NodeType) => node.id == "GLOBAL_NODE").data
-          return (
-            <ParameterComponent
-              data={global_data}
-              color={
-                nodeColors[types.default_nodes] ??
-                nodeColors.unknown
-              }
-              title={`GLOBAL_${condition.name}`}
-              info={''}
-              name={`${condition.name}`}
-              tooltipTitle={global_data.type}
-              required={true}
-              id={global_data.id + "|" + `condition${condition.conditionID}` + '|' + global_data.id}
-              left={condition.left}
-              type={`global_condition`}
-              key={global_data.id + 'condition' + `${idx}`}
-              priority={condition.priority}
-              conditionID={condition.conditionID}
-              transitionType={condition.transitionType}
-            />
-          )
-        })
-      )
-    )
-
-    setLocalConditions(
-      data.id !== 'LOCAL_NODE' && data.node?.base_classes[0] == 'default_node' && (
-        flows.find(({ id }) => id == tabId).data?.nodes?.find((node: NodeType) => node.id == "LOCAL_NODE")?.data?.node?.conditions?.map((condition: ConditionClassType, idx: number) => {
-          const global_data = flows.find(({ id }) => id == tabId).data.nodes.find((node: NodeType) => node.id == "LOCAL_NODE").data
-          return (
-            <ParameterComponent
-              data={global_data}
-              color={
-                nodeColors[types.default_nodes] ??
-                nodeColors.unknown
-              }
-              title={`LOCAL_${condition.name}`}
-              info={''}
-              name={`${condition.name}`}
-              tooltipTitle={global_data.type}
-              required={true}
-              id={global_data.id + "|" + `condition${condition.conditionID}` + '|' + global_data.id}
-              left={condition.left}
-              type={`local_condition`}
-              key={global_data.id + 'condition' + `${idx}`}
-              priority={condition.priority}
-              conditionID={condition.conditionID}
-              transitionType={condition.transitionType}
-            />
-          )
-        })
-      )
-    )
-  }, [flows, closePopUp])
+  }, [closePopUp, LOCAL_CONDITIONS, GLOBAL_CONDITIONS, CONDITIONS])
   const [conditionCounter, setConditionCounter] = useState(conditions.length)
 
 
@@ -321,7 +354,9 @@ export default function GenericNode({
     })
   }
 
-  useEffect(() => { }, [position])
+  // useEffect(() => { 
+
+  // }, [position])
 
   useEffect(() => {
     setName(data.node.display_name)
@@ -329,6 +364,7 @@ export default function GenericNode({
     // return (
     //   window.removeEventListener("mousemove", mouseMoveHandler)
     // )
+
   }, [])
 
   useEffect(() => {
@@ -405,7 +441,8 @@ export default function GenericNode({
     return;
   }
 
-  useEffect(() => { }, [closePopUp, data.node.template]);
+  // useEffect(() => {
+  // }, [closePopUp, data.node.template]);
 
 
 
@@ -575,15 +612,17 @@ export default function GenericNode({
               tooltipTitle={data.node.template[t].type}
               required={data.node.template[t].required}
               id={data.node.template[t].type + "|" + t + "|" + data.id}
-              left={data.node.base_classes[0] === "start_node" && data.node.template[t].name !== "response" ? false : true}
+              left={data.node.node_type === nodeTypes.start_node && data.node.template[t].name !== "response" ? false : true}
               type={data.node.template[t].type}
             />
           )}
         </div>
       ))))
+
   }, [pre_responses, pre_transitions, closePopUp])
 
   const [idBadge, setIdBadge] = useState(false)
+  const [linkHref, setLinkHref] = useState(data.node.node_type === nodeTypes.link ? (flows.find((flow) => flow.name == data.node.links[0]?.to)?.id ?? '') : '')
 
   const copy = (e: any) => {
     // e.preventDefault();
@@ -613,7 +652,7 @@ export default function GenericNode({
 
             )}
           >
-            {data.node.base_classes[0] == 'links' ? (
+            {data.node.node_type == nodeTypes.link ? (
               <div className={`generic-node-div-title bg-accent ${dark ? "border-0" : ''} gap-0 relative rounded-[15px] flex flex-col justify-center items-start`}>
                 {data.type != 'start_node' &&
                   // data.type != 'llm_node' &&
@@ -626,9 +665,30 @@ export default function GenericNode({
                     <EditLinkIcon fill={dark ? "white" : "black"} />
                     <h5 className="ml-1"> {flows.find((flow) => flow.name == data.node.links[0].to)?.data?.nodes?.find((node: NodeType) => node.id == data.node.links[1].to)?.data?.node?.display_name ?? ''} </h5>
                   </div>
-                  <Link to={`/flow/${flows.find((flow) => flow.name == data.node.links[0]?.to)?.id}`} onClick={e => {
-                    goToNodeHandler(flows.find((flow) => flow.name == data.node.links[0]?.to), data.node.links[1]?.to)
-                  }} className="bg-background px-2 rounded-lg curr-shadow border-[1px] mr-3 font-semibold"> go to node -&gt; </Link>
+                  <button
+                    // to={`/flow/${linkHref}`}
+                    key={data.id}
+                    onClick={e => {
+                      // e.preventDefault()e
+                      setTimeout(() => {
+                        setTabId(linkHref)
+                        navigate(`/flow/${linkHref}`)
+                      }, 10);
+                      setTimeout(() => {
+                        setTargetNode(getCurrNode(flows, linkHref, data.node.links[1].to))
+                      }, 25);
+                      // window.location.pathname = `/flow/${linkHref}`
+                      // setTabId('')
+                      // goToNodeHandler(flows.find((flow) => flow.name == data.node.links[0]?.to), data.node.links[1]?.to)
+
+                      // setTimeout(() => {
+                      //   setTabId(linkHref);
+                      //   if (tabId === linkHref) {
+                      //     navigate(`/flow/${linkHref}`)
+                      //     reactFlowInstance.fitBounds({ x: node.position.x, y: node.position.y, width: node.width, height: node.height })
+                      //   }
+                      // }, 1);
+                    }} className="bg-background px-2 rounded-lg curr-shadow border-[1px] mr-3 font-semibold"> go to node -&gt; </button>
                 </div>
               </div>
             ) : (
@@ -637,7 +697,7 @@ export default function GenericNode({
                   {data.type != 'start_node' &&
                     // data.type != 'llm_node' &&
                     <Handle type="target" position={Position.Left} id={data.id} className={classNames(`-ml-0.5 ${inputLinks.length != 0 && "mt-2"}`, "h-3 w-3 rounded-full border-2 bg-background border-blue-condition")} />}
-                  {data.node.base_classes[0] == 'default_node' && inputLinks.length != 0 && <button className={`absolute -left-8 top-2.5 px-1 text-[10px] border-blue-condition border-[2px] font-semibold rounded-s-lg rounded-e ${!dark ? "bg-white" : "bg-muted"}`} onClick={e => openPopUp(<InputConditionsModal goToHandler={goToNodeHandler} data={data} />)}>
+                  {data.node.node_type == nodeTypes.default_node && inputLinks.length != 0 && <button className={`absolute -left-8 top-2.5 px-1 text-[10px] border-blue-condition border-[2px] font-semibold rounded-s-lg rounded-e ${!dark ? "bg-white" : "bg-muted"}`} onClick={e => openPopUp(<InputConditionsModal goToHandler={goToNodeHandler} data={data} />)}>
                     Links
                   </button>}
                   <div className="generic-node-title-arrangement">
@@ -718,8 +778,8 @@ export default function GenericNode({
                       {nodeParamsList}
                       {links}
                       {conditions}
-                      {globalConditions}
-                      {localConditions}
+                      {/* {globalConditions}
+                      {localConditions} */}
                     </div>
                     <div
                       className={classNames(
@@ -744,7 +804,9 @@ export default function GenericNode({
                               priority: 1,
                               required: true,
                               type: `condition`,
-                              transitionType: "default"
+                              transitionType: "default",
+                              local_id: data.id === nodeTypes.LOCAL ? `${data.id}-local_condition-${conditionCounter}` : '',
+                              global_id: data.id === nodeTypes.GLOBAL ? `${data.id}-global_condition-${conditionCounter}` : ''
                             }
                             const newConditionJSX =
                               <ParameterComponent
@@ -767,8 +829,9 @@ export default function GenericNode({
                                 transitionType={newCondition.transitionType}
                               />
                             // console.log(newCondition)
-                            openPopUp(<EditConditionModal conditionID={newCondition.conditionID} data={data} />)
                             data.node.conditions.push(newCondition)
+                            setCONDITIONS(prev => [...prev, newCondition])
+                            openPopUp(<EditConditionModal conditionID={newCondition.conditionID} data={data} />)
                             setConditions(prev => [...prev, newConditionJSX])
                             setConditionCounter(prev => prev + 1)
                           }} >

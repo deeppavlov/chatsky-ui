@@ -1,7 +1,7 @@
 import { Links_ } from './icons/Links/index';
 import { Default_node } from './icons/default_node/index';
 import { Connection, Edge, Node, ReactFlowInstance } from "reactflow";
-import { FlowType, NodeType } from "./types/flow";
+import { FlowType, NodeDataType, NodeType } from "./types/flow";
 import { APITemplateType } from "./types/api";
 import _ from "lodash";
 import { ChromaIcon } from "./icons/ChromaIcon";
@@ -55,6 +55,7 @@ import { End_node } from './icons/end_node';
 import { Nodes_sidebar } from './icons/NodesSidebarIcon';
 import { LLM_node } from './icons/LLMIcon';
 import { Presets_sidebar } from './icons/PresetsSidebarIcon';
+import { ConditionEditableTypesType } from './types/components';
 
 export function classNames(...classes: Array<string>) {
   return classes.filter(Boolean).join(" ");
@@ -557,6 +558,22 @@ export const taskTypeMap: { [key: string]: string } = {
 };
 
 
+export const getGlobalNode = (flows: FlowType[]): NodeDataType => {
+  return flows.find((flow) => flow.id === flowTypes.GLOBAL)?.data?.nodes?.find((node) => node.id === nodeTypes.GLOBAL)?.data
+}
+
+export const getLocalNode = (flow: FlowType): NodeDataType => {
+  return flow.data?.nodes?.find((node) => node.id === nodeTypes.LOCAL)?.data
+}
+
+export const getCurrFlow = (flows: FlowType[], id: string): FlowType => {
+  return flows.find((flow) => flow.id === id)
+}
+
+export const getCurrNode = (flows: FlowType[], flowId: string, nodeId: string): Node | NodeType => {
+  return flows.find((flow) => flow.id === flowId)?.data?.nodes?.find((node) => node.id === nodeId)
+}
+
 export const nodeTransitionTypes = {
   manual: 'default',
   forward: 'forward',
@@ -565,6 +582,38 @@ export const nodeTransitionTypes = {
   previous: 'previous',
   to_start: 'to start',
   to_fallback: 'to fallback'
+}
+
+export const default_types = {
+  GLOBAL: 'GLOBAL',
+  LOCAL: 'LOCAL'
+}
+
+export const flowTypes = {
+  GLOBAL: "GLOBAL"
+}
+
+export const conditionTypes = {
+  GLOBAL: "global_condition",
+  LOCAL: 'local_condition',
+  default: 'condition'
+}
+
+export const conditionEditableTypes: ConditionEditableTypesType = {
+  custom: 'custom',
+  slot_filling: 'slot_filling',
+  using_llm: 'using_llm'
+}
+
+export const nodeTypes = {
+  GLOBAL: "GLOBAL_NODE",
+  LOCAL: "LOCAL_NODE",
+  default_node: 'default_node',
+  start_node: 'start_node',
+  fallback_node: 'fallback_node',
+  llm_node: 'llm_node',
+  link: 'link',
+  preset: 'sample'
 }
 
 

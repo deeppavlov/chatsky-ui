@@ -32,44 +32,11 @@ export function TypesProvider({ children }: { children: ReactNode }) {
   const { flows } = useContext(TabsContext)
   const { setErrorData } = useContext(alertContext)
 
-  const extConditions = {}
-  for (let i = 1; i <= 99; i++) {
-    const newCondition = {
-      placeholder: `condition${i}`,
-      name: `condition${i}`,
-      list: false,
-      required: true,
-      show: false,
-      type: "condition",
-      multiline: false,
-      value: "",
-      display_name: `condition${i}`,
-    }
-    extConditions[`condition${i}`] = newCondition
-  }
   // console.log(extConditions)
 
   // useEffect(() => {
   //   console.log(templates)
   // }, [templates])
-
-  const generateConditions = (count: number) => {
-    const result: any[] = []
-    for (let i = 0; i <= count; i++) {
-      result.push({
-        placeholder: `Condition ${i}`,
-        name: `Condition ${i}`,
-        list: false,
-        required: false,
-        show: true,
-        type: "str",
-        multiline: false,
-        value: "",
-        display_name: `Condition ${i}`
-      })
-    }
-    return result
-  }
 
   useEffect(() => {
     let delay = 1000; // Start delay of 1 second
@@ -83,6 +50,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
     async function getTypes(): Promise<void> {
       const default_node: APIClassType = {
         base_classes: ["default_node"],
+        node_type: 'default_node',
         description: "test default node",
         display_name: "Default Node",
         documentation: "test field",
@@ -127,6 +95,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
       }
       const start_node: APIClassType = {
         base_classes: ["start_node"],
+        node_type: 'start_node',
         description: "test start node",
         display_name: "Start Node",
         documentation: "test field",
@@ -167,6 +136,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
       }
       const fallback_node: APIClassType = {
         base_classes: ["fallback_node"],
+        node_type: 'fallback_node',
         description: "test fallback_node",
         display_name: "Fallback Node",
         documentation: "test field",
@@ -190,6 +160,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
       }
       const llm_node: APIClassType = {
         base_classes: ["llm_node"],
+        node_type: 'llm_node',
         description: "test llm_node",
         display_name: "LLM Base Node",
         documentation: "test field",
@@ -261,6 +232,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
 
       const default_link: APIClassType = {
         display_name: "Link",
+        node_type: 'link',
         base_classes: ["links"],
         template: {},
         links: [
@@ -308,6 +280,7 @@ export function TypesProvider({ children }: { children: ReactNode }) {
           color: '#dad345',
           display_name: "default_preset_1",
           base_classes: ["samples"],
+          node_type: 'sample',
           description: "sample 1",
           nodes: [
             start_node, default_node, default_node, fallback_node

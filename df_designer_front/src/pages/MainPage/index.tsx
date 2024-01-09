@@ -7,6 +7,7 @@ import { CardComponent } from "../../components/cardComponent";
 import { USER_PROJECTS_HEADER } from "../../constants";
 import AddFlowModal from "../../modals/addFlowModal";
 import { PopUpContext } from "../../contexts/popUpContext";
+
 export default function HomePage() {
   const { openPopUp } = useContext(PopUpContext)
   const { flows, setTabId, downloadFlows, uploadFlows, addFlow, removeFlow } =
@@ -20,10 +21,10 @@ export default function HomePage() {
       <div className="main-page-nav-arrangement">
         <span className="main-page-nav-title">
           <Home className="w-6" />
-          {USER_PROJECTS_HEADER}
+          Your skill
         </span>
         <div className="button-div-style">
-          <Button
+          {/* <Button
             variant="primary"
             onClick={() => {
               downloadFlows();
@@ -40,7 +41,7 @@ export default function HomePage() {
           >
             <Upload className="main-page-nav-button" />
             Upload Collection
-          </Button>
+          </Button> */}
           <Button
             variant="primary"
             onClick={() => {
@@ -56,7 +57,7 @@ export default function HomePage() {
         </div>
       </div>
       <span className="main-page-description-text">
-        Manage your personal projects. Download or upload your collection.
+        Manage your personal project.
       </span>
       <div className="main-page-flows-display">
         {flows.map((flow, idx) => (
@@ -69,7 +70,7 @@ export default function HomePage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="whitespace-nowrap "
+                  className="whitespace-nowrap bg-muted border border-border hover:bg-background "
                 >
                   <ExternalLink className="main-page-nav-button" />
                   Edit Flow

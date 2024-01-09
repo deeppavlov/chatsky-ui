@@ -21,20 +21,14 @@ export default function FlowPage() {
   }, [id]);
 
   // Initialize state variable for the version
-  const [version, setVersion] = useState("0.0.42a");
+  const [version, setVersion] = useState("0.0.43a");
   // useEffect(() => {
   //   getVersion().then((data) => {
   //     setVersion(data.version);
   //   });
   // }, []);
 
-  const animation = useSpring({
-    config: { duration: 500 },
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-  })
-
-  const AnimatedPage = animated(Page)
+  // console.log(flows.find((flow) => flow.id === id))
 
   return (
     <div className="flow-page-positioning">

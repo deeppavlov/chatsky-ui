@@ -2,6 +2,7 @@ import DisclosureComponent from "../DisclosureComponent";
 import {
   classNames,
   flow_colors,
+  getCurrNode,
   nodeColors,
   nodeIconsLucide,
   nodeNames,
@@ -42,7 +43,7 @@ export default function ExtraSidebar() {
   const { data } = useContext(typesContext);
   const { openPopUp, closePopUp } = useContext(PopUpContext);
   const { dark } = useContext(darkContext)
-  const { flows, tabId, uploadFlow, tabsState, saveFlow, save, setTabId, addFlow, removeFlow } =
+  const { flows, tabId, uploadFlow, tabsState, saveFlow, save, setTabId, addFlow, removeFlow, goToNodeHandler, setTargetNode, targetNode } =
     useContext(TabsContext);
 
   const { reactFlowInstance } = useContext(typesContext)
@@ -73,16 +74,19 @@ export default function ExtraSidebar() {
     event.dataTransfer.setData("json", JSON.stringify(data));
   }
 
-  const goToNodeHandler = (currFlow: FlowType, nodeID: string) => {
-    navigate(`/flow/${flows.find((flow) => currFlow.name == flow.name).id}`)
-    const currNode: NodeType = currFlow.data.nodes.find((node) => node.data.id == nodeID)
-    setTimeout(() => {
-      const nodes = reactFlowInstance.getNodes()
-      let node = nodes.find((node) => node.id == currNode.id)
-      reactFlowInstance.fitBounds({ x: currNode.position.x - node.width / 2, y: currNode.position.y - node.height / 2, width: node.width * 2, height: node.height * 2 })
-      node.selected = true
-    }, 50);
-  }
+  // const goToNodeHandler = (currFlow: FlowType, nodeID: string) => {
+  //   const currNode: NodeType = currFlow.data.nodes.find((node) => node.data.id == nodeID)
+  //   setTimeout(() => {
+  //     setTabId(flows.find((flow) => currFlow.name == flow.name).id)
+  //     navigate(`/flow/${flows.find((flow) => currFlow.name == flow.name).id}`)
+  //     setTimeout(() => {
+  //       const nodes = reactFlowInstance.getNodes()
+  //       let node = nodes.find((node) => node.id == currNode.id)
+  //       reactFlowInstance.fitBounds({ x: currNode.position.x - node.width / 2, y: currNode.position.y - node.height / 2, width: node.width * 2, height: node.height * 2 })
+  //       node.selected = true
+  //     }, 50);
+  //   }, 5);
+  // }
 
   function handleSearchInput(e: string) {
     setFilterData((_) => {
@@ -132,7 +136,7 @@ export default function ExtraSidebar() {
       return str.split(regexp).map((s, index, array) => {
         if (index < array.length - 1) {
           const c = matchValue.shift()
-          return <>{s}<span className={'bg-yellow-400 rounded'}>{c}</span></>
+          return <>{s}<span key={s+`${index}`} className={'bg-yellow-400 rounded'}>{c}</span></>
         }
         return s
       })
@@ -152,14 +156,15 @@ export default function ExtraSidebar() {
   }, [JSON.parse(localStorage.getItem('presets')), closePopUp])
 
   const [componentsHeight, setComponentsHeight] = useState(0)
+  const [searchHeight, setSearchHeight] = useState(0)
 
   useEffect(() => {
     const buttons = document.querySelector('.side-bar-buttons-arrangement')?.clientHeight
     const flows = document.querySelector('.side-bar-flows-arrangement')?.clientHeight
     const search = document.querySelector('.side-bar-search-div-placement')?.clientHeight
     const clientHeight = document.querySelector('.side-bar-arrangement')?.clientHeight
-    setComponentsHeight(clientHeight - buttons - search - flows - 200)
-    console.log(clientHeight - buttons - search - flows - 144)
+    setComponentsHeight(clientHeight - buttons - search - flows - 155)
+    // console.log(clientHeight - buttons - search - flows - 144)
   }, [])
 
 
@@ -237,22 +242,26 @@ export default function ExtraSidebar() {
 
       <Separator />
 
-      <div className="side-bar-flows-arrangement mt-3 mb-8">
-        <div className="mb-2 ml-2 mr-3.5 flex flex-row items-center justify-between">
+      <div className="side-bar-flows-arrangement mt-2 mb-8">
+        <div className="mb-2 ml-2 mr-2 flex flex-row items-center justify-between">
           <h5 className="extra-title">Flows</h5>
-          <div className="flex flex-row items-center gap-2">
-            <button
-              onClick={e => openPopUp(<FlowSettingsModal />)}
-              disabled={tabId == 'GLOBAL'}
-              className={`flex flex-row items-center w-max justify-between text-sm bg-transparent`}>
-              <ManageIcon fill={dark ? (tabId == 'GLOBAL' ? '#ddd' : 'white') : (tabId == 'GLOBAL' ? '#ddd' : 'black')} />
-            </button>
-            <button
-              onClick={e => openPopUp(<AddFlowModal />)}
-              className={`flex flex-row items-center w-max justify-between text-sm bg-transparent`}>
-              <PlusIcon fill={dark ? "white" : "black"} />
-              {/* {active && <CheckSVG />} */}
-            </button>
+          <div className="flex flex-row items-center gap-0">
+            <ShadTooltip content="Flow settings">
+              <button
+                onClick={e => openPopUp(<FlowSettingsModal />)}
+                disabled={tabId == 'GLOBAL'}
+                className={`flow-manage-button`}>
+                <ManageIcon fill={dark ? (tabId == 'GLOBAL' ? '#ddd' : 'white') : (tabId == 'GLOBAL' ? '#ddd' : 'black')} />
+              </button>
+            </ShadTooltip>
+            <ShadTooltip content="Add flow" >
+              <button
+                onClick={e => openPopUp(<AddFlowModal />)}
+                className={`flow-manage-button`}>
+                <PlusIcon fill={dark ? "white" : "black"} />
+                {/* {active && <CheckSVG />} */}
+              </button>
+            </ShadTooltip>
           </div>
         </div>
         <div className="px-2">
@@ -295,19 +304,19 @@ export default function ExtraSidebar() {
         </div>
       </div>
       <Separator />
-      <div className="flex flex-col justify-between h-full pb-10">
-        <div className="side-bar-components-div-arrangement">
+      <div className="flex flex-col justify-between gap-2 h-full pb-10">
+        <div className="side-bar-components-div-arrangement" style={{
+          maxHeight: componentsHeight
+        }}>
           <h5 className="mb-2 mt-4 ml-2 extra-title"> Available components </h5>
-          <div style={{
-            maxHeight: componentsHeight
-          }}
+          <div
             className="overflow-y-scroll scrollbar-hide">
             {Object.keys(dataFilter)
               .sort()
               .map((d: keyof APIObjectType, i) =>
                 Object.keys(dataFilter[d]).length > 0 ? (
                   <DisclosureComponent
-                    openDisc={search.length == 0 ? false : true}
+                    openDisc={search.length == 0 ? false : false}
                     key={nodeNames[d]}
                     button={{
                       title: nodeNames[d] ?? nodeNames.unknown,
@@ -323,7 +332,7 @@ export default function ExtraSidebar() {
                             <ShadTooltip
                               content={data[d][t]?.display_name ?? ""}
                               side="right"
-                              key={data[d][t]?.display_name ?? ""}
+                              key={data[d][t]?.display_name ?? "unknown"}
                             >
                               <div key={k} data-tooltip-id={t}>
                                 <div
@@ -373,7 +382,7 @@ export default function ExtraSidebar() {
                 {nodesFilter?.map((nf: FilterNodesType) => {
                   if (nf.filteredNodes?.length) {
                     return (
-                      <div className="mt-2">
+                      <div key={nf.flow.id} className="mt-2">
                         <div className="flex flex-row items-center justify-start gap-1.5">
                           {/* <span className={` w-4 h-4 block rounded-full `} style={{ backgroundColor: nf.flow.color ?? "grey", opacity: 0.7 }} >  </span> */}
                           <FlowColorSVG fill={nf.flow.color} />
@@ -383,15 +392,29 @@ export default function ExtraSidebar() {
                           {nf.filteredNodes?.map((node) => {
                             return (
                               <div
+                                key={node.id}
                                 className={"side-bar-components-border mb-1 "}
                                 style={{
                                   borderLeftColor:
                                     titleNodeColors[node.data.node.base_classes[0]] ?? nodeColors.unknown,
                                 }}
                               >
-                                <div onClick={e => goToNodeHandler(nf.flow, node.id)} className="flex flex-row items-center justify-between side-bar-components-div-form px-3 py-1.5 cursor-pointer border-solid ">
+                                <Link
+                                  key={nf.flow.id}
+                                  to={`/flow/${nf.flow.id}`}
+                                  onClick={e => {
+                                    setTabId(nf.flow.id)
+                                    setTimeout(() => {
+                                      setTargetNode(node)
+                                    }, 25);
+                                    // setTimeout(() => {
+                                    //   // goToNodeHandler(nf.flow, node.id)
+                                    // }, 50);
+                                    // setTargetNode(getCurrNode(flows, nf.flow.id, node.id))
+                                  }}
+                                  className="flex flex-row items-center justify-between side-bar-components-div-form px-3 py-1.5 cursor-pointer border-solid ">
                                   <p> {light(node.data.node.display_name)} </p>
-                                </div>
+                                </Link>
                               </div>
                             )
                           })}

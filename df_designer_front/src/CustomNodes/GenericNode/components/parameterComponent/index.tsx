@@ -1,10 +1,17 @@
 import { Handle, Position, useReactFlow, useUpdateNodeInternals } from "reactflow";
 import {
   classNames,
+  conditionTypes,
+  flowTypes,
+  getCurrFlow,
+  getCurrNode,
+  getGlobalNode,
+  getLocalNode,
   getRandomKeyByssmm,
   groupByFamily,
   isValidConnection,
   nodeIconsLucide,
+  nodeTypes,
 } from "../../../../utils";
 import { ReactNode, useContext, useEffect, useRef, useState } from "react";
 import InputComponent from "../../../../components/inputComponent";
@@ -54,6 +61,8 @@ export default function ParameterComponent({
   priority,
   conditionID,
   transitionType,
+  global_id,
+  local_id
 }: ParameterComponentType) {
   const ref = useRef(null);
   const refHtml = useRef(null);
@@ -66,6 +75,7 @@ export default function ParameterComponent({
   let { flows } = useContext(TabsContext)
   const { setEdges, getEdges } = useReactFlow()
   const [forwardsMenu, setForwardsMenu] = useState(false)
+  const flow = flows.find((flow) => flow.id === tabId)
 
 
 
@@ -86,6 +96,7 @@ export default function ParameterComponent({
   );
 
   useEffect(() => {
+
   }, [closePopUp, data.node.template]);
 
   const { reactFlowInstance } = useContext(typesContext);
@@ -121,12 +132,12 @@ export default function ParameterComponent({
   const HandleTypeIcon = (transitionType: string) => {
     switch (transitionType) {
       case "default": return ''; break;
-      case "forward": return <TransitionIcons.forward />; break;
-      case "backward": return <TransitionIcons.backward />; break;
-      case "repeat": return <TransitionIcons.repeat />; break;
-      case "previous": return <TransitionIcons.previous />; break;
-      case "to start": return <TransitionIcons.to_start />; break;
-      case "to fallback": return <TransitionIcons.to_fallback />; break;
+      case "forward": return <TransitionIcons.forward fill={dark ? 'white' : 'black'} />; break;
+      case "backward": return <TransitionIcons.backward fill={dark ? 'white' : 'black'} />; break;
+      case "repeat": return <TransitionIcons.repeat fill={dark ? 'white' : 'black'} />; break;
+      case "previous": return <TransitionIcons.previous fill={dark ? 'white' : 'black'} />; break;
+      case "to start": return <TransitionIcons.to_start fill={dark ? 'white' : 'black'} />; break;
+      case "to fallback": return <TransitionIcons.to_fallback fill={dark ? 'white' : 'black'} />; break;
         return -1
     }
     return -1
@@ -180,6 +191,8 @@ export default function ParameterComponent({
   const [iconType, setIconType] = useState<ReactNode>()
   useEffect(() => {
     setIconType(HandleTypeIcon(forwardsItem))
+    
+
   }, [forwardsItem])
   const forwardsItemRef = useRef(transitionType ? transitionType : '')
 
@@ -192,6 +205,31 @@ export default function ParameterComponent({
     node.conditions.filter((condition: ConditionClassType) => condition.name == name)[0]['transitionType'] = forwardsItemRef.current;
     flows = _flows
   }
+
+  useEffect(() => {
+    if (type === conditionTypes.GLOBAL) {
+      const currGlobalCondition = getGlobalNode(flows)?.node?.conditions?.find((cond) => cond.global_id === global_id)
+      if (currGlobalCondition) {
+        const currCondition = data.node.conditions.find((condition) => condition.global_id === global_id)
+        currCondition.APIKey = currGlobalCondition.APIKey ?? currCondition.APIKey
+        currCondition.action = currGlobalCondition.action ?? currCondition.action
+        currCondition.intent = currGlobalCondition.intent ?? currCondition.intent
+        currCondition.llm_model = currGlobalCondition.llm_model ?? currCondition.llm_model
+        currCondition.prompt = currGlobalCondition.prompt ?? currCondition.prompt
+      }
+    }
+    if (type === conditionTypes.LOCAL) {
+      const currLocalCondition = getLocalNode(getCurrFlow(flows, tabId))?.node?.conditions?.find((cond) => cond.local_id === local_id)
+      if (currLocalCondition) {
+        const currCondition = data.node.conditions.find((condition) => condition.local_id === local_id)
+        currCondition.APIKey = currLocalCondition.APIKey ?? currCondition.APIKey
+        currCondition.action = currLocalCondition.action ?? currCondition.action
+        currCondition.intent = currLocalCondition.intent ?? currCondition.intent
+        currCondition.llm_model = currLocalCondition.llm_model ?? currCondition.llm_model
+        currCondition.prompt = currLocalCondition.prompt ?? currCondition.prompt
+      }
+    }
+  }, [closePopUp])
 
 
   const handleConditionType = (changeType: string) => {
@@ -224,10 +262,10 @@ export default function ParameterComponent({
                 (info !== "" ? " flex items-center" : "")
               }
             >
-              <div className={`flex flex-row ${(type == 'global_condition' || type == 'local_condition' )&& 'text-neutral-500'} items-center`}>
-                {type == `condition` ? <PersonIcon fill='var(--condition-default)' className="mr-2" /> : <></>}
-                { type == 'global_condition' ? <Globe2Icon className="mr-2" strokeWidth={1.5} stroke="var(--medium-indigo)" /> : <></> }
-                { type == 'local_condition' ? <LocalNodeIcon className="mr-2" strokeWidth={1.5} stroke="var(--medium-indigo)" /> : <></> }
+              <div className={`flex flex-row ${(type == 'global_condition' || type == 'local_condition') && 'text-neutral-500'} items-center`}>
+                {type == conditionTypes.default ? <PersonIcon fill='var(--condition-default)' className="mr-2" /> : <></>}
+                {type == conditionTypes.GLOBAL ? <Globe2Icon className="mr-2" strokeWidth={1.5} stroke="var(--medium-indigo)" /> : <></>}
+                {type == conditionTypes.LOCAL ? <LocalNodeIcon className="mr-2" strokeWidth={1.5} stroke="var(--medium-indigo)" /> : <></>}
                 {title}
               </div>
               <div className="flex flex-row items-center">
@@ -259,31 +297,34 @@ export default function ParameterComponent({
               content={refHtml.current}
               side={left ? "left" : "right"}
             >
-              <Handle onContextMenu={(e) => handleClick(e)}
-                type={left ? "target" : "source"}
-                position={left ? Position.Left : Position.Right}
-                id={id}
-                isConnectable={getEdges().filter((edge) => edge.source === data.id)?.length < (data.node.conditions?.length - data.node.conditions.filter((cond) => cond.transitionType !== 'default')?.length)}
-                className={classNames(
-                  left ? "-ml-0.5 " : "-mr-0.5 ",
-                  "h-3 w-3 rounded-full border-2 bg-background",
-                  forwardsItem == 'default' ? '' : 'hidden'
-                )}
-                style={{
-                  borderColor: '#FF9500',
-                  top: position,
-                }}
-              ></Handle>
+              {(type === conditionTypes.default || (data.id === nodeTypes.LOCAL && type === conditionTypes.LOCAL) || (data.id === nodeTypes.GLOBAL)) && (
+                <Handle onContextMenu={(e) => handleClick(e)}
+                  type={left ? "target" : "source"}
+                  position={left ? Position.Left : Position.Right}
+                  id={id}
+                  isConnectable={!getEdges().some((edge) => edge.sourceHandle === `${data.id}|${type}${conditionID}|${data.id}`)}
+                  className={classNames(
+                    left ? "-ml-0.5 " : "-mr-0.5 ",
+                    "h-3 w-3 rounded-full border-2 bg-background",
+                    forwardsItem == 'default' ? '' : 'hidden'
+                  )}
+                  style={{
+                    borderColor: '#FF9500',
+                    top: position,
+                  }}
+                ></Handle>
+              )}
             </ShadTooltip>
             <div className="relative">
               <div
                 onContextMenu={(e) => handleClick(e)}
                 style={{ borderColor: '#FF9500' }}
-                className={classNames(forwardsItem != 'default' ? '' : 'hidden', 'absolute flex flex-row items-center justify-center w-max left-[305px] ml-8 bg-node-back px-2 text-xs font-semibold rounded rounded-e-lg -top-[22px] border-2')}>
+                className={classNames(forwardsItem != 'default' ? '' : 'hidden', 'absolute flex flex-row items-center justify-center w-max left-[305px] ml-8 bg-muted px-2 text-xs font-semibold rounded rounded-e-lg -top-[22px] border-2')}>
                 {forwardsItem}
                 <span className="ml-1">{iconType}</span>
               </div>
               <TransitionList
+                nodeId={data.id}
                 forwardsMenu={forwardsMenu}
                 handleConditionType={handleConditionType}
                 id={id} />

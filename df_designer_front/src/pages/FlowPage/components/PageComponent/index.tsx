@@ -25,9 +25,9 @@ import { alertContext } from "../../../../contexts/alertContext";
 import { locationContext } from "../../../../contexts/locationContext";
 import { TabsContext } from "../../../../contexts/tabsContext";
 import { typesContext } from "../../../../contexts/typesContext";
-import { APIClassType } from "../../../../types/api";
+import { APIClassType, ConditionClassType } from "../../../../types/api";
 import { FlowType, NodeType } from "../../../../types/flow";
-import { isValidConnection } from "../../../../utils";
+import { conditionTypes, isValidConnection, nodeTypes } from "../../../../utils";
 import ConnectionLineComponent from "../ConnectionLineComponent";
 import ExtraSidebar from "../extraSidebarComponent";
 import { undoRedoContext } from "../../../../contexts/undoRedoContext";
@@ -43,8 +43,9 @@ import AddPresetModal from "../../../../modals/addPresetModal";
 import { darkContext } from "../../../../contexts/darkContext";
 import dagre from 'dagre';
 import LayoutFlow from "../LayoutComponent";
+import { useNavigate } from "react-router-dom";
 
-const nodeTypes = {
+const nodeDefTypes = {
   genericNode: GenericNode,
 };
 
@@ -54,6 +55,7 @@ export default function Page({ flow }: { flow: FlowType }) {
     disableCopyPaste,
     managerMode,
     flowMode,
+    setFlowMode,
     addFlow,
     getNodeId,
     paste,
@@ -65,13 +67,22 @@ export default function Page({ flow }: { flow: FlowType }) {
     tabId,
     flows,
     lastSelection,
-    setLastSelection
+    setLastSelection,
+    setManagerMode,
+    setTabId,
+    targetNode,
+    setTargetNode
   } = useContext(TabsContext);
   const { types, reactFlowInstance, setReactFlowInstance, templates } =
     useContext(typesContext);
   const reactFlowWrapper = useRef(null);
   const { openPopUp } = useContext(PopUpContext)
   const { grid, setGrid } = useContext(darkContext)
+  const navigate = useNavigate()
+
+  // useEffect(() => {
+  //   console.log(flow)
+  // }, [flow])
 
 
 
@@ -88,6 +99,26 @@ export default function Page({ flow }: { flow: FlowType }) {
   // const [lastSelection, setLastSelection] =
   //   useState<OnSelectionChangeParams>(null);
 
+  useEffect(() => {
+    if (targetNode) {
+      // console.log(1)
+      setTimeout(() => {
+        // setViewport({x: targetNode.position.x, y: targetNode.position.y, zoom: 1})
+        reactFlowInstance.fitBounds({ x: targetNode.position.x, y: targetNode.position.y, width: 384, height: 384 })
+      }, 5)
+      setTargetNode(null)
+    }
+    // else {
+    //   reactFlowInstance.fitView();
+    // }
+  }, [targetNode])
+
+  useEffect(() => {
+   console.log('init page')
+  }, [flow])
+  
+
+
   const pasteClickHandler = (event: Event) => {
     if (isCloneVisible && !redZone) {
       event.preventDefault();
@@ -97,7 +128,7 @@ export default function Page({ flow }: { flow: FlowType }) {
       const nodesPositions = flow.data.nodes.map((node: NodeType) => node.position)
       if (!(lastSelection.nodes.map((node) => node.id).includes("GLOBAL_NODE") || lastSelection.nodes.map((node) => node.id).includes("LOCAL_NODE"))) {
         if (!isMouseOnNode) {
-          if ((nodesPositions[0].x) < (position.x - bounds.left) && (position.x - bounds.left) < (nodesPositions[0].x + 384)) console.log(1)
+          // if ((nodesPositions[0].x) < (position.x - bounds.left) && (position.x - bounds.left) < (nodesPositions[0].x + 384)) {}
           takeSnapshot()
           paste(lastCopiedSelection, {
             x: position.x - bounds.left,
@@ -113,23 +144,24 @@ export default function Page({ flow }: { flow: FlowType }) {
     }
   }
 
-
-  useEffect(() => {
-    // console.log(flow);
-  }, [])
-
   useEffect(() => {
     // this effect is used to attach the global event handlers
 
     const onKeyDown = (event: KeyboardEvent) => {
       // console.log(event)
 
-      if ((event.key === "Delete" || event.key === "Backspace") && (lastSelection.nodes.map((node) => node.id).includes("GLOBAL_NODE") || lastSelection.nodes.map((node) => node.id).includes("LOCAL_NODE"))) {
+      if ((event.key === "Delete" || event.key === "Backspace") && (!disableCopyPaste) && (lastSelection.nodes.map((node) => node.id).includes("GLOBAL_NODE") || lastSelection.nodes.map((node) => node.id).includes("LOCAL_NODE"))) {
         event.preventDefault()
         // console.log(event.key)
         setErrorData({ title: "You can't delete Global/Local Node!" })
         undo() // FIXME: mb fix it?
       }
+      // if ((event.key === "Delete" || event.key === "Backspace") && (disableCopyPaste)) {
+      //   event.preventDefault()
+      //   // console.log(event.key)
+      //   // setErrorData({ title: "You can't delete Global/Local Node!" })
+      //   undo() // FIXME: mb fix it?
+      // }
 
       if (
         (event.ctrlKey || event.metaKey) &&
@@ -174,6 +206,24 @@ export default function Page({ flow }: { flow: FlowType }) {
         event.preventDefault()
         selectAllHandler()
       }
+
+      if (event.key === 'e' && !disableCopyPaste) {
+        event.preventDefault()
+        setManagerMode(false)
+      }
+      if (event.metaKey && event.key === 'r') {
+        event.preventDefault()
+        window.location.reload()
+      }
+      if (event.key === 'r' && !disableCopyPaste && !event.metaKey) {
+        event.preventDefault()
+        setManagerMode(true)
+      }
+      if (event.key === 'w' && (!disableCopyPaste || flowMode)) {
+        event.preventDefault()
+        setFlowMode(!flowMode)
+      }
+
       // if (
       //   (event.shiftKey) &&
       //   event.key === "a" &&
@@ -186,7 +236,7 @@ export default function Page({ flow }: { flow: FlowType }) {
     const handleMouseMove = (event) => {
       const reactflowBounds = reactFlowWrapper.current.getBoundingClientRect();
       setPosition({ x: event.clientX, y: event.clientY });
-      const p = reactFlowInstance.project({ x: event.clientX - reactflowBounds.left, y: event.clientY - reactflowBounds.top })
+      const p = reactFlowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY })
       const currMousePos = {
         x: p.x,
         y: p.y
@@ -227,11 +277,6 @@ export default function Page({ flow }: { flow: FlowType }) {
     };
   }, [position, lastCopiedSelection, lastSelection]);
 
-  // useEffect(() => {
-  //   const positions = reactFlowInstance.getNodes()
-  //   console.log(positions, position)
-  // }, [position])
-
   const [selectionMenuVisible, setSelectionMenuVisible] = useState(false);
 
   const { setExtraComponent, setExtraNavigation } = useContext(locationContext);
@@ -245,7 +290,7 @@ export default function Page({ flow }: { flow: FlowType }) {
   const { setViewport } = useReactFlow();
   const edgeUpdateSuccessful = useRef(true);
   useEffect(() => {
-    if (reactFlowInstance && flow) {
+    if (flow && reactFlowInstance) {
       flow.data = reactFlowInstance.toObject();
       updateFlow(flow);
     }
@@ -256,8 +301,9 @@ export default function Page({ flow }: { flow: FlowType }) {
     setNodes(flow?.data?.nodes ?? []);
     setEdges(flow?.data?.edges ?? []);
     if (reactFlowInstance) {
+      // console.log(1)
       setViewport(flow?.data?.viewport ?? { x: 1, y: 0, zoom: 0.5 });
-      reactFlowInstance.fitView();
+      reactFlowInstance.fitView()
     }
   }, [flow, reactFlowInstance, setEdges, setNodes, setViewport]);
   //set extra sidebar
@@ -343,7 +389,7 @@ export default function Page({ flow }: { flow: FlowType }) {
       const intersectingNodes = getIntersectingNodes(node)
 
       undo() // undo if nodes intersect
-      console.log(node)
+      // console.log(node)
       setErrorData({ title: "Nodes can't intersect!" })
     }
   }, [takeSnapshot])
@@ -369,7 +415,6 @@ export default function Page({ flow }: { flow: FlowType }) {
       takeSnapshot();
 
       // Get the current bounds of the ReactFlow wrapper element
-      const reactflowBounds = reactFlowWrapper.current.getBoundingClientRect();
 
 
       // Extract the data from the drag event and parse it as a JSON object
@@ -377,17 +422,16 @@ export default function Page({ flow }: { flow: FlowType }) {
         event.dataTransfer.getData("json"),
       );
 
-
       // If data type is not "chatInput" or if there are no "chatInputNode" nodes present in the ReactFlow instance, create a new node
       // Calculate the position where the node should be created
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactflowBounds.left,
-        y: event.clientY - reactflowBounds.top,
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY
       });
 
-      const positionXY = reactFlowInstance.project({
-        x: event.clientX - reactflowBounds.left,
-        y: event.clientY - reactflowBounds.top,
+      const positionXY = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY
       });
 
       // check for intersections before add new node
@@ -407,8 +451,8 @@ export default function Page({ flow }: { flow: FlowType }) {
       let newId = getNodeId(type);
       let newNode: NodeType;
 
-      if (tabId === "GLOBAL") {
-        setErrorData({ title: "You can't add new nodes on GLOBAL flow!" })
+      if (tabId === "GLOBAL" && data.node.node_type !== nodeTypes.link) {
+        setErrorData({ title: "You can add new links only on GLOBAL flow!" })
         return
       }
 
@@ -448,6 +492,32 @@ export default function Page({ flow }: { flow: FlowType }) {
       }
       else if (data.type !== "groupNode") {
         // Create a new node object
+
+        // const local_conditions: ConditionClassType[] = flows.find((flow) => flow.id === tabId)?.data.nodes?.find((node) => node.id === "LOCAL_NODE")?.data?.node?.conditions.map((cond, idx) => {
+        //   return {
+        //     ...cond,
+        //     conditionID: data.node?.conditions?.length + idx,
+        //     type: conditionTypes.LOCAL,
+        //     name: `local_${cond.name}`
+        //   }
+        // }) ?? []
+        // const global_conditions: ConditionClassType[] = flows.find((flow) => flow.id === "GLOBAL")?.data.nodes?.find((node) => node.id === "GLOBAL_NODE")?.data?.node?.conditions.map((cond, idx) => {
+        //   return {
+        //     ...cond,
+        //     conditionID: data.node?.conditions?.length + local_conditions.length + idx,
+        //     type: conditionTypes.GLOBAL,
+        //     name: `global_${cond.name}`
+        //   }
+        // }) ?? []
+        // console.log(global_conditions, local_conditions)
+
+        // data.node.conditions = [
+        //   ...data.node.conditions,
+        //   ...local_conditions,
+        //   ...global_conditions
+        // ]
+
+        // console.log(data)
         newNode = {
           id: newId,
           type: "genericNode",
@@ -495,7 +565,7 @@ export default function Page({ flow }: { flow: FlowType }) {
 
   const onDelete = useCallback(
     (mynodes) => {
-      if (!isCloneVisible) {
+      if (!isCloneVisible && !disableCopyPaste) {
         takeSnapshot();
         setEdges(
           edges.filter(
@@ -575,12 +645,6 @@ export default function Page({ flow }: { flow: FlowType }) {
     exitBeforeEnter: true,
   })
 
-  const animation = useSpring({
-    config: { duration: 500 },
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-  })
-
   const selectAllHandler = () => {
     const nodes = reactFlowInstance.getNodes()
     nodes.map((node) => node.selected = true)
@@ -632,7 +696,6 @@ export default function Page({ flow }: { flow: FlowType }) {
 
 
   const [nodeCopiedClones, setNodeCopiedClones] = useState<NodeType[]>()
-  const [topRightPos, setTopRightPos] = useState({ x: 0, y: 0 })
 
   const getRightestNode = (nodes: NodeType[]) => {
     let minX = 999999
@@ -704,6 +767,8 @@ export default function Page({ flow }: { flow: FlowType }) {
                             <ReactFlow
                               nodes={nodes}
                               onMove={() => {
+                                // console.log('move')
+                                // FIXME: was active flow duplicate bugfix test
                                 updateFlow({
                                   ...flow,
                                   data: reactFlowInstance.toObject(),
@@ -728,7 +793,7 @@ export default function Page({ flow }: { flow: FlowType }) {
                               disableKeyboardA11y={false}
                               onLoad={setReactFlowInstance}
                               onInit={setReactFlowInstance}
-                              nodeTypes={nodeTypes}
+                              nodeTypes={nodeDefTypes}
                               onEdgeUpdate={managerMode ? () => { } : onEdgeUpdate}
                               onEdgeUpdateStart={managerMode ? () => { } : onEdgeUpdateStart}
                               onEdgeUpdateEnd={onEdgeUpdateEnd}
@@ -747,7 +812,6 @@ export default function Page({ flow }: { flow: FlowType }) {
                               onSelectionChange={onSelectionChange}
                               snapGrid={[96, 96]}
                               snapToGrid={grid}
-                              // snapToGrid={true}
                               nodesDraggable={!managerMode}
                               panOnDrag={true} // FIXME: TEST {!disableCopyPaste} was
                               zoomOnDoubleClick={!managerMode}

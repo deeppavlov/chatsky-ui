@@ -11,6 +11,7 @@ export type SVGElementInterface = {
   pathClassName?: string
   strokeWidth?: number
   stroke?: string
+  opacity?: string
 }
 
 export type InputComponentType = {
@@ -55,6 +56,8 @@ export type ParameterComponentType = {
   priority?: number
   conditionID?: number
   transitionType?: string
+  global_id?: string
+  local_id?: string
 };
 export type InputListComponentType = {
   value: string[];
@@ -148,4 +151,12 @@ export type ShadTooltipProps = {
 export type FilterNodesType = {
   flow: FlowType
   filteredNodes: NodeType[]
+}
+
+export type TypeOfConditionEditableType = 'custom' | 'slot_filling' | 'using_llm'
+
+export type ConditionEditableTypesType = {
+  custom: 'custom'
+  slot_filling: 'slot_filling'
+  using_llm: 'using_llm'
 }

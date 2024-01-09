@@ -11,10 +11,10 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
 );
 root.render(
-  <ContextWrapper>
-    <BrowserRouter>
+  <BrowserRouter>
+    <ContextWrapper>
       <App />
-    </BrowserRouter>
-  </ContextWrapper>,
+    </ContextWrapper>
+  </BrowserRouter>
 );
 reportWebVitals();

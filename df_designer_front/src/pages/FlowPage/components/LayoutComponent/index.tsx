@@ -1,23 +1,37 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { FlowType, NodeType } from '../../../../types/flow';
 import { TabsContext } from '../../../../contexts/tabsContext';
 import * as TransitionIcons from '../../../../icons/TransitionIcons/index'
 import Xarrow, { Xwrapper, arrowShapes } from 'react-xarrows'
 import { useNavigate } from 'react-router-dom';
 import { useReactFlow } from 'reactflow';
+import { darkContext } from '../../../../contexts/darkContext';
 
 
 
 const LayoutFlow = () => {
 
   const { tabId, flows, setTabId } = useContext(TabsContext)
+  const { dark } = useContext(darkContext)
   const flow = flows.find((flow) => flow.id === tabId)
-  const [nodes, setNodes] = useState<NodeType[]>([])
+  // const [nodes, setNodes] = useState<NodeType[]>()
+
+  const [edgeColors, setEdgeColors] = useState({
+    hovered: dark ? 'white' : 'black',
+    no_hovered: dark ? '#555' : '#ddd'
+  })
 
   useEffect(() => {
-    flows.forEach((flow) => setNodes(prev => [...prev, ...flow.data.nodes]))
-  }, [])
-  
+    setEdgeColors({
+      hovered: dark ? 'white' : 'black',
+      no_hovered: dark ? '#555' : '#ddd'
+    })
+  }, [dark])
+
+  // useEffect(() => {
+  //   flows.forEach((flow) => setNodes(prev => [...prev, ...flow.data.nodes]))
+  // }, [])
+
 
   const [nds, setNds] = useState(flow.data.nodes.filter((node: NodeType) => node.id !== "LOCAL_NODE" && node.id !== "GLOBAL_NODE"))
   const [eds, setEds] = useState(flow.data.edges)
@@ -73,6 +87,8 @@ const LayoutFlow = () => {
 
 
 
+
+
   const [nodesLayout, setNodesLayout] = useState([])
   const [edgesLayout, setEdgesLayout] = useState<any[]>()
   const [outputLinksLayout, setOutputLinksLayout] = useState<any[]>()
@@ -90,9 +106,9 @@ const LayoutFlow = () => {
           className={`py-2 px-4 bg-muted border rounded-lg min-w-[512px] cursor-pointer transition duration-300 strict-mode-item-shadow`}
           style={{ borderColor: node.data.node.base_classes[0] === 'links' && flows.find((flow) => flow.name === node.data.node.links[0].to).color }}
         >
-          <h1> {node.data.node.base_classes[0] === 'links' ? node.data.node.links[0]?.to : node.data.node.display_name} </h1>
+          <h1> {node.data.node.base_classes[0] === 'links' ? (node.data.node.links[0]?.to + ' ' + node.data.node.links[1]?.toName) : node.data.node.display_name} </h1>
         </div>
-        <div className='flex flex-row items-start justify-between w-full'>
+        <div className='flex flex-row items-start justify-start gap-1.5 w-full'>
           {/* {node.data.node.conditions[0]?.transitionType === 'default' ? '' : node.data.node.conditions[0]?.transitionType} */}
           {node.data.node.conditions?.sort((cond) => cond.transitionType === 'repeat' ? -1 : 1).map(({ transitionType, conditionID }) =>
             transitionType !== 'default'
@@ -102,7 +118,12 @@ const LayoutFlow = () => {
               id={`${node.id}-${conditionID}`}
               onMouseEnter={() => setHoverNode(`${node.id}-${transitionType}`)}
               onMouseLeave={() => setHoverNode('')}
-              className='flex flex-row justify-center items-center gap-1 w-max bg-[#FF95001A] text-xs font-bold border-[#FF950020] border px-1 rounded cursor-pointer '>
+              style={{
+                opacity: (hoverNode === node.id || hoverNode === `${node.id}-${transitionType}`) ? 1 : 0.4,
+                transition: 'all',
+                transitionDuration: '300ms'
+              }}
+              className='flex flex-row justify-center text-accent-foreground items-center gap-1 w-max bg-[#FF95001A] text-xs font-bold border-[#FF950020] border px-1 rounded cursor-pointer '>
               {transitionType}
               <span className=''>
                 {HandleTypeIcon(transitionType)}
@@ -126,12 +147,12 @@ const LayoutFlow = () => {
           className={`py-2 px-4 bg-muted border rounded-lg min-w-[192px] cursor-pointer transition duration-300 strict-mode-item-shadow`}
           style={{ borderColor: flows.find((flow) => flow.name === node.data.node.links[0]?.to)?.color }}
         >
-          <h1> {node.data.node.links[0]?.to}/{nodes.find((nd: NodeType) => nd.id === node.data.node?.links[1]?.to)?.data.node.display_name} </h1>
+          <h1> {node.data.node.links[0]?.to}/{flows.find((flow) => flow.name === node.data.node.links[0]?.to).data.nodes.find((nd: NodeType) => nd.id === node.data.node?.links[1]?.to)?.data.node.display_name} </h1>
         </div>
       </div>
     )))
 
-  }, [nds, eds])
+  }, [nds, eds, hoverNode])
 
   useEffect(() => {
     let left = 4
@@ -149,7 +170,7 @@ const LayoutFlow = () => {
           zIndex={(hoverNode === edge.source || hoverNode === edge.target) ? 99 : 1}
           headSize={5}
           strokeWidth={1}
-          color={(hoverNode === edge.source || hoverNode === edge.target) ? 'black' : '#ddd'}
+          color={(hoverNode === edge.source || hoverNode === edge.target) ? edgeColors.hovered : edgeColors.no_hovered}
           // headShape={"circle"}
           arrowBodyProps={{ className: " transition duration-300 " }}
           arrowHeadProps={{ className: " transition duration-300 " }}
@@ -183,7 +204,7 @@ const LayoutFlow = () => {
             key={`${node.id}-${cond.conditionID}`}
             headSize={5}
             strokeWidth={1}
-            color={(hoverNode === node.id || hoverNode === `${node.id}-${cond.transitionType}`) ? "#777" : '#fff0'}
+            color={(hoverNode === node.id || hoverNode === `${node.id}-${cond.transitionType}`) ? edgeColors.hovered : '#fff0'}
             dashness
             arrowBodyProps={{ className: " transition duration-300 " }}
             arrowHeadProps={{ className: " transition duration-300 " }}
@@ -205,7 +226,7 @@ const LayoutFlow = () => {
             key={`${node.id}-${cond.conditionID}`}
             headSize={5}
             strokeWidth={1}
-            color={(hoverNode === node.id || hoverNode === `${node.id}-${cond.transitionType}`) ? "#777" : '#fff0'}
+            color={(hoverNode === node.id || hoverNode === `${node.id}-${cond.transitionType}`) ? edgeColors.hovered : '#fff0'}
             dashness
             arrowBodyProps={{ className: " transition duration-300 " }}
             arrowHeadProps={{ className: " transition duration-300 " }}
@@ -227,7 +248,7 @@ const LayoutFlow = () => {
             key={`${node.id}-${cond.conditionID}`}
             headSize={5}
             strokeWidth={1}
-            color={(hoverNode === node.id || hoverNode === `${node.id}-${cond.transitionType}`) ? "#777" : '#fff0'}
+            color={(hoverNode === node.id || hoverNode === `${node.id}-${cond.transitionType}`) ? edgeColors.hovered : '#fff0'}
             dashness
             arrowBodyProps={{ className: " transition duration-300 " }}
             arrowHeadProps={{ className: " transition duration-300 " }}

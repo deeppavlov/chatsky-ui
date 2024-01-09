@@ -21,14 +21,16 @@ import { CheckSVG } from "../../icons/CheckSVG";
 import { Link } from "react-router-dom";
 import { darkContext } from "../../contexts/darkContext";
 import { Separator } from "../../components/ui/separator";
+import { typesContext } from "../../contexts/typesContext";
 
 export default function FlowSettingsModal() {
   const [open, setOpen] = useState(true);
   const { closePopUp } = useContext(PopUpContext);
   const { setErrorData, setSuccessData } = useContext(alertContext);
+  const { reactFlowInstance } = useContext(typesContext)
   const { dark } = useContext(darkContext)
   const ref = useRef();
-  const { flows, tabId, updateFlow, setTabsState, saveFlow } =
+  const { flows, tabId, setTabId, updateFlow, setTabsState, saveFlow } =
     useContext(TabsContext);
   const maxLength = 50;
   const [name, setName] = useState(flows.find((f) => f.id === tabId).name);
@@ -76,8 +78,9 @@ export default function FlowSettingsModal() {
                   <div className="block relative w-full">
                     <div
                       key={flow.id}
+                      // to={`/flow/${flow.id}`}
                       onClick={e => {
-
+                        // setTabId(flow.id)
                       }}
                       className={`w-full ${flow.id == tabId && 'bg-muted'} ${flow.id != 'GLOBAL' ? 'pl-4' : 'pl-1'} py-1.5 px-3 flex flex-row items-center justify-between text-sm bg-background rounded-lg `}>
                       <div className={`flex flex-row items-center relative `}>

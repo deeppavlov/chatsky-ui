@@ -1,3 +1,4 @@
+import { nodeTypes } from './../../utils';
 import { Node, Edge, Viewport } from "reactflow";
 import { NodeType } from "../flow";
 //kind and class are just representative names to represent the actual structure of the object received by the API
@@ -8,7 +9,10 @@ export type APITemplateType = {
   variable: TemplateVariableType;
   [key: string]: TemplateVariableType;
 };
+
+
 export type APIClassType = {
+  node_type: string;
   base_classes: Array<string>;
   description: string;
   template: APITemplateType;
@@ -48,6 +52,8 @@ export type ConditionClassType = {
   name: string
   priority: number
   transitionType: "default" | "forward" | "backward" | "repeat" | "previous" | "to start" | "to fallback" | string
+  local_id?: string
+  global_id?: string
   intent?: string
   action?: string
   variables?: string
