@@ -127,6 +127,12 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chat: {
+          DEFAULT: 'var(--chat-background)'
+        },
+        btn: {
+          black: 'var(--btn-black)'
+        }
       },
       borderRadius: {
         lg: `var(--radius)`,

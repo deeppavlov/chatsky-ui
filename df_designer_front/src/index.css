@@ -26,6 +26,9 @@
     --destructive-foreground: 210 40% 98%; /* hsl(210 40% 98%) */
     --radius: 0.5rem;
     --ring: 215 20.2% 65.1%; /* hsl(215 20% 65%) */
+    --chat-background: #3399CC1A;
+
+    --btn-black: black;
 
     --text: black;
 
@@ -91,6 +94,7 @@
     /* --ring: 47 90% 48%; hsl(47 90% 48%) */
 
     --text: white;
+    --btn-black: var(--accent);
 
     --radius: 0.5rem;
 
@@ -984,6 +988,19 @@ The cursor: default; property value restores the browser's default cursor style 
 
   .flow-manage-button {
     @apply flex flex-row items-center justify-center rounded text-sm bg-transparent w-8 h-8 transition-all duration-300 border border-transparent hover:border-border hover:bg-muted
+  }
+
+  .chat-main {
+    width: 100%;
+    height: 100%;
+    min-height: calc(100vh - 108px - 160px - 90px - 48px);
+    max-height: calc(100vh - 108px - 160px - 50px - 48px);
+  }
+
+  .chat-wrapper {
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+    box-shadow: 0px 8px 15px 0px rgba(14, 1, 66, 0.15);
   }
 
 }

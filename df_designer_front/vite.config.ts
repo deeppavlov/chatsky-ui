@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
+import { UserConfig, defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
-const apiRoutes = ["/get" , "/save", "/health"];
+const apiRoutes = ["/flows" , "/flows", "/health"];
 
 // Use environment variable to determine the target.
 const target = process.env.VITE_PROXY_TARGET || "http://127.0.0.1:8000";
@@ -15,10 +15,10 @@ const proxyTargets = apiRoutes.reduce((proxyObj, route) => {
   };
   return proxyObj;
 }, {});
-export default defineConfig(() => {
+export default defineConfig((): UserConfig => {
   return {
     build: {
-      outDir: "../static",
+      outDir: "../df_designer/static",
     },
     plugins: [react(), svgr()],
     server: {

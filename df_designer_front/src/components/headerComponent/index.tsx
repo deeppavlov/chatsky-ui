@@ -1,4 +1,4 @@
-import { Home, MoonIcon, SettingsIcon, SunIcon, Users2, XIcon } from "lucide-react";
+import { Building, Home, MessageCircle, MoonIcon, SettingsIcon, SunIcon, Users2, Wrench, XIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { FaDiscord, FaGithub, FaTwitter } from "react-icons/fa";
 import { Button } from "../ui/button";
@@ -153,10 +153,12 @@ export default function Header() {
               <Bell className="side-bar-button-size" aria-hidden="true" />
             </button>
           </ShadTooltip>
-          <button className={`chat-btn bg-transparent text-sm flex flex-row py-1 px-3 rounded-md items-center justify-center w-max ${!dark ? 'text-black' : 'text-neutral-50'} hover:bg-blue-700 hover:text-neutral-50 chat-btn-fix `}>
-            Chat with Skill
-            <ChatIcon pathClassName={`chat-path`} className={`inline-block ml-2`} fill={dark ? 'white' : 'black'} />
-          </button>
+          <ShadTooltip side="bottom" content="Build">
+            <Link to={'/preview'} className={`extra-side-bar-save-disable`}>
+              <Wrench className="side-bar-button-size" />
+              {/* <ChatIcon opacity="0.7" className="side-bar-button-size" fill={dark ? 'white' : 'black'} /> */}
+            </Link>
+          </ShadTooltip>
         </div>
       </div>
     </div>

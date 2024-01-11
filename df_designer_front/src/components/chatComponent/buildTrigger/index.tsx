@@ -156,7 +156,7 @@ export default function BuildTrigger({
       leaveFrom="translate-y-0"
       leaveTo="translate-y-96"
     >
-      <div
+      {/* <div
         className={
           "round-buttons-position" + (isBuilt ? " bottom-20" : " bottom-4")
         }
@@ -189,7 +189,7 @@ export default function BuildTrigger({
             </div>
           </button>
         </div>
-      </div>
+      </div> */}
     </Transition>
   );
 }

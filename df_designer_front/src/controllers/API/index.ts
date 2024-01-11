@@ -343,9 +343,9 @@ export async function uploadFile(
 
 export const getFlowsFromDatabase = async () => {
   try {
-    const response = await axios.get('/get')
-    // console.log(response.data)
-    return response.data
+    const response = await axios.get('/flows')
+    console.log(response.data)
+    return response.data.data
   } catch (error) {
     console.log(error)
   }
@@ -353,7 +353,7 @@ export const getFlowsFromDatabase = async () => {
 
 export const saveAllFlowsToDatabase = async (flows: FlowType[]) => {
   try {
-    const response = await axios.post('/save', JSON.stringify(flows))
+    const response = await axios.post('/flows', JSON.stringify(flows))
     console.log(flows)
     console.log(response)
     return response
