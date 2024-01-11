@@ -1,4 +1,4 @@
-For development.
+## For development.
 
 Install python via `pyenv` or `asdf`.
 
@@ -20,7 +20,7 @@ Start backend designer.
 
 
 
-For run builded app
+## For run builded app
 
 Install python via `pyenv` or `asdf`.
 
