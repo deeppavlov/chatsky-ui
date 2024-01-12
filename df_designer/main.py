@@ -1,7 +1,9 @@
+import os
+from pathlib import Path
 import aiofiles
 import dff
 from fastapi import Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from df_designer.logic import get_data, save_data
@@ -18,10 +20,6 @@ app.mount(
     StaticFiles(directory=app.static_assets),
     name="assets",
 )
-
-# TODO: добавить версию v1
-# TODO: заглушка для dff
-# TODO: тесты дописать
 
 
 @app.get("/")
@@ -138,3 +136,27 @@ async def build_post() -> dict[str, str]:
 /git/stars @get ??
 /git/forks @get ??
 """
+
+
+@app.get("/log")
+async def logs():
+    """get logs"""
+    if Path(app.dir_logs).exists():
+        files = os.listdir(app.dir_logs)
+    else:
+        files = []
+    return {"status": "ok", "files": files}
+
+
+@app.get("/log/{log_file}")
+async def log_file(log_file: str):
+    """get log file"""
+    log = Path(app.dir_logs, log_file)
+    if log.exists():
+        async with aiofiles.open(log, "r", encoding="utf-8") as file:
+            data = await file.read()
+        return {"status": "ok", "data": data}
+    else:
+        return JSONResponse(
+            status_code=404, content={"status": "error", "data": "File is not found."}
+        )
