@@ -12,6 +12,13 @@ app.mount(
     StaticFiles(directory=app.static_files),
     name="static",
 )
+
+app.mount(
+    "/assets",
+    StaticFiles(directory=app.static_assets),
+    name="assets",
+)
+
 # TODO: добавить версию v1
 # TODO: заглушка для dff
 # TODO: тесты дописать

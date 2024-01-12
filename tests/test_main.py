@@ -86,7 +86,11 @@ def test_settings():
     assert app.conf_port == 8000
     assert app.conf_log_level == "info"
     assert app.conf_reload is True
+    assert app.dir_logs == "logs"
+    assert app.static_files == app.package_dir.with_name("static")
+    assert app.static_assets == app.static_files.joinpath("assets")
 
 
-# def test_settings_path_to_save():
-#     assert app.path_to_save == Path(app.work_directory).joinpath("flows.json")
+# TODO: test work directory
+# TODO: path_to_save
+# TODO: test assets path
