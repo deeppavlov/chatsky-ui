@@ -185,6 +185,7 @@ async def websocket(websocket: WebSocket):
             if line:
                 data = line.decode("utf-8")
                 await file.write(data)
+                await file.flush()
                 try:
                     await websocket.send_text(data)
                 except ConnectionClosedOK:
