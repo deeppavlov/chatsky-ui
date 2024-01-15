@@ -248,3 +248,5 @@ cython_debug/
 /df_designer_front/node_modules
 /df_designer_front/vscode
 /df_designer_front/.vscode
+
+./flows.json

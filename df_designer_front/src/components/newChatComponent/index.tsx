@@ -1,7 +1,7 @@
 import { ActivityLogIcon, Cross1Icon } from '@radix-ui/react-icons'
 import { useSpring, animated, a, useSprings, useTransition } from '@react-spring/web'
-import { MessageCircle, Paperclip, RotateCcw } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
+import { ArrowRight, MessageCircle, PanelRightClose, PanelRightOpen, Paperclip, RotateCcw } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 export type chatMessageType = {
   message: string
@@ -29,7 +29,7 @@ const NewChatComponent = () => {
   const transitions = useTransition(messages, {
     from: { opacity: 0, y: 50 },
     enter: { opacity: 1, y: 0 },
-    leave: { opacity: 1 },
+    leave: { opacity: 0 },
     config: {
       duration: 100
     }
@@ -51,9 +51,19 @@ const NewChatComponent = () => {
     chatRef.current.scrollTo({ behavior: 'smooth', top: chatRef.current.scrollHeight })
   }, [messages])
 
+  const [chatIsOpen, setChatIsOpen] = useState(true)
+
+  const closeChatHandler = useCallback(() => {
+    setChatIsOpen(!chatIsOpen)
+  }, [chatIsOpen])
+
   return (
-    <div className='chat-wrapper w-1/4 flex-col items-start justify-start'>
-      <div className='chat-header border-b border-border flex flex-row items-center justify-between h-12 px-4'>
+    <div className={`chat-wrapper ${chatIsOpen ? '' : 'translate-x-full'} transition-transform duration-300 w-1/4 flex-col items-start justify-start`}>
+      <div className='chat-header relative border-b border-border flex flex-row items-center justify-between h-12 px-4'>
+        <button onClick={closeChatHandler} className={`absolute top-full ${chatIsOpen ? '' : 'right-0'} -left-12 w-12 h-12 flex items-center justify-center border border-border bg-background rounded-l-lg`}>
+          <PanelRightOpen className={`absolute w-6 h-6 transition-opacity duration-500 ${chatIsOpen ? 'opacity-0' : 'opacity-100'}`} />
+          <PanelRightClose className={`absolute w-6 h-6 transition-opacity duration-500 ${chatIsOpen ? 'opacity-100' : 'opacity-0'}`} />
+        </button>
         <div className="chat-header-title flex flex-row items-center justify-start gap-2">
           <MessageCircle />
           <p> Chat </p>
@@ -63,9 +73,9 @@ const NewChatComponent = () => {
             <ActivityLogIcon />
             Logs
           </button>
-          <button>
+          {/* <button onClick={closeChatHandler}>
             <Cross1Icon />
-          </button>
+          </button> */}
         </div>
       </div>
       <div ref={chatRef} className="chat-main bg-chat flex flex-col items-center justify-start gap-3 py-3 px-2 overflow-y-scroll transition-all duration-100">
@@ -109,7 +119,7 @@ const NewChatComponent = () => {
         ></textarea>
       </div>
       <div className="chat-footer h-[48px] flex flex-row items-center justify-end gap-2 px-2">
-        <button className='flex items-center justify-center w-9 h-9 bg-accent rounded-lg'>
+        <button onClick={() => {setMessages([])}} className='flex items-center justify-center w-9 h-9 bg-accent rounded-lg'>
           <RotateCcw className='w-4 h-4 -scale-x-100' />
         </button>
         <button className='flex items-center justify-center px-2 h-9 bg-btn-black text-white rounded-lg'>
