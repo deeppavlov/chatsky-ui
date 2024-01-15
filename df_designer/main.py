@@ -1,8 +1,14 @@
+import asyncio
+import os
+from datetime import datetime
+from pathlib import Path
+
 import aiofiles
 import dff
-from fastapi import Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from websockets import ConnectionClosedOK
 
 from df_designer.logic import get_data, save_data
 from df_designer.settings import app
@@ -12,9 +18,12 @@ app.mount(
     StaticFiles(directory=app.static_files),
     name="static",
 )
-# TODO: добавить версию v1
-# TODO: заглушка для dff
-# TODO: тесты дописать
+
+app.mount(
+    "/assets",
+    StaticFiles(directory=app.static_assets),
+    name="assets",
+)
 
 
 @app.get("/")
@@ -26,13 +35,6 @@ async def main_page() -> HTMLResponse:
         async with aiofiles.open(app.start_page) as file:
             html = await file.read()
     return HTMLResponse(content=html, status_code=200)
-
-
-# TODO: исключить самодеятельность
-@app.get("/assets/{asset}")
-async def static_assets(asset: str):
-    return RedirectResponse("/static/assets/" + asset)
-# TODO: исключить самодеятельность
 
 
 # /flows
@@ -138,3 +140,56 @@ async def build_post() -> dict[str, str]:
 /git/stars @get ??
 /git/forks @get ??
 """
+
+
+@app.get("/log")
+async def logs():
+    """get logs"""
+    if Path(app.dir_logs).exists():
+        files = os.listdir(app.dir_logs)
+    else:
+        files = []
+    return {"status": "ok", "files": files}
+
+
+@app.get("/log/{log_file}")
+async def log_file(log_file: str):
+    """get log file"""
+    log = Path(app.dir_logs, log_file)
+    if log.exists():
+        async with aiofiles.open(log, "r", encoding="utf-8") as file:
+            data = await file.read()
+        return {"status": "ok", "data": data}
+    else:
+        return JSONResponse(
+            status_code=404, content={"status": "error", "data": "File is not found."}
+        )
+
+
+@app.websocket("/socket")
+async def websocket(websocket: WebSocket):
+    await websocket.accept()
+    cmd = "ping 127.0.0.1"
+    proc = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    file_log_name = datetime.now().strftime("%Y_%m_%d_%H_%M_%s") + ".txt"
+    file_for_log = Path(app.dir_logs, file_log_name)
+    if not Path(app.dir_logs).exists():
+        Path(app.dir_logs).mkdir()
+    async with aiofiles.open(file_for_log, "a") as file:
+        while True:
+            line = await proc.stdout.readline()
+            if line:
+                data = line.decode("utf-8")
+                await file.write(data)
+                await file.flush()
+                try:
+                    await websocket.send_text(data)
+                except ConnectionClosedOK:
+                    proc.terminate()
+                    break
+            else:
+                break

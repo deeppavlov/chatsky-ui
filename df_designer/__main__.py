@@ -21,8 +21,10 @@ def meta():
 def run_app(
     ip_address: str = app.conf_host,
     port: int = app.conf_port,
+    dir_logs: str = app.dir_logs,
 ):
     """Run the application."""
+    app.dir_logs = dir_logs
     config = uvicorn.Config(
         app=app.conf_app,
         host=ip_address,
