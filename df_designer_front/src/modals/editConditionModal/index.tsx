@@ -1,34 +1,10 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PopUpContext } from "../../contexts/popUpContext";
 import { NodeDataType } from "../../types/flow";
-import {
-  classNames,
-  conditionEditableTypes,
-  condition_actions,
-  condition_intents,
-  condition_llms,
-  condition_variables,
-  limitScrollFieldsModal,
-} from "../../utils";
+import { conditionEditableTypes, condition_llms } from "../../utils";
 import { typesContext } from "../../contexts/typesContext";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table";
-import ToggleShadComponent from "../../components/toggleShadComponent";
-import InputListComponent from "../../components/inputListComponent";
-import TextAreaComponent from "../../components/textAreaComponent";
 import InputComponent from "../../components/inputComponent";
-import FloatComponent from "../../components/floatComponent";
 import Dropdown from "../../components/dropdownComponent";
-import IntComponent from "../../components/intComponent";
-import InputFileComponent from "../../components/inputFileComponent";
-import PromptAreaComponent from "../../components/promptComponent";
-import CodeAreaComponent from "../../components/codeAreaComponent";
 import {
   Dialog,
   DialogContent,
@@ -40,10 +16,7 @@ import {
 } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
-import { Text, Variable } from "lucide-react";
-import { Switch } from "@radix-ui/react-switch";
 import { DeleteIcon } from "../../icons/DeleteIcon";
-import { DragIcon } from "../../icons/DragIcon";
 import { EditConditionIcon } from "../../icons/EditConditionIcon";
 import { TabsContext } from "../../contexts/tabsContext";
 import { HelpBtn } from "../../components/ui/helpbtn";
@@ -58,29 +31,15 @@ import AlertDelete from "../deleteModal";
 import { TypeOfConditionEditableType } from "../../types/components";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import CodeMirror from "@uiw/react-codemirror";
-import { createTheme } from "@uiw/codemirror-themes";
 import { darkContext } from "../../contexts/darkContext";
 import { SlotFillingConditionIcon } from "../../icons/SlotFillingConditionIcon";
 import { python, pythonLanguage } from "@codemirror/lang-python";
-import { copilot } from "@uiw/codemirror-theme-copilot";
-import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac";
-import {
-  localCompletionSource,
-  globalCompletion,
-} from "@codemirror/lang-python";
-import {
-  completeFromList,
-  CompletionContext,
-  autocompletion,
-} from "@codemirror/autocomplete";
-import { tags as t } from "@lezer/highlight";
-import { syntaxTree } from "@codemirror/language";
-import { historyField } from "@codemirror/commands";
+import { CompletionContext, autocompletion } from "@codemirror/autocomplete";
 import AddButton from "../../components/ui/AddButton";
+import { lineWidgetPlugin, myThemeDark, myThemeLight } from "./editorOptions";
+import { createPortal } from "react-dom";
 
-const stateFields = { history: historyField };
-
-type Functions = { name: string; description: string; func: string };
+type StoredFunction = { name: string; description: string; body: string };
 
 export default function EditConditionModal({
   data,
@@ -97,92 +56,6 @@ export default function EditConditionModal({
   const [custom, setCustom] = useState(true);
   const [conditionEditableType, setConditionEditableType] =
     useState<TypeOfConditionEditableType>(conditionEditableTypes.custom);
-
-  const myThemeLight = createTheme({
-    theme: "light",
-    settings: {
-      background: "hsl(var(--muted))",
-      backgroundImage: "",
-      foreground: "#4D4D4C",
-      caret: "#AEAFAD",
-      selection: "#D6D6D6",
-      selectionMatch: "#D6D6D6",
-      gutterBackground: "hsl(var(--muted))",
-      gutterForeground: "#4D4D4C",
-      gutterBorder: "#dddddd",
-      gutterActiveForeground: "",
-      lineHighlight: "#EFEFEF",
-    },
-    styles: [
-      { tag: t.comment, color: "#787b80" },
-      { tag: t.name, color: "#00cc99" },
-      { tag: t.definition(t.typeName), color: "#194a7b" },
-      { tag: t.typeName, color: "#194a7b" },
-      { tag: t.standard(t.typeName), color: "#194a7b" },
-      { tag: t.tagName, color: "#008a02" },
-      { tag: t.variableName, color: "#00cc99" },
-      { tag: t.definition(t.variableName), color: "#0400ff" },
-      { tag: t.function(t.variableName), color: "#001eff" },
-      { tag: t.propertyName, color: "#ffa200" },
-      { tag: t.function(t.propertyName), color: "#ffbb00" },
-      { tag: t.definition(t.propertyName), color: "#ff0000" },
-      { tag: t.special(t.propertyName), color: "#ff0000" },
-      { tag: t.attributeName, color: "#ffa200" },
-      { tag: t.className, color: "#ff0000" },
-      { tag: t.namespace, color: "#000000" },
-      { tag: t.string, color: "#ff0000" },
-      { tag: t.special(t.string), color: "#ff0000" },
-      { tag: t.attributeValue, color: "#ff0000" },
-      { tag: t.operatorKeyword, color: "#ffd500" },
-      { tag: t.controlKeyword, color: "#c01b1b" },
-      { tag: t.definitionKeyword, color: "#ff8800" },
-      { tag: t.moduleKeyword, color: "#ff0000" },
-      { tag: t.operator, color: "#000000" },
-    ],
-  });
-
-  const myThemeDark = createTheme({
-    theme: "light",
-    settings: {
-      background: "hsl(var(--muted))",
-      backgroundImage: "",
-      foreground: "hsl(var(--foreground))",
-      caret: "#AEAFAD",
-      selection: "#000",
-      selectionMatch: "#000",
-      gutterBackground: "hsl(var(--muted))",
-      gutterForeground: "#4D4D4C",
-      gutterBorder: "hsl(var(--border))",
-      gutterActiveForeground: "",
-      lineHighlight: "#000",
-    },
-    styles: [
-      { tag: t.comment, color: "#787b80" },
-      { tag: t.name, color: "#00cc99" },
-      { tag: t.definition(t.typeName), color: "#194a7b" },
-      { tag: t.typeName, color: "#194a7b" },
-      { tag: t.standard(t.typeName), color: "#194a7b" },
-      { tag: t.tagName, color: "#008a02" },
-      { tag: t.variableName, color: "#00cc99" },
-      { tag: t.definition(t.variableName), color: "#0400ff" },
-      { tag: t.function(t.variableName), color: "#001eff" },
-      { tag: t.propertyName, color: "#ffa200" },
-      { tag: t.function(t.propertyName), color: "#ffbb00" },
-      { tag: t.definition(t.propertyName), color: "#ff0000" },
-      { tag: t.special(t.propertyName), color: "#ff0000" },
-      { tag: t.attributeName, color: "#ffa200" },
-      { tag: t.className, color: "#ff0000" },
-      { tag: t.namespace, color: "#000000" },
-      { tag: t.string, color: "#ff0000" },
-      { tag: t.special(t.string), color: "#ff0000" },
-      { tag: t.attributeValue, color: "#ff0000" },
-      { tag: t.operatorKeyword, color: "#ffd500" },
-      { tag: t.controlKeyword, color: "#ff0000" },
-      { tag: t.definitionKeyword, color: "#ff8800" },
-      { tag: t.moduleKeyword, color: "#ff0000" },
-      { tag: t.operator, color: "#000000" },
-    ],
-  });
 
   function setModalOpen(x: boolean) {
     setOpen(x);
@@ -211,13 +84,13 @@ export default function EditConditionModal({
     condition?.prompt ? condition.prompt : ""
   );
   const [code, setCode] = useState<string>(condition?.action ?? "");
-  const [autocompleteAdditions, setAutocompleteAdditions] = useState(
+  const [functions, setFunctions] = useState<StoredFunction[]>([]);
+  const [storedFunctions, setStoredFunctions] = useState<StoredFunction[]>(
     JSON.parse(localStorage.getItem("storage_functions")) ?? []
   );
 
   const [promptTestWindow, setPromptTestWindow] = useState(false);
   const [isSatisfied, setIsSatisfied] = useState(false);
-
   const [conditionsState, setConditionsState] = useState(conditions);
 
   function handleClick() {
@@ -227,8 +100,8 @@ export default function EditConditionModal({
       condition.APIKey = "";
       condition.llm_model = "";
       condition.name = title;
-      // condition.intent = intent
       condition.action = code;
+      // condition.intent = intent
       // condition.variables = variables
     } else if (conditionEditableType === conditionEditableTypes.using_llm) {
       condition.prompt = prompt;
@@ -269,16 +142,14 @@ export default function EditConditionModal({
     return {
       from: word.from,
       options: [
-        ...autocompleteAdditions.map(
-          (addition: { name: string; description: string; func: string }) => {
-            return {
-              label: addition.name,
-              type: "variable",
-              apply: addition.name,
-              info: addition.func,
-            };
-          }
-        ),
+        ...storedFunctions.map(({ name, body }) => {
+          return {
+            label: name,
+            type: "variable",
+            apply: name,
+            info: body,
+          };
+        }),
         {
           label: "dff",
           type: "variable",
@@ -296,13 +167,14 @@ export default function EditConditionModal({
     })
   );
 
-  const [isDirty, setIsDirty] = useState(false);
+  const findFunctions = (text: string): StoredFunction[] => {
+    const linesState: string[] = text.split("\n");
+    const funcs: StoredFunction[] = linesState
+      .map((line, idx, lines) => {
+        if (!line.includes("def")) {
+          return null;
+        }
 
-  const saveFunctions = () => {
-    setIsDirty(false);
-    const linesState: string[] = code.split("\n");
-    linesState.forEach((line, idx, lines) => {
-      if (line.includes("def")) {
         let func: string = line;
         const func_description: string = line
           .split("def")[1]
@@ -319,39 +191,42 @@ export default function EditConditionModal({
             break;
           }
         }
-        const function_object: Functions = {
+
+        return {
           name: func_name,
           description: func_description,
-          func: func,
+          body: func,
         };
-        let prev_functions: Functions[] =
-          JSON.parse(localStorage.getItem("storage_functions")) ?? [];
+      })
+      .filter((f) => Boolean(f));
+    return funcs;
+  };
 
-        if (
-          prev_functions.every((f) => {
-            if (f.name === function_object.name) {
-              prev_functions = prev_functions.filter(
-                (fun) => fun.name !== f.name
-              );
-              return f.func !== function_object.func;
-            } else {
-              if (function_object.name.includes(f.name)) {
-                prev_functions = prev_functions.filter(
-                  (fun) => fun.name !== f.name
-                );
-                return true;
-              }
-              return true;
-            }
-          })
-        ) {
-          localStorage.setItem(
-            "storage_functions",
-            JSON.stringify([...prev_functions, function_object])
-          );
-        }
-      }
-    });
+  const saveFunctionsToStorage = ({
+    name,
+    description,
+    body,
+  }: StoredFunction) => {
+    const prevFunctions =
+      JSON.parse(localStorage.getItem("storage_functions")) || [];
+
+    const functionObject = {
+      name,
+      description,
+      body,
+    };
+    const index = prevFunctions.findIndex((el) => el.name === name);
+    if (index >= 0) {
+      prevFunctions[index] = functionObject;
+      localStorage.setItem("storage_functions", JSON.stringify(prevFunctions));
+      setStoredFunctions(prevFunctions);
+    } else {
+      localStorage.setItem(
+        "storage_functions",
+        JSON.stringify([...prevFunctions, functionObject])
+      );
+      setStoredFunctions([...prevFunctions, functionObject]);
+    }
   };
 
   return (
@@ -447,9 +322,14 @@ export default function EditConditionModal({
                       <CodeMirror
                         value={code}
                         lang={pythonLanguage.name}
-                        onChange={(e) => {
-                          setIsDirty(true);
+                        onChange={(e: string) => {
                           setCode(e);
+                          setFunctions(findFunctions(e));
+                        }}
+                        onCreateEditor={(viewUpdate) => {
+                          setFunctions(
+                            findFunctions(viewUpdate.state.doc.toString())
+                          );
                         }}
                         placeholder="Please enter your python condition"
                         className="relative mb-2 h-60 max-h-60 w-full rounded-lg border border-border bg-muted p-2"
@@ -461,15 +341,36 @@ export default function EditConditionModal({
                         maxHeight="222px"
                         minHeight="192px"
                         theme={dark ? myThemeDark : myThemeLight}
-                        extensions={[python(), autocompletion({}), myLang]}
-                      >
-                        <AddButton
-                          className="absolute right-0 top-0 z-10 p-2"
-                          onClick={saveFunctions}
-                          tooltipText="Add to storage"
-                          disabled={!isDirty}
-                        />
-                      </CodeMirror>
+                        extensions={[
+                          python(),
+                          autocompletion({}),
+                          myLang,
+                          lineWidgetPlugin,
+                        ]}
+                      />
+                      {functions.map((func, i) => {
+                        const parent =
+                          document.querySelectorAll(".line-widget")[i];
+
+                        return (
+                          parent &&
+                          createPortal(
+                            <AddButton
+                              key={func.name}
+                              className="align-sub"
+                              tooltipText="Add to storage"
+                              onClick={() => saveFunctionsToStorage(func)}
+                              isAdded={
+                                storedFunctions.findIndex(
+                                  ({ name, body }) =>
+                                    body === func.body && name === func.name
+                                ) >= 0
+                              }
+                            />,
+                            parent
+                          )
+                        );
+                      })}
                       <CodeEditor
                         value={code}
                         language="python"
