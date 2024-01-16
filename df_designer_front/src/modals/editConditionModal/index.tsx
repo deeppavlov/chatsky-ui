@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { PopUpContext } from "../../contexts/popUpContext";
 import { NodeDataType } from "../../types/flow";
 import { conditionEditableTypes, condition_llms } from "../../utils";
@@ -30,13 +30,18 @@ import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import AlertDelete from "../deleteModal";
 import { TypeOfConditionEditableType } from "../../types/components";
 import CodeEditor from "@uiw/react-textarea-code-editor";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { TransactionSpec } from "@uiw/react-codemirror";
 import { darkContext } from "../../contexts/darkContext";
 import { SlotFillingConditionIcon } from "../../icons/SlotFillingConditionIcon";
 import { python, pythonLanguage } from "@codemirror/lang-python";
 import { CompletionContext, autocompletion } from "@codemirror/autocomplete";
 import AddButton from "../../components/ui/AddButton";
-import { lineWidgetPlugin, myThemeDark, myThemeLight } from "./editorOptions";
+import {
+  firstLinePlugin,
+  lineWidgetPlugin,
+  myThemeDark,
+  myThemeLight,
+} from "./editorOptions";
 import { createPortal } from "react-dom";
 
 type StoredFunction = { name: string; description: string; body: string };
@@ -83,8 +88,13 @@ export default function EditConditionModal({
   const [prompt, setPrompt] = useState(
     condition?.prompt ? condition.prompt : ""
   );
-  const [code, setCode] = useState<string>(condition?.action ?? "");
-  const [functions, setFunctions] = useState<StoredFunction[]>([]);
+
+  const firstString = `def ${title}(ctx: Context, pipeline: Pipeline) -> bool:`;
+  const [code, setCode] = useState<string>(
+    condition?.action ??
+      `${firstString}\n# enter your python condition:\n  \n  return True # or false`
+  );
+  // const [functions, setFunctions] = useState<StoredFunction[]>([]);
   const [storedFunctions, setStoredFunctions] = useState<StoredFunction[]>(
     JSON.parse(localStorage.getItem("storage_functions")) ?? []
   );
@@ -167,67 +177,67 @@ export default function EditConditionModal({
     })
   );
 
-  const findFunctions = (text: string): StoredFunction[] => {
-    const linesState: string[] = text.split("\n");
-    const funcs: StoredFunction[] = linesState
-      .map((line, idx, lines) => {
-        if (!line.includes("def")) {
-          return null;
-        }
+  // const findFunctions = (text: string): StoredFunction[] => {
+  //   const linesState: string[] = text.split("\n");
+  //   const funcs: StoredFunction[] = linesState
+  //     .map((line, idx, lines) => {
+  //       if (!line.includes("def")) {
+  //         return null;
+  //       }
 
-        let func: string = line;
-        const func_description: string = line
-          .split("def")[1]
-          .slice(0, -1)
-          .replace(" ", "");
-        const func_name: string = func_description
-          .split("(")[0]
-          .replace(" ", "");
-        for (let i: number = idx + 1; i < lines.length; i++) {
-          if (lines[i] !== "" && lines[i] !== " " && lines[i][0] === " ") {
-            func = func.concat("\n");
-            func = func.concat(lines[i]);
-          } else {
-            break;
-          }
-        }
+  //       let func: string = line;
+  //       const func_description: string = line
+  //         .split("def")[1]
+  //         .slice(0, -1)
+  //         .replace(" ", "");
+  //       const func_name: string = func_description
+  //         .split("(")[0]
+  //         .replace(" ", "");
+  //       for (let i: number = idx + 1; i < lines.length; i++) {
+  //         if (lines[i] !== "" && lines[i] !== " " && lines[i][0] === " ") {
+  //           func = func.concat("\n");
+  //           func = func.concat(lines[i]);
+  //         } else {
+  //           break;
+  //         }
+  //       }
 
-        return {
-          name: func_name,
-          description: func_description,
-          body: func,
-        };
-      })
-      .filter((f) => Boolean(f));
-    return funcs;
-  };
+  //       return {
+  //         name: func_name,
+  //         description: func_description,
+  //         body: func,
+  //       };
+  //     })
+  //     .filter((f) => Boolean(f));
+  //   return funcs;
+  // };
 
-  const saveFunctionsToStorage = ({
-    name,
-    description,
-    body,
-  }: StoredFunction) => {
-    const prevFunctions =
-      JSON.parse(localStorage.getItem("storage_functions")) || [];
+  // const saveFunctionsToStorage = ({
+  //   name,
+  //   description,
+  //   body,
+  // }: StoredFunction) => {
+  //   const prevFunctions =
+  //     JSON.parse(localStorage.getItem("storage_functions")) || [];
 
-    const functionObject = {
-      name,
-      description,
-      body,
-    };
-    const index = prevFunctions.findIndex((el) => el.name === name);
-    if (index >= 0) {
-      prevFunctions[index] = functionObject;
-      localStorage.setItem("storage_functions", JSON.stringify(prevFunctions));
-      setStoredFunctions(prevFunctions);
-    } else {
-      localStorage.setItem(
-        "storage_functions",
-        JSON.stringify([...prevFunctions, functionObject])
-      );
-      setStoredFunctions([...prevFunctions, functionObject]);
-    }
-  };
+  //   const functionObject = {
+  //     name,
+  //     description,
+  //     body,
+  //   };
+  //   const index = prevFunctions.findIndex((el) => el.name === name);
+  //   if (index >= 0) {
+  //     prevFunctions[index] = functionObject;
+  //     localStorage.setItem("storage_functions", JSON.stringify(prevFunctions));
+  //     setStoredFunctions(prevFunctions);
+  //   } else {
+  //     localStorage.setItem(
+  //       "storage_functions",
+  //       JSON.stringify([...prevFunctions, functionObject])
+  //     );
+  //     setStoredFunctions([...prevFunctions, functionObject]);
+  //   }
+  // };
 
   return (
     <Tabs.Root defaultValue={conditionEditableTypes.custom}>
@@ -307,6 +317,10 @@ export default function EditConditionModal({
                     className="w-full"
                     onChange={(e) => {
                       setTitle(e);
+                      setCode((prev) => {
+                        const [_functionName, ...rest] = prev.split("(");
+                        return `def ${e}(${rest.join("(")}`;
+                      });
                     }}
                     password={false}
                     value={title}
@@ -323,15 +337,19 @@ export default function EditConditionModal({
                         value={code}
                         lang={pythonLanguage.name}
                         onChange={(e: string) => {
-                          setCode(e);
-                          setFunctions(findFunctions(e));
-                        }}
-                        onCreateEditor={(viewUpdate) => {
-                          setFunctions(
-                            findFunctions(viewUpdate.state.doc.toString())
+                          setCode(
+                            `${firstString}\n${e
+                              .split("\n")
+                              .slice(1)
+                              .join("\n")}`
                           );
+                          // setFunctions(findFunctions(e));
                         }}
-                        placeholder="Please enter your python condition"
+                        // onCreateEditor={(viewUpdate) => {
+                        //   setFunctions(
+                        //     findFunctions(viewUpdate.state.doc.toString())
+                        //   );
+                        // }}
                         className="relative mb-2 h-60 max-h-60 w-full rounded-lg border border-border bg-muted p-2"
                         style={{
                           fontFamily:
@@ -345,10 +363,11 @@ export default function EditConditionModal({
                           python(),
                           autocompletion({}),
                           myLang,
-                          lineWidgetPlugin,
+                          // lineWidgetPlugin,
+                          firstLinePlugin,
                         ]}
                       />
-                      {functions.map((func, i) => {
+                      {/* {functions.map((func, i) => {
                         const parent =
                           document.querySelectorAll(".line-widget")[i];
 
@@ -370,7 +389,7 @@ export default function EditConditionModal({
                             parent
                           )
                         );
-                      })}
+                      })} */}
                       <CodeEditor
                         value={code}
                         language="python"

@@ -10,6 +10,7 @@ import { syntaxTree } from "@codemirror/language";
 import { createTheme } from "@uiw/codemirror-themes";
 import { tags as t } from "@lezer/highlight";
 
+// plugin for displaying the save function button
 class LineWidget extends WidgetType {
   toDOM() {
     const wrap = document.createElement("span");
@@ -60,7 +61,57 @@ export const lineWidgetPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   }
 );
+// plugin for rendering the first line of the editor
+class FirstLineWidget extends WidgetType {
+  name: string;
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
 
+  eq(other: FirstLineWidget): boolean {
+    return other.name === this.name;
+  }
+
+  toDOM() {
+    const wrap = document.createElement("span");
+    wrap.innerText = `def ${this.name}(ctx: Context, pipeline: Pipeline) -> bool:`;
+    return wrap;
+  }
+}
+
+function firstLineRange(view: EditorView) {
+  const firstLineText = view.state.doc.line(1).text;
+  const name = firstLineText.split("(")[0].split(" ")[1];
+  const decorations = Decoration.set([
+    Decoration.replace({
+      widget: new FirstLineWidget(name),
+      side: 2,
+      ignoreSelection: true,
+    }).range(0, firstLineText.length),
+  ]);
+
+  return decorations;
+}
+
+export const firstLinePlugin = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+    constructor(view: EditorView) {
+      this.decorations = firstLineRange(view);
+    }
+    update(update: ViewUpdate) {
+      if (update.docChanged) {
+        this.decorations = firstLineRange(update.view);
+      }
+    }
+  },
+  {
+    decorations: (v) => v.decorations,
+  }
+);
+
+// editor themes
 export const myThemeLight = createTheme({
   theme: "light",
   settings: {
