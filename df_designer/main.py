@@ -2,14 +2,17 @@ import asyncio
 import os
 from datetime import datetime
 from pathlib import Path
+import time
 
 import aiofiles
 import dff
 from fastapi import Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import insert, select, update
 from websockets import ConnectionClosedOK
 
+from df_designer.db_connection import async_session, Logs
 from df_designer.logic import get_data, save_data
 from df_designer.settings import app
 
@@ -145,21 +148,26 @@ async def build_post() -> dict[str, str]:
 @app.get("/log")
 async def logs():
     """get logs"""
-    if Path(app.dir_logs).exists():
-        files = os.listdir(app.dir_logs)
-    else:
-        files = []
-    return {"status": "ok", "files": files}
+    async with async_session() as session:
+        stmt = select(Logs)
+        result = await session.execute(stmt)
+        logs_list = result.scalars().all()
+
+    return {"status": "ok", "logs": logs_list}
 
 
-@app.get("/log/{log_file}")
-async def log_file(log_file: str):
+@app.get("/log/{log_id}")
+async def log_file(log_id: str):
     """get log file"""
-    log = Path(app.dir_logs, log_file)
-    if log.exists():
-        async with aiofiles.open(log, "r", encoding="utf-8") as file:
+    async with async_session() as session:
+        stmt = select(Logs).where(Logs.id == log_id)
+        result = await session.execute(stmt)
+        log = result.scalar()
+    log_file = Path(log.path)
+    if log_file.exists():
+        async with aiofiles.open(log_file, "r", encoding="utf-8") as file:
             data = await file.read()
-        return {"status": "ok", "data": data}
+        return {"status": "ok", "meta": log, "data": data}
     else:
         return JSONResponse(
             status_code=404, content={"status": "error", "data": "File is not found."}
@@ -177,8 +185,22 @@ async def websocket(websocket: WebSocket):
     )
     file_log_name = datetime.now().strftime("%Y_%m_%d_%H_%M_%s") + ".txt"
     file_for_log = Path(app.dir_logs, file_log_name)
+
+    async with async_session() as session:
+        stmt = (
+            insert(Logs)
+            .values(
+                datetime=time.time(),
+                path=str(Path(file_for_log).absolute()),
+                status="start",
+            )
+            .returning()
+        )
+        id_record = await session.execute(stmt)
+        await session.commit()
     if not Path(app.dir_logs).exists():
         Path(app.dir_logs).mkdir()
+
     async with aiofiles.open(file_for_log, "a") as file:
         while True:
             line = await proc.stdout.readline()
@@ -190,6 +212,14 @@ async def websocket(websocket: WebSocket):
                     await websocket.send_text(data)
                 except ConnectionClosedOK:
                     proc.terminate()
+                    async with async_session() as session:
+                        stmt = (
+                            update(Logs)
+                            .values(status="stop")
+                            .where(Logs.id == id_record.inserted_primary_key[0])
+                        )
+                        await session.execute(stmt)
+                        await session.commit()
                     break
             else:
                 break

@@ -3,6 +3,8 @@ import typer
 import uvicorn
 
 from df_designer.settings import app
+from sqlalchemy import create_engine
+from df_designer.db_connection import Base
 
 cli = typer.Typer()
 
@@ -25,6 +27,8 @@ def run_app(
 ):
     """Run the application."""
     app.dir_logs = dir_logs
+    engine = create_engine(f"sqlite:///{app.database_file}")
+    Base.metadata.create_all(engine)
     config = uvicorn.Config(
         app=app.conf_app,
         host=ip_address,
