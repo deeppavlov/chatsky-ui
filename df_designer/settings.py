@@ -18,6 +18,7 @@ class Application(FastAPI):
     conf_reload = True
     dir_logs = "logs"
     database_file = "database.sqlite"
+    cmd_to_run = ""
 
 
 app = Application()
