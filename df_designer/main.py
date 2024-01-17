@@ -145,7 +145,7 @@ async def build_post() -> dict[str, str]:
 """
 
 
-@app.get("/log")
+@app.get("/run")
 async def logs():
     """get logs"""
     async with async_session() as session:
@@ -156,7 +156,7 @@ async def logs():
     return {"status": "ok", "logs": logs_list}
 
 
-@app.get("/log/{log_id}")
+@app.get("/run/{log_id}")
 async def log_file(log_id: str):
     """get log file"""
     async with async_session() as session:
@@ -177,7 +177,7 @@ async def log_file(log_id: str):
 @app.websocket("/socket")
 async def websocket(websocket: WebSocket):
     await websocket.accept()
-    cmd = "ping 127.0.0.1"
+    cmd = app.cmd_to_run
     proc = await asyncio.create_subprocess_shell(
         cmd,
         stdout=asyncio.subprocess.PIPE,
