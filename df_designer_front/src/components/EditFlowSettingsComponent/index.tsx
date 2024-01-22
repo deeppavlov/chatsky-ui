@@ -1,34 +1,25 @@
-import React, { useState, ChangeEvent, useContext } from "react";
+import React, { useState, ChangeEvent, useContext, Dispatch, SetStateAction } from "react";
 import { Textarea } from "../../components/ui/textarea";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
-import { findUnPickedColor, flow_colors } from "../../utils";
+import {  flow_colors } from "../../utils";
 import { TabsContext } from "../../contexts/tabsContext";
-import { FlowColorSVG } from "../../icons/FlowColorSVG";
 import { Check } from "lucide-react";
+import { FlowType } from "../../types/flow";
 
 type InputProps = {
-  name?: string | null;
-  description?: string | null;
+  currentFlow: FlowType;
+  setCurrentFlow: Dispatch<SetStateAction<FlowType>>;
   maxLength?: number;
   flows?: Array<{ id: string; name: string }>;
   tabId?: string;
-  setName?: (name: string) => void;
-  setDescription?: (description: string) => void;
-  setColor?: (color: string) => void;
-  updateFlow?: (flow: { id: string; name: string }) => void;
 };
 
 export const EditFlowSettings: React.FC<InputProps> = ({
-  name,
-  description,
+  currentFlow,
+  setCurrentFlow,
   maxLength = 50,
-  flows,
   tabId,
-  setName,
-  setDescription,
-  setColor,
-  updateFlow,
 }) => {
   const [isMaxLength, setIsMaxLength] = useState(false);
 
@@ -47,15 +38,15 @@ export const EditFlowSettings: React.FC<InputProps> = ({
       setIsMaxLength(false);
     }
 
-    setName(value);
+    setCurrentFlow((prev) => ({ ...prev, name: value }));
   };
 
   const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setDescription(event.target.value);
+    setCurrentFlow((prev) => ({ ...prev, description: event.target.value }))
   };
 
   const handleColorChange = (color: string) => {
-    setColor(color)
+    setCurrentFlow((prev) => ({ ...prev, color }))
   }
 
 
@@ -75,7 +66,7 @@ export const EditFlowSettings: React.FC<InputProps> = ({
           onChange={handleNameChange}
           type="text"
           name="name"
-          value={name ?? ""}
+          value={currentFlow.name ?? ""}
           placeholder="Flow name"
           id="name"
           maxLength={maxLength}
@@ -87,7 +78,7 @@ export const EditFlowSettings: React.FC<InputProps> = ({
           name="description"
           id="description"
           onChange={handleDescriptionChange}
-          value={description ?? ""}
+          value={currentFlow.description ?? ""}
           placeholder="Flow description"
           className="mt-2 max-h-[100px] font-normal"
           rows={3}
@@ -98,8 +89,14 @@ export const EditFlowSettings: React.FC<InputProps> = ({
         <div className="flex flex-row gap-4 mt-3">
           {flow_colors.map((color) => {
             return (
-              <button key={color} onClick={e => { setActiveColor(color); handleColorChange(color) }} style={{backgroundColor: color}} className={` flex items-center justify-center w-10 h-10  border  ${activeColor == color && 'border-white scale-110'} rounded-full `}>
-                { activeColor === color && <Check stroke="white" /> }
+              <button
+                key={color}
+                onClick={e => { setCurrentFlow((prev) => ({ ...prev, color }));
+                handleColorChange(color) }}
+                style={{backgroundColor: color}}
+                className={` flex items-center justify-center w-10 h-10  border  ${currentFlow.color == color && 'border-white scale-110'} rounded-full `}
+              >
+                { currentFlow.color === color && <Check stroke="white" /> }
               </button>
             )
           })}
