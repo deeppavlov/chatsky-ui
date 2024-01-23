@@ -44,6 +44,9 @@ import { darkContext } from "../../../../contexts/darkContext";
 import dagre from 'dagre';
 import LayoutFlow from "../LayoutComponent";
 import { useNavigate } from "react-router-dom";
+import NewChatComponent from "../../../../components/newChatComponent";
+import PreviewPage from "../../../PreviewPage";
+import { buildContext } from "../../../../contexts/buildContext";
 
 const nodeDefTypes = {
   genericNode: GenericNode,
@@ -78,6 +81,7 @@ export default function Page({ flow }: { flow: FlowType }) {
   const reactFlowWrapper = useRef(null);
   const { openPopUp } = useContext(PopUpContext)
   const { grid, setGrid } = useContext(darkContext)
+  const { logsPage } = useContext(buildContext)
   const navigate = useNavigate()
 
   // useEffect(() => {
@@ -114,9 +118,9 @@ export default function Page({ flow }: { flow: FlowType }) {
   }, [targetNode])
 
   useEffect(() => {
-   console.log('init page')
+    console.log('init page')
   }, [flow])
-  
+
 
 
   const pasteClickHandler = (event: Event) => {
@@ -752,12 +756,13 @@ export default function Page({ flow }: { flow: FlowType }) {
         {/* {preloader && <Preloader />} */}
         {preloader ? <Preloader /> : (
           <>
-            <ExtraSidebar />
+            {<ExtraSidebar /> }
             {/* Main area */}
             <main className="flex flex-1 relative ">
+              <PreviewPage className={`absolute w-full h-full top-0 left-0 bg-background z-20 transition-all duration-500 ${logsPage ? '-translate-x-[13rem]' : 'translate-x-full'}`} />
               {/* Primary column */}
               {transitions((style, item) => (
-                <animated.div style={style} className="h-full w-full ">
+                <animated.div style={style} className={`h-full w-full`}>
                   <ContextMenu.Root>
                     <ContextMenu.Trigger>
                       <div id="reactFlowWrapper" className="h-full w-full" ref={reactFlowWrapper}>
@@ -827,7 +832,8 @@ export default function Page({ flow }: { flow: FlowType }) {
                               ></Controls>
                               {flowMode && <LayoutFlow />}
                             </ReactFlow>
-                            <Chat flow={flow} reactFlowInstance={reactFlowInstance} />
+                            <NewChatComponent className='absolute bg-background right-0 top-0 z-30' />
+                            {/* <Chat flow={flow} reactFlowInstance={reactFlowInstance} /> */}
                           </div>
                         ) : (
                           <></>

@@ -17,7 +17,7 @@ const ShadTooltip = ({
       <Tooltip delayDuration={delayDuration}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         
-        <TooltipContent side={side} avoidCollisions={false} sticky="always">
+        <TooltipContent className="z-[999]" side={side} avoidCollisions={false} sticky="always">
           {content}
         </TooltipContent>
       </Tooltip>

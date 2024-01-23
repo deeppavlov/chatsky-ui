@@ -8,6 +8,8 @@ import { TypesProvider } from "./typesContext";
 import { ReactFlowProvider } from "reactflow";
 import { UndoRedoProvider } from "./undoRedoContext";
 import { SSEProvider } from "./SSEContext";
+import { ChatProvider } from "./chatContext";
+import { BuildProvider } from "./buildContext";
 
 export default function ContextWrapper({ children }: { children: ReactNode }) {
   //element to wrap all context
@@ -19,11 +21,15 @@ export default function ContextWrapper({ children }: { children: ReactNode }) {
             <LocationProvider>
               <AlertProvider>
                 <SSEProvider>
-                  <TabsProvider>
-                    <UndoRedoProvider>
-                      <PopUpProvider>{children}</PopUpProvider>
-                    </UndoRedoProvider>
-                  </TabsProvider>
+                  <BuildProvider>
+                    <ChatProvider>
+                      <TabsProvider>
+                        <UndoRedoProvider>
+                          <PopUpProvider>{children}</PopUpProvider>
+                        </UndoRedoProvider>
+                      </TabsProvider>
+                    </ChatProvider>
+                  </BuildProvider>
                 </SSEProvider>
               </AlertProvider>
             </LocationProvider>

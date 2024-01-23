@@ -1003,6 +1003,69 @@ The cursor: default; property value restores the browser's default cursor style 
     box-shadow: 0px 8px 15px 0px rgba(14, 1, 66, 0.15);
   }
 
+  .build-loader {
+    animation: build-loader-rotate 1s linear infinite normal;
+  }
+
+  .builded-check {
+    animation: builded-check 6s linear normal;
+    @apply absolute w-4 h-4 -top-2 -right-2 opacity-0
+  }
+
+  @keyframes builded-check {
+    0% {
+      opacity: 0;
+      scale: 0.5;
+    }
+
+    10% {
+      opacity: 1;
+      scale: 1;
+    }
+
+    95% {
+      opacity: 1;
+      scale: 1;
+    }
+
+    100% {
+      opacity: 0;
+      scale: 0;
+    }
+
+  }
+
+  @keyframes build-loader-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .preview-wrapper {
+    animation: translate-in-left 500ms normal ease-in-out;
+  }
+
+  @keyframes opacity-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes translate-in-left {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
 }
 
 .border-tab {

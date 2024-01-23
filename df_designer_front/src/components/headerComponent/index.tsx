@@ -1,4 +1,4 @@
-import { Building, Home, MessageCircle, MoonIcon, SettingsIcon, SunIcon, Users2, Wrench, XIcon } from "lucide-react";
+import { Building, Cross, Home, MessageCircle, MoonIcon, Plus, SettingsIcon, SunIcon, Users2, Wrench, XIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { FaDiscord, FaGithub, FaTwitter } from "react-icons/fa";
 import { Button } from "../ui/button";
@@ -25,6 +25,10 @@ import { DoubleButton } from "../ui/double-button";
 import { WorkSpaceModeIcon } from "../../icons/CanvaModeIcon";
 import { NodesPlacementIcon } from "../../icons/NodesPlacementIcon";
 import ShadTooltip from "../ShadTooltipComponent";
+import { buildBotScript } from "../../controllers/API/build";
+import BuildLoaderIcon from "../../icons/BuildLoaderIcon";
+import BuildedCheckIcon from "../../icons/BuildedCheckIcon/BuildedCheckIcon";
+import { buildContext } from "../../contexts/buildContext";
 
 export default function Header() {
   const { flows, addFlow, tabId, setTabId, removeFlow } = useContext(TabsContext);
@@ -34,13 +38,41 @@ export default function Header() {
   const { id } = useParams();
   const AlertWidth = 384;
   const { dark, setDark } = useContext(darkContext);
-  const { notificationCenter, setNotificationCenter, setErrorData } =
+  const { notificationCenter, setNotificationCenter, setErrorData, setSuccessData } =
     useContext(alertContext);
   const location = useLocation();
 
   const [stars, setStars] = useState(null);
   const [workSpaceMode, setWorkSpaceMode] = useState(managerMode)
   const [nodesPlacement, setNodesPlacement] = useState(flowMode)
+  const { builded, setBuilded, connectionStatus, setConnectionStatus } = useContext(buildContext)
+  const [buildPending, setBuildPending] = useState(false)
+
+  const buildBotHandler = async () => {
+    if (!builded) {
+      setBuildPending(true)
+      setBuilded(false)
+      try {
+        setTimeout(async () => {
+          const buildStatus = await buildBotScript()
+          if (!buildStatus) {
+            setErrorData({ title: 'Build failed!' })
+            throw Error('Build failed')
+          } else {
+            setBuilded(true)
+            setSuccessData({ title: 'Bot was successfully builded!' })
+          }
+          setBuildPending(false)
+        }, 2000);
+      } catch (error) {
+        console.log(error)
+      }
+    } else if (builded) {
+      setBuilded(false)
+      setConnectionStatus('broken')
+    }
+  }
+
   const navigate = useNavigate()
 
   function handleAddFlow() {
@@ -137,7 +169,7 @@ export default function Header() {
                 openPopUp(
                   <>
                     <div
-                      className="absolute z-10"
+                      className="absolute z-50"
                       style={{ top: top + 34, left: left - AlertWidth }}
                     >
                       <AlertDropdown />
@@ -154,10 +186,14 @@ export default function Header() {
             </button>
           </ShadTooltip>
           <ShadTooltip side="bottom" content="Build">
-            <Link to={'/preview'} className={`extra-side-bar-save-disable`}>
-              <Wrench className="side-bar-button-size" />
+            <button onClick={buildBotHandler} className={`extra-side-bar-save-disable relative flex flex-col items-center justify-center`}>
+              {!buildPending && <Wrench className="side-bar-button-size" />}
+              {buildPending && <BuildLoaderIcon className="side-bar-button-size build-loader" />}
+              {builded && <BuildedCheckIcon className="side-bar-button-size builded-check" />}
+              {!builded && connectionStatus === 'closed' && <Plus stroke="#f00" className="side-bar-button-size builded-check rotate-45" />}
+              {connectionStatus !== 'closed' && connectionStatus !== 'not open' && <span style={{ backgroundColor: connectionStatus === 'alive' ? '#0C9' : '#f00' }} className="absolute rounded-full -top-0 -left-0 w-2 h-2" />}
               {/* <ChatIcon opacity="0.7" className="side-bar-button-size" fill={dark ? 'white' : 'black'} /> */}
-            </Link>
+            </button>
           </ShadTooltip>
         </div>
       </div>

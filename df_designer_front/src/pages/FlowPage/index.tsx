@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { getVersion } from "../../controllers/API";
 import { NewLogo } from "../../icons/NewLogo";
 import { animated, useSpring } from "@react-spring/web";
+import NewChatComponent from "../../components/newChatComponent";
 
 export default function FlowPage() {
   const { flows, tabId, setTabId } = useContext(TabsContext);
