@@ -1,18 +1,19 @@
 import asyncio
-import os
+import time
 from datetime import datetime
 from pathlib import Path
-import time
 
 import aiofiles
 import dff
-from fastapi import Request, WebSocket, WebSocketDisconnect
+import websockets
+from fastapi import Request, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import insert, select, update
 from websockets import ConnectionClosedOK
 
-from df_designer.db_connection import async_session, Logs
+from df_designer import process
+from df_designer.db_connection import Runs, async_session
 from df_designer.logic import get_data, save_data
 from df_designer.settings import app
 
@@ -146,21 +147,21 @@ async def build_post() -> dict[str, str]:
 
 
 @app.get("/run")
-async def logs():
-    """get logs"""
+async def run():
+    """get run"""
     async with async_session() as session:
-        stmt = select(Logs)
+        stmt = select(Runs)
         result = await session.execute(stmt)
         logs_list = result.scalars().all()
 
     return {"status": "ok", "logs": logs_list}
 
 
-@app.get("/run/{log_id}")
-async def log_file(log_id: str):
-    """get log file"""
+@app.get("/run/{run_id}")
+async def run_file(run_id: str):
+    """get run file"""
     async with async_session() as session:
-        stmt = select(Logs).where(Logs.id == log_id)
+        stmt = select(Runs).where(Runs.id == run_id)
         result = await session.execute(stmt)
         log = result.scalar()
     log_file = Path(log.path)
@@ -214,7 +215,7 @@ async def websocket(websocket: WebSocket):
                     proc.terminate()
                     async with async_session() as session:
                         stmt = (
-                            update(Logs)
+                            update(Runs)
                             .values(status="stop")
                             .where(Logs.id == id_record.inserted_primary_key[0])
                         )
@@ -222,4 +223,50 @@ async def websocket(websocket: WebSocket):
                         await session.commit()
                     break
             else:
+                break
+
+
+@app.get("/process/start")
+async def process_start():
+    """start a process"""
+    result = await process.start()
+    return {"status": "ok", "result": result}
+
+
+@app.get("/process/status")
+async def process_status():
+    """status a process"""
+    status = await process.status()
+    return {"status": "ok", "status": status}
+
+
+@app.get("/process/stop")
+async def process_stop():
+    """stop a process"""
+    data = await process.stop()
+    return {"status": "ok", "data": data}
+
+
+@app.get("/process/pid")
+async def process_pid():
+    """pid a process"""
+    pid = await process.pid()
+    return {"status": "ok", "pid": pid}
+
+
+@app.websocket("/run")
+async def run_to_websocket(websocket: WebSocket):
+    await websocket.accept()
+
+    async with aiofiles.open("/tmp/o/logs.txt", "r") as file:
+        while True:
+            try:
+                line = await file.readline()
+                if not line:
+                    await asyncio.sleep(1)
+                else:
+                    await websocket.send_text(line)
+            except websockets.exceptions.ConnectionClosedOK:
+                break
+            except asyncio.exceptions.CancelledError:
                 break
