@@ -26,7 +26,7 @@
     --destructive-foreground: 210 40% 98%; /* hsl(210 40% 98%) */
     --radius: 0.5rem;
     --ring: 215 20.2% 65.1%; /* hsl(215 20% 65%) */
-    --chat-background: #3399CC1A;
+    --chat-background: #3399cc1a;
 
     --btn-black: black;
 
@@ -164,10 +164,6 @@ The cursor: default; property value restores the browser's default cursor style 
   cursor: default;
 }
 
-
-
-
-
 @layer components {
   .round-buttons-position {
     @apply fixed right-4;
@@ -194,16 +190,16 @@ The cursor: default; property value restores the browser's default cursor style 
     @apply flex flex-col gap-2 p-2;
   }
   .side-bar-components-div-arrangement {
-    @apply w-full overflow-auto scrollbar-hide h-full;
+    @apply h-full w-full overflow-auto scrollbar-hide;
   }
   .search-icon {
     @apply absolute inset-y-0 flex items-center py-1.5 pl-3;
   }
   .extra-side-bar-save-disable {
-    @apply text-muted-foreground border border-transparent transition-all duration-300 p-1.5;
+    @apply border border-transparent p-1.5 text-muted-foreground transition-all duration-300;
   }
   .extra-side-bar-save-disable:hover {
-    @apply hover:bg-accent hover:text-accent-foreground border-border rounded;
+    @apply rounded border-border hover:bg-accent hover:text-accent-foreground;
   }
   .side-bar-button-size {
     @apply h-5 w-5;
@@ -430,10 +426,10 @@ The cursor: default; property value restores the browser's default cursor style 
     @apply inline-block w-full flex-1 break-words truncate-doubleline;
   }
   .card-component-delete-button {
-    @apply flex self-start dark:hover:bg-red-500 p-1.5 rounded-lg transition-all;
+    @apply flex self-start rounded-lg p-1.5 transition-all dark:hover:bg-red-500;
   }
   .card-component-delete-icon {
-    @apply h-5 w-5 text-foreground opacity-0 transition-all group-hover:opacity-100   ;
+    @apply h-5 w-5 text-foreground opacity-0 transition-all group-hover:opacity-100;
   }
   .card-component-desc {
     @apply pb-2 pt-2;
@@ -975,19 +971,19 @@ The cursor: default; property value restores the browser's default cursor style 
   }
 
   .storage-modal-tab-list {
-    @apply flex flex-row bg-muted rounded-lg items-center justify-start gap-2 p-1 ;
+    @apply flex flex-row items-center justify-start gap-2 rounded-lg bg-muted p-1;
   }
 
   .storage-modal-tab-trigger {
-    @apply flex flex-row items-center justify-center gap-1 rounded-lg bg-muted px-3 py-1 text-foreground w-[192px] transition ;
+    @apply flex w-[192px] flex-row items-center justify-center gap-1 rounded-lg bg-muted px-3 py-1 text-foreground transition;
   }
 
   .storage-modal-tab-trigger-active {
-    @apply bg-background border border-border
+    @apply border border-border bg-background;
   }
 
   .flow-manage-button {
-    @apply flex flex-row items-center justify-center rounded text-sm bg-transparent w-8 h-8 transition-all duration-300 border border-transparent hover:border-border hover:bg-muted
+    @apply flex h-8 w-8 flex-row items-center justify-center rounded border border-transparent bg-transparent text-sm transition-all duration-300 hover:border-border hover:bg-muted;
   }
 
   .chat-main {
@@ -1265,4 +1261,6 @@ The cursor: default; property value restores the browser's default cursor style 
   }
 }
 
-
+.cm-line {
+  @apply relative;
+}
