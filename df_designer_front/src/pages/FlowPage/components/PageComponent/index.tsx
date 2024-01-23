@@ -756,7 +756,7 @@ export default function Page({ flow }: { flow: FlowType }) {
         {/* {preloader && <Preloader />} */}
         {preloader ? <Preloader /> : (
           <>
-            {<ExtraSidebar /> }
+            <ExtraSidebar />
             {/* Main area */}
             <main className="flex flex-1 relative ">
               <PreviewPage className={`absolute w-full h-full top-0 left-0 bg-background z-20 transition-all duration-500 ${logsPage ? '-translate-x-[13rem]' : 'translate-x-full'}`} />
