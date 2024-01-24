@@ -65,31 +65,32 @@ export default function FlowSettingsModal() {
           <div className=" mt-4 w-full ">
             {flows.map((flow, i) => {
               const active = (flow.id == currentFlow.id)
+              const isGlobalFlow = flow.id === 'GLOBAL'
               return (
-                <div key={flow.id} className="relative h-max w-full cursor-pointer">
+                <div key={flow.id} className={`relative h-max w-full ${!isGlobalFlow ? 'cursor-pointer' : 'cursor-default'}`}>
                   <div className="block relative w-full">
                     <div
                       key={flow.id}
                       onClick={e => {
-                        setCurrentFlow(flow)
+                        !isGlobalFlow && setCurrentFlow(flow)
                       }}
-                      className={`w-full ${active && 'bg-muted'} ${flow.id != 'GLOBAL' ? 'pl-4' : 'pl-1'} py-1.5 px-3 flex flex-row items-center justify-between text-sm bg-background rounded-lg `}>
+                      className={`w-full ${active && 'bg-muted'} ${!isGlobalFlow ? 'pl-4' : 'pl-1'} py-1.5 px-3 flex flex-row items-center justify-between text-sm bg-background rounded-lg `}>
                       <div className={`flex flex-row items-center relative `}>
-                        {flow.id !== "GLOBAL" && i !== flows.length - 1 && <span className="block absolute w-1 h-[1px] bg-neutral-300"></span>}
+                        {!isGlobalFlow && i !== flows.length - 1 && <span className="block absolute w-1 h-[1px] bg-neutral-300"></span>}
                         {i === flows.length - 1 && (
                           <svg className="-rotate-90 absolute -left-[1.5px] top-[7px] " xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
                             <path d="M0.5 5C0.5 5.27614 0.723858 5.5 1 5.5C1.27614 5.5 1.5 5.27614 1.5 5H0.5ZM5 1.5H5.5V0.5H5V1.5ZM1.5 5V3H0.5V5H1.5ZM3 1.5H5V0.5H3V1.5ZM1.5 3C1.5 2.17157 2.17157 1.5 3 1.5V0.5C1.61929 0.5 0.5 1.61929 0.5 3H1.5Z" fill="#D4D4D4" />
                           </svg>
                         )}
                         <FlowColorSVG fill={flow.color} />
-                        <span className={`ml-3 ${flow.id === 'GLOBAL' && 'text-neutral-500'} `}> {flow.name} </span>
+                        <span className={`ml-3 ${isGlobalFlow && 'text-neutral-500'} `}> {flow.name} </span>
                       </div>
                       <div className="flex flex-row gap-2">
                         {active && <CheckSVG fill={dark ? "white" : "black"} />}
                       </div>
                     </div>
                   </div>
-                  {flow.id == "GLOBAL" && (
+                  {isGlobalFlow && (
                     <span style={{ height: `${flows.length * 36 - 55}px`, zIndex: 99 }} className={`block absolute w-[1px] bg-neutral-300 z-10 left-[15px] rounded-lg `}> </span>
                   )}
                 </div>
@@ -102,8 +103,6 @@ export default function FlowSettingsModal() {
           <EditFlowSettings
             currentFlow={currentFlow}
             setCurrentFlow={setCurrentFlow}
-            flows={flows}
-            tabId={tabId}
           />
 
           <div className=" flex flex-row items-center justify-end mt-8 ">
