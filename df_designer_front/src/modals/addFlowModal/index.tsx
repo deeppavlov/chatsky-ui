@@ -6,30 +6,32 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
-import { SETTINGS_DIALOG_SUBTITLE } from "../../constants";
 import EditFlowSettings from "../../components/EditFlowSettingsComponent";
-import { PlusCircle, Settings2 } from "lucide-react";
-import { updateFlowInDatabase } from "../../controllers/API";
+import { PlusCircle } from "lucide-react";
 import { FlowType } from "../../types/flow";
 import { useNavigate } from "react-router-dom";
 
 export default function AddFlowModal() {
   const [open, setOpen] = useState(true);
   const { closePopUp } = useContext(PopUpContext);
-  const { setErrorData, setSuccessData } = useContext(alertContext);
+  const { setErrorData } = useContext(alertContext);
   const ref = useRef();
-  const { flows, tabId, updateFlow, setTabsState, saveFlow, addFlow } =
+  const { flows, tabId, addFlow } =
     useContext(TabsContext);
   const maxLength = 50;
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color, setColor] = useState('')
+
+  const [flow, setFlow] = useState<FlowType>({
+      name: '',
+      description: '',
+      color: '',
+      data: null,
+      id: ''
+    })
 
   // const navigate = useNavigate()
 
@@ -41,30 +43,12 @@ export default function AddFlowModal() {
       }, 20);
     }
   }
-  function handleClick() {
-    const flow = {
-      name: name,
-      description: description,
-      color: color,
-      data: null,
-      id: ""
-    }
-    addFlow(null, true, flow)
-    setSuccessData({ title: "New flow was successfully added" });
-    closePopUp();
-  }
 
   function handleAddFlow() {
-    if (flows.find((f) => (f.name == name && f.id != tabId))) {
+    if (flows.find((f) => (f.name == flow.name && f.id != tabId))) {
       setErrorData({ title: "Flow with same name already exists!" })
       return -1
     }
-    const flow: FlowType = {
-      name: name,
-      description: description,
-      color: color,
-    }
-    // console.log(flow)
     try {
       addFlow(null, true, flow).then((id) => {
         // navigate("/flow/" + id);
@@ -91,14 +75,8 @@ export default function AddFlowModal() {
         </DialogHeader>
 
         <EditFlowSettings
-          name={name}
-          description={description}
-          flows={flows}
-          tabId={tabId}
-          setName={setName}
-          setDescription={setDescription}
-          setColor={setColor}
-          updateFlow={updateFlow}
+          currentFlow={flow}
+          setCurrentFlow={setFlow}
         />
 
         <div className="flex flex-row items-center justify-end w-full">

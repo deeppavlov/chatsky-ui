@@ -17,6 +17,7 @@ import { Checkbox } from "../../components/ui/checkbox";
 import { EXPORT_DIALOG_SUBTITLE } from "../../constants";
 import { Download } from "lucide-react";
 import EditFlowSettings from "../../components/EditFlowSettingsComponent";
+import { FlowType } from "../../types/flow";
 
 export default function ExportModal() {
   const [open, setOpen] = useState(true);
@@ -37,11 +38,8 @@ export default function ExportModal() {
 
 
   const [checked, setChecked] = useState(false);
-  const [name, setName] = useState(flows.find((f) => f.id === tabId).name);
-  const [description, setDescription] = useState(
-    flows.find((f) => f.id === tabId).description,
-  );
-  const [color, setColor] = useState(flows.find((f) => f.id === tabId).color ? flows.find((f) => f.id === tabId).color : '')
+
+  const [flow, setFlow] = useState<FlowType>(flows.find((f) => f.id === tabId))
 
   return (
     <Dialog open={true} onOpenChange={setModalOpen}>
@@ -60,14 +58,8 @@ export default function ExportModal() {
         </DialogHeader>
 
         <EditFlowSettings
-          name={name}
-          description={description}
-          flows={flows}
-          tabId={tabId}
-          setName={setName}
-          setDescription={setDescription}
-          updateFlow={updateFlow}
-          setColor={setColor}
+          currentFlow={flow}
+          setCurrentFlow={setFlow}
         />
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -89,15 +81,15 @@ export default function ExportModal() {
             onClick={() => {
               if (checked)
                 downloadFlow(
-                  flows.find((f) => f.id === tabId),
-                  name,
-                  description
+                  flow,
+                  flow.name,
+                  flow.description
                 );
               else
                 downloadFlow(
-                  removeApiKeys(flows.find((f) => f.id === tabId)),
-                  name,
-                  description
+                  removeApiKeys(flow),
+                  flow.name,
+                  flow.description
                 );
 
               closePopUp();

@@ -3,7 +3,6 @@ import { Textarea } from "../../components/ui/textarea";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import {  flow_colors } from "../../utils";
-import { TabsContext } from "../../contexts/tabsContext";
 import { Check } from "lucide-react";
 import { FlowType } from "../../types/flow";
 
@@ -11,24 +10,14 @@ type InputProps = {
   currentFlow: FlowType;
   setCurrentFlow: Dispatch<SetStateAction<FlowType>>;
   maxLength?: number;
-  flows?: Array<{ id: string; name: string }>;
-  tabId?: string;
 };
 
 export const EditFlowSettings: React.FC<InputProps> = ({
   currentFlow,
   setCurrentFlow,
   maxLength = 50,
-  tabId,
 }) => {
   const [isMaxLength, setIsMaxLength] = useState(false);
-
-  const tabs_context = useContext(TabsContext)
-  const _flows = tabs_context.flows
-  const flow = _flows.find((flow) => flow.id === tabId) ? _flows.find((flow) => flow.id === tabId) : null
-
-  const [activeColor, setActiveColor] = useState(flow ? flow.color : '')
-
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
