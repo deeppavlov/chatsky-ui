@@ -12,9 +12,10 @@ class Proc:
     async def start(self):
         # create_directory_to_log()
         if not self.run:
-            async with aiofiles.open("/tmp/o/logs.txt", "w") as file:
-                self.process = await asyncio.create_subprocess_shell(
-                    "ping localhost",
+            async with aiofiles.open("/tmp/logs.txt", "w") as file:
+                self.process = await asyncio.create_subprocess_exec(
+                    "ping",
+                    "localhost",
                     # shell=True,
                     stdout=file,
                     stderr=file,

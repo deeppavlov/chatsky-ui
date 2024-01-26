@@ -258,7 +258,7 @@ async def process_pid():
 async def run_to_websocket(websocket: WebSocket):
     await websocket.accept()
 
-    async with aiofiles.open("/tmp/o/logs.txt", "r") as file:
+    async with aiofiles.open("/tmp/logs.txt", "r") as file:
         while True:
             try:
                 line = await file.readline()
