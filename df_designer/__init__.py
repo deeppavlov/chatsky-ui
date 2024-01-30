@@ -1,48 +1,53 @@
 import asyncio
-
 import aiofiles
 
+from df_designer.db_requests import run_insert, run_update
 from df_designer.logic import create_directory_to_log, log_file_name
+from df_designer.settings import app
 
 
 class Proc:
-    def __init__(self):
-        self.run = False
-
     async def start(self):
-        # create_directory_to_log()
-        if not self.run:
-            async with aiofiles.open("/tmp/logs.txt", "w") as file:
-                self.process = await asyncio.create_subprocess_exec(
-                    "ping",
-                    "localhost",
-                    # shell=True,
-                    stdout=file,
-                    stderr=file,
-                )
-                self.run = True
-                return self.process.pid
-        return self.process.pid
+        """Start the process."""
+        create_directory_to_log()
+        file_for_log = log_file_name()
+        self.id_record = await run_insert(file_for_log, "start")
+        async with aiofiles.open(file_for_log, "w", encoding="UTF-8") as file:
+            self.process = await asyncio.create_subprocess_exec(
+                # "ping",
+                # "localhost",
+                # "python",
+                # "correct_script.py",
+                # "error_script.py",
+                *app.cmd_to_run.split(" "),
+                stdout=file.fileno(),
+                stderr=file.fileno(),
+            )
+            return self.process.pid
+
+    async def check_status(self):
+        """Check status process and write fo database."""
+        while True:
+            await asyncio.sleep(1)
+            if self.process.returncode is not None:
+                if self.process.returncode == 0:
+                    await run_update(self.id_record, "stop")
+                    break
+                elif self.process.returncode > 0:
+                    await run_update(self.id_record, "error")
+                    break
 
     async def stop(self):
-        if self.run:
-            self.process.terminate()
-            self.run = False
-            del self.process
+        """Stop the process."""
+        self.process.terminate()
+        await run_update(self.id_record, "terminate")
 
     async def status(self):
-        if self.run:
-            status_proc = self.process.returncode
-            if status_proc is None:
-                return True
-            else:
-                return status_proc
-        else:
-            return False
+        """Return the status of the process."""
+        return self.process.returncode
 
     async def pid(self):
-        if self.run:
-            return self.process.pid
+        return self.process.pid
 
 
 process = Proc()

@@ -5,8 +5,9 @@ from pathlib import Path
 
 import aiofiles
 import dff
+import starlette
 import websockets
-from fastapi import Request, WebSocket
+from fastapi import BackgroundTasks, Request, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import insert, select, update
@@ -14,6 +15,7 @@ from websockets import ConnectionClosedOK
 
 from df_designer import process
 from df_designer.db_connection import Runs, async_session
+from df_designer.db_requests import run_last
 from df_designer.logic import get_data, save_data
 from df_designer.settings import app
 
@@ -189,7 +191,7 @@ async def websocket(websocket: WebSocket):
 
     async with async_session() as session:
         stmt = (
-            insert(Logs)
+            insert(Runs)
             .values(
                 datetime=time.time(),
                 path=str(Path(file_for_log).absolute()),
@@ -217,7 +219,7 @@ async def websocket(websocket: WebSocket):
                         stmt = (
                             update(Runs)
                             .values(status="stop")
-                            .where(Logs.id == id_record.inserted_primary_key[0])
+                            .where(Runs.id == id_record.inserted_primary_key[0])
                         )
                         await session.execute(stmt)
                         await session.commit()
@@ -226,10 +228,17 @@ async def websocket(websocket: WebSocket):
                 break
 
 
+async def task():
+    while True:
+        await asyncio.sleep(1)
+        print("background")
+
+
 @app.get("/process/start")
-async def process_start():
+async def process_start(background_tasks: BackgroundTasks):
     """start a process"""
     result = await process.start()
+    background_tasks.add_task(process.check_status)
     return {"status": "ok", "result": result}
 
 
@@ -237,14 +246,14 @@ async def process_start():
 async def process_status():
     """status a process"""
     status = await process.status()
-    return {"status": "ok", "status": status}
+    return {"status": "ok", "status_process": status}
 
 
 @app.get("/process/stop")
 async def process_stop():
     """stop a process"""
-    data = await process.stop()
-    return {"status": "ok", "data": data}
+    await process.stop()
+    return {"status": "ok"}
 
 
 @app.get("/process/pid")
@@ -256,17 +265,36 @@ async def process_pid():
 
 @app.websocket("/run")
 async def run_to_websocket(websocket: WebSocket):
-    await websocket.accept()
 
-    async with aiofiles.open("/tmp/logs.txt", "r") as file:
+    print(websocket.client_state.value)
+    await websocket.accept()
+    print(websocket.client_state.value)
+    # import pudb
+
+    # pu.db
+
+    run_file = await run_last()
+    print(run_file)
+
+    async with aiofiles.open(run_file, "r", encoding="UTF-8") as file:
+        # await websocket.send_text(file.read())
         while True:
             try:
+                data = await asyncio.wait_for((websocket.receive_text()), 0.01)
+                print(data)
+            except asyncio.exceptions.TimeoutError:
+
                 line = await file.readline()
                 if not line:
                     await asyncio.sleep(1)
                 else:
                     await websocket.send_text(line)
-            except websockets.exceptions.ConnectionClosedOK:
+
+                if await process.status() is not None:
+                    await websocket.close()
+                    print("websocket closed")
+                    break
+            except starlette.websockets.WebSocketDisconnect:
+                print(websocket.client_state.value)
                 break
-            except asyncio.exceptions.CancelledError:
-                break
+    print("== disconnected ==")
