@@ -5,8 +5,8 @@ from pathlib import Path
 
 import aiofiles
 import dff
+from pydantic import BaseModel
 import starlette
-import websockets
 from fastapi import BackgroundTasks, Request, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -228,12 +228,6 @@ async def websocket(websocket: WebSocket):
                 break
 
 
-async def task():
-    while True:
-        await asyncio.sleep(1)
-        print("background")
-
-
 @app.get("/process/start")
 async def process_start(background_tasks: BackgroundTasks):
     """start a process"""
@@ -265,13 +259,9 @@ async def process_pid():
 
 @app.websocket("/run")
 async def run_to_websocket(websocket: WebSocket):
-
     print(websocket.client_state.value)
     await websocket.accept()
     print(websocket.client_state.value)
-    # import pudb
-
-    # pu.db
 
     run_file = await run_last()
     print(run_file)
@@ -298,3 +288,63 @@ async def run_to_websocket(websocket: WebSocket):
                 print(websocket.client_state.value)
                 break
     print("== disconnected ==")
+
+
+class Preset(BaseModel):
+    preset: str
+
+
+@app.post("/bot/build/start", tags=["bot"])
+async def bot_build_start(preset: Preset):
+    """Start a build."""
+    return preset
+
+
+@app.get("/bot/build/status/{status}", tags=["bot"])
+async def bot_build_status(status: str):
+    """Get build status.
+    - work
+    - error
+    - done
+    - null
+    """
+    if status == "work":
+        return {"status": "work"}
+    elif status == "error":
+        return {"status": "error"}
+    elif status == "done":
+        return {"status": "done"}
+    elif status == "null":
+        return {"status": "null"}
+
+
+@app.get("/bot/build/stop", tags=["bot"])
+async def bot_build_stop():
+    """Build stop."""
+    return {"status": "stopped"}
+
+
+builds = [
+    {"build1": "2024_01_30_11_01_1706601676", "status": "done"},
+    {"build2": "2024_01_30_11_01_1806601676", "status": "error"},
+    {
+        "build3": "2024_01_30_11_01_1906601676",
+        "status": "done",
+        "run1": {"status": "terminate", "timestamp": "1707307452.57604"},
+        "run2": {"status": "terminate", "timestamp": "1707307452.57604"},
+    },
+]
+
+
+@app.get("/bot/builds", tags=["bot"])
+async def bot_builds():
+    """List builds."""
+    return builds
+
+
+@app.get("/bot/builds/{build_id}", tags=["bot"])
+async def bot_builds_id(build_id: str):
+    """Specific builds."""
+    for build in builds:
+        if build.get(build_id) is not None:
+            return build
