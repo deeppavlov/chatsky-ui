@@ -50,6 +50,7 @@ import EditNodeModal from "../../modals/EditNodeModal";
 import _ from "lodash";
 import { ManageIcon } from "../../icons/ManageIcon";
 import EditLinkModal from "../../modals/editLinkModal";
+import { ContextMenuItem } from "./ContextMenuItem";
 
 export default function GenericNode({
   data,
@@ -628,10 +629,15 @@ export default function GenericNode({
     // e.preventDefault();
     // const node = flows.find((flow) => flow.id === tabId).data.nodes.find((node: NodeType) => node.id === data.id)
     // console.log(node)
-    setLastCopiedSelection(_.cloneDeep(lastSelection))
     // console.log(lastCopiedSelection)
+    setLastCopiedSelection(_.cloneDeep(lastSelection))
     setSuccessData({ title: "Node was succesfully copied!" })
   }
+  const openSettings = (e) => openPopUp(
+    data.node.base_classes[0] === 'links'
+      ? <EditLinkModal data={data} />
+      : <EditNodeModal data={data} />
+  )
 
 
   return (
@@ -848,79 +854,57 @@ export default function GenericNode({
         </ContextMenu.Trigger>
         <ContextMenu.Portal container={document.getElementById('modal_root')}>
           <ContextMenu.Content className="context-wrapper">
-            {data.id !== "LOCAL_NODE" && data.id !== "GLOBAL_NODE" && (
-              <>
-                <ContextMenu.Item onClick={e => copy(e)}
-                  className=" context-item">
-                  <div className="flex flex-row items-center gap-1">
-                    <CopyIcon />
-                    <p>Copy</p>
-                  </div>
-                  <span className="text-neutral-400"> Ctrl+C </span>
-                </ContextMenu.Item>
-                {/* <ContextMenu.Item disabled onClick={e => {
-                  let bounds = document.getElementById('reactFlowWrapper').getBoundingClientRect()
-                  // console.log(bounds)
-                  const node = reactFlowInstance.getNode(data.id)
-                  // console.log(node)
-                  // console.log(getNodePositionWithOrigin(node))
-                  const pos = getNodePositionWithOrigin(node)
-                  // console.log(node)
-                  deleteNode(data.id)
-                  setTimeout(() => {
-                    paste(
-                      lastCopiedSelection,
-                      {
-                        x: node.position.x,
-                        y: node.position.y
-                      })
-                  }, 20);
-                }}
-                  className=" context-item context-item-disabled">
-                  <div className="flex flex-row items-center gap-1">
-                    <ReplaceIcon className="w-4 h-4" />
-                    <p>Paste to replace</p>
-                  </div>
-                  <span className="text-neutral-400"> Ctrl+Shift+V </span>
-                </ContextMenu.Item> */}
-                {/* <ContextMenu.Item disabled onClick={e => { }}
-                  className=" context-item context-item-disabled">
-                  <div className="flex flex-row items-center gap-1">
-                    <Combine className="w-4 h-4" />
-                    <p>Create preset</p>
-                  </div>
-                  <span className="text-neutral-400"> Shift+A </span>
-                </ContextMenu.Item> */}
-              </>
-            )}
-            <ContextMenu.Item onSelect={e => e.preventDefault()} onClick={e => openPopUp(data.node.base_classes[0] === 'links' ? <EditLinkModal data={data} /> : <EditNodeModal data={data} />)}
-              className=" context-item "
-            >
+            {/* <ContextMenu.Item disabled onClick={e => {
+              let bounds = document.getElementById('reactFlowWrapper').getBoundingClientRect()
+              // console.log(bounds)
+              const node = reactFlowInstance.getNode(data.id)
+              // console.log(node)
+              // console.log(getNodePositionWithOrigin(node))
+              const pos = getNodePositionWithOrigin(node)
+              // console.log(node)
+              deleteNode(data.id)
+              setTimeout(() => {
+                paste(
+                  lastCopiedSelection,
+                  {
+                    x: node.position.x,
+                    y: node.position.y
+                  })
+              }, 20);
+            }}
+              className=" context-item context-item-disabled">
               <div className="flex flex-row items-center gap-1">
-                <Settings2 className="w-4 h-4" />
-                <p>Settings</p>
+                <ReplaceIcon className="w-4 h-4" />
+                <p>Paste to replace</p>
               </div>
-              {/* <span className="text-neutral-400">  </span> */}
-            </ContextMenu.Item>
-            <ContextMenu.Item className=" context-item ">
+              <span className="text-neutral-400"> Ctrl+Shift+V </span>
+            </ContextMenu.Item> */}
+            {/* <ContextMenu.Item disabled onClick={e => { }}
+              className=" context-item context-item-disabled">
               <div className="flex flex-row items-center gap-1">
-                <FileText className="w-4 h-4" />
-                <p>Doc</p>
+                <Combine className="w-4 h-4" />
+                <p>Create preset</p>
               </div>
-              {/* <span className="text-neutral-400"> Ctrl+C </span> */}
-            </ContextMenu.Item>
+              <span className="text-neutral-400"> Shift+A </span>
+            </ContextMenu.Item> */}
+            <ContextMenuItem
+              type='copy'
+              onClick={copy}
+              hide={data.id === "LOCAL_NODE" || data.id === "GLOBAL_NODE"}
+            />
+            <ContextMenuItem
+              type='settings' 
+              onClick={openSettings}
+            />
+            <ContextMenuItem type="doc" onClick={_.noop} />
             {data.id !== "LOCAL_NODE" && data.id !== "GLOBAL_NODE" && (
-              <>
-                <ContextMenu.Separator className="w-[90%] mx-auto h-[1px] bg-[#666] " />
-                <ContextMenu.Item onClick={e => { deleteNode(data.id) }} className=" context-item ">
-                  <div className="flex flex-row items-center gap-1">
-                    <Trash2 className="w-4 h-4" />
-                    <p>Delete</p>
-                  </div>
-                  <span className="text-neutral-400"> Del </span>
-                </ContextMenu.Item>
-              </>
+              <ContextMenu.Separator className="w-[90%] mx-auto h-[1px] bg-[#666] " />
             )}
+            <ContextMenuItem
+              type="delete"
+              onClick={e => deleteNode(data.id)}
+              hide={data.id === "LOCAL_NODE" || data.id === "GLOBAL_NODE"}
+            />
           </ContextMenu.Content>
         </ContextMenu.Portal>
       </ContextMenu.Root>
