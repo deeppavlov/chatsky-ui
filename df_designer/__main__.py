@@ -25,6 +25,7 @@ def run_app(
     port: int = app.conf_port,
     dir_logs: str = app.dir_logs,
     cmd_to_run: str = app.cmd_to_run,
+    conf_reload: str = str(app.conf_reload),
 ):
     """Run the application."""
     app.cmd_to_run = cmd_to_run
@@ -36,7 +37,7 @@ def run_app(
         host=ip_address,
         port=port,
         log_level=app.conf_log_level,
-        reload=app.conf_reload,
+        reload=conf_reload.lower() in ["true", "yes", "t", "y", "1"],
     )
     server = uvicorn.Server(config)
     server.run()
