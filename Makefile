@@ -4,6 +4,7 @@ SHELL = /bin/bash
 
 PYTHON = python3
 FRONTEND_PATH = ./df_designer_front
+BACKEND_DIR = df_designer
 
 .PHONY: help
 help:
@@ -52,11 +53,11 @@ build_backend: env_backend
 
 .PHONY: run_backend
 run_backend: env_backend
-	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru" --conf-reload="False"
+	poetry run python -m ${BACKEND_DIR} run-app --cmd-to-run="ping ya.ru" --conf-reload="False"
 
 .PHONY: run_dev_backend
 run_dev_backend: env_backend
-	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru"
+	poetry run python -m ${BACKEND_DIR} run-app --cmd-to-run="ping ya.ru"
 
 
 
@@ -67,6 +68,16 @@ env:
 	make env_frontend
 	make env_backend
 
+.PHONY: clean_env
+clean_env:
+	make clean_env_frontend
+	make clean_env_backend
+
+.PHONY: build
+build: env
+	make build_frontend
+	make build_backend
+
 .PHONY: run_app
 run_app: env
 	make run_frontend
@@ -76,17 +87,6 @@ run_app: env
 run_dev: env
 	make run_dev_frontend
 	make run_dev_backend
-
-.PHONY: build
-build: env
-	make build_frontend
-	make build_backend # build wheel
-
-.PHONY: clean
-clean:
-	make clean_env_frontend
-	make clean_env_backend
-
 
 
 
