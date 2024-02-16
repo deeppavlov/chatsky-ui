@@ -52,11 +52,11 @@ build_backend: env_backend
 
 .PHONY: run_backend
 run_backend: env_backend
-	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru" --conf-reload="False" --port 8200 ####### don't push port
+	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru" --conf-reload="False"
 
 .PHONY: run_dev_backend
 run_dev_backend: env_backend
-	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru" --port 8100 ####### don't push port
+	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru"
 
 
 
