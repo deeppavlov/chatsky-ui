@@ -137,6 +137,8 @@ export function BuildProvider({ children }) {
           setBuildStatus('success')
         }
       }
+      const r = await getRuns()
+      setRuns(r.run)
       return b
     }
     fetchBuilds()
