@@ -4,6 +4,7 @@ SHELL = /bin/bash
 
 PYTHON = python3
 FRONTEND_PATH = ./df_designer_front
+BACKEND_DIR = df_designer
 
 .PHONY: help
 help:
@@ -20,7 +21,7 @@ env_frontend:
 
 .PHONY: clean_env_frontend
 clean_env_frontend:
-	cd ${FRONTEND_PATH} && rm -rf 
+	cd ${FRONTEND_PATH} && rm -rf node_modules
 
 .PHONY: build_frontend
 build_frontend: env_frontend
@@ -30,8 +31,8 @@ build_frontend: env_frontend
 run_frontend: env_frontend
 	cd ${FRONTEND_PATH} && npm start
 
-.PHONY: dev_frontend
-dev_frontend: env_frontend
+.PHONY: run_dev_frontend
+run_dev_frontend: env_frontend
 	make run_frontend
 
 
@@ -46,14 +47,17 @@ env_backend:
 clean_env_backend:
 	poetry env remove --all
 
+.PHONY: build_backend
+build_backend: env_backend
+	poetry build
+
 .PHONY: run_backend
-run_backend:
-	poetry run python -m df_designer run-app --cmd-to-run="ping ya.ru"
+run_backend: env_backend
+	poetry run python -m ${BACKEND_DIR} run-app --cmd-to-run="ping ya.ru" --conf-reload="False"
 
 .PHONY: run_dev_backend
-run_dev_backend:
-	poetry shell
-	# TODO ...
+run_dev_backend: env_backend
+	poetry run python -m ${BACKEND_DIR} run-app --cmd-to-run="ping ya.ru"
 
 
 
@@ -64,26 +68,25 @@ env:
 	make env_frontend
 	make env_backend
 
-.PHONY: run_app
-run_app:
-	make build_frontend
-	make run_backend
-
-.PHONY: run_dev
-run_dev:
-	make build_frontend
-	make run_dev_backend
-
-.PHONY: build
-build:
-	make build_frontend
-	# TODO build wheel
-
-.PHONY: clean
-clean:
+.PHONY: clean_env
+clean_env:
 	make clean_env_frontend
 	make clean_env_backend
 
+.PHONY: build
+build: env
+	make build_frontend
+	make build_backend
+
+.PHONY: run_app
+run_app: env
+	make run_frontend
+	make run_backend
+
+.PHONY: run_dev
+run_dev: env
+	make run_dev_frontend
+	make run_dev_backend
 
 
 
