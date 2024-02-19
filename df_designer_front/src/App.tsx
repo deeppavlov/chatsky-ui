@@ -16,7 +16,6 @@ import { getVersion } from "./controllers/API";
 import Router from "./routes";
 import Header from "./components/headerComponent";
 import { Preloader } from "./pages/Preloader/Preloader";
-import ContextMenuDemo from "./context_test";
 import { PopUpContext } from "./contexts/popUpContext";
 
 export default function App() {
@@ -138,6 +137,7 @@ export default function App() {
   }
 
   useEffect(() => {
+    // @ts-ignore
     document.body.style = 'width: 100vw; height: 100vh;'
   }, [closePopUp])
 

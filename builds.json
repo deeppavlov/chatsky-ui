@@ -1,0 +1,119 @@
+[
+  {
+    "FULL INFO BUILD && FULL IMFO RUNS": "для информации",
+    "id": "build1",
+    "timestamp": "12314235246",
+    "preset_name": "build_preset_1",
+    "status": "completed",
+    "logs": ["log_string_1", "log_string_2", "etc."],
+    "logs_path": "/something/...",
+    "runs": [
+      {
+        "id": "run1",
+        "timestamp": "133254314",
+        "preset_name": "run_preset_1",
+        "status": "failed",
+        "logs": ["log_string_1", "log_string_2", "etc."],
+        "logs_path": "/something/...",
+        "build_id": "build1"
+      },
+      {
+        "id": "run2",
+        "timestamp": "133254314",
+        "preset_name": "run_preset_2",
+        "status": "completed",
+        "logs": ["log_string_1", "log_string_2", "etc."],
+        "logs_path": "/something/...",
+        "build_id": "build1"
+      }
+    ]
+  },
+  {
+    "BUILDS MINIFY && RUNS MINIFY": "по эндпоинту /bot/builds приходит список вот таких билдов и вот таких запусков",
+    "builds": [
+      {
+        "id": "build1",
+        "timestamp": "12314235246",
+        "preset_name": "build_preset_1",
+        "status": "completed",
+        "runs": [
+          {
+            "id": "run1",
+            "timestamp": "133254314",
+            "preset_name": "run_preset_1",
+            "status": "failed",
+            "build_id": "build1"
+          },
+          {
+            "id": "run2",
+            "timestamp": "133254314",
+            "preset_name": "run_preset_2",
+            "status": "completed",
+            "build_id": "build1"
+          }
+        ]
+      },
+      {
+        "id": "build2",
+        "timestamp": "12314235246",
+        "preset_name": "build_preset_1",
+        "status": "completed",
+        "runs": [
+          {
+            "id": "run1",
+            "timestamp": "133254314",
+            "preset_name": "run_preset_1",
+            "status": "failed",
+            "build_id": "build2"
+          },
+          {
+            "id": "run2",
+            "timestamp": "133254314",
+            "preset_name": "run_preset_2",
+            "status": "completed",
+            "build_id": "build2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "FULL INFO BUILD && RUNS MINIFY": "по эндпоинту /bot/builds/?id={id} ///потенциально задел на то, что можно будет любое поле передать параметром для поиска",
+    "build": {
+      "id": "build{id}",
+      "timestamp": "12314235246",
+      "preset_name": "build_preset_1",
+      "status": "completed",
+      "logs": ["log_string_1", "log_string_2", "etc."],
+      "logs_path": "/something/...",
+      "runs": [
+        {
+          "id": "run1",
+          "timestamp": "133254314",
+          "preset_name": "run_preset_1",
+          "status": "failed",
+          "build_id": "build1"
+        },
+        {
+          "id": "run2",
+          "timestamp": "133254314",
+          "preset_name": "run_preset_2",
+          "status": "completed",
+          "build_id": "build1"
+        }
+      ]
+    }
+  },
+  {
+    "RUN FULL INFO": "по эндпоинту /bot/runs/?id={id} ///потенциально задел на то, что можно будет любое поле передать параметром для поиска",
+    "run": {
+      "id": "run{id}",
+      "timestamp": "133254314",
+      "preset_name": "run_preset_2",
+      "status": "completed",
+      "logs": ["log_string_1", "log_string_2", "etc."],
+      "logs_path": "/something/...",
+      "build_id": "build1"
+    }
+  }
+]

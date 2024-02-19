@@ -75,7 +75,7 @@
     --card: 0 1% 21%; /* hsl(0 1% 21%) */
     --card-foreground: 0 0% 100%; /* hsl(0 0% 100%)  */
 
-    --border: 0 1% 21%; /* hsl(0 1% 21%) */
+    --border: 0 1% 23%; /* hsl(0 1% 23%) */
     --input: 0 1% 21%; /* hsla(0, 0%, 7%, 1)*/
 
     --primary: 0 1% 21%; /* hsla(0, 1%, 21%, 1)  */
@@ -84,7 +84,7 @@
     --secondary: 240 1% 13%; /* hsl(240 1% 13%) */
     --secondary-foreground: 0 0% 100%; /* hsl(0 0% 100%)  */
 
-    --accent: 0 1% 21%; /* hsl(0 1% 21%) */
+    --accent: 0 1% 18%; /* hsl(0 1% 18%) */
     --accent-foreground: 0 0% 100%; /* hsl(0 0% 100%) */
 
     --destructive: 0 63% 31%; /* hsl(0 63% 31%) */
@@ -196,10 +196,10 @@ The cursor: default; property value restores the browser's default cursor style 
     @apply absolute inset-y-0 flex items-center py-1.5 pl-3;
   }
   .extra-side-bar-save-disable {
-    @apply border border-transparent p-1.5 text-muted-foreground transition-all duration-300;
+    @apply border border-transparent rounded p-1.5 text-muted-foreground transition-all duration-300;
   }
   .extra-side-bar-save-disable:hover {
-    @apply rounded border-border hover:bg-accent hover:text-accent-foreground;
+    @apply border-border hover:bg-accent hover:text-accent-foreground;
   }
   .side-bar-button-size {
     @apply h-5 w-5;
@@ -994,8 +994,9 @@ The cursor: default; property value restores the browser's default cursor style 
   }
 
   .chat-wrapper {
-    height: calc(100vh - 60px);
-    max-height: calc(100vh - 60px);
+    min-height: calc(100vh - 54px);
+    height: calc(100vh - 54px);
+    max-height: calc(100vh - 54px);
     box-shadow: 0px 8px 15px 0px rgba(14, 1, 66, 0.15);
   }
 
@@ -1004,8 +1005,8 @@ The cursor: default; property value restores the browser's default cursor style 
   }
 
   .builded-check {
-    animation: builded-check 6s linear normal;
-    @apply absolute w-4 h-4 -top-2 -right-2 opacity-0
+    /* animation: builded-check 6s linear normal; */
+    @apply absolute w-4/5 h-[2px] rounded-t-xl bottom-0
   }
 
   @keyframes builded-check {
@@ -1060,6 +1061,43 @@ The cursor: default; property value restores the browser's default cursor style 
     to {
       transform: translateX(0);
     }
+  }
+
+  .build-menu {
+    @apply w-max flex flex-row items-center justify-start gap-0.5 py-0.5 px-0.5 border border-border rounded-md transition-all duration-300
+  }
+
+  .build-menu-closed {
+    @apply pr-0 gap-0
+  }
+
+  .build-menu-item {
+    width: 34px;
+  }
+
+  .build-menu-item-long {
+    width: 52px;
+  }
+
+  .build-menu-item-disabled {
+    width: 0 !important;
+    @apply w-0 p-0 pointer-events-none opacity-0 scale-x-0
+  }
+
+  .preset-select {
+    @apply absolute -left-1/2 top-[125%] z-50 bg-background rounded-lg border border-border flex flex-col items-center justify-start gap-1 p-1
+  }
+
+  .preset-select-title {
+    @apply block ml-2 text-sm w-full text-start text-neutral-500
+  }
+
+  .run-button-option {
+    @apply hover:bg-accent transition px-3 py-0.5 cursor-pointer flex items-center justify-between gap-2 min-w-[116px] rounded-lg
+  }
+
+  .preset-open-btn {
+    @apply h-[34px] rounded border border-[transparent] transition hover:border-border hover:bg-accent
   }
 
 }

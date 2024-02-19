@@ -12,10 +12,14 @@ export default function HomePage() {
   const { openPopUp } = useContext(PopUpContext)
   const { flows, setTabId, downloadFlows, uploadFlows, addFlow, removeFlow } =
     useContext(TabsContext);
+    
   useEffect(() => {
     setTabId("");
   }, []);
   const navigate = useNavigate();
+
+  console.log(flows)
+
   return (
     <div className="main-page-panel">
       <div className="main-page-nav-arrangement">

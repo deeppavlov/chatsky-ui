@@ -29,6 +29,13 @@ import { buildBotScript } from "../../controllers/API/build";
 import BuildLoaderIcon from "../../icons/BuildLoaderIcon";
 import BuildedCheckIcon from "../../icons/BuildedCheckIcon/BuildedCheckIcon";
 import { buildContext } from "../../contexts/buildContext";
+import { savedBuildType, savedRunType } from "../../types/entities";
+import BuildButton from "../BuildMenuComponent/components/BuildButton";
+import RunButton from "../BuildMenuComponent/components/RunButton";
+import ConnectionStatusComponent from "../BuildMenuComponent/components/ConnectionStatusComponent";
+import NewChatIcon from "../../icons/RunIcons/NewChatIcon";
+import NewLogsIcon from "../../icons/RunIcons/NewLogsIcon";
+import BuildMenu from "../BuildMenuComponent/BuildMenu";
 
 export default function Header() {
   const { flows, addFlow, tabId, setTabId, removeFlow } = useContext(TabsContext);
@@ -45,33 +52,9 @@ export default function Header() {
   const [stars, setStars] = useState(null);
   const [workSpaceMode, setWorkSpaceMode] = useState(managerMode)
   const [nodesPlacement, setNodesPlacement] = useState(flowMode)
-  const { builded, setBuilded, connectionStatus, setConnectionStatus } = useContext(buildContext)
-  const [buildPending, setBuildPending] = useState(false)
 
-  const buildBotHandler = async () => {
-    if (!builded) {
-      setBuildPending(true)
-      setBuilded(false)
-      try {
-        setTimeout(async () => {
-          const buildStatus = await buildBotScript()
-          if (!buildStatus) {
-            setErrorData({ title: 'Build failed!' })
-            throw Error('Build failed')
-          } else {
-            setBuilded(true)
-            setSuccessData({ title: 'Bot was successfully builded!' })
-          }
-          setBuildPending(false)
-        }, 2000);
-      } catch (error) {
-        console.log(error)
-      }
-    } else if (builded) {
-      setBuilded(false)
-      setConnectionStatus('broken')
-    }
-  }
+  const [buildMenu, setBuildMenu] = useState(false)
+  
 
   const navigate = useNavigate()
 
@@ -95,12 +78,22 @@ export default function Header() {
   }, [flowMode])
 
 
-
+  /**
+   * 
+   * @param bool =>
+   * Nodes placement mode handler (Canva Mode or List Mode)
+   */
   const nodesPlacementHandler = (bool: boolean) => {
     setNodesPlacement(bool)
     setFlowMode(bool)
   }
 
+
+  /**
+ * 
+ * @param bool =>
+ * WorkSpace mode handler (Edit Mode or Manager (no edit) Mode)
+ */
   const workSpaceModeHandler = (bool: boolean) => {
     setWorkSpaceMode(bool)
     setManagerMode(bool)
@@ -139,6 +132,10 @@ export default function Header() {
 
       <div className="header-end-division">
         <div className="header-end-display">
+          <BuildMenu
+            setBuildMenu={setBuildMenu}
+            buildMenu={buildMenu}
+          />
           <ShadTooltip side="bottom" content="Settings">
             <button onClick={e => openPopUp(<SettingsModal />)} className="extra-side-bar-save-disable">
               <SettingsIcon width={20} height={20} />
@@ -183,16 +180,6 @@ export default function Header() {
                 <div className="header-notifications"></div>
               )}
               <Bell className="side-bar-button-size" aria-hidden="true" />
-            </button>
-          </ShadTooltip>
-          <ShadTooltip side="bottom" content="Build">
-            <button onClick={buildBotHandler} className={`extra-side-bar-save-disable relative flex flex-col items-center justify-center`}>
-              {!buildPending && <Wrench className="side-bar-button-size" />}
-              {buildPending && <BuildLoaderIcon className="side-bar-button-size build-loader" />}
-              {builded && <BuildedCheckIcon className="side-bar-button-size builded-check" />}
-              {!builded && connectionStatus === 'closed' && <Plus stroke="#f00" className="side-bar-button-size builded-check rotate-45" />}
-              {connectionStatus !== 'closed' && connectionStatus !== 'not open' && <span style={{ backgroundColor: connectionStatus === 'alive' ? '#0C9' : '#f00' }} className="absolute rounded-full -top-0 -left-0 w-2 h-2" />}
-              {/* <ChatIcon opacity="0.7" className="side-bar-button-size" fill={dark ? 'white' : 'black'} /> */}
             </button>
           </ShadTooltip>
         </div>

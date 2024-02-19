@@ -18,7 +18,7 @@ export function ChatProvider({ children }) {
   const [messages, setMessages] = useState<chatMessageType[]>([
     {
       message: 'Your bot is not started! Please, complete configuration, build and start your bot to see messages here! ',
-      source: 'warning'
+      source: 'bot'
     }
   ])
 

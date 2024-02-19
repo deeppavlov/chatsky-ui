@@ -1,5 +1,6 @@
 // src/constants.tsx
 
+import { apiPresetType } from "./contexts/buildContext";
 import { FlowType } from "./types/flow";
 import { buildTweaks } from "./utils";
 
@@ -185,3 +186,33 @@ export const NAV_DISPLAY_STYLE =
  *
  */
 export const USER_PROJECTS_HEADER = "My Collection";
+
+type mock_presetsType = {
+  default: apiPresetType
+  success: apiPresetType
+  error: apiPresetType
+  deferred: apiPresetType
+}
+
+export const mock_presets: mock_presetsType = {
+  default: {
+    name: "Default",
+    duration: 3,
+    end_status: "completed",
+  },
+  success: {
+    name: "Success",
+    duration: 4,
+    end_status: "completed",
+  },
+  error: {
+    name: "Error",
+    duration: 4,
+    end_status: "failed",
+  },
+  deferred: {
+    name: "Deferred",
+    duration: 20,
+    end_status: "failed",
+  }
+}

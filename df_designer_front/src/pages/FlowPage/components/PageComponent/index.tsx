@@ -790,7 +790,7 @@ export default function Page({ flow }: { flow: FlowType }) {
             <ExtraSidebar />
             {/* Main area */}
             <main className="flex flex-1 relative ">
-              <PreviewPage className={`absolute w-full h-full top-0 left-0 bg-background z-20 transition-all duration-500 ${logsPage ? '-translate-x-[13rem]' : 'translate-x-full'}`} />
+              <PreviewPage className={`absolute h-full top-0 left-0 bg-background z-20 transition-all duration-500 ${logsPage ? '-translate-x-[13rem]' : '-translate-x-[calc(100%+13rem)]'}`} />
               {/* Primary column */}
               {transitions((style, item) => (
                 <animated.div style={style} className={`h-full w-full`}>

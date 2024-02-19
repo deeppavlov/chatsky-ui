@@ -1,14 +1,14 @@
 import { createContext, useEffect, useState } from "react";
 
 type darkContextType = {
-  dark: {};
+  dark: boolean;
   setDark: (newState: {}) => void;
   grid: boolean;
   setGrid: (newState: {}) => void;
 };
 
 const initialValue = {
-  dark: {},
+  dark: false,
   setDark: () => {},
   grid: false,
   setGrid: () => {},
