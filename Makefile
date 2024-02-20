@@ -1,5 +1,3 @@
-.ONESHELL:
-
 SHELL = /bin/bash
 
 PYTHON = python3
