@@ -9,7 +9,7 @@ class Application(FastAPI):
     static_assets = static_files.joinpath("assets")
     start_page = static_files.joinpath("index.html")
     work_directory = "."
-    path_to_save = Path(work_directory).joinpath("flows.json")
+    path_to_save = Path(work_directory) / "df_designer" / "frontend_flows.json"
 
     conf_app = "df_designer.main:app"
     conf_host = "127.0.0.1"
@@ -19,6 +19,7 @@ class Application(FastAPI):
     dir_logs = "logs"
     database_file = "database.sqlite"
     cmd_to_run = ""
+    conf_ui_port = 3000
 
 
 app = Application()
