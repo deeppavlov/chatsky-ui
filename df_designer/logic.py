@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -35,3 +36,23 @@ def create_directory_to_log():
     """Create directory to log files."""
     if not Path(app.dir_logs).exists():
         Path(app.dir_logs).mkdir()
+
+
+def get_logger(name):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+
+    c_handler = logging.StreamHandler()
+    f_handler = logging.FileHandler('logs.log')
+    c_handler.setLevel(logging.DEBUG)
+    f_handler.setLevel(logging.DEBUG)
+
+    c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+    f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    c_handler.setFormatter(c_format)
+    f_handler.setFormatter(f_format)
+
+    logger.addHandler(c_handler)
+    logger.addHandler(f_handler)
+
+    return logger

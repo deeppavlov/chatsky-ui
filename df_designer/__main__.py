@@ -10,11 +10,11 @@ import uvicorn
 from df_designer.settings import app
 from sqlalchemy import create_engine
 from df_designer.db_connection import Base
+from df_designer.logic import get_logger
 
 
-# Constants
-NPM_COMMAND = "npm"
-START_COMMAND = "start"
+logger = get_logger(__name__)
+
 
 cli = typer.Typer()
 
@@ -45,13 +45,12 @@ def run_backend(
     app.server.run()
 
 
-@cli.command("run_ui")
-def run_ui(
+@cli.command("run_app")
+def run_app(
     port: int = app.conf_ui_port,
     host: str = app.conf_host,
     project_dir: str = app.work_directory
 ) -> None:
-    """Run the application UI."""
     setup_backend(
         ip_address = host,
         port = app.conf_port,
@@ -64,13 +63,11 @@ def run_ui(
 
 
 def setup_database(project_dir: str) -> None:
-    """Set up the database."""
     engine = create_engine(f"sqlite:///{project_dir}/{app.database_file}")
     Base.metadata.create_all(engine)
 
 
 def setup_server(ip_address: str, port: int, conf_reload: str, project_dir: str) -> None:
-    """Set up the server."""
     config = uvicorn.Config(
         app=app.conf_app,
         host=ip_address,
@@ -83,7 +80,6 @@ def setup_server(ip_address: str, port: int, conf_reload: str, project_dir: str)
 
 
 def setup_backend(ip_address: str, port: int, dir_logs: str, cmd_to_run: str, conf_reload: str, project_dir: str) -> None:
-    """Set up the application configurations."""
     app.cmd_to_run = cmd_to_run
     app.dir_logs = dir_logs
     app.work_directory = project_dir
@@ -92,19 +88,17 @@ def setup_backend(ip_address: str, port: int, dir_logs: str, cmd_to_run: str, co
 
 
 async def run_server() -> None:
-    """Run the server."""
     await app.server.run()
 
 
 async def run_frontend(
     port: int = app.conf_ui_port
 ) -> None:
-    """Run the frontend."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     frontend_dir = os.path.join(current_dir, "..", "df_designer_front")
     try:
         process = await asyncio.create_subprocess_exec(
-            NPM_COMMAND, START_COMMAND, "--", "--port", str(port), cwd=frontend_dir
+            "npm", "start", "--", "--port", str(port), cwd=frontend_dir
         )
         await process.communicate()
     except Exception as e:
@@ -123,15 +117,16 @@ def build_bot(
 
     if preset_name in presets_build_file:
         command_to_run = presets_build_file[preset_name]["cmd"]
-        print(f"Running command for preset '{preset_name}': {command_to_run}")
+        logger.info(f"Executing command for preset '{preset_name}': {command_to_run}")
 
-        try:
-            subprocess.run(command_to_run, shell=True, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error executing command: {e}")
+        process = subprocess.run(command_to_run, shell=True)
+        if process.returncode > 0:
+            logger.error(
+                f"Execution of command `{command_to_run}` was unsuccessful. Exited with code '{process.returncode}'"
+            )
             # TODO: inform ui
     else:
-        print(f"Preset '{preset_name}' not found in build.json.")
+        raise ValueError(f"Invalid preset '{preset_name}'. Preset must be one of {list(presets_build_file.keys())}")
 
 
 @cli.command("init")
@@ -139,9 +134,11 @@ def init(
     destination: str = app.work_directory
 ):
     original_dir = os.getcwd()
-    os.chdir(destination)
-    cookiecutter("https://github.com/Ramimashkouk/df_d_template.git")
-    os.chdir(original_dir)
+    try:
+        os.chdir(destination)
+        cookiecutter("https://github.com/Ramimashkouk/df_d_template.git")
+    finally:
+        os.chdir(original_dir)
 
 if __name__ == "__main__":
     cli()
