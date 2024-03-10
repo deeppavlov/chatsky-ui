@@ -20,9 +20,7 @@ cli = typer.Typer()
 
 
 @cli.command("build_scenario")
-def build_scenario(
-    project_dir: str = app.work_directory
-):
+def build_scenario(project_dir: str = app.work_directory):
     print("in developing ...")
 
 
@@ -46,18 +44,14 @@ def run_backend(
 
 
 @cli.command("run_app")
-def run_app(
-    port: int = app.conf_ui_port,
-    host: str = app.conf_host,
-    project_dir: str = app.work_directory
-) -> None:
+def run_app(port: int = app.conf_ui_port, host: str = app.conf_host, project_dir: str = app.work_directory) -> None:
     setup_backend(
-        ip_address = host,
-        port = app.conf_port,
-        dir_logs = app.dir_logs,
-        cmd_to_run = app.cmd_to_run,
-        conf_reload = str(app.conf_reload),
-        project_dir = project_dir
+        ip_address=host,
+        port=app.conf_port,
+        dir_logs=app.dir_logs,
+        cmd_to_run=app.cmd_to_run,
+        conf_reload=str(app.conf_reload),
+        project_dir=project_dir,
     )
     asyncio.run(asyncio.gather(run_frontend(port=port), run_server()))
 
@@ -74,12 +68,14 @@ def setup_server(ip_address: str, port: int, conf_reload: str, project_dir: str)
         port=port,
         log_level=app.conf_log_level,
         reload=conf_reload.lower() in ["true", "yes", "t", "y", "1"],
-        reload_dirs=project_dir
+        reload_dirs=project_dir,
     )
     app.server = uvicorn.Server(config)
 
 
-def setup_backend(ip_address: str, port: int, dir_logs: str, cmd_to_run: str, conf_reload: str, project_dir: str) -> None:
+def setup_backend(
+    ip_address: str, port: int, dir_logs: str, cmd_to_run: str, conf_reload: str, project_dir: str
+) -> None:
     app.cmd_to_run = cmd_to_run
     app.dir_logs = dir_logs
     app.work_directory = project_dir
@@ -91,26 +87,18 @@ async def run_server() -> None:
     await app.server.run()
 
 
-async def run_frontend(
-    port: int = app.conf_ui_port
-) -> None:
+async def run_frontend(port: int = app.conf_ui_port) -> None:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     frontend_dir = os.path.join(current_dir, "..", "df_designer_front")
     try:
-        process = await asyncio.create_subprocess_exec(
-            "npm", "start", "--", "--port", str(port), cwd=frontend_dir
-        )
+        process = await asyncio.create_subprocess_exec("npm", "start", "--", "--port", str(port), cwd=frontend_dir)
         await process.communicate()
     except Exception as e:
         print(f"Failed to run frontend: {e}")
 
 
-
 @cli.command("build_bot")
-def build_bot(
-    project_dir: str = app.work_directory,
-    preset_name: str = "success"
-):
+def build_bot(project_dir: str = app.work_directory, preset_name: str = "success"):
     presets_build_path = os.path.join(project_dir, "df_designer", "presets", "build.json")
     with open(presets_build_path) as file:
         presets_build_file = json.load(file)
@@ -130,15 +118,14 @@ def build_bot(
 
 
 @cli.command("init")
-def init(
-    destination: str = app.work_directory
-):
+def init(destination: str = app.work_directory):
     original_dir = os.getcwd()
     try:
         os.chdir(destination)
         cookiecutter("https://github.com/Ramimashkouk/df_d_template.git")
     finally:
         os.chdir(original_dir)
+
 
 if __name__ == "__main__":
     cli()
