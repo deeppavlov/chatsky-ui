@@ -66,10 +66,12 @@ def run_bot(
 def run_scenario(
     project_dir: str = "."
 ):
-    process = subprocess.run(f"poetry run python {project_dir}/app.py", shell=True, check=False)
+    command = f"poetry run python {project_dir}/app.py"
+    process = subprocess.run(command, shell=True, check=False)
     if process.returncode > 0:
         logger.error(
-            "Execution of command `python app.py` was unsuccessful. Exited with code '%s'",
+            "Execution of command '%s' was unsuccessful. Exited with code '%s'",
+            command,
             process.returncode,
         )
         # TODO: inform ui
