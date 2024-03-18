@@ -1,4 +1,5 @@
 import asyncio
+from cookiecutter.main import cookiecutter
 import json
 import os
 import subprocess
@@ -102,3 +103,13 @@ def run_backend(
     """Run the backend."""
     _setup_backend(ip_address, port, conf_reload, project_dir)
     settings.server.run()
+
+
+@cli.command("init")
+def init(destination: str = settings.WORK_DIRECTORY):
+    original_dir = os.getcwd()
+    try:
+        os.chdir(destination)
+        cookiecutter("https://github.com/Ramimashkouk/df_d_template.git")
+    finally:
+        os.chdir(original_dir)
