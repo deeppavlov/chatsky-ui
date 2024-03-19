@@ -48,6 +48,15 @@ async def check_build_status(*, pid: int, build_manager: ProcessManager = Depend
     return _check_process_status(pid, build_manager)
 
 
+@router.get("/builds", status_code=200)
+async def check_all_processes(build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    statuses = {}
+    all_processes = build_manager.get_all()
+    for pid, _ in all_processes.items():
+        statuses[pid] = build_manager.check_status(pid)
+    return statuses
+
+
 @router.post("/run/start")
 async def start_run(preset: Preset, run_manager: ProcessManager = Depends(deps.get_run_manager)):
     await run_manager.start(f"dflowd run_bot --preset {preset.body}")
