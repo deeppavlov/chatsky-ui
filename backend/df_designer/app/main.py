@@ -1,9 +1,18 @@
 from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.api.api_v1.api import api_router
 
 app = FastAPI(title="DF Designer")
+
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=["*"],
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
+)
 
 root_router = APIRouter()
 
