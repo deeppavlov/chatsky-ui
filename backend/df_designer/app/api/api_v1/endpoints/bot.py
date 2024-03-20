@@ -32,7 +32,8 @@ def _check_process_status(pid: int, process_manager: ProcessManager):
 
 @router.post("/build/start", status_code=201)
 async def start_build(preset: Preset, build_manager: ProcessManager = Depends(deps.get_build_manager)):
-    await build_manager.start(f"dflowd build_bot --preset {preset.body}")
+    await asyncio.sleep(preset.wait_time)
+    await build_manager.start(f"dflowd build_bot --preset {preset.end_status}")
     pid = build_manager.get_last_id()
     logger.info("Build process '%s' has started", pid)
     return {"status": "ok", "pid": pid}
@@ -59,7 +60,8 @@ async def check_all_processes(build_manager: ProcessManager = Depends(deps.get_b
 
 @router.post("/run/start")
 async def start_run(preset: Preset, run_manager: ProcessManager = Depends(deps.get_run_manager)):
-    await run_manager.start(f"dflowd run_bot --preset {preset.body}")
+    await asyncio.sleep(preset.wait_time)
+    await run_manager.start(f"dflowd run_bot --preset {preset.end_status}")
     pid = run_manager.get_last_id()
     logger.info("Run process '%s' has started", pid)
     return {"status": "ok", "pid": pid}
