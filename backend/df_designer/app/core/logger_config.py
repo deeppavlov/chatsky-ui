@@ -13,6 +13,7 @@ LOG_LEVELS: dict[str, int] = {
 
 def get_logger(name):
     logger = logging.getLogger(name)
+    logger.propagate = False
     logger.setLevel(LOG_LEVELS[settings.LOG_LEVEL])
 
     c_handler = logging.StreamHandler()
