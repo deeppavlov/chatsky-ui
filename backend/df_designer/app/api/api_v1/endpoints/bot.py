@@ -33,7 +33,7 @@ def _check_process_status(pid: int, process_manager: ProcessManager):
 @router.post("/build/start", status_code=201)
 async def start_build(preset: Preset, build_manager: ProcessManager = Depends(deps.get_build_manager)):
     await asyncio.sleep(preset.wait_time)
-    await build_manager.start(f"dflowd build_bot --preset {preset.end_status}")
+    await build_manager.start("build", f"dflowd build_bot --preset {preset.end_status}") #TODO: Think about making BuildManager and RunManager
     pid = build_manager.get_last_id()
     logger.info("Build process '%s' has started", pid)
     return {"status": "ok", "pid": pid}
@@ -50,18 +50,19 @@ async def check_build_status(*, pid: int, build_manager: ProcessManager = Depend
 
 
 @router.get("/builds", status_code=200)
-async def check_all_processes(build_manager: ProcessManager = Depends(deps.get_build_manager)):
-    statuses = {}
-    all_processes = build_manager.get_all()
-    for pid, _ in all_processes.items():
-        statuses[pid] = build_manager.check_status(pid)
-    return statuses
+async def check_build_processes(build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    return build_manager.get_min_info()
+
+
+@router.get("/builds/{build_id}", status_code=200)
+async def get_build(*, build_id: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    return build_manager.get_full_info(build_id)
 
 
 @router.post("/run/start")
 async def start_run(preset: Preset, run_manager: ProcessManager = Depends(deps.get_run_manager)):
     await asyncio.sleep(preset.wait_time)
-    await run_manager.start(f"dflowd run_bot --preset {preset.end_status}")
+    await run_manager.start("run", f"dflowd run_bot --preset {preset.end_status}")
     pid = run_manager.get_last_id()
     logger.info("Run process '%s' has started", pid)
     return {"status": "ok", "pid": pid}
@@ -78,12 +79,13 @@ async def check_run_status(*, pid: int, run_manager: ProcessManager = Depends(de
 
 
 @router.get("/runs", status_code=200)
-async def check_all_processes(run_manager: ProcessManager = Depends(deps.get_run_manager)):
-    statuses = {}
-    all_processes = run_manager.get_all()
-    for pid, _ in all_processes.items():
-        statuses[pid] = run_manager.check_status(pid)
-    return statuses
+async def check_run_processes(run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    return run_manager.get_min_info()
+
+
+@router.get("/runs/{run_id}", status_code=200)
+async def get_run(*, run_id: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    return run_manager.get_full_info(run_id)
 
 
 @router.websocket("/run/connect")
