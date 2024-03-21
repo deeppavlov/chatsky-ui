@@ -3,6 +3,7 @@ from cookiecutter.main import cookiecutter
 import json
 import os
 import subprocess
+import sys
 import typer
 
 from app.core.config import settings
@@ -25,14 +26,16 @@ def build_bot(
         command_to_run = presets_build_file[preset]["cmd"]
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
-        process = subprocess.run(command_to_run, shell=True, check=False)
-        if process.returncode > 0:
+        process = subprocess.run(command_to_run, shell=True, check=False, capture_output=True, text=True)
+        if process.returncode != 0:
             logger.error(
                 "Execution of command `%s` was unsuccessful. Exited with code '%s'",
                 command_to_run,
                 process.returncode,
             )
-            # TODO: inform ui
+            logger.debug(process.stdout)
+            logger.error(process.stderr)
+            sys.exit(1)
     else:
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
@@ -50,14 +53,16 @@ def run_bot(
         command_to_run = presets_run_file[preset]["cmd"]
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
-        process = subprocess.run(command_to_run, shell=True, check=False)
-        if process.returncode > 0:
+        process = subprocess.run(command_to_run, shell=True, check=False, capture_output=True, text=True)
+        if process.returncode != 0:
             logger.error(
                 "Execution of command `%s` was unsuccessful. Exited with code '%s'",
                 command_to_run,
                 process.returncode,
             )
-            # TODO: inform ui
+            logger.debug(process.stdout)
+            logger.error(process.stderr)
+            sys.exit(1)
     else:
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_run_file.keys())}")
 
@@ -66,15 +71,15 @@ def run_bot(
 def run_scenario(
     project_dir: str = "."
 ):
-    command = f"poetry run python {project_dir}/app.py"
-    process = subprocess.run(command, shell=True, check=False)
+    command_to_run = f"poetry run python {project_dir}/app.py"
+    process = subprocess.run(command_to_run, shell=True, check=False)
     if process.returncode > 0:
         logger.error(
             "Execution of command '%s' was unsuccessful. Exited with code '%s'",
-            command,
+            command_to_run,
             process.returncode,
         )
-        # TODO: inform ui
+        sys.exit(1)
 
 
 #### TODO: move to DB DIR
