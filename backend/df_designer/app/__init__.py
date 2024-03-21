@@ -25,15 +25,34 @@ class Process:
                 stderr=asyncio.subprocess.PIPE,
                 stdin=asyncio.subprocess.PIPE,
             )
-            self.pid = self.process.pid
 
-    def check_status(self):
+    def check_status(self) -> str:
+        """Returns the process status [null, Running, Completed, Failed, Stopped].
+        - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
+        incorrect usage or a process misuse in backend logic.
+        - Running: returncode is None
+        - Completed: returncode is 0
+        - Failed: returncode is 1
+        - Stopped: returncode is -15
+        - "Exited with return code: {self.process.returncode}. A non-zero return code indicates an error": Otherwise
+        """
         if self.process is None:
-            return "Process has not been started."
+            self.status = "null"
         elif self.process.returncode is None:
-            return "Running"
+            self.status = "Running"
+        elif self.process.returncode == 0:
+            self.status = "Completed"
+        elif self.process.returncode == 1:
+            self.status = "Failed"
+        elif self.process.returncode == -15:
+            self.status = "Stopped"
         else:
-            return f"Exited with return code: {self.process.returncode}. A non-zero return code indicates an error."
+            logger.warning(
+                "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
+                self.process.returncode
+            )
+            return str(self.process.returncode)
+        return self.status
 
     def stop(self):
         if self.process is None:  # Check if a process has been started
