@@ -3,8 +3,10 @@ import asyncio
 from datetime import datetime
 from typing import List
 from pathlib import Path
+from omegaconf import OmegaConf
 
 from app.core.logger_config import get_logger
+from app.core.config import settings
 
 logger = get_logger(__name__)
 
@@ -14,7 +16,7 @@ class Process:
         self.preset_end_status: str = preset_end_status
         self.status: str = "null"
         self.timestamp: datetime = datetime.now()
-        self.log_path: Path = Path("./logs/")
+        self.log_path: str = "./logs/"
         self.process: asyncio.subprocess.Process = None # pylint: disable=no-member #TODO: is naming ok? 
 
     async def start(self, cmd_to_run):
@@ -79,31 +81,57 @@ class RunProcess(Process):
     def __init__(self, id_: int, preset_end_status: str):# build_id:int, 
         super().__init__(id_, preset_end_status)
         # self.build_id: int = build_id
+        self.save_process() # TODO: Think about this. The status is still null in this stage !!
 
     def get_full_info(self) -> dict:
         self.check_status()
         return {
-            "run_id": self.id,
-            # "build_id": self.build_id,
+            "id": self.id,
+            "build_id": 43,#TODO: self.build_id,
             "run_preset_name": self.preset_end_status,
             "status": self.status,
             "timestamp": self.timestamp,
             "log_path": self.log_path,
         }
+    
+    def save_process(self):
+        # save current run info into RUNS_PATH
+        runs_path = Path(settings.RUNS_PATH)
+        runs_conf = OmegaConf.load(runs_path)
+
+        run_params = self.get_full_info()
+        run_params["timestamp"] = run_params["timestamp"].strftime("%Y-%m-%dT%H:%M:%S")
+
+        runs_conf.append(run_params)
+        with open(runs_path, "w", encoding="UTF-8") as file:
+            OmegaConf.save(config=runs_conf, f=file)
+
+        # save current run info into the correspoinding build in BUILDS_PATH
+        builds_path = Path(settings.BUILDS_PATH)
+        builds_conf = OmegaConf.load(builds_path)
+        for build in builds_conf:
+            if "id" in build and build.id == run_params["build_id"]:
+                if not build.runs:
+                    build.runs = []
+                build.runs.append({
+                    param: v for param, v in run_params.items() if param not in ["build_id", "log_path"]
+                })
+        with open(builds_path, "w", encoding="UTF-8") as file:
+            OmegaConf.save(config=builds_conf, f=file)
 
 
 class BuildProcess(Process):
     def __init__(self, id_: int, preset_end_status: str):
         super().__init__(id_, preset_end_status)
-        self.run_ids: List[int] = []
+        self.runs: List[int] = []
 
     def get_full_info(self) -> dict:
         self.check_status()
         return {
-            "build_id": self.id,
+            "id": self.id,
             "build_preset_name": self.preset_end_status,
             "status": self.status,
             "timestamp": self.timestamp,
             "log_path": self.log_path,
-            "run_ids": self.run_ids,
+            "runs": self.runs,
         }

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     UI_PORT: int = 3000
     LOG_LEVEL: str = "debug"
     CONF_RELOAD: bool = True # Enable auto-reload for development mode
+    BUILDS_PATH: str = f"{WORK_DIRECTORY}/df_designer/builds.yaml"
+    RUNS_PATH: str = f"{WORK_DIRECTORY}/df_designer/runs.yaml"
     DIR_LOGS: str = f"{WORK_DIRECTORY}/logs.log"   #TODO: Ensure this's a good path
     # database_file = "database.sqlite"
     server: uvicorn.Server = uvicorn.Server(
