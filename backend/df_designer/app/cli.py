@@ -1,6 +1,7 @@
 from cookiecutter.main import cookiecutter
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
 import typer
@@ -49,6 +50,7 @@ def build_bot(
 
 @cli.command("run_bot")
 def run_bot(
+    build_id: int,
     project_dir: str = settings.WORK_DIRECTORY,
     preset: str = "success"
 ):
@@ -58,6 +60,8 @@ def run_bot(
 
     if preset in presets_run_file:
         command_to_run = presets_run_file[preset]["cmd"]
+        if preset == "success":
+            command_to_run += f" {build_id}"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
         _execute_command(command_to_run)
@@ -67,9 +71,11 @@ def run_bot(
 
 @cli.command("run_scenario")
 def run_scenario(
+    build_id: int,
     project_dir: str = "."
 ):
-    command_to_run = f"poetry run python {project_dir}/app.py"
+    script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
+    command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
     _execute_command(command_to_run)
 
 
