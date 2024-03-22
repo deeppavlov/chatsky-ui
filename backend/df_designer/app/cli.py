@@ -15,19 +15,7 @@ cli = typer.Typer()
 
 def _execute_command(command_to_run):
     try:
-        process = subprocess.run(
-            command_to_run.split(),
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=5
-        )
-
-        if process.stdout:
-            logger.info("Command '%s' output: %s", command_to_run, process.stdout)
-        if process.stderr:
-            logger.error("Command '%s' error: %s", command_to_run, process.stderr)
+        process = subprocess.run(command_to_run.split(),check=False)
 
         # Check the return code to determine success
         if process.returncode == 0:
@@ -36,8 +24,6 @@ def _execute_command(command_to_run):
             logger.error("Command '%s' failed with return code: %d", command_to_run, process.returncode)
             sys.exit(process.returncode)
 
-    except subprocess.TimeoutExpired as e:
-        logger.error("Command '%s' timed out with no error: %s", command_to_run, str(e))
     except Exception as e:
         logger.error("Error executing '%s': %s", command_to_run, str(e))
         sys.exit(1)
