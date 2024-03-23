@@ -1,12 +1,12 @@
-from app.clients.process_manager import ProcessManager
+from app.clients.process_manager import BuildManager, RunManager
 from app.clients.websocket_manager import WebSocketManager
 
-build_manager = ProcessManager()
-def get_build_manager() -> ProcessManager:
+build_manager = BuildManager()
+def get_build_manager() -> BuildManager:
     return build_manager
 
-run_manager = ProcessManager()
-def get_run_manager() -> ProcessManager:
+run_manager = RunManager()
+def get_run_manager() -> RunManager:
     return run_manager
 
 websocket_manager = WebSocketManager()
