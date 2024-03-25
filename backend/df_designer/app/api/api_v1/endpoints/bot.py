@@ -13,12 +13,12 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
-def _stop_process(
+async def _stop_process(
     pid: int, process_manager: ProcessManager, process= "run"
 ):
     if pid not in process_manager.processes:
         raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
-    process_manager.stop(pid)
+    await process_manager.stop(pid)
     logger.info("%s process '%s' has stopped", process.capitalize(), pid)
     return {"status": "ok"}
 
@@ -34,14 +34,14 @@ def _check_process_status(pid: int, process_manager: ProcessManager):
 async def start_build(preset: Preset, build_manager: BuildManager = Depends(deps.get_build_manager)):
     await asyncio.sleep(preset.wait_time)
     await build_manager.start(preset) #TODO: Think about making BuildManager and RunManager
-    pid = build_manager.get_last_id()
-    logger.info("Build process '%s' has started", pid)
-    return {"status": "ok", "pid": pid}
+    build_id = build_manager.get_last_id()
+    logger.info("Build process '%s' has started", build_id)
+    return {"status": "ok", "build_id": build_id}
 
 
-@router.get("/build/stop/{pid}", status_code=200)
-async def stop_build(*, pid: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return _stop_process(pid, build_manager, process="build")
+@router.get("/build/stop/{build_id}", status_code=200)
+async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
+    return await _stop_process(build_id, build_manager, process="build")
 
 
 @router.get("/build/status/{pid}", status_code=200)
@@ -63,14 +63,14 @@ async def get_build(*, build_id: int, build_manager: BuildManager = Depends(deps
 async def start_run(*, build_id: int, preset: Preset, run_manager: RunManager = Depends(deps.get_run_manager)):
     await asyncio.sleep(preset.wait_time)
     await run_manager.start(build_id, preset)
-    pid = run_manager.get_last_id()
-    logger.info("Run process '%s' has started", pid)
-    return {"status": "ok", "pid": pid}
+    run_id = run_manager.get_last_id()
+    logger.info("Run process '%s' has started", run_id)
+    return {"status": "ok", "run_id": run_id}
 
 
 @router.get("/run/stop/{pid}", status_code=200)
 async def stop_run(*, pid: int, run_manager: RunManager = Depends(deps.get_run_manager)):
-    return _stop_process(pid, run_manager, process="run")
+    return await _stop_process(pid, run_manager, process="run")
 
 
 @router.get("/run/status/{pid}", status_code=200)
