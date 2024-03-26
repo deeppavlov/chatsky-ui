@@ -1,6 +1,7 @@
 import aiofiles
 import asyncio
 from datetime import datetime
+import time
 from typing import List
 from omegaconf import OmegaConf
 
@@ -37,26 +38,37 @@ class Process:
         for key, value in params_dict.items():
             setattr(self, key, value)
 
+    def update_db_info(self):
+        pass
+
+    def periodically_check_status(self):
+        while True:
+            self.update_db_info() # check status and update db
+            logger.info("Status of process '%s': %s",self.id, self.status)
+            if self.status in ["stopped", "completed", "failed"]:
+                break
+            time.sleep(2) #TODO: ?sleep time shouldn't be constant
+
     def check_status(self) -> str:
-        """Returns the process status [null, Running, Completed, Failed, Stopped].
+        """Returns the process status [null, running, completed, failed, stopped].
         - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
         incorrect usage or a process misuse in backend logic.
-        - Running: returncode is None
-        - Completed: returncode is 0
-        - Failed: returncode is 1
-        - Stopped: returncode is -15
+        - running: returncode is None
+        - completed: returncode is 0
+        - failed: returncode is 1
+        - stopped: returncode is -15
         - "Exited with return code: {self.process.returncode}. A non-zero return code indicates an error": Otherwise
         """
         if self.process is None:
             self.status = "null"
         elif self.process.returncode is None:
-            self.status = "Running"
+            self.status = "running"
         elif self.process.returncode == 0:
-            self.status = "Completed"
+            self.status = "completed"
         elif self.process.returncode == 1:
-            self.status = "Failed"
+            self.status = "failed"
         elif self.process.returncode == -15:
-            self.status = "Stopped"
+            self.status = "stopped"
         else:
             logger.warning(
                 "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
@@ -93,7 +105,7 @@ class RunProcess(Process):
         self.build_id: int = build_id
 
     def update_db_info(self):
-        # save current run info into BUILDS_PATH
+        # save current run info into RUNS_PATH
         runs_conf = settings.read_conf(settings.RUNS_PATH)
         run_params = self.get_full_info()
         run_params["timestamp"] = run_params["timestamp"].strftime("%Y-%m-%dT%H:%M:%S")
@@ -124,7 +136,7 @@ class BuildProcess(Process):
         self.runs: List[int] = []
 
     def update_db_info(self):
-        # save current run info into BUILDS_PATH
+        # save current build info into BUILDS_PATH
         builds_conf = settings.read_conf(settings.BUILDS_PATH)
 
         build_params = self.get_full_info()
