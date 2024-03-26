@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketException, status
+from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketException, status, BackgroundTasks
 
 from app.schemas.preset import Preset
 from app.core.logger_config import get_logger
@@ -26,15 +26,16 @@ async def _stop_process(
 def _check_process_status(pid: int, process_manager: ProcessManager):
     if pid not in process_manager.processes:
         raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
-    process_status = process_manager.check_status(pid)
+    process_status = process_manager.get_status(pid)
     return {"status": process_status}
 
 
 @router.post("/build/start", status_code=201)
-async def start_build(preset: Preset, build_manager: BuildManager = Depends(deps.get_build_manager)):
+async def start_build(preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)):
     await asyncio.sleep(preset.wait_time)
     await build_manager.start(preset) #TODO: Think about making BuildManager and RunManager
     build_id = build_manager.get_last_id()
+    background_tasks.add_task(build_manager.check_status, build_id)
     logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
 
@@ -60,10 +61,11 @@ async def get_build(*, build_id: int, build_manager: BuildManager = Depends(deps
 
 
 @router.post("/run/start/{build_id}", status_code=201)
-async def start_run(*, build_id: int, preset: Preset, run_manager: RunManager = Depends(deps.get_run_manager)):
+async def start_run(*, build_id: int, preset: Preset, background_tasks: BackgroundTasks, run_manager: RunManager = Depends(deps.get_run_manager)):
     await asyncio.sleep(preset.wait_time)
     await run_manager.start(build_id, preset)
     run_id = run_manager.get_last_id()
+    background_tasks.add_task(run_manager.check_status, run_id)
     logger.info("Run process '%s' has started", run_id)
     return {"status": "ok", "run_id": run_id}
 

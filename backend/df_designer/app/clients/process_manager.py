@@ -18,15 +18,16 @@ class ProcessManager:
 
     async def stop(self, pid):
         await self.processes[pid].stop()
-        self.processes[pid].update_db_info()
 
     def check_status(self, pid):
+        self.processes[pid].periodically_check_status()
+
+    def get_status(self, pid):
         return self.processes[pid].check_status()
 
     def get_full_info(self, id_, path: str, processclass: Type[Process]):
         if id_ in self.processes:
             process = self.processes[id_]
-            process.check_status()
             return process.get_full_info()
         else:
             db_conf = settings.read_conf(path)
@@ -52,7 +53,6 @@ class RunManager(ProcessManager):
         process = RunProcess(id_, build_id, preset.end_status)
         await process.start(cmd_to_run)
         self.processes[id_] = process
-        process.update_db_info()
 
     def get_min_info(self) -> List[dict]:
         conf_path=settings.RUNS_PATH
