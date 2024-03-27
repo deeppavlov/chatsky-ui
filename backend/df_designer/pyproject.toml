@@ -15,7 +15,7 @@ typer = "^0.9.0"
 pydantic-settings = "^2.2.1"
 aiofiles = "^23.2.1"
 cookiecutter = "^2.6.0"
-dff = { git = "https://github.com/deeppavlov/dialog_flow_framework.git", branch = "feat/script-parser" }
+dff = { git = "https://github.com/deeppavlov/dialog_flow_framework.git", rev = "4b4cf69dd96e1ed21ec3bf9d5950c010616b24cc" }
 omegaconf = "^2.3.0"
 
 [tool.poetry.scripts]
