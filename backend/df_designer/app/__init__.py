@@ -123,9 +123,13 @@ class RunProcess(Process):
         builds_conf = settings.read_conf(settings.BUILDS_PATH)
         for build in builds_conf:
             if build.id == run_params["build_id"]:
-                build.runs.append({
-                    param: v for param, v in run_params.items() if param not in ["build_id", "log_path"]
-                })
+                for run in build.runs:
+                    if run.id == run_params["id"]:
+                        for key, value in run_params.items():
+                            setattr(run, key, value)
+                        break
+                else:
+                    build.runs.append(run_params)
         with open(settings.BUILDS_PATH, "w", encoding="UTF-8") as file:
             OmegaConf.save(config=builds_conf, f=file)
 
