@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     BUILDS_PATH: str = f"{WORK_DIRECTORY}/df_designer/builds.yaml"
     RUNS_PATH: str = f"{WORK_DIRECTORY}/df_designer/runs.yaml"
     DIR_LOGS: str = f"{WORK_DIRECTORY}/logs.log"   #TODO: Ensure this's a good path
+    FRONTEND_FLOWS_PATH : str = f"{WORK_DIRECTORY}/df_designer/frontend_flows.yaml"
     # database_file = "database.sqlite"
     server: uvicorn.Server = uvicorn.Server(
         uvicorn.Config(APP, HOST, BACKEND_PORT, LOG_LEVEL, CONF_RELOAD, reload_dirs=WORK_DIRECTORY)
