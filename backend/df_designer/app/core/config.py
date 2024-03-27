@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     # consult about the namings
     APP: str = "app.main:app"
-    HOST: str = "127.0.0.1"
+    HOST: str = "0.0.0.0"
     BACKEND_PORT: int = 8000
     UI_PORT: int = 3000
     LOG_LEVEL: str = "debug"
