@@ -33,7 +33,7 @@ def _check_process_status(pid: int, process_manager: ProcessManager):
 @router.post("/build/start", status_code=201)
 async def start_build(preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)):
     await asyncio.sleep(preset.wait_time)
-    await build_manager.start(preset) #TODO: Think about making BuildManager and RunManager
+    await build_manager.start(preset)
     build_id = build_manager.get_last_id()
     background_tasks.add_task(build_manager.check_status, build_id)
     logger.info("Build process '%s' has started", build_id)
