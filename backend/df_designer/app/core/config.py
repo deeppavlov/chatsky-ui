@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     FRONTEND_FLOWS_PATH : Path = Path(f"{WORK_DIRECTORY}/df_designer/frontend_flows.yaml")
     # database_file = "database.sqlite"
     server: uvicorn.Server = uvicorn.Server(
-        uvicorn.Config(APP, HOST, BACKEND_PORT, LOG_LEVEL, CONF_RELOAD, reload_dirs=WORK_DIRECTORY)
+        uvicorn.Config(APP, HOST, BACKEND_PORT, LOG_LEVEL, reload=CONF_RELOAD, reload_dirs=WORK_DIRECTORY)
     )
     
     def setup_server(self, ip_address: str, port: int, conf_reload: str, project_dir: str) -> None:
