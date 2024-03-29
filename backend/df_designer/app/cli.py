@@ -9,12 +9,12 @@ import typer
 from app.core.config import settings
 from app.core.logger_config import get_logger
 
-logger = get_logger(__name__)
 
 cli = typer.Typer()
 
 
 def _execute_command(command_to_run):
+    logger = get_logger(__name__)
     try:
         process = subprocess.run(command_to_run.split(),check=False)
 
@@ -35,6 +35,7 @@ def build_bot(
     project_dir: str = settings.WORK_DIRECTORY,
     preset: str = "success"
 ):
+    logger = get_logger(__name__)
     presets_build_path = os.path.join(project_dir, "df_designer", "presets", "build.json")
     with open(presets_build_path) as file:
         presets_build_file = json.load(file)
@@ -54,6 +55,7 @@ def run_bot(
     project_dir: str = settings.WORK_DIRECTORY,
     preset: str = "success"
 ):
+    logger = get_logger(__name__)
     presets_run_path = os.path.join(project_dir, "df_designer", "presets", "run.json")
     with open(presets_run_path) as file:
         presets_run_file = json.load(file)
