@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 from pathlib import Path
+from typing import Optional
 import os
 
 from app.core.config import settings
@@ -28,7 +29,13 @@ def setup_logging(log_type: str, log_name: str) -> Path:
         open(log_file, 'w', encoding="UTF-8").close()
     return log_file
 
-def get_logger(name, file_handler_path: Path = settings.DIR_LOGS/ "logs.log"):
+def get_logger(name, file_handler_path: Optional[Path] = None):
+    if file_handler_path is None:
+        os.makedirs(settings.DIR_LOGS, exist_ok=True)
+        file_handler_path = settings.DIR_LOGS/ "logs.log"
+        if not os.path.exists(file_handler_path):
+            open(file_handler_path, 'w', encoding="UTF-8").close()
+
     logger = logging.getLogger(name)
     logger.propagate = False
     logger.setLevel(LOG_LEVELS[settings.LOG_LEVEL])

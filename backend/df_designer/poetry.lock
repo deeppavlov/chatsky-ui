@@ -286,8 +286,8 @@ ydb = ["six", "ydb"]
 [package.source]
 type = "git"
 url = "https://github.com/deeppavlov/dialog_flow_framework.git"
-reference = "feat/script-parser"
-resolved_reference = "56755b9ecac4facf16edcff573c1a5cc132df2f7"
+reference = "4b4cf69dd96e1ed21ec3bf9d5950c010616b24cc"
+resolved_reference = "4b4cf69dd96e1ed21ec3bf9d5950c010616b24cc"
 
 [[package]]
 name = "exceptiongroup"
@@ -1257,4 +1257,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1d90f6e8218f6439e38aef9e717a4165e84728266a098dae6f6bb67c7ab245d0"
+content-hash = "c38c78d758710b2271c18b10a032af520ac530928bf102b4dc86907820f63b08"
