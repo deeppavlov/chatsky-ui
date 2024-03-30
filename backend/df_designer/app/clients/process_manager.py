@@ -56,7 +56,7 @@ class RunManager(ProcessManager):
         self.processes[id_] = process
 
     def get_min_info(self) -> List[dict]:
-        runs_conf = settings.read_conf(settings.RUNS_PATH)
+        runs_conf = settings.read_conf(settings.runs_path)
         minimum_params = ["id", "build_id", "preset_end_status", "status", "timestamp"]
 
         minimum_info = []
@@ -65,7 +65,7 @@ class RunManager(ProcessManager):
 
         return minimum_info
 
-    def get_full_info(self, id_, path: Path = settings.RUNS_PATH, processclass: Type[Process] = RunProcess):
+    def get_full_info(self, id_, path: Path = settings.runs_path, processclass: Type[Process] = RunProcess):
         return super().get_full_info(id_, path, processclass)
 
 
@@ -86,7 +86,7 @@ class BuildManager(ProcessManager):
         self.processes[id_] = process
 
     def get_min_info(self) -> List[dict]:
-        conf_path=settings.BUILDS_PATH
+        conf_path=settings.builds_path
         builds_conf = settings.read_conf(conf_path)
         minimum_params = ["id", "preset_end_status", "status", "timestamp", "runs"]
 
@@ -101,5 +101,5 @@ class BuildManager(ProcessManager):
             minimum_info.append(info)
         return minimum_info
 
-    def get_full_info(self, id_, path: Path = settings.BUILDS_PATH, processclass: Type[Process] = BuildProcess):
+    def get_full_info(self, id_, path: Path = settings.builds_path, processclass: Type[Process] = BuildProcess):
         return super().get_full_info(id_, path, processclass)

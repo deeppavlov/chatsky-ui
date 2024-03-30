@@ -35,7 +35,3 @@ def root() -> dict:
 
 app.include_router(root_router)
 app.include_router(api_router)
-
-
-if __name__ == "__main__": #TODO: is this needed? as we already have the run_backend command in cli
-    uvicorn.run(app, host="0.0.0.0", port=8001, log_level="debug")
