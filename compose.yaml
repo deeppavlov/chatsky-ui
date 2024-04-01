@@ -3,7 +3,7 @@ services:
     build:
       args:
         PROJECT_DIR: brand_new
-      context: ./backend
+      context: ./
       dockerfile: Dockerfile
     ports:
       - 8000:8000
