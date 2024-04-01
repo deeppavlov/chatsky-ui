@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     APP: str = "app.main:app"
     package_dir: Path = Path(__file__).absolute()
     static_files: Path = package_dir.parent.with_name("static")
+    start_page: Path = static_files.joinpath("index.html")
+
     HOST: str = "0.0.0.0"
     BACKEND_PORT: int = 8000
     UI_PORT: int = 3000
