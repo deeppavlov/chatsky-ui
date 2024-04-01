@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import typer
+import uvicorn
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
@@ -32,7 +33,7 @@ def _execute_command(command_to_run):
 
 @cli.command("build_bot")
 def build_bot(
-    project_dir: str = settings.WORK_DIRECTORY,
+    project_dir: str = settings.work_directory,
     preset: str = "success"
 ):
     logger = get_logger(__name__)
@@ -52,7 +53,7 @@ def build_bot(
 @cli.command("run_bot")
 def run_bot(
     build_id: int,
-    project_dir: str = settings.WORK_DIRECTORY,
+    project_dir: str = settings.work_directory,
     preset: str = "success"
 ):
     logger = get_logger(__name__)
@@ -81,19 +82,6 @@ def run_scenario(
     _execute_command(command_to_run)
 
 
-#### TODO: move to DB DIR
-# def setup_database(project_dir: str) -> None:
-#     """Set up the database."""
-#     engine = create_engine(f"sqlite:///{project_dir}/{app.database_file}")
-#     Base.metadata.create_all(engine)
-
-
-def _setup_backend(ip_address: str, port: int, conf_reload: str, project_dir: str) -> None:
-    settings.WORK_DIRECTORY = project_dir # TODO: set a function for setting the value
-    # setup_database(project_dir)
-    settings.setup_server(ip_address, port, conf_reload, project_dir)
-
-
 async def _run_server() -> None:
     """Run the server."""
     await settings.server.run()
@@ -101,18 +89,29 @@ async def _run_server() -> None:
 
 @cli.command("run_backend")
 def run_backend(
-    ip_address: str = settings.HOST,
-    port: int = settings.BACKEND_PORT,
-    conf_reload: str = str(settings.CONF_RELOAD),
-    project_dir: str = settings.WORK_DIRECTORY,
+    ip_address: str = settings.host,
+    port: int = settings.backend_port,
+    conf_reload: str = str(settings.conf_reload),
+    project_dir: str = settings.work_directory,
 ) -> None:
     """Run the backend."""
-    _setup_backend(ip_address, port, conf_reload, project_dir)
+    settings.host = ip_address
+    settings.backend_port = port
+    settings.conf_reload = conf_reload.lower() in ["true", "yes", "t", "y", "1"]
+    settings.work_directory = project_dir
+    settings.uvicorn_config = uvicorn.Config(
+        settings.APP,
+        settings.host,
+        settings.backend_port,
+        reload=settings.conf_reload,
+        reload_dirs=str(settings.work_directory)
+    )
+    settings.server = uvicorn.Server(settings.uvicorn_config)
     settings.server.run()
 
 
 @cli.command("init")
-def init(destination: str = settings.WORK_DIRECTORY):
+def init(destination: str = settings.work_directory):
     original_dir = os.getcwd()
     try:
         os.chdir(destination)
