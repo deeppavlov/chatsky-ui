@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     work_directory: str = "."
     config_file_path: Path = Path(__file__).absolute()
     static_files: Path = config_file_path.parent.with_name("static")
+    start_page: Path = static_files.joinpath("index.html")
     package_dir: Path = config_file_path.parents[3]
 
     host: str = "0.0.0.0"

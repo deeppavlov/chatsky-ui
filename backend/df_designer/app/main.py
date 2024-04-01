@@ -1,6 +1,8 @@
+import aiofiles
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 import uvicorn
 
 from app.api.api_v1.api import api_router
@@ -25,13 +27,15 @@ app.mount(
 root_router = APIRouter()
 
 
-@root_router.get("/", status_code=200)
-def root() -> dict:
-    """
-    Root GET
-    """
-    return {"msg": "Frontend is not build yet"}
-
+@root_router.get("/home", include_in_schema=False, status_code=200)
+async def root() -> dict:
+    """Return frontend."""
+    if not settings.start_page.exists():
+        html = "frontend is not build"
+    else:
+        async with aiofiles.open(settings.start_page, mode="r") as file:
+            html = await file.read()
+    return HTMLResponse(content=html)
 
 app.include_router(root_router)
 app.include_router(api_router)
