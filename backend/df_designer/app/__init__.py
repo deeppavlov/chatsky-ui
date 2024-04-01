@@ -119,8 +119,8 @@ class RunProcess(Process):
         self.logger = get_logger(str(id_), self.log_path)
 
     def update_db_info(self):
-        # save current run info into RUNS_PATH
-        runs_conf = settings.read_conf(settings.RUNS_PATH)
+        # save current run info into runs_path
+        runs_conf = settings.read_conf(settings.runs_path)
 
         run_params = self.get_full_info()
         _map_to_str(run_params)
@@ -132,11 +132,11 @@ class RunProcess(Process):
                 break
         else:
             runs_conf.append(run_params)
-        with open(settings.RUNS_PATH, "w", encoding="UTF-8") as file:
+        with open(settings.runs_path, "w", encoding="UTF-8") as file:
             OmegaConf.save(config=runs_conf, f=file)
 
-        # save current run info into the correspoinding build in BUILDS_PATH
-        builds_conf = settings.read_conf(settings.BUILDS_PATH)
+        # save current run info into the correspoinding build in builds_path
+        builds_conf = settings.read_conf(settings.builds_path)
         for build in builds_conf:
             if build.id == run_params["build_id"]:
                 for run in build.runs:
@@ -146,7 +146,7 @@ class RunProcess(Process):
                         break
                 else:
                     build.runs.append(run_params)
-        with open(settings.BUILDS_PATH, "w", encoding="UTF-8") as file:
+        with open(settings.builds_path, "w", encoding="UTF-8") as file:
             OmegaConf.save(config=builds_conf, f=file)
 
 
@@ -160,8 +160,8 @@ class BuildProcess(Process):
         self.logger = get_logger(str(id_), self.log_path)
 
     def update_db_info(self):
-        # save current build info into BUILDS_PATH
-        builds_conf = settings.read_conf(settings.BUILDS_PATH)
+        # save current build info into builds_path
+        builds_conf = settings.read_conf(settings.builds_path)
 
         build_params = self.get_full_info()
         _map_to_str(build_params)
@@ -174,5 +174,5 @@ class BuildProcess(Process):
         else:
             builds_conf.append(build_params)
 
-        with open(settings.BUILDS_PATH, "w", encoding="UTF-8") as file:
+        with open(settings.builds_path, "w", encoding="UTF-8") as file:
             OmegaConf.save(config=builds_conf, f=file)
