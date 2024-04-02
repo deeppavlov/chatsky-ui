@@ -35,6 +35,7 @@ import { workspaceContext } from "../contexts/workspaceContext"
 import Logs from "./Logs"
 import { UndoRedoProvider, undoRedoContext } from "../contexts/undoRedoContext"
 import Chat from "../components/chat/Chat"
+import NodesLayout from "./NodesLayout"
 
 const nodeTypes = {
   default_node: DefaultNode,
@@ -47,7 +48,7 @@ export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
   const { flows, updateFlow, saveFlows } = useContext(flowContext)
-  const { toggleWorkspaceMode, workspaceMode, setWorkspaceMode } = useContext(workspaceContext)
+  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode } = useContext(workspaceContext)
   const { takeSnapshot } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
@@ -240,6 +241,7 @@ export default function Flow() {
           </ReactFlow>
         </a.div>
       ))}
+      {nodesLayoutMode && <NodesLayout />}
       <Logs />
       <Chat />
     </div>

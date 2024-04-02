@@ -28,6 +28,7 @@
     "react-hot-toast": "^2.4.1",
     "react-intersection-observer": "^9.8.1",
     "react-router-dom": "^6.22.2",
+    "react-xarrows": "^2.0.2",
     "reactflow": "^11.10.4",
     "uuid": "^9.0.1",
     "yaml": "^2.4.1"

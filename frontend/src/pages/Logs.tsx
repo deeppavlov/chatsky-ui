@@ -58,6 +58,7 @@ const Logs = () => {
             {builds && builds.length ? (
               builds.sort((a, b) => b.id - a.id).map((build) => (
                 <AccordionItem
+                  textValue="TEST"
                   key={build.id}
                   className=''
                   onPress={(e) => {
