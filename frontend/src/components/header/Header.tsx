@@ -10,7 +10,7 @@ import { workspaceContext } from "../../contexts/workspaceContext"
 
 const Header = () => {
   const { toggleTheme, theme } = useContext(themeContext)
-  const { toggleWorkspaceMode, workspaceMode } = useContext(workspaceContext)
+  const { toggleWorkspaceMode, workspaceMode, toggleNodesLayoutMode, nodesLayoutMode } = useContext(workspaceContext)
   const {
     isOpen: isSettingsModalOpen,
     onOpen: onOpenSettingsModal,
@@ -25,6 +25,9 @@ const Header = () => {
         </Link>
         <Button onClick={toggleWorkspaceMode} variant="ghost" >
           { workspaceMode ? "Free mode" : "Fix mode" }
+        </Button>
+        <Button onClick={toggleNodesLayoutMode} variant="ghost" >
+          { nodesLayoutMode ? "Canvas Mode" : "List mode" }
         </Button>
       </div>
       <div className='flex items-center justify-start gap-1'>
