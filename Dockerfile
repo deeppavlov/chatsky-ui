@@ -1,3 +1,21 @@
+FROM oven/bun:1 as frontend-base
+FROM frontend-base AS frontend-builder
+
+WORKDIR /src
+COPY ./frontend/package.json /src/frontend/package.json
+COPY ./frontend/bun.lockb /src/frontend/bun.lockb
+
+RUN cd /src/frontend && bun install --frozen-lockfile
+
+# Copy the rest of the application code
+COPY ./frontend/ /src/frontend/
+WORKDIR /src/frontend/
+
+RUN bun run build
+RUN ls /src/frontend/dist
+
+#---------------------------------------------------------
+
 # Use a slim variant to reduce image size where possible
 FROM python:3.10-slim as backend-builder
 
@@ -18,6 +36,8 @@ RUN python3 -m venv $POETRY_VENV \
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
 COPY ./backend/df_designer /src/backend/df_designer
+COPY --from=frontend-builder /src/frontend/dist /src/backend/df_designer/app/static
+
 COPY ./${PROJECT_DIR} /src/${PROJECT_DIR}
 
 # Build the wheel
@@ -26,22 +46,7 @@ RUN poetry build
 
 #---------------------------------------------------------
 
-FROM oven/bun:1 as frontend-base
-FROM frontend-base AS frontend-builder
-
-WORKDIR /src
-COPY ./frontend/package.json /src/frontend/package.json
-COPY ./frontend/bun.lockb /src/frontend/bun.lockb
-
-RUN cd /src/frontend && bun install --frozen-lockfile
-
-# Copy the rest of the application code
-COPY ./frontend/ /src/frontend/
-WORKDIR /src/frontend/
-
-RUN bun run build
-
-#---------------------------------------------------------
+#TODO: create something like src named e.g. runtime/
 
 FROM python:3.10-slim as runtime
 
@@ -54,8 +59,7 @@ ENV PATH="/poetry-venv/bin:$PATH"
 
 # Copy only the necessary files
 COPY --from=backend-builder /src/backend/df_designer /df_designer
-COPY --from=backend-builder /src/${PROJECT_DIR} /${PROJECT_DIR}
-COPY --from=frontend-builder /src/frontend/dist /backend/static
+COPY ./${PROJECT_DIR} /${PROJECT_DIR}
 
 # Install the wheel
 WORKDIR /${PROJECT_DIR}
