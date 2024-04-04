@@ -10,6 +10,7 @@ import ContextWrapper from "./contexts/index.tsx"
 import Home from "./pages/Home.tsx"
 import { ReactFlowProvider } from "reactflow"
 import { UndoRedoProvider } from "./contexts/undoRedoContext.tsx"
+import Fallback from "./pages/Fallback.tsx"
 
 const router = createBrowserRouter([
   {
@@ -20,10 +21,10 @@ const router = createBrowserRouter([
       </ContextWrapper>
     ),
     loader: Preloader,
-    errorElement: <div>404</div>,
+    errorElement: <Fallback />,
     children: [
       {
-        path: "/flow/:flowId",
+        path: "app/flow/:flowId",
         element: (
           <ReactFlowProvider>
             <UndoRedoProvider>
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
         loader: Preloader,
       },
       {
-        path: "/home",
+        path: "app/home",
         element: <Home />,
         loader: Preloader,
       },

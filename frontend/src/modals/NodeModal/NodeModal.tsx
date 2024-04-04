@@ -7,12 +7,19 @@ import {
   ModalFooter,
   ModalHeader,
   ModalProps,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react"
-import { HelpCircle, TrashIcon } from "lucide-react"
+import { HelpCircle, Trash2Icon, TrashIcon } from "lucide-react"
 import React, { useCallback, useState } from "react"
 import { NodeDataType } from "../../types/NodeTypes"
 import { useReactFlow } from "reactflow"
-
+import { conditionType } from "../../types/ConditionTypes"
+import ConditionRow from "./components/ConditionRow"
 
 type NodeModalProps = {
   data: NodeDataType
@@ -48,6 +55,8 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
     onClose()
   }
 
+  console.log(data.conditions)
+
   return (
     <Modal
       className='bg-background min-h-[584px]'
@@ -59,7 +68,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
         <ModalHeader>{"Edit node"}</ModalHeader>
         <ModalBody>
           <label></label>
-          <div className="grid gap-4">
+          <div className='grid gap-4'>
             <Input
               label='Name'
               labelPlacement='outside'
@@ -76,6 +85,24 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
               value={nodeDataState.response}
               onChange={setDataStateValue}
             />
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-2 mt-2"> Conditions (x) </p>
+            <div className="border border-border rounded-xl">
+              <div className='grid grid-cols-3 gap-4 px-4 py-2'>
+                <div>NAME</div>
+                <div>PRIORITY</div>
+                <div>ACTIONS</div>
+              </div>
+              <div className="grid">
+                {data.conditions?.map((cnd) => (
+                  <ConditionRow
+                    key={cnd.id}
+                    cnd={cnd}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </ModalBody>
         <ModalFooter className='flex justify-between items-center'>
