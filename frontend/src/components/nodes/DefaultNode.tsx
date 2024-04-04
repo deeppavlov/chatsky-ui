@@ -28,6 +28,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
       name: "New Condition",
       type: "llm",
       data: {
+        priority: 1,
         prompt: "",
         api_key: "",
         action: "",
