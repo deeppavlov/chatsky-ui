@@ -48,7 +48,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
         <button
           className='bg-bg-secondary border border-border hover:border-node-selected hover:bg-node-header rounded-md py-1 px-2 flex items-center gap-2'
           onClick={() => {
-            navigate(`/flow/${flow.name}`)
+            navigate(`/app/flow/${flow.name}`)
           }}>
           <Edit className='w-5 h-5' />
           Edit flow

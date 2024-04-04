@@ -1,4 +1,5 @@
 export type conditionDataType = {
+  priority: number
   prompt?: string
   api_key?: string
   action?: string

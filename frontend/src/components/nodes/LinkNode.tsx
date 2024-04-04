@@ -25,6 +25,7 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
         prompt: "",
         api_key: "",
         action: "",
+        priority: 1
       },
     }),
     [data.name, isOpen]
