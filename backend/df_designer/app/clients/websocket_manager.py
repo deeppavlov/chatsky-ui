@@ -20,8 +20,10 @@ class WebSocketManager:
 
     def disconnect(self, websocket: WebSocket):
         if websocket in self.pending_tasks:
+            logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:
                 task.cancel()
+            del self.pending_tasks[websocket]
         self.active_connections.remove(websocket)
 
     def check_status(self, websocket: WebSocket):
@@ -41,7 +43,6 @@ class WebSocketManager:
                     break
                 await websocket.send_text(response.decode().strip())
         except WebSocketDisconnect:
-            self.disconnect(websocket)
             logger.info("Websocket connection is closed by client")
 
     async def forward_websocket_messages_to_process(self, pid: int, process_manager: ProcessManager, websocket: WebSocket):
@@ -57,5 +58,4 @@ class WebSocketManager:
         except asyncio.CancelledError:
             logger.info("Websocket connection is closed")
         except WebSocketDisconnect:
-            self.disconnect(websocket)
             logger.info("Websocket connection is closed by client")
