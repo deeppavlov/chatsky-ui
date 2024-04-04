@@ -1,9 +1,6 @@
-import aiofiles
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-import uvicorn
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
@@ -18,24 +15,22 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
-app.mount(
-    "/static",
-    StaticFiles(directory=settings.static_files),
-    name="static",
-)
-
 root_router = APIRouter()
 
+@root_router.get("/app/{path:path}")
+async def route_static_file(path: str):
+	if not settings.start_page.exists():
+		return HTMLResponse(content="frontend is not built")
+	file_path = settings.static_files / path.split("/")[-1]
+	if file_path.suffix in (".js", ".css", ".html"):
+		return FileResponse(file_path)
+	return FileResponse(settings.static_files / "index.html")
 
-@root_router.get("/home", include_in_schema=False, status_code=200)
-async def root() -> dict:
-    """Return frontend."""
-    if not settings.start_page.exists():
-        html = "frontend is not build"
-    else:
-        async with aiofiles.open(settings.start_page, mode="r") as file:
-            html = await file.read()
-    return HTMLResponse(content=html)
+
+@root_router.get("/")
+async def root() -> Response:
+	"""Redirect '/' to index.html"""
+	return RedirectResponse(url="/app")
 
 app.include_router(root_router)
 app.include_router(api_router)
