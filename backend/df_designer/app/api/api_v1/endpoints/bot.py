@@ -126,3 +126,4 @@ async def connect(
         [output_task, input_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
+    websocket_manager.disconnect(websocket)
