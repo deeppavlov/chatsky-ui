@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketException, status, BackgroundTasks
+from typing import Optional
 
 from app.schemas.preset import Preset
 from app.core.logger_config import get_logger
@@ -51,13 +52,11 @@ async def check_build_status(*, pid: int, build_manager: BuildManager = Depends(
 
 
 @router.get("/builds", status_code=200)
-async def check_build_processes(build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return build_manager.get_min_info()
-
-
-@router.get("/builds/{build_id}", status_code=200)
-async def get_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return build_manager.get_full_info(build_id)
+async def check_build_processes(build_id: Optional[int] = None, build_manager: BuildManager = Depends(deps.get_build_manager)):
+    if build_id is not None:
+        return build_manager.get_full_info(build_id)
+    else:
+        return build_manager.get_full_info()
 
 
 @router.post("/run/start/{build_id}", status_code=201)
@@ -81,13 +80,11 @@ async def check_run_status(*, pid: int, run_manager: RunManager = Depends(deps.g
 
 
 @router.get("/runs", status_code=200)
-async def check_run_processes(run_manager: RunManager = Depends(deps.get_run_manager)):
-    return run_manager.get_min_info()
-
-
-@router.get("/runs/{run_id}", status_code=200)
-async def get_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)):
-    return run_manager.get_full_info(run_id)
+async def check_run_processes(run_id: Optional[int] = None, run_manager: RunManager = Depends(deps.get_run_manager)):
+    if run_id is not None:
+        return run_manager.get_full_info(run_id)
+    else:
+        return run_manager.get_full_info()
 
 
 @router.websocket("/run/connect")
