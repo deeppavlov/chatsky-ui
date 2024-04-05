@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import List, Type
+from typing import List, Type, Optional
 
 from app.core.logger_config import get_logger
 from app import BuildProcess, RunProcess, Process
 from app.schemas.preset import Preset
 from app.core.config import settings
+from omegaconf import OmegaConf
 
 logger = get_logger(__name__)
 
@@ -26,17 +27,13 @@ class ProcessManager:
     def get_status(self, pid):
         return self.processes[pid].check_status()
 
-    def get_full_info(self, id_, path: Path, processclass: Type[Process]):
-        if id_ in self.processes:
-            process = self.processes[id_]
-            return process.get_full_info()
+    def get_full_info(self, id_: Optional[int], path: Path):
+        db_conf = settings.read_conf(path)
+        conf_dict = OmegaConf.to_container(db_conf, resolve=True)
+        if id_ is not None:
+            return next((db_process for db_process in conf_dict if db_process["id"]==id_), None)
         else:
-            db_conf = settings.read_conf(path)
-            process = processclass(id_)
-            self.processes.update({id_: process})
-            process_info = next((db_process for db_process in db_conf if db_process.id==process.id), None)
-            process.set_full_info(process_info)
-            return process_info
+            return conf_dict
 
 
 class RunManager(ProcessManager):
@@ -65,8 +62,8 @@ class RunManager(ProcessManager):
 
         return minimum_info
 
-    def get_full_info(self, id_, path: Path = settings.runs_path, processclass: Type[Process] = RunProcess):
-        return super().get_full_info(id_, path, processclass)
+    def get_full_info(self, id_: Optional[int] = None, path: Path = settings.runs_path):
+        return super().get_full_info(id_, path)
 
 
 class BuildManager(ProcessManager):
@@ -101,5 +98,5 @@ class BuildManager(ProcessManager):
             minimum_info.append(info)
         return minimum_info
 
-    def get_full_info(self, id_, path: Path = settings.builds_path, processclass: Type[Process] = BuildProcess):
-        return super().get_full_info(id_, path, processclass)
+    def get_full_info(self, id_: Optional[int] = None, path: Path = settings.builds_path):
+        return super().get_full_info(id_, path)
