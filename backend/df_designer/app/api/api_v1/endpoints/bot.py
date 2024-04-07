@@ -19,15 +19,19 @@ async def _stop_process(
     pid: int, process_manager: ProcessManager, process= "run"
 ):
     if pid not in process_manager.processes:
-        raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited."
+        )
     await process_manager.stop(pid)
     logger.info("%s process '%s' has stopped", process.capitalize(), pid)
     return {"status": "ok"}
 
 
-def _check_process_status(pid: int, process_manager: ProcessManager):
+def _check_process_status(pid: int, process_manager: ProcessManager) -> dict[str, str]:
     if pid not in process_manager.processes:
-        raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited.",
+        )
     process_status = process_manager.get_status(pid)
     return {"status": process_status}
 
