@@ -1,3 +1,4 @@
+import aiofiles
 from pathlib import Path
 from typing import List, Type, Optional
 
@@ -35,7 +36,28 @@ class ProcessManager:
     def get_full_info(self, offset: int, limit: int, path: Path) -> List[dict]:
         db_conf = settings.read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
-        return conf_dict[offset:offset+limit]
+
+    async def fetch_process_logs(self, process_id: int, offset: int, limit: int, path: Path):
+        process_info = self.get_process_info(process_id, path)
+        if process_info is None:
+            logger.warning("Id '%s' not found", process_id)
+            return None
+
+        log_file = process_info["log_path"]
+        try:
+            async with aiofiles.open(log_file, "r", encoding="UTF-8") as file:
+                logs = [line async for line in file if line.strip()]
+        except FileNotFoundError:
+            logger.warning("Log file '%s' not found", log_file)
+            return None
+
+        if offset > len(logs):
+            logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
+            return None
+
+        logger.info("Returning %s logs", len(logs))
+        return logs[offset:offset+limit]
+
 
 
 class RunManager(ProcessManager):
@@ -64,12 +86,14 @@ class RunManager(ProcessManager):
 
         return minimum_info
 
-    def get_run_info(self, id_: int, path: Path = settings.runs_path):
-        return super().get_process_info(id_, path)
+    def get_run_info(self, id_: int):
+        return super().get_process_info(id_, settings.runs_path)
 
     def get_full_info(self, offset: int, limit: int, path: Path = settings.runs_path):
         return super().get_full_info(offset, limit, path)
 
+    async def fetch_run_logs(self, run_id: int, offset: int, limit: int):
+        return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path)
 
 class BuildManager(ProcessManager):
     def __init__(self):
@@ -103,8 +127,11 @@ class BuildManager(ProcessManager):
             minimum_info.append(info)
         return minimum_info
 
-    def get_build_info(self, id_: int, path: Path = settings.builds_path):
-        return super().get_process_info(id_, path)
+    def get_build_info(self, id_: int):
+        return super().get_process_info(id_, settings.builds_path)
 
     def get_full_info(self, offset: int, limit: int, path: Path = settings.builds_path):
         return super().get_full_info(offset, limit, path)
+
+    async def fetch_build_logs(self, build_id: int, offset: int, limit: int):
+        return await self.fetch_process_logs(build_id, offset, limit, settings.builds_path)
