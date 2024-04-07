@@ -27,13 +27,15 @@ class ProcessManager:
     def get_status(self, pid):
         return self.processes[pid].check_status()
 
-    def get_full_info(self, id_: Optional[int], path: Path):
+    def get_process_info(self, id_: int, path: Path):
         db_conf = settings.read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
-        if id_ is not None:
-            return next((db_process for db_process in conf_dict if db_process["id"]==id_), None)
-        else:
-            return conf_dict
+        return next((db_process for db_process in conf_dict if db_process["id"]==id_), None)
+
+    def get_full_info(self, offset: int, limit: int, path: Path) -> List[dict]:
+        db_conf = settings.read_conf(path)
+        conf_dict = OmegaConf.to_container(db_conf, resolve=True)
+        return conf_dict[offset:offset+limit]
 
 
 class RunManager(ProcessManager):
@@ -62,8 +64,11 @@ class RunManager(ProcessManager):
 
         return minimum_info
 
-    def get_full_info(self, id_: Optional[int] = None, path: Path = settings.runs_path):
-        return super().get_full_info(id_, path)
+    def get_run_info(self, id_: int, path: Path = settings.runs_path):
+        return super().get_process_info(id_, path)
+
+    def get_full_info(self, offset: int, limit: int, path: Path = settings.runs_path):
+        return super().get_full_info(offset, limit, path)
 
 
 class BuildManager(ProcessManager):
@@ -98,5 +103,8 @@ class BuildManager(ProcessManager):
             minimum_info.append(info)
         return minimum_info
 
-    def get_full_info(self, id_: Optional[int] = None, path: Path = settings.builds_path):
-        return super().get_full_info(id_, path)
+    def get_build_info(self, id_: int, path: Path = settings.builds_path):
+        return super().get_process_info(id_, path)
+
+    def get_full_info(self, offset: int, limit: int, path: Path = settings.builds_path):
+        return super().get_full_info(offset, limit, path)
