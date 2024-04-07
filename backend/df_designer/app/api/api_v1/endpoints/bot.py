@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketExcep
 from typing import Optional
 
 from app.schemas.preset import Preset
+from app.schemas.pagination import Pagination
 from app.core.logger_config import get_logger
 from app.clients.process_manager import ProcessManager, BuildManager, RunManager
 from app.api import deps
@@ -51,12 +52,16 @@ async def check_build_status(*, pid: int, build_manager: BuildManager = Depends(
     return _check_process_status(pid, build_manager)
 
 
-@router.get("/builds", status_code=200)
-async def check_build_processes(build_id: Optional[int] = None, build_manager: BuildManager = Depends(deps.get_build_manager)):
+@router.get("/builds", response_model=Optional[list], status_code=200)
+async def check_build_processes(
+    build_id: Optional[int] = None,
+    build_manager: BuildManager = Depends(deps.get_build_manager),
+    pagination: Pagination = Depends()
+):
     if build_id is not None:
-        return build_manager.get_full_info(build_id)
+        return build_manager.get_build_info(build_id)
     else:
-        return build_manager.get_full_info()
+        return build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
 
 @router.post("/run/start/{build_id}", status_code=201)
@@ -80,11 +85,15 @@ async def check_run_status(*, pid: int, run_manager: RunManager = Depends(deps.g
 
 
 @router.get("/runs", status_code=200)
-async def check_run_processes(run_id: Optional[int] = None, run_manager: RunManager = Depends(deps.get_run_manager)):
+async def check_run_processes(
+    run_id: Optional[int] = None,
+    run_manager: RunManager = Depends(deps.get_run_manager),
+    pagination: Pagination = Depends()
+):
     if run_id is not None:
-        return run_manager.get_full_info(run_id)
+        return run_manager.get_run_info(run_id)
     else:
-        return run_manager.get_full_info()
+        return run_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
 
 @router.websocket("/run/connect")
