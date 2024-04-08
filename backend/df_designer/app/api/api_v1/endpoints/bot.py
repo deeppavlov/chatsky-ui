@@ -5,9 +5,9 @@ from typing import Optional, Union
 from app.schemas.preset import Preset
 from app.schemas.pagination import Pagination
 from app.core.logger_config import get_logger
-from app.clients.process_manager import ProcessManager, BuildManager, RunManager
+from app.services.process_manager import ProcessManager, BuildManager, RunManager
 from app.api import deps
-from app.clients.websocket_manager import WebSocketManager
+from app.services.websocket_manager import WebSocketManager
 
 
 router = APIRouter()

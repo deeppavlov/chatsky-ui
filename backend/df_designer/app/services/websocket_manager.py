@@ -4,7 +4,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from typing import Optional, Set, Dict
 
 from app.core.logger_config import get_logger
-from app.clients.process_manager import ProcessManager
+from app.services.process_manager import ProcessManager
 
 logger = get_logger(__name__)
 
