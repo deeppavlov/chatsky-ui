@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Type, Optional
 
 from app.core.logger_config import get_logger
-from app import BuildProcess, RunProcess, Process
+from app.services.process import BuildProcess, RunProcess
 from app.schemas.preset import Preset
 from app.core.config import settings
 from omegaconf import OmegaConf
@@ -36,6 +36,7 @@ class ProcessManager:
     def get_full_info(self, offset: int, limit: int, path: Path) -> List[dict]:
         db_conf = settings.read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
+        return conf_dict[offset:offset+limit]
 
     async def fetch_process_logs(self, process_id: int, offset: int, limit: int, path: Path):
         process_info = self.get_process_info(process_id, path)
