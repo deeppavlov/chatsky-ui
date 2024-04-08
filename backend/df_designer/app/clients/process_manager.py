@@ -108,6 +108,7 @@ class BuildManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = BuildProcess(id_, preset.end_status)
+        cmd_to_run = f"dflowd build_bot {id_} --preset {preset.end_status}"
         await process.start(cmd_to_run)
         self.processes[id_] = process
 
