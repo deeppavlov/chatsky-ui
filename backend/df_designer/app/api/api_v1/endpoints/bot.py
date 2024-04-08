@@ -63,9 +63,9 @@ async def check_build_processes(
     pagination: Pagination = Depends()
 ):
     if build_id is not None:
-        return build_manager.get_build_info(build_id)
+        return await build_manager.get_build_info(build_id)
     else:
-        return build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
+        return await build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
 async def get_build_logs(
@@ -104,9 +104,9 @@ async def check_run_processes(
     pagination: Pagination = Depends()
 ):
     if run_id is not None:
-        return run_manager.get_run_info(run_id)
+        return await run_manager.get_run_info(run_id)
     else:
-        return run_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
+        return await run_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
 
 @router.get("/runs/logs/{run_id}", response_model=Optional[list], status_code=200)
