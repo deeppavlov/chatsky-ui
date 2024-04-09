@@ -1,3 +1,4 @@
+import { conditionLabelType } from "./types/ConditionTypes"
 
 export const NODE_TYPES = {
   default_node: "default_node",
@@ -50,3 +51,15 @@ export const FLOW_COLORS = [
   "#CC66CC",
   "#FF3366"
 ]
+
+export const CONDITION_LABELS: {
+  [key: string]: conditionLabelType
+} = {
+  manual: "manual",
+  forward: "forward",
+  backward: "backward",
+  repeat: "repeat",
+  fallback: "fallback",
+  start: 'start',
+  previous: "previous",
+}

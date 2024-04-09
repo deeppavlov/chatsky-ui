@@ -22,7 +22,7 @@ const FlowItem = ({
           <div
             key={flow.name}
             onClick={() => {
-              navigate(`/flow/${flow.name}`)
+              navigate(`/app/flow/${flow.name}`)
             }}
             className={classNames(
               "w-full flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer",

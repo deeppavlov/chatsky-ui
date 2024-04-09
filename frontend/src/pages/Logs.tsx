@@ -56,63 +56,70 @@ const Logs = () => {
               trigger: "w-full px-2 py-1 rounded-lg border border-border",
             }}>
             {builds && builds.length ? (
-              builds.sort((a, b) => b.id - a.id).map((build) => (
-                <AccordionItem
-                  key={build.id}
-                  className=''
-                  onPress={(e) => {
-                    setCurrentItem(build)
-                    setSearchParams({
-                      ...parseSearchParams(searchParams),
-                      build_id: build.id.toString(),
-                      type: "build",
-                    })
-                  }}
-                  title={
-                    <div className='flex items-center justify-between w-full'>
-                      <p>Build {build.id}</p>
-                      <span className='flex items-center'>
-                        {build.status === "completed" && (
-                          <CheckCircle2
-                            fill='var(--status-green)'
-                            stroke='white'
-                          />
-                        )}{" "}
-                        {build.status === "running" && (
-                          <Spinner
-                            size='sm'
-                            color='warning'
-                          />
-                        )}
-                        {build.status === "failed" && <X color='red' />}
-                      </span>
-                    </div>
-                  }>
-                  <div className='grid gap-2 mt-2'>
-                    {build.run_ids.sort((a, b) => b - a).map((r) => {
-                      return (
-                        <div
-                          key={r}
-                          onClick={async (e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            setSearchParams({
-                              ...parseSearchParams(searchParams),
-                              run_id: r.toString(),
-                              build_id: build.id.toString(),
-                              type: "run",
-                            })
-                            const curr_run = await get_run(r)
-                            const local_run: localRunType = {
-                              ...curr_run,
-                              type: "run",
-                            }
-                            setCurrentItem(local_run)
-                          }}
-                          className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'>
-                          <p>Run {r}</p>
-                          <span className='flex items-center'>
-                            {/* {run.status === "completed" && (
+              builds
+                .sort((a, b) => b.id - a.id)
+                .map((build) => (
+                  <AccordionItem
+                    textValue='TEST'
+                    key={build.id}
+                    className=''
+                    onPress={(e) => {
+                      setCurrentItem(build)
+                      setSearchParams({
+                        ...parseSearchParams(searchParams),
+                        build_id: build.id.toString(),
+                        type: "build",
+                      })
+                    }}
+                    title={
+                      <div className='flex items-center justify-between w-full'>
+                        <p>Build {build.id}</p>
+                        <span className='flex items-center'>
+                          {build.status === "completed" && (
+                            <CheckCircle2
+                              fill='var(--status-green)'
+                              stroke='white'
+                            />
+                          )}{" "}
+                          {build.status === "running" && (
+                            <Spinner
+                              size='sm'
+                              color='warning'
+                            />
+                          )}
+                          {build.status === "failed" && <X color='red' />}
+                        </span>
+                      </div>
+                    }>
+                    <div className='grid gap-2 mt-2'>
+                      {build.run_ids &&
+                        build.run_ids.length &&
+                        build.run_ids
+                          .sort((a, b) => b - a)
+                          .map((r) => {
+                            return (
+                              <div
+                                key={r}
+                                onClick={async (e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  setSearchParams({
+                                    ...parseSearchParams(searchParams),
+                                    run_id: r.toString(),
+                                    build_id: build.id.toString(),
+                                    type: "run",
+                                  })
+                                  const curr_run = await get_run(r)
+                                  const local_run: localRunType = {
+                                    ...curr_run,
+                                    type: "run",
+                                  }
+                                  setCurrentItem(local_run)
+                                }}
+                                className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'>
+                                <p>Run {r}</p>
+                                <span className='flex items-center'>
+                                  {/* {run.status === "completed" && (
                                 <CheckCircle2
                                   fill='var(--status-green)'
                                   stroke='white'
@@ -125,15 +132,15 @@ const Logs = () => {
                                 />
                               )}
                               {run.status === "failed" && <X color='red' />} */}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </AccordionItem>
-              ))
+                                </span>
+                              </div>
+                            )
+                          })}
+                    </div>
+                  </AccordionItem>
+                ))
             ) : (
-              <AccordionItem>No builds found</AccordionItem>
+              <AccordionItem textValue='TEST'>No builds found</AccordionItem>
             )}
           </Accordion>
         </div>
