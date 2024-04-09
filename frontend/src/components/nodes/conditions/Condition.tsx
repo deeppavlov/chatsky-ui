@@ -1,4 +1,4 @@
-import { Handle, Position } from "reactflow"
+import { Handle, Position, useReactFlow } from "reactflow"
 import { NodeComponentConditionType } from "../../../types/NodeTypes"
 import { UserConditionIcon } from "../../../icons/nodes/conditions/UserConditionIcon"
 import { useEffect, useState } from "react"
@@ -9,6 +9,9 @@ import { CONDITION_LABELS } from "../../../consts"
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? 'manual')
+
+  const edges = useReactFlow().getEdges()
+  console.log(edges, condition)
 
   useEffect(() => {
     condition.data.transition_type = label
@@ -31,9 +34,10 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
           <ContextMenu.Trigger>
             <Handle
               isConnectableStart
+              isConnectable={edges.filter((edge) => edge.sourceHandle === condition.id).length === 0}
               position={Position.Right}
               type='source'
-              id={`condition-${condition.id}`}
+              id={`${condition.id}`}
               style={{
                 background: "var(--background)",
                 borderWidth: "2px",
