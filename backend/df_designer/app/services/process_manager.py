@@ -20,7 +20,10 @@ class ProcessManager:
         return list(self.processes.keys())[-1]
 
     async def stop(self, id_):
-        await self.processes[id_].stop()
+        try:
+            await self.processes[id_].stop()
+        except (RuntimeError, ProcessLookupError) as exc:
+            raise exc
 
     async def check_status(self, id_):
         await self.processes[id_].periodically_check_status()
@@ -41,14 +44,14 @@ class ProcessManager:
     async def fetch_process_logs(self, id_: int, offset: int, limit: int, path: Path):
         process_info = await self.get_process_info(id_, path)
         if process_info is None:
-            logger.warning("Id '%s' not found", id_)
+            logger.error("Id '%s' not found", id_)
             return None
 
         log_file = process_info["log_path"]
         try:
             logs = await read_logs(log_file)
         except FileNotFoundError:
-            logger.warning("Log file '%s' not found", log_file)
+            logger.error("Log file '%s' not found", log_file)
             return None
 
         if offset > len(logs):
