@@ -1,6 +1,6 @@
 import { conditionType } from "./ConditionTypes"
 
-export type NodesTypes = 'default_node' | 'start_node' | 'fallback_node'
+export type NodesTypes = 'default_node' | 'start_node' | 'fallback_node' | 'default_link'
 
 export type NodeType = {
   id: string

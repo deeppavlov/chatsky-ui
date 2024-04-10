@@ -29,13 +29,14 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
       type: "llm",
       data: {
         priority: 1,
+        transition_type: "manual",
         prompt: "",
         api_key: "",
         action: "",
         model_name: "",
       },
     }),
-    [data.name, isConditionOpen]
+    [data.name, isConditionOpen, onConditionClose]
   )
 
   return (

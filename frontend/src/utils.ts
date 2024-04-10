@@ -2,6 +2,7 @@ import { v4 } from "uuid"
 import { CreateFlowType } from "./modals/FlowModal/CreateFlowModal"
 import { FlowType } from "./types/FlowTypes"
 import React from "react"
+import { conditionType } from "./types/ConditionTypes"
 
 export const generateNewFlow = (flow: CreateFlowType) => {
   const newFlow: FlowType = {
@@ -50,4 +51,20 @@ export const parseSearchParams = (searchParams: URLSearchParams): {
     .split("&")
     .map((s) => s.split("="))
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
+}
+
+export const generateNewConditionBase = (node_name: string): conditionType => {
+  return {
+    id: node_name + "_" + v4(),
+    name: "New Condition",
+    type: "llm",
+    data: {
+      priority: 1,
+      transition_type: "manual",
+      prompt: "",
+      api_key: "",
+      action: "",
+      model_name: "",
+    },
+  }
 }

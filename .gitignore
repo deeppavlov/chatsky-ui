@@ -251,3 +251,4 @@ cython_debug/
 
 ./flows.json
 *.sqlite
+my_project
