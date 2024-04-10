@@ -22,7 +22,11 @@ async def _stop_process(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited."
         )
-    await process_manager.stop(id_)
+    try:
+        await process_manager.stop(id_)
+    except (RuntimeError, ProcessLookupError) as e:
+        raise HTTPException(status_code=404, detail="Process not found. It may have already exited or not started yet. Please check logs.") from e
+
     logger.info("%s process '%s' has stopped", process.capitalize(), id_)
     return {"status": "ok"}
 

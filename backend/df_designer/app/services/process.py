@@ -89,23 +89,27 @@ class Process:
 
     async def stop(self):
         if self.process is None:  # Check if a process has been started
-            raise RuntimeError(f"Cannot stop a process '{self.id}' that has not started yet.")
+            self.logger.error("Cannot stop a process '%s' that has not started yet.", self.id)
+            raise RuntimeError
         try:
             self.logger.debug("Terminating process '%s'", self.id)
             self.process.terminate()
             await self.process.wait()
-        except ProcessLookupError as exception:
-            raise RuntimeError(f"Process '{self.id}' not found. It may have already exited.") from exception
+        except ProcessLookupError as exc:
+            self.logger.error("Process '%s' not found. It may have already exited.", self.id)
+            raise ProcessLookupError from exc
 
     def read_stdout(self):
         if self.process is None:
-            raise RuntimeError("Cannot read stdout from a process '{self.process.id_}' that has not started yet.")
+            self.logger.error("Cannot read stdout from a process '%s' that has not started yet.", self.id)
+            raise RuntimeError
 
         return self.process.stdout.readline()
 
     def write_stdin(self, message):
         if self.process is None:
-            raise RuntimeError("Cannot write into stdin of a process '{self.process.id_}' that has not started yet.")
+            self.logger.error("Cannot write into stdin of a process '%s' that has not started yet.", self.id)
+            raise RuntimeError
         self.process.stdin.write(message)
 
 
