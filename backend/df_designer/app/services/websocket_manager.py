@@ -30,31 +30,23 @@ class WebSocketManager:
         if websocket in self.active_connections:
             return websocket ## return Status!
 
-    async def send_process_output_to_websocket(self, pid: int, process_manager: ProcessManager, websocket: WebSocket):
-        """Read and forward process output to the websocket client.
-        
-        Args:
-          pid: process_id, attribute of asyncio.subprocess.Process
-        """
+    async def send_process_output_to_websocket(self, run_id: int, process_manager: ProcessManager, websocket: WebSocket):
+        """Read and forward process output to the websocket client."""
         try:
             while True:
-                response = await process_manager.processes[pid].read_stdout()
+                response = await process_manager.processes[run_id].read_stdout()
                 if not response:
                     break
                 await websocket.send_text(response.decode().strip())
         except WebSocketDisconnect:
             logger.info("Websocket connection is closed by client")
 
-    async def forward_websocket_messages_to_process(self, pid: int, process_manager: ProcessManager, websocket: WebSocket):
-        """Listen for messages from the websocket and send them to the subprocess.
-        
-        Args:
-          pid: process_id, attribute of asyncio.subprocess.Process
-        """
+    async def forward_websocket_messages_to_process(self, run_id: int, process_manager: ProcessManager, websocket: WebSocket):
+        """Listen for messages from the websocket and send them to the subprocess."""
         try:
             while True:
                 user_message = await websocket.receive_text()
-                process_manager.processes[pid].write_stdin(user_message.encode() + b'\n')
+                process_manager.processes[run_id].write_stdin(user_message.encode() + b'\n')
         except asyncio.CancelledError:
             logger.info("Websocket connection is closed")
         except WebSocketDisconnect:
