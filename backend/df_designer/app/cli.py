@@ -1,3 +1,4 @@
+import asyncio
 from cookiecutter.main import cookiecutter
 import json
 import os
@@ -6,11 +7,10 @@ import subprocess
 import sys
 import typer
 import uvicorn
-from omegaconf import OmegaConf
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
-
+from app.services.json_translator import translator
 
 cli = typer.Typer()
 
@@ -60,56 +60,7 @@ def build_bot(
 
 @cli.command("build_scenario")
 def build_scenario(build_id: int, project_dir: str = "."):
-    logger = get_logger(__name__)
-
-    frontend_graph_path = Path(project_dir) / "df_designer" / "frontend_flows.yaml"
-    script_file = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
-    custom_dir = "custom"
-
-    custom_dir_path = "bot" / Path(custom_dir)
-    custom_dir_path.mkdir(exist_ok=True, parents=True)
-    custom_conditions_file = custom_dir_path / "conditions.py"
-
-    script = {
-        "CONFIG": {"custom_dir": custom_dir},
-    }
-    flow_graph = OmegaConf.load(frontend_graph_path)
-
-    for flow in flow_graph:
-        script[flow.name] = {}
-        for node in flow.data.nodes:
-            node_dict = {
-                "RESPONSE": {"dff.Message": {"text": node.data.response}},
-                "TRANSITIONS": [],
-            }
-            if node.type == "start_node":
-                script["CONFIG"]["start_label"] = f"[{flow.name}, {node.data.name}]"
-            for edge in flow.data.edges:
-                if edge.source == node.id:
-                    try:
-                        condition = next(
-                            cond for cond in node.data.conditions
-                            if cond["id"] == edge.sourceHandle
-                        )
-                        node_dict["TRANSITIONS"].append(
-                            {
-                                "lbl": f"[{flow.name}, {node.data.name}, {condition.data.priority}]",
-                                "cnd": f"""custom_dir.cnd.{condition.name}""",
-                            }
-                        )
-
-                        custom_conditions = custom_conditions_file.read_text()
-                        if condition.name not in custom_conditions:
-                            with open(custom_conditions_file, "a") as f:
-                                f.write(condition.data.action)
-                    except StopIteration:
-                        logger.info("Condition is not found in edge %s", edge)
-                        continue
-            script[flow.name][node.data.name] = node_dict
-
-    with open(script_file, "w") as f:
-        OmegaConf.save(config=script, f=f, resolve=True)
-
+    asyncio.run(translator(build_id=build_id, project_dir=project_dir))
 
 @cli.command("run_bot")
 def run_bot(
