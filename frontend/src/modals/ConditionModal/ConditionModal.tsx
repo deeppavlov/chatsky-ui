@@ -23,6 +23,7 @@ import { NodeDataType } from "../../types/NodeTypes"
 import { useReactFlow } from "reactflow"
 import { flowContext } from "../../contexts/flowContext"
 import { useParams } from "react-router-dom"
+import { generateNewConditionBase } from "../../utils"
 
 type ConditionModalProps = {
   data: NodeDataType
@@ -49,6 +50,13 @@ const ConditionModal = ({
   const { getNode, setNodes, getNodes } = useReactFlow()
   const { saveFlows, updateFlow, flows } = useContext(flowContext)
   const { flowId } = useParams()
+
+  useEffect(() => {
+    if (is_create) {
+      const new_condition = generateNewConditionBase(data.name)
+      setCurrentCondition(new_condition)
+    }
+  }, [data.name, is_create])
 
   const tabItems = useMemo(
     () => [
