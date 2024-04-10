@@ -19,14 +19,14 @@ class ProcessManager:
         """Get the process_id of the last started process"""
         return list(self.processes.keys())[-1]
 
-    async def stop(self, pid):
-        await self.processes[pid].stop()
+    async def stop(self, id_):
+        await self.processes[id_].stop()
 
-    async def check_status(self, pid):
-        await self.processes[pid].periodically_check_status()
+    async def check_status(self, id_):
+        await self.processes[id_].periodically_check_status()
 
-    def get_status(self, pid):
-        return self.processes[pid].check_status()
+    def get_status(self, id_):
+        return self.processes[id_].check_status()
 
     async def get_process_info(self, id_: int, path: Path):
         db_conf = await read_conf(path)
@@ -38,10 +38,10 @@ class ProcessManager:
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
         return conf_dict[offset:offset+limit]
 
-    async def fetch_process_logs(self, process_id: int, offset: int, limit: int, path: Path):
-        process_info = await self.get_process_info(process_id, path)
+    async def fetch_process_logs(self, id_: int, offset: int, limit: int, path: Path):
+        process_info = await self.get_process_info(id_, path)
         if process_info is None:
-            logger.warning("Id '%s' not found", process_id)
+            logger.warning("Id '%s' not found", id_)
             return None
 
         log_file = process_info["log_path"]

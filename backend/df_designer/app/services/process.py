@@ -99,13 +99,13 @@ class Process:
 
     def read_stdout(self):
         if self.process is None:
-            raise RuntimeError("Cannot read stdout from a process '{self.process.pid}' that has not started yet.")
+            raise RuntimeError("Cannot read stdout from a process '{self.process.id_}' that has not started yet.")
 
         return self.process.stdout.readline()
 
     def write_stdin(self, message):
         if self.process is None:
-            raise RuntimeError("Cannot write into stdin of a process '{self.process.pid}' that has not started yet.")
+            raise RuntimeError("Cannot write into stdin of a process '{self.process.id_}' that has not started yet.")
         self.process.stdin.write(message)
 
 
