@@ -31,7 +31,7 @@ export const NODES = {
     local_conditions: [],
     response: "Fallback response",
   },
-  link: {
+  default_link: {
     name: "Link",
     type: "link",
     conditions: [],
