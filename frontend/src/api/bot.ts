@@ -27,13 +27,14 @@ export type buildMinifyApiType = {
   status: buildApiStatusType
   preset_end_status: string
   timestamp: number
-  run_ids: number[]
+  runs: runMinifyApiType[]
 }
 
 export type runMinifyApiType = {
   id: number
   status: buildApiStatusType
   preset_end_status: string
+  log_path: string
   timestamp: number
   build_id: number
 }
