@@ -56,15 +56,11 @@ export const parseSearchParams = (searchParams: URLSearchParams): {
 export const generateNewConditionBase = (node_name: string): conditionType => {
   return {
     id: node_name + "_" + v4(),
-    name: "New Condition",
+    name: "new_cnd",
     type: "llm",
     data: {
       priority: 1,
       transition_type: "manual",
-      prompt: "",
-      api_key: "",
-      action: "",
-      model_name: "",
     },
   }
 }

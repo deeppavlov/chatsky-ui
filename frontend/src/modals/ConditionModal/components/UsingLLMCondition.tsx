@@ -1,18 +1,46 @@
 import { Input, Select, SelectItem, Textarea } from "@nextui-org/react"
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { conditionDataType, conditionType } from "../../../types/ConditionTypes"
 
-const UsingLLMConditionSection = ({ condition, setData }: { condition: conditionType, setData: React.Dispatch<React.SetStateAction<conditionType>> }) => {
+const UsingLLMConditionSection = ({
+  condition,
+  setData,
+}: {
+  condition: conditionType
+  setData: React.Dispatch<React.SetStateAction<conditionType>>
+}) => {
   const modelNames = useMemo(() => ["gpt-3", "gpt-3.5-turbo", "gpt-4"], [])
-  // const [conditionData, setConditionData] = useState(data)
-  console.log(condition)
-  const changeConditionValue = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+
+  useEffect(() => {
+    if (!condition.data.llm) {
+      setData({
+        ...condition,
+        type: "llm",
+        data: {
+          ...condition.data,
+          llm: {
+            model_name: "",
+            api_key: "",
+            prompt: "",
+          },
+        },
+      })
+    }
+  }, [])
+
+  const changeConditionValue = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     setData({
       ...condition,
+      type: "llm",
       data: {
         ...condition.data,
-        [e.target.name]: e.target.value,
-      }
+        llm: {
+          ...condition.data.llm!,
+          [e.target.name]: e.target.value,
+        },
+      },
     })
   }
   return (
@@ -20,9 +48,9 @@ const UsingLLMConditionSection = ({ condition, setData }: { condition: condition
       <div className='grid grid-cols-2 gap-4 w-full'>
         <Select
           label='Model name'
-          name="model_name"
+          name='model_name'
           onChange={changeConditionValue}
-          value={condition.data.model_name}
+          value={condition.data.llm?.model_name}
           placeholder='Select a model'
           labelPlacement='outside'>
           {modelNames.map((modelName) => (
@@ -37,9 +65,9 @@ const UsingLLMConditionSection = ({ condition, setData }: { condition: condition
           label='API Key'
           placeholder='Enter your API key'
           labelPlacement='outside'
-          name="api_key"
+          name='api_key'
           onChange={changeConditionValue}
-          value={condition.data.api_key}
+          value={condition.data.llm?.api_key}
         />
       </div>
       <Textarea
@@ -49,9 +77,9 @@ const UsingLLMConditionSection = ({ condition, setData }: { condition: condition
         classNames={{
           input: "h-max",
         }}
-        name="prompt"
+        name='prompt'
         onChange={changeConditionValue}
-        value={condition.data.prompt}
+        value={condition.data.llm?.prompt}
       />
       <Textarea
         label='Condition satisfaction triggers'
