@@ -1,3 +1,4 @@
+import asyncio
 from cookiecutter.main import cookiecutter
 import json
 import os
@@ -9,7 +10,7 @@ import uvicorn
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
-
+from app.services.json_translator import translator
 
 cli = typer.Typer()
 
@@ -31,18 +32,16 @@ def _execute_command(command_to_run):
         sys.exit(1)
 
 
-@cli.command("build_bot")
-def build_bot(
-    project_dir: str = settings.work_directory,
-    preset: str = "success"
-):
+def _execute_command_file(build_id: int, project_dir: str, command_file: str, preset: str):
     logger = get_logger(__name__)
-    presets_build_path = os.path.join(project_dir, "df_designer", "presets", "build.json")
+    presets_build_path = os.path.join(project_dir, "df_designer", "presets", command_file)
     with open(presets_build_path) as file:
         presets_build_file = json.load(file)
 
     if preset in presets_build_file:
         command_to_run = presets_build_file[preset]["cmd"]
+        if preset == "success":
+            command_to_run += f" {build_id}"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
         _execute_command(command_to_run)
@@ -50,26 +49,26 @@ def build_bot(
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
 
+@cli.command("build_bot")
+def build_bot(
+    build_id: int,
+    project_dir: str = settings.work_directory,
+    preset: str = "success"
+):
+    _execute_command_file(build_id, project_dir, "build.json", preset)
+
+
+@cli.command("build_scenario")
+def build_scenario(build_id: int, project_dir: str = "."):
+    asyncio.run(translator(build_id=build_id, project_dir=project_dir))
+
 @cli.command("run_bot")
 def run_bot(
     build_id: int,
     project_dir: str = settings.work_directory,
     preset: str = "success"
 ):
-    logger = get_logger(__name__)
-    presets_run_path = os.path.join(project_dir, "df_designer", "presets", "run.json")
-    with open(presets_run_path) as file:
-        presets_run_file = json.load(file)
-
-    if preset in presets_run_file:
-        command_to_run = presets_run_file[preset]["cmd"]
-        if preset == "success":
-            command_to_run += f" {build_id}"
-        logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
-
-        _execute_command(command_to_run)
-    else:
-        raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_run_file.keys())}")
+    _execute_command_file(build_id, project_dir, "run.json", preset)
 
 
 @cli.command("run_scenario")

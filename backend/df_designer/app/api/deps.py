@@ -1,5 +1,5 @@
-from app.clients.process_manager import BuildManager, RunManager
-from app.clients.websocket_manager import WebSocketManager
+from app.services.process_manager import BuildManager, RunManager
+from app.services.websocket_manager import WebSocketManager
 
 build_manager = BuildManager()
 def get_build_manager() -> BuildManager:
