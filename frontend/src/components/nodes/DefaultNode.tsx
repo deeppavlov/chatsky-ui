@@ -22,23 +22,6 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
   } = useDisclosure()
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
 
-  const new_condition = useMemo<conditionType>(
-    () => ({
-      id: data.name + "_" + v4(),
-      name: "New Condition",
-      type: "llm",
-      data: {
-        priority: 1,
-        transition_type: "manual",
-        prompt: "",
-        api_key: "",
-        action: "",
-        model_name: "",
-      },
-    }),
-    [data.name, isConditionOpen, onConditionClose]
-  )
-
   return (
     <>
       <div className='default_node'>
@@ -88,7 +71,6 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
       </div>
       <ConditionModal
         data={data}
-        condition={new_condition}
         isOpen={isConditionOpen}
         onClose={onConditionClose}
         is_create

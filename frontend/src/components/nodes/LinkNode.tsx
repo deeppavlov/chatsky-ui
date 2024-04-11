@@ -16,22 +16,6 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
   const { onOpen, onClose, isOpen } = useDisclosure()
   const { openPopUp } = useContext(PopUpContext)
 
-  const new_condition = useMemo<conditionType>(
-    () => ({
-      id: data.name + "_" + v4(),
-      name: "New Condition",
-      type: "custom",
-      data: {
-        prompt: "",
-        api_key: "",
-        action: "",
-        transition_type: "manual",
-        priority: 1,
-      },
-    }),
-    [data.name, isOpen]
-  )
-
   return (
     <>
       <div className='default_node'>

@@ -41,12 +41,29 @@ const NodesLayout = () => {
         <Xwrapper>
           {nodes.map((node) => (
             <div
-              id={node.id}
               key={node.id}
-              className='p-2 border border-border rounded-lg cursor-pointer hover:border-foreground'
-              onMouseEnter={setHoveredNodeHandler}
-              onMouseLeave={resetHoveredNodeHandler}>
-              {node.data.name}
+              className='flex flex-col gap-1'>
+              <div
+                id={node.id}
+                onMouseEnter={setHoveredNodeHandler}
+                onMouseLeave={resetHoveredNodeHandler}
+                className='p-2 border border-border rounded-lg cursor-pointer hover:border-foreground'>
+                {node.data.name}
+              </div>
+              <div className="grid grid-cols-6 items-center gap-2">
+                {node.data.conditions &&
+                  node.data.conditions.map((condition) => (
+                    <>
+                      {condition.data.transition_type !== "manual" && (
+                        <div style={{
+                          opacity: hoveredNode === node.id ? 1 : 0.5
+                        }} className='px-1 transition border-1.5 text-sm font-medium border-[#FF950055] bg-[#FF95001A] w-full text-center rounded-lg'>
+                          {condition.data.transition_type}
+                        </div>
+                      )}
+                    </>
+                  ))}
+              </div>
             </div>
           ))}
           {edges.map((edge, idx) => {
@@ -71,7 +88,10 @@ const NodesLayout = () => {
                   position: isLeft ? "left" : "right",
                   offset: { x: isLeft ? 0.001 : -0.001, y: isLeft ? -2.5 : 2.5 },
                 }}
-                startAnchor={{ position: isLeft ? "left" : "right", offset: { x: 0, y: isLeft ? 2.5 : -2.5 } }}
+                startAnchor={{
+                  position: isLeft ? "left" : "right",
+                  offset: { x: 0, y: isLeft ? 2.5 : -2.5 },
+                }}
               />
             )
           })}

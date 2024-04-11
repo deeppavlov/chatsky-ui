@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from "react"
-import { conditionType } from "../../types/ConditionTypes"
+import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
 import {
   Button,
   Card,
@@ -24,10 +24,11 @@ import { useReactFlow } from "reactflow"
 import { flowContext } from "../../contexts/flowContext"
 import { useParams } from "react-router-dom"
 import { generateNewConditionBase } from "../../utils"
+import PythonCondition from "./components/PythonCondition"
 
 type ConditionModalProps = {
   data: NodeDataType
-  condition: conditionType
+  condition?: conditionType
   is_create?: boolean
   size?: ModalProps["size"]
   isOpen: boolean
@@ -44,53 +45,76 @@ const ConditionModal = ({
   onClose,
   size = "3xl",
 }: ConditionModalProps) => {
-  const [selected, setSelected] = useState<ConditionModalTab>("Using LLM")
-  const [currentCondition, setCurrentCondition] = useState(condition)
+  const [selected, setSelected] = useState<conditionTypeType>(condition?.type ?? "python")
+  const setSelectedHandler = (key: conditionTypeType) => {
+    setCurrentCondition({ ...currentCondition, type: key })
+    setSelected(key)
+  }
+  const [currentCondition, setCurrentCondition] = useState(
+    is_create || !condition ? generateNewConditionBase(data.name) : condition
+  )
   const [conditions, setConditions] = useState<conditionType[]>(data.conditions ?? [])
   const { getNode, setNodes, getNodes } = useReactFlow()
   const { saveFlows, updateFlow, flows } = useContext(flowContext)
   const { flowId } = useParams()
 
-  useEffect(() => {
-    if (is_create) {
-      const new_condition = generateNewConditionBase(data.name)
-      setCurrentCondition(new_condition)
-    }
-  }, [data.name, is_create])
+  // useEffect(() => {
+  //   if (is_create) {
+  //     const new_condition = generateNewConditionBase(data.name)
+  //     setCurrentCondition(new_condition)
+  //   }
+  // }, [data.name, is_create, isOpen])
 
-  const tabItems = useMemo(
+  const tabItems: {
+    title: ConditionModalTab
+    value: conditionTypeType
+  }[] = useMemo(
     () => [
       {
         title: "Using LLM",
+        value: "llm",
       },
       {
         title: "Slot filling",
+        value: "slot",
       },
       {
         title: "Button",
+        value: "button",
       },
       {
         title: "Python code",
+        value: "python",
       },
       {
         title: "Custom",
+        value: "custom",
       },
     ],
     []
   )
 
+  useEffect(() => {
+    console.log(currentCondition)
+  }, [currentCondition])
+
   const bodyItems = useMemo(
     () => ({
-      "Using LLM": (
+      llm: (
         <UsingLLMConditionSection
           condition={currentCondition}
           setData={setCurrentCondition}
         />
       ),
-      "Slot filling": <div>Slot filling</div>,
-      Button: <div>Button</div>,
-      "Python code": <div>Python code</div>,
-      Custom: <div>Custom</div>,
+      slot: <div>Slot filling</div>,
+      button: <div>Button</div>,
+      python: (
+        <PythonCondition
+          condition={currentCondition}
+          setData={setCurrentCondition}
+        />
+      ),
+      custom: <div>Custom</div>,
     }),
     [currentCondition]
   )
@@ -100,22 +124,24 @@ const ConditionModal = ({
   // }, [currentCondition])
 
   const saveCondition = () => {
-    if (is_create) {
-      const nodes = getNodes()
-      const node = getNode(data.id)
-      const currentFlow = flows.find((flow) => flow.name === flowId)
-      if (node && currentFlow) {
-        const new_node = {
-          ...node,
-          data: {
-            ...node.data,
-            conditions: [...node.data.conditions, currentCondition],
-          },
-        }
-        console.log(node, new_node)
-        setNodes(nodes.map((node) => (node.id === data.id ? new_node : node)))
-        updateFlow(currentFlow)
+    const nodes = getNodes()
+    const node = getNode(data.id)
+    const currentFlow = flows.find((flow) => flow.name === flowId)
+    if (node && currentFlow) {
+      const new_node = {
+        ...node,
+        data: {
+          ...node.data,
+          conditions: is_create
+            ? [...node.data.conditions, currentCondition]
+            : conditions.map((condition) =>
+                condition.id === currentCondition.id ? currentCondition : condition
+              ),
+        },
       }
+      console.log(node, new_node)
+      setNodes(nodes.map((node) => (node.id === data.id ? new_node : node)))
+      updateFlow(currentFlow)
     }
     onClose()
   }
@@ -135,7 +161,7 @@ const ConditionModal = ({
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              onSelectionChange={setSelected}
+              onSelectionChange={setSelectedHandler}
               items={tabItems}
               classNames={{
                 tabList: "w-full",
@@ -145,8 +171,11 @@ const ConditionModal = ({
               className='bg-background w-full max-w-full'>
               {(item) => (
                 <Tab
-                  key={item.title}
-                  title={item.title}></Tab>
+                  key={item.value}
+                  title={item.title}
+                  onClick={() =>
+                    setCurrentCondition({ ...currentCondition, type: item.value })
+                  }></Tab>
               )}
             </Tabs>
           </label>
