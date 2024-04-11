@@ -48,7 +48,8 @@ const Chat = () => {
 
   const handleMessage = () => {
     if (messageValue) {
-      if (ws.current && ws.current.OPEN) {
+      if (ws.current && ws.current.readyState === 1) {
+        console.log(ws.current)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         ws.current.send(messageValue)
@@ -117,7 +118,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (runStatus === "alive" && run) {
-      const socket = new WebSocket(`ws://localhost:8000/bot/run/connect?pid=${run.id}`)
+      const socket = new WebSocket(`ws://localhost:8000/api/v1/bot/run/connect?run_id=${run.id}`)
       socket.onopen = (e) => {
         console.log(e)
         toast.success("Chat was successfully connected!")
@@ -146,7 +147,7 @@ const Chat = () => {
 
   return (
     <div
-      className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-full bg-background border-l border-border'
+      className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-full max-h-screen bg-background border-l border-border overflow-hidden'
       style={{
         transform: chat ? "translateX(0%)" : "translateX(100%)",
       }}>

@@ -6,6 +6,7 @@ import {
   get_run,
   get_runs,
   localRunType,
+  runMinifyApiType,
   run_start,
   run_status,
   run_stop,
@@ -34,6 +35,7 @@ type RunContextType = {
   runStop: (run_id: number) => void
   runStatus: buildApiStatusType
   setRunStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
+  setRunsHandler: (runs: runMinifyApiType[]) => void
 }
 
 export const runContext = createContext({
@@ -47,6 +49,7 @@ export const runContext = createContext({
   runStop: () => {},
   setRunStatus: () => {},
   runStatus: "stopped",
+  setRunsHandler: () => {},
 } as RunContextType)
 
 export const RunProvider = ({ children }: { children: React.ReactNode }) => {
@@ -54,7 +57,11 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [runPending, setRunPending] = useState(false)
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuilds, builds: context_b } = useContext(buildContext)
+  const { setBuilds, builds: context_b, setBuildsHandler } = useContext(buildContext)
+
+  const setRunsHandler = (runs: runMinifyApiType[]) => {
+    setRuns(runs.map((run) => ({ ...run, type: "run" })))
+  }
 
   const getRunInitial = async () => {
     const data = await get_runs()
@@ -66,10 +73,10 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       })
       console.log(_runs)
       setRuns(_runs)
-      if (_runs[_runs.length - 1].status === 'running') {
+      if (_runs[_runs.length - 1].status === "running") {
         console.log(1)
         setRun(_runs[_runs.length - 1])
-        setRunStatus('alive')
+        setRunStatus("alive")
       }
     }
   }
@@ -83,9 +90,10 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     setRunStatus("running")
     try {
       const data = await run_start({ wait_time, end_status }, 43)
-      console.log('run started')
-      const started_run = await get_run(data.run_id)
-      setRun({ ...started_run, type: 'run' })
+      console.log("run started")
+      const started_runs = await get_runs()
+      const started_run = started_runs.find((r) => r.id === data.run_id)!
+      setRun({ ...started_run, type: "run" })
       console.log(started_run)
       setRuns((prev) => [
         ...prev,
@@ -95,13 +103,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         },
       ])
       const builds = await get_builds()
-      setBuilds((prev) =>
-        builds.map((build) => ({
-          ...build,
-          type: "build",
-          run_ids: build.run_ids,
-        }))
-      )
+      setBuildsHandler(builds)
       let flag = true
       let timer = 0
       const timerId = setInterval(() => timer++, 500)
@@ -114,10 +116,10 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         }
         const { status } = await run_status(started_run.id)
         console.log(status)
-        if (status === 'running') {
+        if (status === "running") {
           flag = false
           setRunPending(false)
-          setRunStatus('alive')
+          setRunStatus("alive")
         }
         // if (status !== "running") {
         //   flag = false
@@ -174,8 +176,14 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   async function runStop(run_id: number) {
     try {
       const res = await run_stop(run_id)
-      if (res.status === 'ok') {
-        setRunStatus('stopped')
+      if (res.status === "ok") {
+        setTimeout(async () => {
+          const builds = await get_builds()
+          setBuildsHandler(builds)
+          const runs = await get_runs()
+          setRunsHandler(runs)
+          setRunStatus("stopped")
+        }, 500)
       }
     } catch (error) {
       console.log(error)
@@ -195,6 +203,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         runs,
         setRuns,
         setRunStatus,
+        setRunsHandler,
       }}>
       {children}
     </runContext.Provider>

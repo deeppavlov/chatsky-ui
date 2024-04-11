@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react"
 import { buildContext } from "../contexts/buildContext"
-import { CheckCircle2, X } from "lucide-react"
+import { CheckCircle2, CircleSlash, CircleSlash2, Slash, X } from "lucide-react"
 import { Accordion, AccordionItem, Divider, Spinner } from "@nextui-org/react"
 import { runContext } from "../contexts/runContext"
 import { get_run, localBuildType, localRunType } from "../api/bot"
@@ -92,14 +92,14 @@ const Logs = () => {
                       </div>
                     }>
                     <div className='grid gap-2 mt-2'>
-                      {build.run_ids &&
-                        build.run_ids.length &&
-                        build.run_ids
-                          .sort((a, b) => b - a)
+                      {build.runs &&
+                        build.runs.length &&
+                        build.runs
+                          .sort((a, b) => b.id - a.id)
                           .map((r) => {
                             return (
                               <div
-                                key={r}
+                                key={r.id}
                                 onClick={async (e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
@@ -109,29 +109,26 @@ const Logs = () => {
                                     build_id: build.id.toString(),
                                     type: "run",
                                   })
-                                  const curr_run = await get_run(r)
-                                  const local_run: localRunType = {
-                                    ...curr_run,
-                                    type: "run",
-                                  }
-                                  setCurrentItem(local_run)
+                                  console.log(r)
+                                  setCurrentItem({ ...r, type: "run" })
                                 }}
                                 className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'>
-                                <p>Run {r}</p>
+                                <p>Run {r.id}</p>
                                 <span className='flex items-center'>
-                                  {/* {run.status === "completed" && (
-                                <CheckCircle2
-                                  fill='var(--status-green)'
-                                  stroke='white'
-                                />
-                              )}{" "}
-                              {run.status === "running" && (
-                                <Spinner
-                                  size='sm'
-                                  color='danger'
-                                />
-                              )}
-                              {run.status === "failed" && <X color='red' />} */}
+                                  {r.status === "completed" && (
+                                    <CheckCircle2
+                                      fill='var(--status-green)'
+                                      stroke='white'
+                                    />
+                                  )}{" "}
+                                  {r.status === "running" && (
+                                    <Spinner
+                                      size='sm'
+                                      color='danger'
+                                    />
+                                  )}
+                                  {r.status === "failed" && <X color='red' />}
+                                  {r.status === "stopped" && <Slash className="scale-50" strokeWidth={4} />}
                                 </span>
                               </div>
                             )
@@ -213,7 +210,8 @@ const Logs = () => {
                           color='danger'
                         />
                       )}
-                      {currentItem.status === "failed" && <X />}
+                      {currentItem.status === "failed" && <X color='red' />}
+                      {currentItem.status === "stopped" && <CircleSlash />}
                     </span>
                     Run {currentItem.id}
                   </h4>
@@ -225,23 +223,19 @@ const Logs = () => {
                           color:
                             currentItem.status === "completed"
                               ? "var(--status-green)"
-                              : "var(--status-red)",
+                              : currentItem.status === "stopped" ? "var(--foreground)" : "var(--status-red)",
                         }}>
                         {currentItem.status}
                       </span>
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Timestamp:</span>
-                      {new Date(currentItem.timestamp * 1000).toLocaleString()}
-                    </p>
-                    {/* <p>
-                      <span className='font-medium text-neutral-500 mr-1'>Preset name:</span>
-                      {currentItem.preset_name}
+                      {currentItem.timestamp}
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
-                      {currentItem.logs_path}
-                    </p> */}
+                      <span className='text-blue-500 underline'>{currentItem.log_path}</span>
+                    </p>
                   </div>
                 </div>
               )}
