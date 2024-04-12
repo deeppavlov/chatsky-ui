@@ -1,0 +1,22 @@
+name: Build Docker Images
+
+on: [push, pull_request]
+
+jobs:
+  build_images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup poetry and install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+          python -m poetry install --with lint --no-ansi --no-interaction
+        working-directory: backend/df_designer
+
+      - name: Create new project
+        run: python -m poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists
+        working-directory: backend/df_designer
+
+      - name: Build Frontend and Backend Images
+        run: docker build -f Dockerfile --build-arg PROJECT_DIR=df_designer_project --target=runtime .
