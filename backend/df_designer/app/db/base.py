@@ -1,8 +1,9 @@
 from asyncio import Lock
-import aiofiles
 from pathlib import Path
-from omegaconf import OmegaConf
 from typing import Union
+
+import aiofiles
+from omegaconf import OmegaConf
 
 file_lock = Lock()
 
