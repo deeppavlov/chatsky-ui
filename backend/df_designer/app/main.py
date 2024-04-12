@@ -1,6 +1,6 @@
-from fastapi import FastAPI, APIRouter, Response
+from fastapi import APIRouter, FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings

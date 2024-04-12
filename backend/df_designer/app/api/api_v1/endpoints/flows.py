@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from omegaconf import OmegaConf
 
-from app.core.logger_config import get_logger
 from app.core.config import settings
-from app.db.base import write_conf, read_conf
+from app.core.logger_config import get_logger
+from app.db.base import read_conf, write_conf
 
 router = APIRouter()
 

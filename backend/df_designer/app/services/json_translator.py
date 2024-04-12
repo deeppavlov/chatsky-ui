@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from app.db.base import read_conf, write_conf
 from app.core.logger_config import get_logger
+from app.db.base import read_conf, write_conf
 
 logger = get_logger(__name__)
 

@@ -1,7 +1,8 @@
-from pydantic_settings import BaseSettings
 from pathlib import Path
-from omegaconf import OmegaConf
+
 import uvicorn
+from omegaconf import OmegaConf
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
