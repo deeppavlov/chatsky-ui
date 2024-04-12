@@ -36,7 +36,7 @@ async def translator(build_id: int, project_dir: str):
                 custom_conditions_names = [fun.split("(")[0].strip() for fun in custom_conditions.split("def ")[1:]]
                 if condition.name not in custom_conditions_names:
                     with open(custom_conditions_file, "a", encoding="UTF-8") as f:
-                        f.write(condition.data.action + "\n")
+                        f.write(condition.data.python.action + "\n\n\n")
                         logger.debug("Writing to %s: %s", custom_conditions_file, condition.name)
                 
                 nodes[edge.source]["TRANSITIONS"].append(
