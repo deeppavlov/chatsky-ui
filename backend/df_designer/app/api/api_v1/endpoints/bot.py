@@ -15,9 +15,7 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
-async def _stop_process(
-    id_: int, process_manager: ProcessManager, process= "run"
-):
+async def _stop_process(id_: int, process_manager: ProcessManager, process="run"):
     if id_ not in process_manager.processes:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited."
@@ -25,7 +23,10 @@ async def _stop_process(
     try:
         await process_manager.stop(id_)
     except (RuntimeError, ProcessLookupError) as e:
-        raise HTTPException(status_code=404, detail="Process not found. It may have already exited or not started yet. Please check logs.") from e
+        raise HTTPException(
+            status_code=404,
+            detail="Process not found. It may have already exited or not started yet. Please check logs.",
+        ) from e
 
     logger.info("%s process '%s' has stopped", process.capitalize(), id_)
     return {"status": "ok"}
@@ -34,14 +35,17 @@ async def _stop_process(
 def _check_process_status(id_: int, process_manager: ProcessManager) -> dict[str, str]:
     if id_ not in process_manager.processes:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Process not found. It may have already exited.",
         )
     process_status = process_manager.get_status(id_)
     return {"status": process_status}
 
 
 @router.post("/build/start", status_code=201)
-async def start_build(preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)):
+async def start_build(
+    preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)
+):
     await asyncio.sleep(preset.wait_time)
     await build_manager.start(preset)
     build_id = build_manager.get_last_id()
@@ -64,25 +68,30 @@ async def check_build_status(*, build_id: int, build_manager: BuildManager = Dep
 async def check_build_processes(
     build_id: Optional[int] = None,
     build_manager: BuildManager = Depends(deps.get_build_manager),
-    pagination: Pagination = Depends()
+    pagination: Pagination = Depends(),
 ):
     if build_id is not None:
         return await build_manager.get_build_info(build_id)
     else:
         return await build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
+
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
 async def get_build_logs(
-    build_id: int,
-    build_manager: BuildManager = Depends(deps.get_build_manager),
-    pagination: Pagination = Depends()
+    build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager), pagination: Pagination = Depends()
 ):
     if build_id is not None:
         return await build_manager.fetch_build_logs(build_id, pagination.offset(), pagination.limit)
 
 
 @router.post("/run/start/{build_id}", status_code=201)
-async def start_run(*, build_id: int, preset: Preset, background_tasks: BackgroundTasks, run_manager: RunManager = Depends(deps.get_run_manager)):
+async def start_run(
+    *,
+    build_id: int,
+    preset: Preset,
+    background_tasks: BackgroundTasks,
+    run_manager: RunManager = Depends(deps.get_run_manager)
+):
     await asyncio.sleep(preset.wait_time)
     await run_manager.start(build_id, preset)
     run_id = run_manager.get_last_id()
@@ -105,7 +114,7 @@ async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(dep
 async def check_run_processes(
     run_id: Optional[int] = None,
     run_manager: RunManager = Depends(deps.get_run_manager),
-    pagination: Pagination = Depends()
+    pagination: Pagination = Depends(),
 ):
     if run_id is not None:
         return await run_manager.get_run_info(run_id)
@@ -115,9 +124,7 @@ async def check_run_processes(
 
 @router.get("/runs/logs/{run_id}", response_model=Optional[list], status_code=200)
 async def get_run_logs(
-    run_id: int,
-    run_manager: RunManager = Depends(deps.get_run_manager),
-    pagination: Pagination = Depends()
+    run_id: int, run_manager: RunManager = Depends(deps.get_run_manager), pagination: Pagination = Depends()
 ):
     if run_id is not None:
         return await run_manager.fetch_run_logs(run_id, pagination.offset(), pagination.limit)
@@ -147,12 +154,15 @@ async def connect(
         logger.error("process with run_id '%s' exited or never existed", run_id)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
 
-
     await websocket_manager.connect(websocket)
     logger.info("Websocket for run process '%s' has been opened", run_id)
 
-    output_task = asyncio.create_task(websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket))
-    input_task = asyncio.create_task(websocket_manager.forward_websocket_messages_to_process(run_id, run_manager, websocket))
+    output_task = asyncio.create_task(
+        websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket)
+    )
+    input_task = asyncio.create_task(
+        websocket_manager.forward_websocket_messages_to_process(run_id, run_manager, websocket)
+    )
 
     # Wait for either task to finish
     _, websocket_manager.pending_tasks[websocket] = await asyncio.wait(
