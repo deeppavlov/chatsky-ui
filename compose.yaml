@@ -1,12 +1,15 @@
+volumes:
+  project_data:
+
 services:
   backend:
     build:
       args:
-        PROJECT_DIR: brand_new
+       PROJECT_DIR: my_project
       context: ./
       dockerfile: Dockerfile
     ports:
       - 8000:8000
     volumes:
-      - ./volume:/src/
+      - project_data:/src2/my_project
 version: '3.8'
