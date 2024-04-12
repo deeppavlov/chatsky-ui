@@ -18,7 +18,7 @@ cli = typer.Typer()
 def _execute_command(command_to_run):
     logger = get_logger(__name__)
     try:
-        process = subprocess.run(command_to_run.split(),check=False)
+        process = subprocess.run(command_to_run.split(), check=False)
 
         # Check the return code to determine success
         if process.returncode == 0:
@@ -50,11 +50,7 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
 
 
 @cli.command("build_bot")
-def build_bot(
-    build_id: int,
-    project_dir: str = settings.work_directory,
-    preset: str = "success"
-):
+def build_bot(build_id: int, project_dir: str = settings.work_directory, preset: str = "success"):
     _execute_command_file(build_id, project_dir, "build.json", preset)
 
 
@@ -62,20 +58,14 @@ def build_bot(
 def build_scenario(build_id: int, project_dir: str = "."):
     asyncio.run(translator(build_id=build_id, project_dir=project_dir))
 
+
 @cli.command("run_bot")
-def run_bot(
-    build_id: int,
-    project_dir: str = settings.work_directory,
-    preset: str = "success"
-):
+def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: str = "success"):
     _execute_command_file(build_id, project_dir, "run.json", preset)
 
 
 @cli.command("run_scenario")
-def run_scenario(
-    build_id: int,
-    project_dir: str = "."
-):
+def run_scenario(build_id: int, project_dir: str = "."):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
     _execute_command(command_to_run)
@@ -103,7 +93,7 @@ def run_backend(
         settings.host,
         settings.backend_port,
         reload=settings.conf_reload,
-        reload_dirs=str(settings.work_directory)
+        reload_dirs=str(settings.work_directory),
     )
     settings.server = uvicorn.Server(settings.uvicorn_config)
     settings.server.run()

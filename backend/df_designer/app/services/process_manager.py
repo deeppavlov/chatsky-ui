@@ -34,12 +34,12 @@ class ProcessManager:
     async def get_process_info(self, id_: int, path: Path):
         db_conf = await read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
-        return next((db_process for db_process in conf_dict if db_process["id"]==id_), None)
+        return next((db_process for db_process in conf_dict if db_process["id"] == id_), None)
 
     async def get_full_info(self, offset: int, limit: int, path: Path) -> List[dict]:
         db_conf = await read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
-        return conf_dict[offset:offset+limit]
+        return conf_dict[offset : offset + limit]
 
     async def fetch_process_logs(self, id_: int, offset: int, limit: int, path: Path):
         process_info = await self.get_process_info(id_, path)
@@ -59,8 +59,7 @@ class ProcessManager:
             return None
 
         logger.info("Returning %s logs", len(logs))
-        return logs[offset:offset+limit]
-
+        return logs[offset : offset + limit]
 
 
 class RunManager(ProcessManager):
@@ -97,6 +96,7 @@ class RunManager(ProcessManager):
 
     async def fetch_run_logs(self, run_id: int, offset: int, limit: int):
         return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path)
+
 
 class BuildManager(ProcessManager):
     def __init__(self):
