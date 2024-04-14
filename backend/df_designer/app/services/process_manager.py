@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional, Type
+from typing import List
 
 from omegaconf import OmegaConf
 
