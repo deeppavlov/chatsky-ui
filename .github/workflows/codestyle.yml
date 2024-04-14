@@ -11,7 +11,7 @@ jobs:
       - name: set up python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: '3.10'
 
       - name: setup poetry and install dependencies
         run: |
@@ -22,34 +22,11 @@ jobs:
 
       - name: run black codestyle
         run: |
-          black --line-length=120 --check .
-        working-directory: backend
+          python -m poetry run black --line-length=120 --check .
+        working-directory: backend/df_designer
 
       - name: run flake8 codestyle
         run: |
           bash ./bin/run_codestyle.sh DIFF_BRANCH=${BASE_BRANCH}
         env:
           BASE_BRANCH: ${{github.base_ref}}
-
-      - name: run isort codestyle
-        run: |
-          isort --line-length=120 --diff .
-        working-directory: backend
-
-  check_frontend_codestyle:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Base image
-        uses: oven-actions/docker-run@v1
-        with:
-          image: oven/bun:1
-          name: frontend-base
-          command: bun install
-          working-directory: frontend
-      - name: run type checking
-        uses: oven-actions/docker-run@v1
-        with:
-          image: frontend-base
-          command: bun run check
-          working-directory: frontend

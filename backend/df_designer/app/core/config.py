@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import uvicorn
-from omegaconf import OmegaConf
 from pydantic_settings import BaseSettings
 
 

@@ -1,6 +1,6 @@
 import asyncio
 from asyncio.tasks import Task
-from typing import Dict, Optional, Set
+from typing import Dict, Set
 
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -29,7 +29,7 @@ class WebSocketManager:
 
     def check_status(self, websocket: WebSocket):
         if websocket in self.active_connections:
-            return websocket  ## return Status!
+            return websocket  # return Status!
 
     async def send_process_output_to_websocket(
         self, run_id: int, process_manager: ProcessManager, websocket: WebSocket

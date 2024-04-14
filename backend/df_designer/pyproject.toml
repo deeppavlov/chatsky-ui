@@ -26,5 +26,5 @@ optional = true
 
 [tool.poetry.group.lint.dependencies]
 isort = "^5"
-black = "^18"
+black = "^22"
 flake8 = "^4"

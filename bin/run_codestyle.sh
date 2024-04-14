@@ -22,5 +22,5 @@ if [ -z "$res" ]
 then
   exit 0
 else
-  flake8 --statistics --count --max-line-length 120 $(git diff --cached --name-only --diff-filter=ACMR origin/$DIFF_BRANCH | grep \.py\$)
+  flake8 --ignore=E203 --statistics --count --max-line-length 120 $(git diff --cached --name-only --diff-filter=ACMR origin/$DIFF_BRANCH | grep \.py\$)
 fi

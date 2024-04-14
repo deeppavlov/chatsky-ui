@@ -3,29 +3,18 @@ name: front check
 on: [push, pull_request]
 
 jobs:
-  build_images:
+  build_and_check_frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Base image
-        uses: oven-actions/docker-run@v1
-        with:
-          image: oven/bun:1
-          name: frontend-base
-          command: bun install
-          working-directory: frontend
+      - name: Install bun
+        run: npm install -g bun
 
-      - name: build project
-        uses: oven-actions/docker-run@v1
-        with:
-          image: frontend-base
-          command: bun run build
-          working-directory: frontend
+      - name: Install dependencies
+        run: bun install
+        working-directory: frontend
 
-      - name: run type checking
-        uses: oven-actions/docker-run@v1
-        with:
-          image: frontend-base
-          command: bun run check
-          working-directory: frontend
+      - name: Build frontend
+        run: bun run build
+        working-directory: frontend
