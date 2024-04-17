@@ -30,7 +30,7 @@ class Process:
         self.logger: logging.Logger
 
     async def start(self, cmd_to_run):
-        async with aiofiles.open(self.log_path, "a", encoding="UTF-8") as file:  # TODO: log to files
+        async with aiofiles.open(self.log_path, "a", encoding="UTF-8"):  # TODO: log to files
             self.process = await asyncio.create_subprocess_exec(
                 *cmd_to_run.split(),
                 stdout=asyncio.subprocess.PIPE,
