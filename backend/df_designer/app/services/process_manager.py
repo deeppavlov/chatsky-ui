@@ -15,12 +15,15 @@ logger = get_logger(__name__)
 class ProcessManager:
     def __init__(self):
         self.processes = {}
+        self.last_id: int
 
     def get_last_id(self):
-        """Get the process_id of the last started process"""
-        return list(self.processes.keys())[-1]
+        return self.last_id
 
     async def stop(self, id_):
+        if id_ not in self.processes:
+            logger.error("Process with id '%s' not found in recent running processes", id_)
+            raise ProcessLookupError
         try:
             await self.processes[id_].stop()
         except (RuntimeError, ProcessLookupError) as exc:
@@ -67,9 +70,6 @@ class RunManager(ProcessManager):
     def __init__(self):
         super().__init__()
 
-    def get_last_id(self):
-        return self.last_id
-
     async def start(self, build_id: int, preset: Preset):
         cmd_to_run = f"dflowd run_bot {build_id} --preset {preset.end_status}"
         self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
@@ -78,16 +78,6 @@ class RunManager(ProcessManager):
         process = RunProcess(id_, build_id, preset.end_status)
         await process.start(cmd_to_run)
         self.processes[id_] = process
-
-    async def get_min_info(self) -> List[dict]:
-        runs_conf = await read_conf(settings.runs_path)
-        minimum_params = ["id", "build_id", "preset_end_status", "status", "timestamp"]
-
-        minimum_info = []
-        for run in runs_conf:
-            minimum_info.append({param: getattr(run, param) for param in minimum_params})
-
-        return minimum_info
 
     async def get_run_info(self, id_: int):
         return await super().get_process_info(id_, settings.runs_path)
@@ -103,9 +93,6 @@ class BuildManager(ProcessManager):
     def __init__(self):
         super().__init__()
 
-    def get_last_id(self):
-        return self.last_id
-
     async def start(self, preset: Preset):
         cmd_to_run = f"dflowd build_bot --preset {preset.end_status}"
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
@@ -115,21 +102,6 @@ class BuildManager(ProcessManager):
         cmd_to_run = f"dflowd build_bot {id_} --preset {preset.end_status}"
         await process.start(cmd_to_run)
         self.processes[id_] = process
-
-    async def get_min_info(self) -> List[dict]:
-        builds_conf = await read_conf(settings.builds_path)
-        minimum_params = ["id", "preset_end_status", "status", "timestamp", "runs"]
-
-        minimum_info = []
-        for build in builds_conf:
-            info = {}
-            for param in minimum_params:
-                if param != "runs":
-                    info.update({param: getattr(build, param)})
-                else:
-                    info.update({"run_ids": [run.id for run in build.runs]})
-            minimum_info.append(info)
-        return minimum_info
 
     async def get_build_info(self, id_: int):
         return await super().get_process_info(id_, settings.builds_path)
