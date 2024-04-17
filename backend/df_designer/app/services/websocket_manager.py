@@ -53,6 +53,8 @@ class WebSocketManager:
         try:
             while True:
                 user_message = await websocket.receive_text()
+                if not user_message:
+                    break
                 process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
         except asyncio.CancelledError:
             logger.info("Websocket connection is closed")
