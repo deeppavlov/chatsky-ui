@@ -14,17 +14,12 @@ router = APIRouter()
 
 logger = get_logger(__name__)
 
-
 async def _stop_process(id_: int, process_manager: ProcessManager, process="run"):
-    if id_ not in process_manager.processes:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited."
-        )
     try:
         await process_manager.stop(id_)
     except (RuntimeError, ProcessLookupError) as e:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Process not found. It may have already exited or not started yet. Please check logs.",
         ) from e
 
