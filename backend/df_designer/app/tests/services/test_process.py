@@ -1,12 +1,13 @@
 import asyncio
-from app.services.process import Process, RunProcess
-from pathlib import Path
+from app.services.process import RunProcess
 import pytest
-import logging
 
 
 from app.core.logger_config import get_logger
+
 logger = get_logger(__name__)
+
+
 class TestRunProcess:
     @pytest.fixture(scope="session")
     def run_process(self):
@@ -22,11 +23,14 @@ class TestRunProcess:
     #     process.update_db_info()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("cmd_to_run, status", [
-        ("sleep 10000", "running"),
-        ("bash -c 'exit 1'", "failed"),
-        ("echo 'Hello df_designer'", "completed"),
-    ])
+    @pytest.mark.parametrize(
+        "cmd_to_run, status",
+        [
+            ("sleep 10000", "running"),
+            ("bash -c 'exit 1'", "failed"),
+            ("echo 'Hello df_designer'", "completed"),
+        ],
+    )
     async def test_check_status(self, run_process, cmd_to_run, status):
         process = await run_process(cmd_to_run)
         await asyncio.sleep(2)
@@ -54,6 +58,7 @@ class TestRunProcess:
         process.write_stdin(b"DF_Designer team welcome you.\n")
         output = await process.process.stdout.readline()
         assert output.decode().strip() == "DF_Designer team welcome you."
+
 
 class TestBuildProcess:
     pass

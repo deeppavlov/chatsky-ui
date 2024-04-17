@@ -1,7 +1,5 @@
-import asyncio
 import pytest
 from random import randint
-from typing import List
 
 from app.services.process_manager import RunManager
 from app.schemas.preset import Preset
@@ -9,6 +7,7 @@ from app.core.logger_config import get_logger
 
 
 logger = get_logger(__name__)
+
 
 class TestRunManager:
     @pytest.fixture(scope="session")
@@ -24,6 +23,7 @@ class TestRunManager:
             manager = RunManager()
             await manager.start(build_id=0, preset=preset)
             return manager
+
         return _run_manager
 
     @pytest.mark.asyncio
@@ -40,22 +40,22 @@ class TestRunManager:
                 await manager.stop(process_id)
 
     # def test_check_status(self, run_manager, preset):
-        # pass
+    # pass
 
     @pytest.mark.asyncio
     async def test_get_process_info(self, run_manager):
         manager = await run_manager()
-        run_info = await manager.get_run_info(22) #TODO: change 22 to default id in env var 
+        run_info = await manager.get_run_info(22)  # TODO: change 22 to default id in env var
         assert isinstance(run_info, dict) and "id" in run_info
 
     @pytest.mark.asyncio
     async def test_get_full_info(self, run_manager):
         manager = await run_manager()
         full_info = await manager.get_full_info(0, 10)
-        assert isinstance(full_info, list) and  isinstance(full_info[0], dict) and len(full_info) == 10
+        assert isinstance(full_info, list) and isinstance(full_info[0], dict) and len(full_info) == 10
 
     @pytest.mark.asyncio
     async def test_fetch_run_logs(self, run_manager):
         manager = await run_manager()
-        logs = await manager.fetch_run_logs(22, 0, 10) #TODO: change 22 to default id in env var
+        logs = await manager.fetch_run_logs(22, 0, 10)  # TODO: change 22 to default id in env var
         assert isinstance(logs, list)
