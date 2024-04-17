@@ -1,10 +1,9 @@
-import pytest
 from random import randint
 
-from app.services.process_manager import RunManager
-from app.schemas.preset import Preset
+import pytest
 from app.core.logger_config import get_logger
-
+from app.schemas.preset import Preset
+from app.services.process_manager import RunManager
 
 logger = get_logger(__name__)
 
