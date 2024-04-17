@@ -1,6 +1,5 @@
 # create test flows function here
 import pytest
-
 from app.api.api_v1.endpoints.flows import flows_get, flows_post
 
 
