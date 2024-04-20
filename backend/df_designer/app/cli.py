@@ -15,15 +15,17 @@ from app.services.json_translator import translator
 
 cli = typer.Typer()
 
-
-def _execute_command(command_to_run):
+async def _execute_command(command_to_run):
     logger = get_logger(__name__)
     try:
-        process = subprocess.run(command_to_run.split(), check=False)
+        process = await asyncio.create_subprocess_exec(*command_to_run.split())
 
         # Check the return code to determine success
         if process.returncode == 0:
             logger.info("Command '%s' executed successfully.", command_to_run)
+        elif process.returncode is None:
+            logger.info("Process by command '%s' is running.", command_to_run)
+            await process.wait()
         else:
             logger.error("Command '%s' failed with return code: %d", command_to_run, process.returncode)
             sys.exit(process.returncode)
@@ -45,7 +47,7 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
             command_to_run += f" {build_id}"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
-        _execute_command(command_to_run)
+        asyncio.run(_execute_command(command_to_run))
     else:
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
@@ -69,7 +71,7 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 def run_scenario(build_id: int, project_dir: str = "."):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-    _execute_command(command_to_run)
+    asyncio.run(_execute_command(command_to_run))
 
 
 async def _run_server() -> None:
