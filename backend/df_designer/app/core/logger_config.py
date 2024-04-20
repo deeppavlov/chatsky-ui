@@ -33,10 +33,10 @@ def setup_logging(log_type: str, log_name: str) -> Path:  # TODO: rename: setup_
 
 def get_logger(name, file_handler_path: Optional[Path] = None):
     if file_handler_path is None:
-        os.makedirs(settings.dir_logs, exist_ok=True)
         file_handler_path = settings.dir_logs / "logs.log"
-        if not os.path.exists(file_handler_path):
-            open(file_handler_path, "w", encoding="UTF-8").close()
+    file_handler_path.parent.mkdir(parents=True, exist_ok=True)
+    if not file_handler_path.exists():
+        file_handler_path.touch()
 
     logger = logging.getLogger(name)
     logger.propagate = False
