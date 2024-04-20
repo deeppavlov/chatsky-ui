@@ -26,6 +26,8 @@ async def _execute_command(command_to_run):
         elif process.returncode is None:
             logger.info("Process by command '%s' is running.", command_to_run)
             await process.wait()
+            logger.info("Process ended with return code: %d.", process.returncode)
+            sys.exit(process.returncode)
         else:
             logger.error("Command '%s' failed with return code: %d", command_to_run, process.returncode)
             sys.exit(process.returncode)
