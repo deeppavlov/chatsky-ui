@@ -60,7 +60,7 @@ class ProcessManager:
 
         if offset > len(logs):
             logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
-            return None
+            return None #TODO: raise error!
 
         logger.info("Returning %s logs", len(logs))
         return logs[offset : offset + limit]
@@ -94,7 +94,6 @@ class BuildManager(ProcessManager):
         super().__init__()
 
     async def start(self, preset: Preset):
-        cmd_to_run = f"dflowd build_bot --preset {preset.end_status}"
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
