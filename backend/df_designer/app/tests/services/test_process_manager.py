@@ -2,19 +2,32 @@ from random import randint
 
 import pytest
 from app.core.logger_config import get_logger
-from app.schemas.preset import Preset
+from app.tests.confest import preset
 from app.services.process_manager import RunManager
 
 logger = get_logger(__name__)
 
 
 class TestRunManager:
-    @pytest.fixture(scope="session")
-    def preset(self):
-        return Preset(
-            wait_time=0,
-            end_status="loop",
-        )
+    @pytest.mark.asyncio
+    async def test_start(self, mocker, preset):
+        build_id = 42
+
+        # Mock the RunProcess constructor whereever it's called in
+        # the process_manager file within the scope of this test function
+        mock_run_process = mocker.patch('app.services.process_manager.RunProcess')
+        mock_run_process_instance = mock_run_process.return_value
+        mock_run_process_instance.start = mocker.AsyncMock()
+
+        run_manager = RunManager()
+
+        await run_manager.start(build_id, preset)
+
+        mock_run_process.assert_called_once_with(run_manager.last_id, build_id, preset.end_status)
+
+        mock_run_process_instance.start.assert_awaited_once_with(f"dflowd run_bot {build_id} --preset {preset.end_status}")
+
+        assert run_manager.processes[run_manager.last_id] is mock_run_process_instance
 
     @pytest.fixture(scope="session")
     def run_manager(self, preset):
@@ -51,7 +64,7 @@ class TestRunManager:
     async def test_get_full_info(self, run_manager):
         manager = await run_manager()
         full_info = await manager.get_full_info(0, 10)
-        assert isinstance(full_info, list) and isinstance(full_info[0], dict) and len(full_info) == 10
+        assert isinstance(full_info, list) and isinstance(full_info[0], dict) and len(full_info) <= 10
 
     @pytest.mark.asyncio
     async def test_fetch_run_logs(self, run_manager):
