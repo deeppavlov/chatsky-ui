@@ -1,91 +1,107 @@
 import asyncio
-import pytest
-from httpx import AsyncClient, ASGITransport
-from fastapi import status
+import time
+from contextlib import asynccontextmanager
 
-from app.tests.confest import client
-from app.services.process_manager import RunManager
-from app.api.deps import get_run_manager, get_build_manager
-from app.main import app
+import httpx
+import pytest
+from httpx import ASGITransport, AsyncClient
+
+from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
+from app.main import app
+from app.tests.confest import client  # noqa: F401
 
 logger = get_logger(__name__)
 
-async def _test_start_process(mocker_obj, get_manager_func, endpoint: str, end_status: str, process_status: str):
+
+async def _start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:
+    return await async_client.post(
+        endpoint,
+        json={"wait_time": 0.1, "end_status": preset_end_status},
+    )
+
+
+async def _try_write(process, message):
+    start_time = time.time()
+    while (time.time() - start_time) < 4:
+        try:
+            await process.write_stdin(message)
+        except BrokenPipeError:
+            pass
+        else:
+            break
+
+
+@asynccontextmanager
+async def _override_dependency(mocker_obj, get_manager_func):
     process_manager = get_manager_func()
     process_manager.check_status = mocker_obj.AsyncMock()
     app.dependency_overrides[get_manager_func] = lambda: process_manager
+    try:
+        yield process_manager
+    finally:
+        app.dependency_overrides = {}
 
+
+async def _assert_process_status(response, process_manager, expected_end_status):
+    assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
+    process_manager.check_status.assert_awaited_once()
+
+    await asyncio.sleep(4)  # TODO: Consider making this timeout configurable
+
+    process_id = process_manager.last_id
+    logger.debug("Process id is %s", process_id)
+    current_status = process_manager.get_status(process_id)
+    assert (
+        current_status == expected_end_status
+    ), f"Current process status '{current_status}' did not match the expected '{expected_end_status}'"
+
+    return process_id, current_status
+
+
+async def _assert_interaction_with_running_process(process_manager, process_id, end_status):
+    process = process_manager.processes[process_id]
+    message = b"Hi\n"
+
+    if end_status == "success":
+        await _try_write(process, message)
+        output = await process.process.stdout.readline()
+        assert output, "No output received from the process"
+    elif end_status == "loop":
+        await _try_write(process, message)
+
+    process.process.terminate()
+    await process.process.wait()
+
+
+async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end_status, expected_end_status):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        response = await async_client.post(
-            endpoint,
-            json={"wait_time": 0.1, "end_status": end_status},
-        )
+        async with _override_dependency(mocker_obj, get_manager_func) as process_manager:
+            response = await _start_process(async_client, endpoint, preset_end_status)
+            process_id, current_status = await _assert_process_status(response, process_manager, expected_end_status)
 
-        assert "status" in response.json() and response.json()["status"] == "ok"
-        process_manager.check_status.assert_awaited_once()
-
-        await asyncio.sleep(4)
-        logger.debug("Processs id is %s", process_manager.last_id)
-        current_status = process_manager.get_status(process_manager.last_id)
-        assert current_status == process_status
-
-    # Close the process and delete the dependency override
-    if current_status == "running":
-        process = process_manager.processes[process_manager.last_id]
-        import time
-        if end_status == "success":
-            await process.write_stdin(b"sdfwe\n")
-            output = await process.process.stdout.readline()
-            assert output
-        elif end_status == "loop":
-            start_time = time.time()
-            while (time.time() - start_time) < 4:
-                try:
-                    await process.write_stdin(b"Hi\n")
-                except BrokenPipeError:
-                    pass
-                else:
-                    break
-        process.process.terminate()
-        await process.process.wait()
-    app.dependency_overrides = {}
-
-    return process_manager
+            if current_status == "running":
+                await _assert_interaction_with_running_process(process_manager, process_id, preset_end_status)
 
 
-
-async def _test_stop_process(mocker_obj, get_manager_func):
-    # Setup code to ensure a process is up and running then stop it
-
-    # Mock the check_status function to avoid getting in indefinite loop
-    process_manager = get_manager_func()
-    process_manager.check_status = mocker.AsyncMock()
-    app.dependency_overrides[get_build_manager] = lambda: process_manager
-
+async def _test_stop_process(mocker, get_manager_func, start_endpoint, stop_endpoint):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        # Start a process
-        start_response = await async_client.post(
-            "/api/v1/bot/build/start",
-            json={"wait_time": 0.1, "end_status": "loop"},
-        )
-        assert start_response.status_code == 201
-        logger.debug("Processes: %s", process_manager.processes)
+        async with _override_dependency(mocker, get_manager_func) as manager:
+            start_response = await _start_process(async_client, start_endpoint, preset_end_status="loop")
+            assert start_response.status_code == 201
+            logger.debug("Processes: %s", manager.processes)
 
-        # Process status
-        last_id = process_manager.get_last_id()
-        logger.debug("Last id: %s, type: %s", last_id, type(last_id))
-        logger.debug("Process status %s", process_manager.get_status(last_id),)
+            last_id = manager.get_last_id()
+            logger.debug("Last id: %s, type: %s", last_id, type(last_id))
+            logger.debug("Process status %s", manager.get_status(last_id))
 
-        # Stop the process
-        stop_response = await async_client.get(f"/api/v1/bot/build/stop/{last_id}")
-        assert stop_response.status_code == 200
-        assert stop_response.json() == {"status": "ok"}
+            stop_response = await async_client.get(f"{stop_endpoint}/{last_id}")
+            assert stop_response.status_code == 200
+            assert stop_response.json() == {"status": "ok"}
 
 
-
-# test flows endpoint -> db base (read and write conf)
-def test_flows(client):
+# Test flows endpoints and interaction with db (read and write conf)
+def test_flows(client):  # noqa: F811
     get_response = client.get("/api/v1/flows")
     assert get_response.status_code == 200
     data = get_response.json()["data"]
@@ -108,38 +124,16 @@ async def test_start_build(mocker, end_status, process_status):
         mocker,
         get_build_manager,
         endpoint="/api/v1/bot/build/start",
-        end_status=end_status,
-        process_status=process_status
+        preset_end_status=end_status,
+        expected_end_status=process_status,
     )
 
 
 @pytest.mark.asyncio
 async def test_stop_build(mocker):
-    # Setup code to ensure a process is up and running then stop it
-
-    # Mock the check_status function to avoid getting in indefinite loop
-    build_manager = get_build_manager()
-    build_manager.check_status = mocker.AsyncMock()
-    app.dependency_overrides[get_build_manager] = lambda: build_manager
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        # Start a process
-        start_response = await async_client.post(
-            "/api/v1/bot/build/start",
-            json={"wait_time": 0.1, "end_status": "loop"},
-        )
-        assert start_response.status_code == 201
-        logger.debug("Processes: %s", build_manager.processes)
-
-        # Process status
-        last_id = build_manager.get_last_id()
-        logger.debug("Last id: %s, type: %s", last_id, type(last_id))
-        logger.debug("Process status %s", build_manager.get_status(last_id),)
-
-        # Stop the process
-        stop_response = await async_client.get(f"/api/v1/bot/build/stop/{last_id}")
-        assert stop_response.status_code == 200
-        assert stop_response.json() == {"status": "ok"}
+    await _test_stop_process(
+        mocker, get_build_manager, start_endpoint="/api/v1/bot/build/start", stop_endpoint="/api/v1/bot/build/stop"
+    )
 
 
 # def test_get_run_status(client):
@@ -157,42 +151,24 @@ async def test_start_run(mocker, end_status, process_status):
         mocker,
         get_run_manager,
         endpoint=f"/api/v1/bot/run/start/{build_id}",
-        end_status=end_status,
-        process_status=process_status
+        preset_end_status=end_status,
+        expected_end_status=process_status,
     )
 
 
 @pytest.mark.asyncio
 async def test_stop_run(mocker):
     build_id = 43
-    # Setup code to ensure a process is up and running then stop it
+    await _test_stop_process(
+        mocker,
+        get_run_manager,
+        start_endpoint=f"/api/v1/bot/run/start/{build_id}",
+        stop_endpoint="/api/v1/bot/run/stop",
+    )
 
-    # Mock the check_status function to avoid getting in indefinite loop
-    run_manager = get_run_manager()
-    run_manager.check_status = mocker.AsyncMock()
-    app.dependency_overrides[get_run_manager] = lambda: run_manager
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        # Start a process
-        start_response = await async_client.post(
-            f"/api/v1/bot/run/start/{build_id}",
-            json={"wait_time": 0.1, "end_status": "loop"},
-        )
-        assert start_response.status_code == 201
-        logger.debug("Processes: %s", run_manager.processes)
-
-        # Process status
-        last_id = run_manager.get_last_id()
-        logger.debug("Last id: %s, type: %s", last_id, type(last_id))
-        logger.debug("Process status %s", run_manager.get_status(last_id),)
-
-        # Stop the process
-        stop_response = await async_client.get(f"/api/v1/bot/run/stop/{last_id}")
-        assert stop_response.status_code == 200
-        assert stop_response.json() == {"status": "ok"}
 
 @pytest.mark.asyncio
-async def test_connect_to_ws(mocker, client):
+async def test_connect_to_ws(mocker, client):  # noqa: F811
     build_id = 43
 
     # Start a process
@@ -211,7 +187,10 @@ async def test_connect_to_ws(mocker, client):
     # Process status
     last_id = run_manager.get_last_id()
     logger.debug("Last id: %s, type: %s", last_id, type(last_id))
-    logger.debug("Process status %s", run_manager.get_status(last_id),)
+    logger.debug(
+        "Process status %s",
+        run_manager.get_status(last_id),
+    )
 
     # connect to websocket
     with client.websocket_connect(f"/api/v1/bot/run/connect?run_id={last_id}") as websocket:
