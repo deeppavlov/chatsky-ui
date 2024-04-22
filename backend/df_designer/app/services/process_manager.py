@@ -77,6 +77,7 @@ class RunManager(ProcessManager):
         id_ = self.last_id
         process = RunProcess(id_, build_id, preset.end_status)
         await process.start(cmd_to_run)
+        process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process
 
     async def get_run_info(self, id_: int):

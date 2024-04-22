@@ -104,11 +104,12 @@ class Process:
 
         return self.process.stdout.readline()
 
-    def write_stdin(self, message):
+    async def write_stdin(self, message):
         if self.process is None:
             self.logger.error("Cannot write into stdin of a process '%s' that has not started yet.", self.id)
             raise RuntimeError
         self.process.stdin.write(message)
+        await self.process.stdin.drain()
 
 
 class RunProcess(Process):
