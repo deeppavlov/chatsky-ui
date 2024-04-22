@@ -1,21 +1,22 @@
 from random import randint
 
 import pytest
+
 from app.core.logger_config import get_logger
-from app.tests.confest import preset
 from app.services.process_manager import RunManager
+from app.tests.confest import preset  # noqa: F401
 
 logger = get_logger(__name__)
 
 
 class TestRunManager:
     @pytest.mark.asyncio
-    async def test_start(self, mocker, preset):
+    async def test_start(self, mocker, preset):  # noqa: F811
         build_id = 42
 
         # Mock the RunProcess constructor whereever it's called in
         # the process_manager file within the scope of this test function
-        mock_run_process = mocker.patch('app.services.process_manager.RunProcess')
+        mock_run_process = mocker.patch("app.services.process_manager.RunProcess")
         mock_run_process_instance = mock_run_process.return_value
         mock_run_process_instance.start = mocker.AsyncMock()
 
@@ -25,12 +26,14 @@ class TestRunManager:
 
         mock_run_process.assert_called_once_with(run_manager.last_id, build_id, preset.end_status)
 
-        mock_run_process_instance.start.assert_awaited_once_with(f"dflowd run_bot {build_id} --preset {preset.end_status}")
+        mock_run_process_instance.start.assert_awaited_once_with(
+            f"dflowd run_bot {build_id} --preset {preset.end_status}"
+        )
 
         assert run_manager.processes[run_manager.last_id] is mock_run_process_instance
 
     @pytest.fixture(scope="session")
-    def run_manager(self, preset):
+    def run_manager(self, preset):  # noqa: F811
         async def _run_manager():
             manager = RunManager()
             await manager.start(build_id=0, preset=preset)

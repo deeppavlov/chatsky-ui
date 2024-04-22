@@ -14,6 +14,7 @@ router = APIRouter()
 
 logger = get_logger(__name__)
 
+
 async def _stop_process(id_: int, process_manager: ProcessManager, process="run"):
     try:
         await process_manager.stop(id_)
