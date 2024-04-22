@@ -57,7 +57,7 @@ COPY --from=backend-builder /poetry-venv /poetry-venv
 ENV PATH="/poetry-venv/bin:$PATH"
 
 # Copy only the necessary files
-COPY --from=backend-builder /temp/backend/df_designer /src2/df_designer
+COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
 COPY ./${PROJECT_DIR} /src2/${PROJECT_DIR}
 
 # Install the wheel

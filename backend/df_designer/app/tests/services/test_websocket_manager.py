@@ -56,7 +56,7 @@ class TestWebSocketManager:
         websocket.receive_text = mocker.AsyncMock(side_effect=[awaited_message, None])
         run_manager = mocker.MagicMock(spec=RunManager())
         run_process = mocker.MagicMock(spec=RunProcess(run_id))
-        run_process.write_stdin = mocker.MagicMock()
+        run_process.write_stdin = mocker.AsyncMock()
         run_manager.processes = {run_id: run_process}
 
         await websocket_manager.forward_websocket_messages_to_process(run_id, run_manager, websocket)
