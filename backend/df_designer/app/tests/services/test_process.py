@@ -55,10 +55,10 @@ class TestRunProcess:
     @pytest.mark.asyncio
     async def test_write_stdout(self, run_process):
         process = await run_process("cat")
-        process.write_stdin(b"DF_Designer team welcome you.\n")
+        await process.write_stdin(b"DF_Designer team welcome you.\n")
         output = await process.process.stdout.readline()
         assert output.decode().strip() == "DF_Designer team welcome you."
 
 
-class TestBuildProcess:
-    pass
+# class TestBuildProcess:
+#     pass
