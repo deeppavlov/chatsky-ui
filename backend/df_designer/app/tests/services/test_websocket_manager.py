@@ -1,9 +1,9 @@
-import asyncio
 import pytest
-from app.services.websocket_manager import WebSocketManager
-from app.services.process_manager import RunManager
-from app.services.process import RunProcess
 from fastapi import WebSocket
+
+from app.services.process import RunProcess
+from app.services.process_manager import RunManager
+from app.services.websocket_manager import WebSocketManager
 
 
 class TestWebSocketManager:
@@ -30,7 +30,7 @@ class TestWebSocketManager:
 
         assert mocked_websocket not in websocket_manager.pending_tasks
         assert mocked_websocket not in websocket_manager.active_connections
-    
+
     @pytest.mark.asyncio
     async def test_send_process_output_to_websocket(self, mocker, websocket_manager):
         run_id = 42
@@ -41,8 +41,7 @@ class TestWebSocketManager:
         run_process = mocker.MagicMock(spec=RunProcess(run_id))
         run_process.read_stdout = mocker.AsyncMock(side_effect=[awaited_response.encode(), None])
         run_manager.processes = {run_id: run_process}
-        
-        
+
         await websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket)
 
         assert run_process.read_stdout.call_count == 2

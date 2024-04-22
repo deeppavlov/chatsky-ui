@@ -20,7 +20,7 @@ class WebSocketManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        #TODO: await websocket.close()
+        # TODO: await websocket.close()
         if websocket in self.pending_tasks:
             logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:

@@ -1,4 +1,6 @@
 import pytest
+from fastapi import BackgroundTasks, HTTPException, WebSocket
+
 from app.api.api_v1.endpoints.bot import (
     _check_process_status,
     _stop_process,
@@ -14,7 +16,6 @@ from app.schemas.pagination import Pagination
 from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
-from fastapi import BackgroundTasks, HTTPException, WebSocket
 
 
 @pytest.mark.parametrize("process_type, process_manager", [("build", BuildManager), ("run", RunManager)])

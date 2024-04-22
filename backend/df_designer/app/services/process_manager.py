@@ -60,7 +60,7 @@ class ProcessManager:
 
         if offset > len(logs):
             logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
-            return None #TODO: raise error!
+            return None  # TODO: raise error!
 
         logger.info("Returning %s logs", len(logs))
         return logs[offset : offset + limit]

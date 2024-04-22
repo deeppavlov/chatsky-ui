@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -14,6 +13,7 @@ from app.core.logger_config import get_logger
 from app.services.json_translator import translator
 
 cli = typer.Typer()
+
 
 async def _execute_command(command_to_run):
     logger = get_logger(__name__)
