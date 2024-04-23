@@ -154,7 +154,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     (flow: FlowType) => {
       const new_flows = flows.map((f) => (f.name === flow.name ? flow : f))
       // saveFlows(new_flows)
-      setFlows(new_flows)
+      setFlows(prev => new_flows)
     },
     [flows]
   )

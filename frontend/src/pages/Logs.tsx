@@ -35,7 +35,7 @@ const Logs = () => {
     <div
       className='w-full h-full absolute transition-transform duration-300 bg-background pt-20 pb-6 px-8 grid grid-cols-6 gap-6'
       style={{
-        transform: !logsPage ? `translateX(-100%)` : "translateX(0%)",
+        transform: !logsPage ? `translateX(100%)` : "translateX(0%)",
       }}>
       <div>
         <h1 className='text-3xl mb-4'>Builds</h1>

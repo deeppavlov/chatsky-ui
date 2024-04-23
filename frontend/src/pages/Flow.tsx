@@ -12,16 +12,17 @@ import ReactFlow, {
   Connection,
   NodeChange,
   updateEdge,
+  Node,
 } from "reactflow"
 
 import "reactflow/dist/style.css"
 import "../index.css"
 import { v4 } from "uuid"
 import DefaultNode from "../components/nodes/DefaultNode"
-import { NodeType, NodesTypes } from "../types/NodeTypes"
+import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
 import SideBar from "../components/sidebar/SideBar"
 import StartNode from "../components/nodes/StartNode"
-import { NODES } from "../consts"
+import { NODES, START_FALLBACK_NODE_FLAGS } from "../consts"
 import FallbackNode from "../components/nodes/FallbackNode"
 import { useParams } from "react-router-dom"
 import { FlowType } from "../types/FlowTypes"
@@ -36,6 +37,8 @@ import Logs from "./Logs"
 import { UndoRedoProvider, undoRedoContext } from "../contexts/undoRedoContext"
 import Chat from "../components/chat/Chat"
 import NodesLayout from "./NodesLayout"
+import FootBar from "../components/footbar/FootBar"
+import Settings from "./Settings"
 
 const nodeTypes = {
   default_node: DefaultNode,
@@ -48,12 +51,13 @@ export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
   const { flows, updateFlow, saveFlows } = useContext(flowContext)
-  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode } = useContext(workspaceContext)
+  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode } =
+    useContext(workspaceContext)
   const { takeSnapshot } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
-  const flow = useMemo(() => flows.find((flow: FlowType) => flow.name === flowId), [flowId, flows])
+  const flow = flows.find((flow: FlowType) => flow.name === flowId)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
@@ -69,6 +73,7 @@ export default function Flow() {
     if (flow && reactFlowInstance) {
       flow.data = reactFlowInstance.toObject()
       updateFlow(flow)
+      console.log("update flow")
     }
   }, [nodes, edges])
 
@@ -90,9 +95,30 @@ export default function Flow() {
 
   const onNodesChangeMod = useCallback(
     (nds: NodeChange[]) => {
+      if (nds) {
+        nds
+          .sort((nd1: NodeChange, nd2: NodeChange) => {
+            if (nd1.type === 'select' && nd2.type === 'select') {
+              return nd1.selected === nd2.selected ? 0 : nd2.selected ? -1 : 1
+            } else {
+              return 0
+            }
+          })
+          .forEach((nd) => {
+            if (nd.type === "select") {
+              if (nd.selected) {
+                setSelectedNode(nd.id)
+              } else {
+                setSelectedNode("")
+              }
+            }
+            console.log(selectedNode)
+          })
+      }
+      console.log("nds change", nds)
       onNodesChange(nds)
     },
-    [onNodesChange]
+    [onNodesChange, selectedNode, setSelectedNode]
   )
 
   const onEdgeUpdate = useCallback(
@@ -143,6 +169,7 @@ export default function Flow() {
         data: {
           id: newId,
           name: NODES[type].name,
+          flags: flow?.data.nodes.length ? [] : START_FALLBACK_NODE_FLAGS,
           conditions: NODES[type].conditions,
           global_conditions: [],
           local_conditions: [],
@@ -152,7 +179,7 @@ export default function Flow() {
       }
       setNodes((nds) => nds.concat(newNode))
     },
-    [reactFlowInstance, setNodes]
+    [takeSnapshot, reactFlowInstance, setNodes, flow]
   )
 
   useEffect(() => {
@@ -194,7 +221,7 @@ export default function Flow() {
         <a.div
           ref={reactFlowWrapper}
           style={{ width: "100%", height: "100vh", ...style }}
-          className='col-span-6 opacity-0'>
+          className='col-span-6 opacity-0 pb-10'>
           <ReactFlow
             style={{
               background: "var(--background)",
@@ -244,6 +271,8 @@ export default function Flow() {
       {nodesLayoutMode && <NodesLayout />}
       <Logs />
       <Chat />
+      <Settings />
+      <FootBar />
     </div>
   )
 }

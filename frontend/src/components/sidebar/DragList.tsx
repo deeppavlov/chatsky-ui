@@ -15,7 +15,7 @@ export const DragList = () => {
           type: "default_node",
         }}
       />
-      <DragListItem
+      {/* <DragListItem
         item={{
           color: "#00cc99",
           name: "Start Node",
@@ -26,7 +26,7 @@ export const DragList = () => {
         color: "#ff3434",
         name: "Fallback Node",
         type: "fallback_node",
-      }} />
+      }} /> */}
       {/* <div className="dndnode output" onDragStart={(event) => onDragStart(event, 'output')} draggable>
         Output Node
       </div> */}
