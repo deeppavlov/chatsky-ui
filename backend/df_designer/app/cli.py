@@ -46,7 +46,7 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
     if preset in presets_build_file:
         command_to_run = presets_build_file[preset]["cmd"]
         if preset == "success":
-            command_to_run += f" {build_id}"
+            command_to_run += f" {build_id} --call_from_open_event_loop True"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
         asyncio.run(_execute_command(command_to_run))
@@ -60,8 +60,13 @@ def build_bot(build_id: int, project_dir: str = settings.work_directory, preset:
 
 
 @cli.command("build_scenario")
-def build_scenario(build_id: int, project_dir: str = "."):
-    asyncio.run(translator(build_id=build_id, project_dir=project_dir))
+def build_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
+    if call_from_open_event_loop:
+        loop = asyncio.get_event_loop()
+        loop.create_task(translator(build_id=build_id, project_dir=project_dir))
+        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
+    else:
+        asyncio.run(translator(build_id=build_id, project_dir=project_dir))
 
 
 @cli.command("run_bot")
@@ -70,10 +75,15 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 
 
 @cli.command("run_scenario")
-def run_scenario(build_id: int, project_dir: str = "."):
+def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-    asyncio.run(_execute_command(command_to_run))
+    if call_from_open_event_loop:
+        loop = asyncio.get_event_loop()
+        loop.create_task(_execute_command(command_to_run))
+        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
+    else:
+        asyncio.run(_execute_command(command_to_run))
 
 
 async def _run_server() -> None:

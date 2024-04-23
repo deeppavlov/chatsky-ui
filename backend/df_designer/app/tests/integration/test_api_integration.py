@@ -1,5 +1,4 @@
 import asyncio
-import time
 from contextlib import asynccontextmanager
 
 import httpx
