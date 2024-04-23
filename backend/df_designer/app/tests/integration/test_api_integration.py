@@ -21,15 +21,18 @@ async def _start_process(async_client: AsyncClient, endpoint, preset_end_status)
     )
 
 
-async def _try_write(process, message):
-    start_time = time.time()
-    while (time.time() - start_time) < 4:
-        try:
-            await process.write_stdin(message)
-        except BrokenPipeError:
-            pass
-        else:
-            break
+async def _try_communicate(process, message):
+    timeout = 5
+
+    try:
+        # Attempt to write and read from the process with a timeout.
+        await process.write_stdin(message)
+        output = await asyncio.wait_for(process.read_stdout(), timeout=timeout)
+        logger.debug("Process output afer communication: %s", output)
+    except asyncio.exceptions.TimeoutError:
+        logger.debug("Process did not accept input within the timeout period.")
+        output = None
+    return output
 
 
 @asynccontextmanager
@@ -47,7 +50,16 @@ async def _assert_process_status(response, process_manager, expected_end_status)
     assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
     process_manager.check_status.assert_awaited_once()
 
-    await asyncio.sleep(4)  # TODO: Consider making this timeout configurable
+    try:
+        await asyncio.wait_for(
+            process_manager.processes[process_manager.last_id].process.wait(), timeout=4
+        )  # TODO: Consider making this timeout configurable
+    except asyncio.exceptions.TimeoutError as exc:
+        if expected_end_status == "running":
+            logger.debug("Loop process timed out. Expected behavior.")
+        else:
+            logger.debug("Process with expected end status '%s' timed out with status 'running'.", expected_end_status)
+            raise exc
 
     process_id = process_manager.last_id
     logger.debug("Process id is %s", process_id)
@@ -63,12 +75,12 @@ async def _assert_interaction_with_running_process(process_manager, process_id, 
     process = process_manager.processes[process_id]
     message = b"Hi\n"
 
+    output = await _try_communicate(process, message)
+
     if end_status == "success":
-        await _try_write(process, message)
-        output = await process.process.stdout.readline()
         assert output, "No output received from the process"
     elif end_status == "loop":
-        await _try_write(process, message)
+        assert output is None, "Process replied to an input when it was expected not to."
 
     process.process.terminate()
     await process.process.wait()

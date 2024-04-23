@@ -97,12 +97,12 @@ class Process:
             self.logger.error("Process '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
-    def read_stdout(self):
+    async def read_stdout(self):
         if self.process is None:
             self.logger.error("Cannot read stdout from a process '%s' that has not started yet.", self.id)
             raise RuntimeError
 
-        return self.process.stdout.readline()
+        return await self.process.stdout.readline()
 
     async def write_stdin(self, message):
         if self.process is None:
