@@ -1,10 +1,8 @@
-import React, { useContext } from "react"
-import { Logo } from "../../icons/Logo"
-import { Button, Tooltip, useDisclosure } from "@nextui-org/react"
+import { useContext } from "react"
+import { Button, useDisclosure } from "@nextui-org/react"
 import { BellRing, Moon, Settings, Sun } from "lucide-react"
 import { themeContext } from "../../contexts/themeContext"
 import BuildMenu from "./BuildMenu"
-import { Link } from "react-router-dom"
 import SettingsModal from "../../modals/SettingsModal/SettingsModal"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import GridModeIcon from "../../icons/header/GridModeIcon"
@@ -12,8 +10,7 @@ import ListViewIcon from "../../icons/header/ListViewIcon"
 import GrabModeIcon from "../../icons/header/GrabModeIcon"
 import classNames from "classnames"
 import { flowContext } from "../../contexts/flowContext"
-import { NodeDataType, NodeType } from "../../types/NodeTypes"
-import { Node, useReactFlow } from "reactflow"
+import NodeInstruments from "./components/NodeInstruments"
 
 const Header = () => {
   const { toggleTheme, theme } = useContext(themeContext)
@@ -23,13 +20,9 @@ const Header = () => {
     toggleNodesLayoutMode,
     nodesLayoutMode,
     selectedNode,
-    handleNodeFlags
   } = useContext(workspaceContext)
-  const { flows, tab, updateFlow } = useContext(flowContext)
-  const { setNodes } = useReactFlow()
+  const { flows, tab } = useContext(flowContext)
   const flow = flows.find((flow) => flow.name === tab)
-  const selectedNodeData: NodeDataType =
-    flow?.data.nodes.find((node) => node.id === selectedNode)?.data ?? null
   const {
     isOpen: isSettingsModalOpen,
     onOpen: onOpenSettingsModal,
@@ -71,50 +64,8 @@ const Header = () => {
         </div>
       </div>
       <div className='flex items-center'>
-        {selectedNode && (
-          <div className='flex items-center gap-1'>
-            <Tooltip
-              key={"header-button-set-start"}
-              content='Select node as Start'
-              radius='sm'>
-              <Button
-                onClick={e => handleNodeFlags(e, setNodes)}
-                isIconOnly
-                name='start'
-                className={classNames(
-                  "rounded-small bg-background border border-border hover:bg-overlay hover:border-border-darker",
-                  selectedNodeData?.flags?.includes("start") && "bg-success hover:bg-success-50"
-                )}>
-                S
-              </Button>
-            </Tooltip>
-            <Tooltip
-              key={"header-button-set-fallback"}
-              content='Select node as Fallback'
-              radius='sm'>
-              <Button
-                onClick={e => handleNodeFlags(e, setNodes)}
-                isIconOnly
-                name='fallback'
-                className={classNames(
-                  "rounded-small bg-background border border-border hover:bg-overlay hover:border-border-darker",
-                  selectedNodeData?.flags?.includes("fallback") && "bg-danger hover:bg-fallback-50"
-                )}>
-                F
-              </Button>
-            </Tooltip>
-            <Tooltip
-              key={"header-button-delete"}
-              content='Delete node'
-              color='danger'
-              radius='sm'>
-              <Button
-                isIconOnly
-                className='rounded-small bg-background border border-border hover:bg-danger hover:border-border-darker'>
-                D
-              </Button>
-            </Tooltip>
-          </div>
+        {selectedNode && flow && (
+          <NodeInstruments flow={flow} />
         )}
       </div>
       <div className='flex items-center justify-start gap-1'>
