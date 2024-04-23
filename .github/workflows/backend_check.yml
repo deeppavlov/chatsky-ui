@@ -72,5 +72,5 @@ jobs:
       - name: run tests
         run: |
           python -m poetry install
-          python -m poetry run pytest ../backend/df_designer/app/tests/
+          python -m poetry run pytest ../backend/df_designer/app/tests/ --verbose
         working-directory: df_designer_project
