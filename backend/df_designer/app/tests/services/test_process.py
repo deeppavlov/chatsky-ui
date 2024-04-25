@@ -27,8 +27,8 @@ class TestRunProcess:
         "cmd_to_run, status",
         [
             ("sleep 10000", "running"),
-            ("bash -c 'exit 1'", "failed"),
-            ("echo 'Hello df_designer'", "completed"),
+            ("bash -c exit 1", "failed"),
+            ("echo Hello df_designer", "completed"),
         ],
     )
     async def test_check_status(self, run_process, cmd_to_run, status):
