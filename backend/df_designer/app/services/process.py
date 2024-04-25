@@ -4,8 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-import aiofiles
-
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
 from app.db.base import read_conf, write_conf

@@ -57,9 +57,7 @@ async def test_check_process_status(mocker):
     process_id = 0
     mocked_process_manager = mocker.MagicMock()
     mocker.patch.object(mocked_process_manager, "processes", {process_id: mocker.MagicMock()})
-    mocker.patch.object(
-        mocked_process_manager, "get_status", mocker.AsyncMock(return_value="running")
-    )
+    mocker.patch.object(mocked_process_manager, "get_status", mocker.AsyncMock(return_value="running"))
 
     response = await _check_process_status(process_id, mocked_process_manager)
 
