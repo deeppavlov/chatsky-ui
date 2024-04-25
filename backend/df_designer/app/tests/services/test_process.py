@@ -34,7 +34,7 @@ class TestRunProcess:
     async def test_check_status(self, run_process, cmd_to_run, status):
         process = await run_process(cmd_to_run)
         await asyncio.sleep(2)
-        assert process.check_status() == status
+        assert await process.check_status() == status
 
     # def test_periodically_check_status(self, run_process):
     #     process = await run_process("sleep 10000")

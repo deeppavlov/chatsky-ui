@@ -52,16 +52,19 @@ async def test_stop_process_error(mocker, error_type):
 
 
 # TODO: check the errors
-def test__check_process_status(mocker):
+@pytest.mark.asyncio
+async def test_check_process_status(mocker):
     process_id = 0
     mocked_process_manager = mocker.MagicMock()
     mocker.patch.object(mocked_process_manager, "processes", {process_id: mocker.MagicMock()})
-    mocker.patch.object(mocked_process_manager, "get_status", return_value="running")
+    mocker.patch.object(
+        mocked_process_manager, "get_status", mocker.AsyncMock(return_value="running")
+    )
 
-    response = _check_process_status(process_id, mocked_process_manager)
+    response = await _check_process_status(process_id, mocked_process_manager)
 
     assert response == {"status": "running"}
-    assert mocked_process_manager.get_status.called_once_with(0)
+    mocked_process_manager.get_status.assert_awaited_once_with(0)
 
 
 @pytest.mark.asyncio

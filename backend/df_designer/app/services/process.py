@@ -30,16 +30,15 @@ class Process:
         self.logger: logging.Logger
 
     async def start(self, cmd_to_run):
-        async with aiofiles.open(self.log_path, "a", encoding="UTF-8"):  # TODO: log to files
-            self.process = await asyncio.create_subprocess_exec(
-                *cmd_to_run.split(),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                stdin=asyncio.subprocess.PIPE,
-            )
+        self.process = await asyncio.create_subprocess_exec(
+            *cmd_to_run.split(),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
 
-    def get_full_info(self) -> dict:
-        self.check_status()
+    async def get_full_info(self) -> dict:
+        await self.check_status()
         return {key: getattr(self, key) for key in self.__dict__ if key not in ["process", "logger"]}
 
     def set_full_info(self, params_dict):
@@ -57,7 +56,7 @@ class Process:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
-    def check_status(self) -> str:
+    async def check_status(self) -> str:
         """Returns the process status [null, running, completed, failed, stopped].
         - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
         incorrect usage or a process misuse in backend logic.
@@ -78,11 +77,19 @@ class Process:
         elif self.process.returncode == -15:
             self.status = "stopped"
         else:
-            self.logger.warning(
+            self.logger.error(
                 "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
                 self.process.returncode,
             )
-            return str(self.process.returncode)
+            self.status = f"Exited with return code: {str(self.process.returncode)}"
+
+        if self.status not in ["null", "running"]:
+            stdout, stderr = await self.process.communicate()
+            if stdout:
+                self.logger.info(f"[stdout]\n{stdout.decode()}")
+            if stderr:
+                self.logger.error(f"[stderr]\n{stderr.decode()}")
+
         return self.status
 
     async def stop(self):
@@ -123,9 +130,10 @@ class RunProcess(Process):
 
     async def update_db_info(self):
         # save current run info into runs_path
+        self.logger.info("Updating db run info")
         runs_conf = await read_conf(settings.runs_path)
 
-        run_params = self.get_full_info()
+        run_params = await self.get_full_info()
         _map_to_str(run_params)
 
         for run in runs_conf:
@@ -165,7 +173,7 @@ class BuildProcess(Process):
         # save current build info into builds_path
         builds_conf = await read_conf(settings.builds_path)
 
-        build_params = self.get_full_info()
+        build_params = await self.get_full_info()
         _map_to_str(build_params)
 
         for build in builds_conf:
