@@ -62,7 +62,7 @@ async def _assert_process_status(response, process_manager, expected_end_status)
 
     process_id = process_manager.last_id
     logger.debug("Process id is %s", process_id)
-    current_status = process_manager.get_status(process_id)
+    current_status = await process_manager.get_status(process_id)
     assert (
         current_status == expected_end_status
     ), f"Current process status '{current_status}' did not match the expected '{expected_end_status}'"
@@ -104,7 +104,7 @@ async def _test_stop_process(mocker, get_manager_func, start_endpoint, stop_endp
 
             last_id = manager.get_last_id()
             logger.debug("Last id: %s, type: %s", last_id, type(last_id))
-            logger.debug("Process status %s", manager.get_status(last_id))
+            logger.debug("Process status %s", await manager.get_status(last_id))
 
             stop_response = await async_client.get(f"{stop_endpoint}/{last_id}")
             assert stop_response.status_code == 200
@@ -200,7 +200,7 @@ async def test_connect_to_ws(mocker, client):  # noqa: F811
     logger.debug("Last id: %s, type: %s", last_id, type(last_id))
     logger.debug(
         "Process status %s",
-        run_manager.get_status(last_id),
+        await run_manager.get_status(last_id),
     )
 
     # connect to websocket

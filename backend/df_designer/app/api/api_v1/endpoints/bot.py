@@ -28,13 +28,13 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
     return {"status": "ok"}
 
 
-def _check_process_status(id_: int, process_manager: ProcessManager) -> dict[str, str]:
+async def _check_process_status(id_: int, process_manager: ProcessManager) -> dict[str, str]:
     if id_ not in process_manager.processes:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Process not found. It may have already exited.",
         )
-    process_status = process_manager.get_status(id_)
+    process_status = await process_manager.get_status(id_)
     return {"status": process_status}
 
 
@@ -57,7 +57,7 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
 
 @router.get("/build/status/{build_id}", status_code=200)
 async def check_build_status(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return _check_process_status(build_id, build_manager)
+    return await _check_process_status(build_id, build_manager)
 
 
 @router.get("/builds", response_model=Optional[Union[list, dict]], status_code=200)
@@ -103,7 +103,7 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
 
 @router.get("/run/status/{run_id}", status_code=200)
 async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)):
-    return _check_process_status(run_id, run_manager)
+    return await _check_process_status(run_id, run_manager)
 
 
 @router.get("/runs", response_model=Optional[Union[list, dict]], status_code=200)

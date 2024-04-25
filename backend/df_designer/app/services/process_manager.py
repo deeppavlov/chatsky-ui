@@ -32,8 +32,8 @@ class ProcessManager:
     async def check_status(self, id_):
         await self.processes[id_].periodically_check_status()
 
-    def get_status(self, id_):
-        return self.processes[id_].check_status()
+    async def get_status(self, id_):
+        return await self.processes[id_].check_status()
 
     async def get_process_info(self, id_: int, path: Path):
         db_conf = await read_conf(path)
