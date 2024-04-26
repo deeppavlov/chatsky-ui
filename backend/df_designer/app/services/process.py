@@ -55,10 +55,11 @@ class Process:
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def check_status(self) -> str:
-        """Returns the process status [null, running, completed, failed, stopped].
+        """Returns the process status [null, alive, running, completed, failed, stopped].
         - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
         incorrect usage or a process misuse in backend logic.
-        - running: returncode is None
+        - alive: process is alive and ready to communicate
+        - running: process is still trying to get alive. no communication
         - completed: returncode is 0
         - failed: returncode is 1
         - stopped: returncode is -15
@@ -66,8 +67,16 @@ class Process:
         """
         if self.process is None:
             self.status = "null"
+        # if process is already alive, don't interrupt potential open channels by checking status periodically.
         elif self.process.returncode is None:
-            self.status = "running"
+            if self.status == "alive":
+                self.status = "alive"
+            else:
+                if await self.is_alive():
+                    self.status = "alive"
+                else:
+                    self.status = "running"
+
         elif self.process.returncode == 0:
             self.status = "completed"
         elif self.process.returncode == 1:
@@ -81,7 +90,7 @@ class Process:
             )
             self.status = f"Exited with return code: {str(self.process.returncode)}"
 
-        if self.status not in ["null", "running"]:
+        if self.status not in ["null", "running", "alive", "stopped"]:
             stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")
@@ -98,6 +107,8 @@ class Process:
             self.logger.debug("Terminating process '%s'", self.id)
             self.process.terminate()
             await self.process.wait()
+            self.logger.debug("Process returencode '%s' ", self.process.returncode)
+
         except ProcessLookupError as exc:
             self.logger.error("Process '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
@@ -115,6 +126,19 @@ class Process:
             raise RuntimeError
         self.process.stdin.write(message)
         await self.process.stdin.drain()
+
+    async def is_alive(self) -> bool:
+        timeout = 3
+        message = b"Hi\n"
+        try:
+            # Attempt to write and read from the process with a timeout.
+            await self.write_stdin(message)
+            output = await asyncio.wait_for(self.read_stdout(), timeout=timeout)
+            self.logger.debug("Process output afer communication: %s", output.decode())
+            return True
+        except asyncio.exceptions.TimeoutError:
+            self.logger.debug("Process did not accept input within the timeout period.")
+            return False
 
 
 class RunProcess(Process):

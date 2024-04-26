@@ -42,17 +42,18 @@ class TestRunManager:
         return _run_manager
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("status", ["success", "with_error"])
-    async def test_stop(self, run_manager, status):
+    async def test_stop_success(self, run_manager):
         manager = await run_manager()
-        if status == "success":
-            process_id = manager.get_last_id()
+        process_id = manager.get_last_id()
+        await manager.stop(process_id)
+        assert manager.processes[process_id].process.returncode == -15
+
+    @pytest.mark.asyncio
+    async def test_stop_with_error(self, run_manager):
+        manager = await run_manager()
+        process_id = randint(1000, 2000)
+        with pytest.raises((RuntimeError, ProcessLookupError)):
             await manager.stop(process_id)
-            assert manager.processes[process_id].process.returncode == -15
-        else:
-            process_id = randint(1000, 2000)
-            with pytest.raises((RuntimeError, ProcessLookupError)):
-                await manager.stop(process_id)
 
     # def test_check_status(self, run_manager, preset):
     # pass
