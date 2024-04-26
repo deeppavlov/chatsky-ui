@@ -3,14 +3,9 @@ from fastapi import WebSocket
 
 from app.services.process import RunProcess
 from app.services.process_manager import RunManager
-from app.services.websocket_manager import WebSocketManager
 
 
 class TestWebSocketManager:
-    @pytest.fixture
-    def websocket_manager(self):
-        return WebSocketManager()
-
     @pytest.mark.asyncio
     async def test_connect(self, mocker, websocket_manager):
         mocked_websocket = mocker.MagicMock(spec=WebSocket)
