@@ -1,36 +1,14 @@
 import asyncio
-from contextlib import asynccontextmanager
 
-import httpx
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
 from app.main import app
+from app.tests.conftest import override_dependency, start_process
 
 logger = get_logger(__name__)
-
-
-async def _start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:
-    return await async_client.post(
-        endpoint,
-        json={"wait_time": 0.1, "end_status": preset_end_status},
-    )
-
-
-@asynccontextmanager
-async def _override_dependency(mocker_obj, get_manager_func):
-    process_manager = get_manager_func()
-    process_manager.check_status = mocker_obj.AsyncMock()
-    app.dependency_overrides[get_manager_func] = lambda: process_manager
-    try:
-        yield process_manager
-    finally:
-        for _, process in process_manager.processes.items():
-            if process.process.returncode is None:
-                await process.stop()
-        app.dependency_overrides = {}
 
 
 async def _assert_process_status(response, process_manager, expected_end_status):
@@ -60,8 +38,8 @@ async def _assert_process_status(response, process_manager, expected_end_status)
 
 async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end_status, expected_end_status):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        async with _override_dependency(mocker_obj, get_manager_func) as process_manager:
-            response = await _start_process(async_client, endpoint, preset_end_status)
+        async with override_dependency(mocker_obj, get_manager_func) as process_manager:
+            response = await start_process(async_client, endpoint, preset_end_status)
             current_status = await _assert_process_status(response, process_manager, expected_end_status)
 
             if current_status == "running":
@@ -71,8 +49,8 @@ async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end
 
 async def _test_stop_process(mocker, get_manager_func, start_endpoint, stop_endpoint):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        async with _override_dependency(mocker, get_manager_func) as manager:
-            start_response = await _start_process(async_client, start_endpoint, preset_end_status="loop")
+        async with override_dependency(mocker, get_manager_func) as manager:
+            start_response = await start_process(async_client, start_endpoint, preset_end_status="loop")
             assert start_response.status_code == 201
             logger.debug("Processes: %s", manager.processes)
 
