@@ -27,7 +27,7 @@ class TestRunProcess:
         "cmd_to_run, status",
         [
             ("sleep 10000", "running"),
-            ("bash -c exit 1", "failed"),
+            ("cat /non_existing_file", "failed"),
             ("echo Hello df_designer", "completed"),
         ],
     )
