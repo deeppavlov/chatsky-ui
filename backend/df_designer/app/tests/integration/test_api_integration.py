@@ -8,7 +8,6 @@ from httpx import ASGITransport, AsyncClient
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
 from app.main import app
-from app.tests.confest import client  # noqa: F401
 
 logger = get_logger(__name__)
 
@@ -28,6 +27,9 @@ async def _override_dependency(mocker_obj, get_manager_func):
     try:
         yield process_manager
     finally:
+        for _, process in process_manager.processes.items():
+            if process.process.returncode is None:
+                await process.stop()
         app.dependency_overrides = {}
 
 

@@ -3,21 +3,11 @@ import asyncio
 import pytest
 
 from app.core.logger_config import get_logger
-from app.services.process import RunProcess
 
 logger = get_logger(__name__)
 
 
 class TestRunProcess:
-    @pytest.fixture(scope="session")
-    def run_process(self):
-        async def _run_process(cmd_to_run):
-            process = RunProcess(id_=0)
-            await process.start(cmd_to_run)
-            return process
-
-        return _run_process
-
     # def test_update_db_info(self, run_process):
     #     process = await run_process("echo 'Hello df_designer'")
     #     process.update_db_info()
