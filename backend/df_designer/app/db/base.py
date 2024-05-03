@@ -25,5 +25,5 @@ async def write_conf(data: Union[list, dict], path: Path):
 
 async def read_logs(log_file: Path):
     async with aiofiles.open(log_file, "r", encoding="UTF-8") as file:
-        logs = [line async for line in file if line.strip()]
+        logs = [line async for line in file]
     return logs

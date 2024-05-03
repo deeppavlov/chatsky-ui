@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from app.api.deps import get_index
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
 
@@ -7,10 +8,14 @@ logger = get_logger(__name__)
 
 
 async def translator(build_id: int, project_dir: str):
+    index = get_index()
+    await index.load()
+    index.logger.debug("index instance in json_translator '%s'", index.index)
     frontend_graph_path = Path(project_dir) / "df_designer" / "frontend_flows.yaml"
-    script_file = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
+    script_file = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"  # TODO: rename to script_path
     custom_dir = "custom"
 
+    # TODO: creates the path if it doesn't exist
     custom_dir_path = "bot" / Path(custom_dir)
     custom_dir_path.mkdir(exist_ok=True, parents=True)
     custom_conditions_file = custom_dir_path / "conditions.py"
@@ -37,12 +42,20 @@ async def translator(build_id: int, project_dir: str):
                     if condition["id"] == edge.sourceHandle
                 )
 
+                # TODO: After implementing indexation replace this with getting from index
+                # TODO: make reading and writing conditions async
                 custom_conditions = custom_conditions_file.read_text()
                 custom_conditions_names = [fun.split("(")[0].strip() for fun in custom_conditions.split("def ")[1:]]
                 if condition.name not in custom_conditions_names:
-                    with open(custom_conditions_file, "a", encoding="UTF-8") as f:
+                    with open(custom_conditions_file, "r+", encoding="UTF-8") as f:
+                        lineno = len(f.readlines()) + 1
                         f.write(condition.data.python.action + "\n\n\n")
                         logger.debug("Writing to %s: %s", custom_conditions_file, condition.name)
+                        # TODO: add to index
+                        await index.indexit(condition.name, "condition", lineno)
+                else:
+                    pass  # TODO: delete the old and replace it with the new condition
+                    # TODO: Edit the one in index
 
                 nodes[edge.source]["TRANSITIONS"].append(
                     {
@@ -54,6 +67,8 @@ async def translator(build_id: int, project_dir: str):
                         "cnd": f"custom_dir.conditions.{condition.name}",
                     }
                 )
+            else:
+                logger.error("A node of edge '%s-%s' is not found in nodes", edge.source, edge.target)
 
     for _, node in nodes.items():
         if node["flow"] not in script:
@@ -63,7 +78,7 @@ async def translator(build_id: int, project_dir: str):
                 node["info"].data.name: {
                     "RESPONSE": {"dff.Message": {"text": node["info"].data.response}},
                     "TRANSITIONS": node["TRANSITIONS"],
-                },
+                }
             }
         )
 

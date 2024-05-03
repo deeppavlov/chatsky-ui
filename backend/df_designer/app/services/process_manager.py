@@ -54,6 +54,7 @@ class ProcessManager:
         log_file = process_info["log_path"]
         try:
             logs = await read_logs(log_file)
+            logs = [log for log in logs if log.strip()]
         except FileNotFoundError:
             logger.error("Log file '%s' not found", log_file)
             return None
