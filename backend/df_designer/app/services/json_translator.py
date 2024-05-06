@@ -37,9 +37,14 @@ def organize_graph_according_to_nodes(flow_graph, script):
 
 
 def get_condition(nodes, edge):
-    return next(
-        condition for condition in nodes[edge.source]["info"].data.conditions if condition["id"] == edge.sourceHandle
-    )
+    try:
+        return next(
+            condition
+            for condition in nodes[edge.source]["info"].data.conditions
+            if condition["id"] == edge.sourceHandle
+        )
+    except StopIteration:
+        return None
 
 
 def write_conditions_to_file(conditions_lines, custom_conditions_file):
@@ -77,24 +82,49 @@ def fill_nodes_into_script(nodes, script):
 
 
 def append_condition(condition, conditions_lines):
-    condition = "".join([condition.data.python.action + "\n\n\n"])
-    all_lines = conditions_lines + [
-        "".join([line, "\n"]) for line in condition.split("\n")
-    ]  # TODO: maintain the \n in the end
+    condition = "".join([condition.data.python.action + "\n\n"])
+
+    all_lines = conditions_lines + condition.split("\n")
     return all_lines
 
 
-def replace_condition(condition, conditions_lines, cnd_lineno):
+async def _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines):
+    services = index.get_services()
+    for _, service in services.items():
+        if service["type"] == "condition":
+            if service["lineno"] - 1 > cnd_strt_lineno:  # -1 is here to convert from file numeration to list numeration
+                service["lineno"] += diff_in_lines
+
+    await index.indexit_all(
+        [service_name for service_name, _ in services.items()],
+        [service["type"] for _, service in services.items()],
+        [service["lineno"] for _, service in services.items()],
+    )
+
+
+async def replace_condition(condition, conditions_lines, cnd_strt_lineno, index):
+    cnd_strt_lineno = cnd_strt_lineno - 1  # conversion from file numeration to list numeration
     all_lines = conditions_lines.copy()
-    condition = "".join([condition.data.python.action + "\n\n\n"])
-    next_func = -1
-    for lineno, line in enumerate(all_lines[cnd_lineno + 1 :]):
-        if line[:4] == "def ":
-            next_func = lineno
+    condition = "".join([condition.data.python.action + "\n\n"])
+    new_cnd_lines = condition.split("\n")
+
+    old_cnd_lines_num = 0
+    for lineno, line in enumerate(all_lines[cnd_strt_lineno:]):
+        if line[:4] == "def " and lineno != 0:
             break
+        old_cnd_lines_num += 1
 
-    all_lines[cnd_lineno:next_func] = condition.split("\n")
+    next_func_location = cnd_strt_lineno + old_cnd_lines_num
 
+    logger.debug("new_cnd_lines\n")
+    logger.debug(new_cnd_lines)
+    all_lines = all_lines[:cnd_strt_lineno] + new_cnd_lines + all_lines[next_func_location:]
+
+    diff_in_lines = len(new_cnd_lines) - old_cnd_lines_num
+    logger.debug("diff_in_lines: %s", diff_in_lines)
+    logger.debug("cnd_strt_lineno: %s", cnd_strt_lineno)
+
+    await _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines)
     return all_lines
 
 
@@ -119,18 +149,25 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
         for edge in flow.data.edges:
             if edge.source in nodes and edge.target in nodes:
                 condition = get_condition(nodes, edge)
+                if condition is None:
+                    logger.error(
+                        "A condition of edge '%s' - '%s' and id of '%s' is not found in the corresponding node",
+                        edge.source,
+                        edge.target,
+                        edge.sourceHandle,
+                    )
+                    continue
 
-                logger.debug("Adding condition: %s", condition.name)
                 if condition.name not in (cnd_names := index.index):
+                    logger.debug("Adding condition: %s", condition.name)
                     cnd_lineno = len(conditions_lines)
                     conditions_lines = append_condition(condition, conditions_lines)
-                    await index.indexit(condition.name, "condition", cnd_lineno)
+                    await index.indexit(condition.name, "condition", cnd_lineno + 1)
                 else:
-                    conditions_lines = replace_condition(
-                        condition, conditions_lines, cnd_names[condition.name]["lineno"]
+                    logger.debug("Replacing condition: %s", condition.name)
+                    conditions_lines = await replace_condition(
+                        condition, conditions_lines, cnd_names[condition.name]["lineno"], index
                     )
-
-                logger.debug("conditions_lines:\n%s", "".join(conditions_lines).split("\n"))
 
                 add_transitions(nodes, edge, condition)
             else:
