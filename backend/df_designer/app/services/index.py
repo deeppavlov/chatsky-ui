@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 
 from omegaconf import OmegaConf
 
@@ -86,11 +87,14 @@ class Index:
 
     async def indexit(self, service_name: str, type_, lineno):
         self.logger.debug("Indexing '%s'", service_name)
-        # TODO: if service_name in self.index update it
-        self.index[service_name] = {
-            "type": type_,  # condition/response/service
-            "lineno": lineno,
-        }
+        await self.indexit_all([service_name], [type_], [lineno])
+        self.logger.info("Indexed '%s'", service_name)
+
+    async def indexit_all(self, services_names: List[str], types: List[str], linenos: List[int]):
+        for service_name, type_, lineno in zip(services_names, types, linenos):
+            self.index[service_name] = {
+                "type": type_,  # condition/response/service
+                "lineno": lineno,
+            }
 
         await write_conf(self.index, self.path)  # ?to background tasks
-        self.logger.info("Indexed '%s'", service_name)
