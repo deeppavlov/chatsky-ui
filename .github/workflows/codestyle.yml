@@ -1,0 +1,32 @@
+name: codestyle
+
+on: [push, pull_request]
+
+jobs:
+  check_backend_codestyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: setup poetry and install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+          python -m poetry lock --no-update
+          python -m poetry install --with lint --quiet --no-interaction
+        working-directory: backend/df_designer
+
+      - name: run black codestyle
+        run: |
+          python -m poetry run black --line-length=120 --check .
+        working-directory: backend/df_designer
+
+      - name: run flake8 codestyle
+        run: |
+          bash ./bin/run_codestyle.sh DIFF_BRANCH=${BASE_BRANCH}
+        env:
+          BASE_BRANCH: ${{github.base_ref}}

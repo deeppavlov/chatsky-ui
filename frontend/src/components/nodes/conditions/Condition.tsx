@@ -8,7 +8,6 @@ import { CONDITION_LABELS } from "../../../consts"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { useDisclosure } from "@nextui-org/react"
 
-
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
   const {
