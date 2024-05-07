@@ -1,16 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React, {
-  DetailedHTMLProps,
-  HTMLAttributes,
+import {
   MouseEventHandler,
-  useContext,
-  useState,
+  useState
 } from "react"
-import { flowContext } from "../contexts/flowContext"
-import { useLocation } from "react-router-dom"
-import { useNodes, useEdges } from "reactflow"
-import { NodeType } from "../types/NodeTypes"
 import Xarrow, { Xwrapper } from "react-xarrows"
+import { useEdges, useNodes } from "reactflow"
+import { NodeType } from "../types/NodeTypes"
 
 const NodesLayout = () => {
   // const { flows } = useContext(flowContext)
@@ -30,7 +25,7 @@ const NodesLayout = () => {
     const id = (e.target as HTMLElement).id
     setHoveredNode(id)
   }
-  const resetHoveredNodeHandler: MouseEventHandler<HTMLDivElement> = (e) => {
+  const resetHoveredNodeHandler: MouseEventHandler<HTMLDivElement> = () => {
     setHoveredNode("")
   }
 

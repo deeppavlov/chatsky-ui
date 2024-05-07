@@ -252,3 +252,7 @@ cython_debug/
 ./flows.json
 *.sqlite
 my_project
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

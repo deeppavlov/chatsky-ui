@@ -1,3 +1,4 @@
+import { syntaxTree } from "@codemirror/language";
 import {
   Decoration,
   DecorationSet,
@@ -7,9 +8,6 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@uiw/react-codemirror";
-import { syntaxTree } from "@codemirror/language";
-import { createTheme } from "@uiw/codemirror-themes";
-import { tags as t } from "@lezer/highlight";
 
 // plugin for displaying the save function button
 class LineWidget extends WidgetType {

@@ -1,6 +1,6 @@
+import { cloneDeep } from "lodash"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { Edge, Node, useReactFlow } from "reactflow"
-import { cloneDeep } from "lodash"
 import { flowContext } from "./flowContext"
 
 type undoRedoContextType = {
@@ -14,13 +14,13 @@ type UseUndoRedoOptions = {
   enableShortcuts: boolean
 }
 
-type UseUndoRedo = (options?: UseUndoRedoOptions) => {
-  undo: () => void
-  redo: () => void
-  takeSnapshot: () => void
-  canUndo: boolean
-  canRedo: boolean
-}
+// type UseUndoRedo = (options?: UseUndoRedoOptions) => {
+//   undo: () => void
+//   redo: () => void
+//   takeSnapshot: () => void
+//   canUndo: boolean
+//   canRedo: boolean
+// }
 
 type HistoryItem = {
   nodes: Node[]
@@ -38,6 +38,7 @@ const defaultOptions: UseUndoRedoOptions = {
   enableShortcuts: true,
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const undoRedoContext = createContext<undoRedoContextType>(initialValue)
 
 export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
@@ -78,6 +79,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
         return newFuture
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getNodes, getEdges, past, future, flows, tab, setPast, setFuture, tabIndex])
 
   const undo = useCallback(() => {
@@ -102,6 +104,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
       setNodes(pastState.nodes)
       setEdges(pastState.edges)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setNodes, setEdges, getNodes, getEdges, future, past, setFuture, setPast, tabIndex])
 
   const redo = useCallback(() => {
@@ -122,6 +125,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
       setNodes(futureState.nodes)
       setEdges(futureState.edges)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [future, past, setFuture, setPast, setNodes, setEdges, getNodes, getEdges, future, tabIndex])
 
   useEffect(() => {

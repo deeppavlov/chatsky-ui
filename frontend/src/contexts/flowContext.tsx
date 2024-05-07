@@ -1,11 +1,10 @@
-import React, { useState, createContext, useEffect, useCallback } from "react"
-import { FlowType } from "../types/FlowTypes"
-import { get_flows, save_flows } from "../api/flows"
-import { generate } from "random-words"
-import { FLOW_COLORS } from "../consts"
-import { v4 } from "uuid"
-import toast from "react-hot-toast"
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useCallback, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import { v4 } from "uuid"
+import { get_flows, save_flows } from "../api/flows"
+import { FLOW_COLORS } from "../consts"
+import { FlowType } from "../types/FlowTypes"
 // import { v4 } from "uuid"
 
 const globalFlow: FlowType = {
@@ -45,12 +44,12 @@ type TabContextType = {
   setTab: React.Dispatch<React.SetStateAction<string>>
   flows: FlowType[]
   setFlows: React.Dispatch<React.SetStateAction<FlowType[]>>
-  addFlow: (flow?: FlowType) => void
   deleteFlow: (flow: FlowType) => void
   saveFlows: (flows: FlowType[]) => void
   updateFlow: (flow: FlowType) => void
   getLocaleFlows: () => FlowType[]
   getFlows: () => void
+  deleteNode: (id: string) => void
 }
 
 const initialValue: TabContextType = {
@@ -58,7 +57,6 @@ const initialValue: TabContextType = {
   setTab: () => {},
   flows: [],
   setFlows: () => {},
-  addFlow: () => {},
   deleteFlow: () => {},
   saveFlows: () => {},
   updateFlow: () => {},
@@ -66,6 +64,7 @@ const initialValue: TabContextType = {
     return []
   },
   getFlows: async () => {},
+  deleteNode: () => {},
 }
 
 export const flowContext = createContext(initialValue)
@@ -76,13 +75,13 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const [flows, setFlows] = useState<FlowType[]>([])
 
   useEffect(() => {
-    setTab(flowId || '')
+    setTab(flowId || "")
     console.log(flowId)
-  }, [flowId]) 
+  }, [flowId])
 
   const getFlows = async () => {
     const { data } = await get_flows()
-    console.log(data)
+    // console.log(data)
     if (data.flows.length) {
       if (data.flows.some((flow) => flow.name === "Global")) {
         setFlows(data.flows)
@@ -106,41 +105,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     return flows
   }
 
-  const addFlow = (flow?: FlowType) => {
-    // const name = generate({
-    //   exactly: 1,
-    //   wordsPerString: 2,
-    //   join: " ",
-    //   formatter: (word, index) =>
-    //     index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word,
-    // })
-    // const description = generate({
-    //   exactly: 1,
-    //   wordsPerString: 4,
-    //   join: " ",
-    //   formatter: (word, index) =>
-    //     index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word,
-    // })
-    // console.log(name)
-    // const new_flow: FlowType = flow ?? {
-    //   data: {
-    //     nodes: [],
-    //     edges: [],
-    //     viewport: {
-    //       x: 0,
-    //       y: 0,
-    //       zoom: 1,
-    //     },
-    //   },
-    //   color: FLOW_COLORS[Math.floor(Math.random() * FLOW_COLORS.length)],
-    //   description: description,
-    //   name: name,
-    // }
-    // const new_flows = [...flows, new_flow]
-    // saveFlows(new_flows)
-    // setFlows(new_flows)
-  }
-
   const deleteFlow = useCallback(
     (flow: FlowType) => {
       const new_flows = flows.filter((f) => f.name !== flow.name)
@@ -154,10 +118,18 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     (flow: FlowType) => {
       const new_flows = flows.map((f) => (f.name === flow.name ? flow : f))
       // saveFlows(new_flows)
-      setFlows(prev => new_flows)
+      setFlows(() => new_flows)
     },
     [flows]
   )
+
+  const deleteNode = (id: string) => {
+    const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
+    if (!flow) return -1
+    const newNodes = flow.data.nodes.filter((node) => node.id !== id)
+    saveFlows(flows.map((flow) => (flow.name === flowId ? { ...flow, data: { ...flow.data, nodes: newNodes } } : flow)))
+    setFlows((flows) => flows.map((flow) => ({ ...flow, data: { ...flow.data, nodes: newNodes } })))
+  }
 
   return (
     <flowContext.Provider
@@ -166,12 +138,12 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         setTab,
         flows,
         setFlows,
-        addFlow,
         deleteFlow,
         saveFlows,
         updateFlow,
         getLocaleFlows,
         getFlows,
+        deleteNode
       }}>
       {children}
     </flowContext.Provider>

@@ -1,9 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState } from "react"
-import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
 import {
   Button,
-  Card,
-  CardBody,
   Input,
   Modal,
   ModalBody,
@@ -11,20 +7,19 @@ import {
   ModalFooter,
   ModalHeader,
   ModalProps,
-  Select,
-  SelectItem,
   Tab,
-  Tabs,
+  Tabs
 } from "@nextui-org/react"
-import UsingLLMCondition from "./components/UsingLLMCondition"
-import UsingLLMConditionSection from "./components/UsingLLMCondition"
 import { HelpCircle, TrashIcon } from "lucide-react"
-import { NodeDataType } from "../../types/NodeTypes"
+import { useContext, useEffect, useMemo, useState } from "react"
+import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
 import { flowContext } from "../../contexts/flowContext"
-import { useParams } from "react-router-dom"
+import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
+import { NodeDataType } from "../../types/NodeTypes"
 import { generateNewConditionBase } from "../../utils"
 import PythonCondition from "./components/PythonCondition"
+import UsingLLMConditionSection from "./components/UsingLLMCondition"
 
 type ConditionModalProps = {
   data: NodeDataType
@@ -53,9 +48,10 @@ const ConditionModal = ({
   const [currentCondition, setCurrentCondition] = useState(
     is_create || !condition ? generateNewConditionBase(data.name) : condition
   )
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [conditions, setConditions] = useState<conditionType[]>(data.conditions ?? [])
   const { getNode, setNodes, getNodes } = useReactFlow()
-  const { saveFlows, updateFlow, flows } = useContext(flowContext)
+  const { updateFlow, flows } = useContext(flowContext)
   const { flowId } = useParams()
 
   // useEffect(() => {

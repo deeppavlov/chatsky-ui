@@ -1,17 +1,24 @@
 import { Button, Tooltip } from "@nextui-org/react"
-import React, { useContext } from "react"
+import classNames from "classnames"
+import { useContext } from "react"
 import { useReactFlow } from "reactflow"
+import { flowContext } from "../../../contexts/flowContext"
 import { workspaceContext } from "../../../contexts/workspaceContext"
 import { FlowType } from "../../../types/FlowTypes"
 import { NodeDataType } from "../../../types/NodeTypes"
-import classNames from "classnames"
 
 const NodeInstruments = ({ flow }: { flow: FlowType }) => {
   const { setNodes } = useReactFlow()
   const { handleNodeFlags, selectedNode } = useContext(workspaceContext)
+  const { deleteNode } = useContext(flowContext)
 
   const selectedNodeData: NodeDataType =
     flow?.data.nodes.find((node) => node.id === selectedNode)?.data ?? null
+
+  const deleteSelectedNodeHandler = () => {
+    setNodes((nds) => nds.filter((node) => node.id !== selectedNode))
+    deleteNode(selectedNode)
+  }
 
   return (
     <div className='flex items-center gap-1'>
@@ -51,6 +58,8 @@ const NodeInstruments = ({ flow }: { flow: FlowType }) => {
         color='danger'
         radius='sm'>
         <Button
+          data-testid="header-button-delete-node"
+          onClick={deleteSelectedNodeHandler}
           isIconOnly
           className='rounded-small bg-background border border-border hover:bg-danger hover:border-border-darker'>
           D

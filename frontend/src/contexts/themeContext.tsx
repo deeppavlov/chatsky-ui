@@ -1,4 +1,3 @@
-import { useLocalStorage } from "@uidotdev/usehooks"
 import React, { createContext, useCallback, useEffect, useState } from "react"
 
 type themeType = "dark" | "light"
@@ -14,6 +13,7 @@ const initialValue: TabContextType = {
   toggleTheme: () => {},
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const themeContext = createContext(initialValue)
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {

@@ -1,15 +1,13 @@
 import { useContext, useEffect } from 'react'
-import { buildContext } from '../../../contexts/buildContext'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { parseSearchParams } from '../../../utils'
+import { useSearchParams } from 'react-router-dom'
 import { workspaceContext } from '../../../contexts/workspaceContext'
+import { parseSearchParams } from '../../../utils'
 
 const SettingsPageOpener = () => {
 
 
   const { setSettingsPage } = useContext(workspaceContext)
   const [searchParams, setSearchParams] = useSearchParams()
-  const navigate = useNavigate()
 
   useEffect(() => {
     setSettingsPage(true)
@@ -25,6 +23,7 @@ const SettingsPageOpener = () => {
         settings: "closed"
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

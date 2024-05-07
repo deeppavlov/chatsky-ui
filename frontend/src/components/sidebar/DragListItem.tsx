@@ -1,5 +1,5 @@
-import { GripHorizontal } from "lucide-react"
-import React from "react"
+import { GripHorizontal } from "lucide-react";
+import React from "react";
 
 const DragListItem = ({ item }: { item: { name: string; color: string; type: string } }) => {
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
@@ -11,6 +11,7 @@ const DragListItem = ({ item }: { item: { name: string; color: string; type: str
 
   return (
     <div
+      data-testid={`${item.type}-item`}
       className='drag-list-item'
       onDragStart={(event) => onDragStart(event, item.type)}
       draggable>
@@ -20,7 +21,7 @@ const DragListItem = ({ item }: { item: { name: string; color: string; type: str
         }}
         className='drag-item-span'></span>
       {item.name}
-      <div className="flex items-center justify-center">
+      <div className='flex items-center justify-center'>
         <GripHorizontal className='stroke-border' />
       </div>
     </div>

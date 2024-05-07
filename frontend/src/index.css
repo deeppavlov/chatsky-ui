@@ -2,9 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Inter';
+  src: url(../public/Inter-VariableFont.ttf);
+}
+
 @layer base {
   :root {
     font-family:
+      'Inter',
       system-ui,
       -apple-system,
       BlinkMacSystemFont,
@@ -128,6 +134,7 @@
   margin: 0;
   color: var(--text);
   font-family:
+    'Inter',
     system-ui,
     -apple-system,
     BlinkMacSystemFont,

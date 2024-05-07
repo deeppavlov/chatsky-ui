@@ -1,6 +1,4 @@
-import { v4 } from "uuid"
 import { $v1 } from "."
-import { AxiosResponse } from "axios"
 
 export type buildApiStatusType =
   | "completed"
@@ -77,21 +75,21 @@ export interface localBuildType extends buildMinifyApiType {
   type: "build"
 }
 
-type buildsResponseType = buildApiType[]
-// {
+// type buildsResponseType = buildApiType[]
+// // {
+// //   status?: string
+// //   build: buildApiType[]
+// // }
+
+// type runsResponseType = {
 //   status?: string
-//   build: buildApiType[]
+//   run: runApiType[]
 // }
 
-type runsResponseType = {
-  status?: string
-  run: runApiType[]
-}
-
-type runResponseType = {
-  status?: string
-  run_info: runApiType
-}
+// type runResponseType = {
+//   status?: string
+//   run_info: runApiType
+// }
 
 type buildStatusResponseType = {
   status: buildApiStatusType
@@ -132,7 +130,7 @@ export const build_status = async (build_id: number) => {
 export const get_builds = async () => {
   try {
     const { data }: { data: buildMinifyApiType[] } = await $v1.get("/bot/builds")
-    console.log(data)
+    // console.log(data)
     return data
   } catch (error) {
     console.log(error)
@@ -153,7 +151,7 @@ export const get_build = async (build_id: number) => {
 export const get_runs = async () => {
   try {
     const { data }: { data: runMinifyApiType[] } = await $v1.get("/bot/runs")
-    console.log(data)
+    // console.log(data)
     return data
   } catch (error) {
     console.log(error)

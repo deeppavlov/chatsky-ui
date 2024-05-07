@@ -1,20 +1,16 @@
-import React, { memo, useContext, useEffect, useMemo } from "react"
-import { NodeDataType, NodeType } from "../../types/NodeTypes"
-import { Handle, Position, useReactFlow } from "reactflow"
+import { useDisclosure } from "@nextui-org/react"
+import { PlusIcon } from "lucide-react"
+import { memo, useContext } from "react"
+import { Handle, Position } from "reactflow"
 import "reactflow/dist/style.css"
+import { workspaceContext } from "../../contexts/workspaceContext"
+import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
 import "../../index.css"
+import ConditionModal from "../../modals/ConditionModal/ConditionModal"
+import NodeModal from "../../modals/NodeModal/NodeModal"
+import { NodeDataType } from "../../types/NodeTypes"
 import Condition from "./conditions/Condition"
 import Response from "./responses/Response"
-import { PlusIcon } from "lucide-react"
-import { useDisclosure } from "@nextui-org/react"
-import ConditionModal from "../../modals/ConditionModal/ConditionModal"
-import { PopUpContext } from "../../contexts/popUpContext"
-import { conditionType } from "../../types/ConditionTypes"
-import { v4 } from "uuid"
-import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
-import NodeModal from "../../modals/NodeModal/NodeModal"
-import { workspaceContext } from "../../contexts/workspaceContext"
-import { flowContext } from "../../contexts/flowContext"
 
 const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
   const {
@@ -23,6 +19,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
     isOpen: isConditionOpen,
   } = useDisclosure()
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { handleNodeFlags } = useContext(workspaceContext)
   // console.log({ data, flows })
   // useEffect(() => {
@@ -31,7 +28,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
 
   return (
     <>
-      <div className='default_node'>
+      <div id={data.id} data-testid={data.id} className='default_node'>
         {data.flags?.includes("start") && (
           <span className='-top-2 left-4 bg-green-500 absolute text-white text-xs font-medium rounded-small px-1.5 py-1.5 -z-20 transition-transform cursor-auto hover:-z-10 hover:-translate-y-4'>
             S

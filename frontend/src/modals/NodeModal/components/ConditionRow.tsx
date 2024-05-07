@@ -1,7 +1,7 @@
-import React, { useState } from "react"
-import { conditionType } from "../../../types/ConditionTypes"
-import { Button, Input, TableCell, TableRow, getKeyValue } from "@nextui-org/react"
+import { Button, Input } from "@nextui-org/react"
 import { Trash2Icon } from "lucide-react"
+import { useState } from "react"
+import { conditionType } from "../../../types/ConditionTypes"
 
 function ConditionRow({ cnd }: { cnd: conditionType }) {
   const [priority, setPriority] = useState(cnd.data.priority)

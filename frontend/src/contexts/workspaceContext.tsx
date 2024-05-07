@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState } from "react"
-import { Node, useReactFlow } from "reactflow"
-import { flowContext } from "./flowContext"
+import { Node } from "reactflow"
 import { NodeDataType } from "../types/NodeTypes"
+import { flowContext } from "./flowContext"
 
 type WorkspaceContextType = {
   workspaceMode: boolean
@@ -17,7 +18,7 @@ type WorkspaceContextType = {
   handleNodeFlags: (e: React.MouseEvent<HTMLButtonElement>, setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>) => void
 }
 
-export const workspaceContext = createContext({
+export const workspaceContext = createContext<WorkspaceContextType>({
   setWorkspaceMode: () => {},
   toggleWorkspaceMode: () => {},
   workspaceMode: false,
@@ -40,11 +41,11 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const flow = flows.find((flow) => flow.name === tab)
 
   const toggleWorkspaceMode = () => {
-    setWorkspaceMode((prev) => !workspaceMode)
+    setWorkspaceMode(() => !workspaceMode)
   }
 
   const toggleNodesLayoutMode = () => {
-    setNodesLayoutMode((prev) => !nodesLayoutMode)
+    setNodesLayoutMode(() => !nodesLayoutMode)
   }
 
   const handleNodeFlags = (e: React.MouseEvent<HTMLButtonElement>, setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>) => {

@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react"
-import { buildContext } from "../contexts/buildContext"
-import { CheckCircle2, CircleSlash, CircleSlash2, Slash, X } from "lucide-react"
 import { Accordion, AccordionItem, Divider, Spinner } from "@nextui-org/react"
+import { CheckCircle2, CircleSlash, Slash, X } from "lucide-react"
+import { useContext, useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
+import { localBuildType, localRunType } from "../api/bot"
+import { buildContext } from "../contexts/buildContext"
 import { runContext } from "../contexts/runContext"
-import { get_run, localBuildType, localRunType } from "../api/bot"
-import { useNavigate, useSearchParams } from "react-router-dom"
 import { parseSearchParams } from "../utils"
 
 const Logs = () => {
@@ -17,7 +17,6 @@ const Logs = () => {
       : builds.find((build) => build.id === Number(searchParams.get("build_id")))) ?? null
   )
 
-  const navigate = useNavigate()
   useEffect(() => {
     if (searchParams.get("type") === "run") {
       setCurrentItem(runs.find((run) => run.id === Number(searchParams.get("run_id"))) ?? null)
@@ -27,9 +26,9 @@ const Logs = () => {
       )
     }
     console.log(1)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [builds, runs])
 
-  // console.log(currentItem, parseSearchParams(searchParams))
 
   return (
     <div
@@ -63,7 +62,7 @@ const Logs = () => {
                     textValue='TEST'
                     key={build.id}
                     className=''
-                    onPress={(e) => {
+                    onPress={() => {
                       setCurrentItem(build)
                       setSearchParams({
                         ...parseSearchParams(searchParams),

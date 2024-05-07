@@ -1,8 +1,7 @@
 import { v4 } from "uuid"
 import { CreateFlowType } from "./modals/FlowModal/CreateFlowModal"
-import { FlowType } from "./types/FlowTypes"
-import React from "react"
 import { conditionType } from "./types/ConditionTypes"
+import { FlowType } from "./types/FlowTypes"
 
 export const generateNewFlow = (flow: CreateFlowType) => {
   const newFlow: FlowType = {

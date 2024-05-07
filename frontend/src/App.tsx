@@ -1,45 +1,47 @@
-import React, { useContext, useEffect, useMemo } from "react"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
-import { themeContext } from "./contexts/themeContext"
-import { ToastOptions, Toaster } from "react-hot-toast"
+import { NextUIProvider } from "@nextui-org/react"
+import { RouterProvider, createBrowserRouter } from "react-router-dom"
+import { ReactFlowProvider } from "reactflow"
+import { Preloader } from "./UI/Preloader/Preloader"
 import ContextWrapper from "./contexts"
+import { UndoRedoProvider } from "./contexts/undoRedoContext"
+import Fallback from "./pages/Fallback"
+import Flow from "./pages/Flow"
+import Home from "./pages/Home"
+import Index from "./pages/Index"
 
 const App = () => {
-  const { theme } = useContext(themeContext)
-  const navigate = useNavigate()
-  const { pathname } = useLocation()
-
-  useEffect(() => {
-    if (pathname === "/app" || pathname === "/" || pathname === "" || pathname === "/app/") {
-      navigate("/app/home")
-    }
-  }, [navigate, pathname])
-
-  const toastOptions: ToastOptions = useMemo(
-    () =>
-      theme === "light"
-        ? {
-            style: {
-              backgroundColor: "#fff",
-              color: "#333",
-            },
-            position: "bottom-right",
-          }
-        : {
-            style: {
-              backgroundColor: "#333",
-              color: "#fff",
-            },
-            position: "bottom-right",
-          },
-    [theme]
-  )
+  
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: (
+        <ContextWrapper>
+          <Index />
+        </ContextWrapper>
+      ),
+      loader: Preloader,
+      errorElement: <Fallback />,
+      children: [
+        {
+          path: "app/flow/:flowId",
+          element: (
+            <ReactFlowProvider>
+              <UndoRedoProvider>
+                <Flow />
+              </UndoRedoProvider>
+            </ReactFlowProvider>
+          ),
+          loader: Preloader,
+        },
+        { path: "app/home", element: <Home />, loader: Preloader },
+      ],
+    },
+  ])
 
   return (
-    <div className={`${theme}`}>
-      <Toaster toastOptions={toastOptions} />
-      <Outlet />
-    </div>
+    <NextUIProvider>
+      <RouterProvider router={router} />
+    </NextUIProvider>
   )
 }
 

@@ -1,18 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import {
   buildApiStatusType,
   buildPresetType,
   get_builds,
-  get_run,
   get_runs,
   localRunType,
   runMinifyApiType,
   run_start,
   run_status,
-  run_stop,
+  run_stop
 } from "../api/bot"
 import { buildContext } from "./buildContext"
-import toast from "react-hot-toast"
 
 export type runApiType = {
   id: number
@@ -38,6 +37,7 @@ type RunContextType = {
   setRunsHandler: (runs: runMinifyApiType[]) => void
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const runContext = createContext({
   setRuns: () => {},
   runs: [],
@@ -57,7 +57,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [runPending, setRunPending] = useState(false)
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuilds, builds: context_b, setBuildsHandler } = useContext(buildContext)
+  const { setBuildsHandler } = useContext(buildContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
     setRuns(runs.map((run) => ({ ...run, type: "run" })))
@@ -65,7 +65,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getRunInitial = async () => {
     const data = await get_runs()
-    console.log(data)
+    // console.log(data)
     if (data) {
       const _runs: localRunType[] = data.map((run) => {
         console.log(run)
@@ -86,7 +86,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const runStart = async ({ end_status = "success", wait_time = 0 }: buildPresetType) => {
-    setRunPending((prev) => true)
+    setRunPending(() => true)
     setRunStatus("running")
     try {
       const data = await run_start({ wait_time, end_status }, 43)
@@ -109,7 +109,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       const timerId = setInterval(() => timer++, 500)
       while (flag) {
         if (timer > 9999) {
-          setRunPending((prev) => false)
+          setRunPending(() => false)
           setRunStatus("failed")
           toast.error("Run timeout error!")
           return (flag = false)
@@ -169,7 +169,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.log(error)
     } finally {
-      setRunPending((prev) => false)
+      setRunPending(() => false)
     }
   }
 

@@ -1,19 +1,17 @@
-import React, { useContext, useEffect, useRef, useState } from "react"
-import { buildContext } from "../../contexts/buildContext"
-import ChatIcon from "../../icons/buildmenu/ChatIcon"
-import classNames from "classnames"
-import { ChevronLeft, Paperclip, Send, Smile, X } from "lucide-react"
-import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import { Button, Textarea } from "@nextui-org/react"
-import { useSearchParams } from "react-router-dom"
-import { parseSearchParams } from "../../utils"
-import { chatContext, messageType } from "../../contexts/chatContext"
-import { useTransition, a } from "@react-spring/web"
-import EmojiPicker, { EmojiType } from "./EmojiPicker"
+import { a, useTransition } from "@react-spring/web"
 import axios from "axios"
-import { runContext } from "../../contexts/runContext"
+import { Paperclip, Send, Smile, X } from "lucide-react"
+import { useContext, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { parse, stringify } from "yaml"
+import { useSearchParams } from "react-router-dom"
+import { buildContext } from "../../contexts/buildContext"
+import { chatContext } from "../../contexts/chatContext"
+import { runContext } from "../../contexts/runContext"
+import ChatIcon from "../../icons/buildmenu/ChatIcon"
+import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
+import { parseSearchParams } from "../../utils"
+import EmojiPicker, { EmojiType } from "./EmojiPicker"
 
 const Chat = () => {
   const { logsPage, setLogsPage } = useContext(buildContext)
@@ -25,19 +23,20 @@ const Chat = () => {
   const [isEmoji, setIsEmoji] = useState(false)
 
   const [emojis, setEmojis] = useState<EmojiType[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [emojisPending, setEmojisPending] = useState(false)
   useEffect(() => {
     const getEmojis = async () => {
-      setEmojisPending((prev) => true)
+      setEmojisPending(() => true)
       const emojis_data = await axios
         .get("https://emoji-api.com/emojis?access_key=4dd2f9e45b38e17c21b432caf8ac12206775bfef")
-        .finally(() => setEmojisPending((prev) => false))
+        .finally(() => setEmojisPending(() => false))
       return emojis_data
     }
 
     getEmojis()
       .then(({ data }) => {
-        setEmojis((prev) => data)
+        setEmojis(() => data)
       })
       .catch(() => {
         console.log("emojis load error")
@@ -87,6 +86,7 @@ const Chat = () => {
     document.addEventListener("keydown", enterDownEvent)
 
     return () => document.removeEventListener("keydown", enterDownEvent)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageValue, messages, setMessages])
 
   const chatWindowRef = useRef<HTMLDivElement>(null)
@@ -128,7 +128,7 @@ const Chat = () => {
         if (event.data) {
           // console.log(event.data)
           const data = event.data.split(":")[2].split("attachments")[0].slice(0, -2)
-          console.log(data)
+          // console.log(data)
           setTimeout(() => {
             setMessages((prev) => [...prev, { message: data, type: "bot" }])
           }, 500);
@@ -143,6 +143,7 @@ const Chat = () => {
     return () => {
       ws.current?.close()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run, runStatus])
 
   return (
@@ -233,7 +234,7 @@ const Chat = () => {
                         className={`origin-bottom-right`}>
                         <EmojiPicker
                           data={emojis}
-                          onEmojiClick={(emoji, e) => {
+                          onEmojiClick={(emoji) => {
                             setMessageValue((prev) => prev + emoji)
                           }}
                           lazy
