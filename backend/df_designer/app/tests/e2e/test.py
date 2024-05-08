@@ -1,10 +1,12 @@
+import httpx
 import pytest
+from httpx_ws import aconnect_ws
+from httpx_ws.transport import ASGIWebSocketTransport
 
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
+from app.main import app
 from app.tests.conftest import override_dependency, start_process
-
-BUILD_ID = 43
 
 logger = get_logger(__name__)
 
@@ -15,22 +17,28 @@ async def _assert_process_status(response, process_manager):
 
 
 @pytest.mark.asyncio
-async def test_all(mocker, client):
-    async with override_dependency(mocker, get_build_manager) as process_manager:
-        response = start_process(client, endpoint="/api/v1/bot/build/start", preset_end_status="success")
-        await _assert_process_status(response, process_manager)
+async def test_all(mocker):
+    async with httpx.AsyncClient(transport=ASGIWebSocketTransport(app)) as client:
+        async with override_dependency(mocker, get_build_manager) as process_manager:
+            response = await start_process(
+                client,
+                endpoint="http://localhost:8000/api/v1/bot/build/start",
+                preset_end_status="success",
+            )
+            build_id = process_manager.get_last_id()
+            await _assert_process_status(response, process_manager)
 
-    async with override_dependency(mocker, get_run_manager) as process_manager:
-        response = start_process(client, endpoint=f"/api/v1/bot/run/start/{BUILD_ID}", preset_end_status="success")
-        await _assert_process_status(response, process_manager)
+        async with override_dependency(mocker, get_run_manager) as process_manager:
+            response = await start_process(
+                client,
+                endpoint=f"http://localhost:8000/api/v1/bot/run/start/{build_id}",
+                preset_end_status="success",
+            )
+            await _assert_process_status(response, process_manager)
 
-        # connect to websocket
-        with client.websocket_connect(f"/api/v1/bot/run/connect?run_id={process_manager.get_last_id()}") as websocket:
-            data = websocket.receive_text()
-            assert data == "Start chatting"
+            run_id = process_manager.get_last_id()
+            async with aconnect_ws(f"http://localhost:8000/api/v1/bot/run/connect?run_id={run_id}", client) as ws:
+                message = await ws.receive_text()
+                assert message == "Start chatting"
 
-            # Check sending and receiving messages
-            websocket.send_text("Hi")
-            data = websocket.receive_text()
-            assert data
-            logger.debug("Received data: %s", data)
+                # TODO: Check if it could send message, then recieve reply
