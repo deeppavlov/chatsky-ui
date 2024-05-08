@@ -5,7 +5,6 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from httpx_ws.transport import ASGIWebSocketTransport
 
 from app.main import app
 from app.schemas.pagination import Pagination
@@ -78,9 +77,3 @@ def build_manager():
 @pytest.fixture
 def websocket_manager():
     return WebSocketManager()
-
-
-@pytest.fixture
-async def websocket_client() -> AsyncClient:
-    async with AsyncClient(transport=ASGIWebSocketTransport(app), base_url="http://test") as client:
-        yield client

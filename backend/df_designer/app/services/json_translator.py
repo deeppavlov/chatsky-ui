@@ -51,7 +51,9 @@ def write_conditions_to_file(conditions_lines, custom_conditions_file):
     # TODO: make reading and writing conditions async
     with open(custom_conditions_file, "w", encoding="UTF-8") as file:
         for line in conditions_lines:
-            file.write(f"{line}\n")
+            if line[-1:] != "\n":
+                line = "".join([line, "\n"])
+            file.write(line)
 
 
 def add_transitions(nodes, edge, condition):
@@ -83,7 +85,8 @@ def fill_nodes_into_script(nodes, script):
 
 def append_condition(condition, conditions_lines):
     condition = "".join([condition.data.python.action + "\n\n"])
-
+    logger.debug(f"Condition to append: {condition}")
+    logger.debug(f"conditions_lines before appending: {conditions_lines}")
     all_lines = conditions_lines + condition.split("\n")
     return all_lines
 
