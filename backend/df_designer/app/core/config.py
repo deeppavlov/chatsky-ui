@@ -31,4 +31,5 @@ class Settings(BaseSettings):
     )
     server: uvicorn.Server = uvicorn.Server(uvicorn_config)
 
+
 settings = Settings()

@@ -90,6 +90,7 @@ class RunManager(ProcessManager):
     async def fetch_run_logs(self, run_id: int, offset: int, limit: int):
         return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path)
 
+
 class BuildManager(ProcessManager):
     def __init__(self):
         super().__init__()
