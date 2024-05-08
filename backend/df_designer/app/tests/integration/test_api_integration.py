@@ -161,3 +161,5 @@ async def test_connect_to_ws(mocker, client):  # noqa: F811
         data = websocket.receive_text()
         assert data
         logger.debug("Received data: %s", data)
+
+    app.dependency_overrides = {}
