@@ -8,7 +8,6 @@ import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { conditionLabelType } from "../../../types/ConditionTypes"
 import { NodeComponentConditionType } from "../../../types/NodeTypes"
 
-
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
   const {
