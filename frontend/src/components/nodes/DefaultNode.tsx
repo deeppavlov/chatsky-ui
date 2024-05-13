@@ -75,6 +75,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
             ))}
           </div>
           <button
+            data-testid={`${data.name.toLowerCase().replace(' ', '')}-add-condition-btn`}
             onClick={() => {
               onConditionOpen()
             }}

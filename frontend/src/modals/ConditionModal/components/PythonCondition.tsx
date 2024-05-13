@@ -69,6 +69,7 @@ const PythonCondition = ({
       <div
         className={`mt-2 w-full flex flex-col items-start justify-start gap-4 p-4 ${theme === "light" ? "bg-[#f2f1f8]" : "bg-[#24262e]"} rounded-lg font-mono`}>
         <CodeMirror
+          data-testid='python-condition-editor'
           style={{
             fontFamily:
               "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",

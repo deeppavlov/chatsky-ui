@@ -4,8 +4,9 @@ import { useState } from "react"
 import { conditionType } from "../../../types/ConditionTypes"
 
 function ConditionRow({ cnd }: { cnd: conditionType }) {
+
   const [priority, setPriority] = useState(cnd.data.priority)
-  console.log(cnd)
+  
 
   return (
     <div

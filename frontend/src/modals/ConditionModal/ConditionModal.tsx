@@ -201,6 +201,7 @@ const ConditionModal = ({
           </div>
           <div>
             <Button
+              data-testid='save-condition-button'
               onClick={saveCondition}
               className='bg-foreground text-background'>
               Save condition

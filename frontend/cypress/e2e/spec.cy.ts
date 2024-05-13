@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 describe("check run and edit flow", () => {
   it("add run edit flow", () => {
-    cy.visit("http://localhost:5173/")
+    cy.visit("http://localhost:8000/app/home")
     cy.location("pathname").should("eq", "/app/home")
     cy.get("[data-testid=create-flow-btn]").should("exist")
     cy.get("[data-testid=create-flow-btn]").click()
@@ -27,6 +27,12 @@ describe("check run and edit flow", () => {
     const dataTransfer = new DataTransfer()
     cy.get("[data-testid=default_node-item]").trigger("dragstart", { dataTransfer })
     cy.get("[data-testid=rf__wrapper]").trigger("drop", { dataTransfer })
+    cy.get("[data-testid=defaultnode-add-condition-btn]").should("exist")
+    cy.get("[data-testid=defaultnode-add-condition-btn]").click()
+    cy.wait(300)
+    cy.get("[data-testid=python-condition-editor]").should("exist")
+    cy.get("[data-testid=python-condition-editor]").type('if False: print("hello")')
+    cy.get("[data-testid=save-condition-button]").should("exist").click()
     cy.get("[data-testid=rf__wrapper]").trigger("keydown", { ctrlKey: true, key: "s" })
     cy.wait(500)
     cy.wrap(null).then(() => {
@@ -46,7 +52,7 @@ describe("check run and edit flow", () => {
         })
         // cy.get("[data-testid=logo]").should("exist")
         // cy.get("[data-testid=logo]").click()
-        cy.visit("http://localhost:5173/app/home")
+        cy.visit("http://localhost:8000/app/home")
         cy.get("[data-testid=flow1-delete-btn]").should("exist")
         cy.get("[data-testid=flow1-delete-btn]").click()
         cy.get("[data-testid=flow1-edit-btn]").should("not.exist")
