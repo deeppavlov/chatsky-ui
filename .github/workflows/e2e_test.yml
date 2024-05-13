@@ -100,6 +100,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install bun
+        run: npm install -g bun
+
+      - name: Install frontend dependencies
+        run: bun install
+        working-directory: frontend
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         # with:
