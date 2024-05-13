@@ -25,18 +25,12 @@ jobs:
 
       - run: touch file1.txt
 
-      - name: Archive file1
-        uses: actions/upload-artifact@v4
-        with:
-          name: file1
-          path: file1.txt
-
       - name: Archive dist directory
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist
-  
+
   build_backend:
     runs-on: ubuntu-latest
     needs: build_frontend
@@ -47,10 +41,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
+          path: frontend
 
       - name: copy static files
         run: |
-          cp -r dist/. backend/df_designer/static/
+          cp -r frontend/. backend/df_designer/static/
   
       - name: set up python 3.10
         uses: actions/setup-python@v5
