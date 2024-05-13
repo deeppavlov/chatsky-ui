@@ -25,32 +25,30 @@ jobs:
 
       - run: touch file1.txt
 
-      - name: Archive file1
-        uses: actions/upload-artifact@v4
-        with:
-          name: file1
-          path: file1.txt
-
-      - name: Archive dist directory
+      - name: Archive frontend dist
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist
-  
+
   build_backend:
     runs-on: ubuntu-latest
     needs: build_frontend
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download frontend artifact
+      - name: Create dist directory
+        run: mkdir -p frontend/dist
+
+      - name: Download frontend dist
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
+          path: frontend/dist
 
       - name: copy static files
         run: |
-          cp -r dist/. backend/df_designer/static/
+          cp -r frontend/dist/. backend/df_designer/app/static/
   
       - name: set up python 3.10
         uses: actions/setup-python@v5
@@ -68,46 +66,76 @@ jobs:
         run: python -m poetry build
         working-directory: backend/df_designer
 
+      - name: Archive backend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/df_designer/dist
+
+
   run_app:
     runs-on: ubuntu-latest
     needs: build_backend
     steps:
       - uses: actions/checkout@v4
 
+      - name: set up python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: setup dflowd poetry and install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+          python -m poetry lock --no-update
+          python -m poetry install --with lint --no-interaction
+        working-directory: backend/df_designer
+
       - name: Create new project
         run: |
           python -m poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists
         working-directory: backend/df_designer
 
+      - name: Create dist directory
+        run: mkdir -p backend/df_designer/dist
+
+      - name: Download backend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/df_designer/dist
+
+      - name: setup project poetry and install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+          python -m poetry lock --no-update
+          python -m poetry install --no-interaction
+        working-directory: df_designer_project
+
       - name: Run back & front
-        # TODO: add poetry install
         run: |
           python -m poetry run dflowd run_backend &
           sleep 10
         working-directory: df_designer_project
 
-  run_e2e_test:
-    runs-on: ubuntu-latest
-    needs: run_app
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
-        # with:
-        #   build: bun run build
-        #   start: bun run dev
-
-  # cypress-run:
+  # run_e2e_test:
   #   runs-on: ubuntu-22.04
+  #   needs: run_app
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v4
-  #     # Install npm dependencies, cache them correctly
-  #     # and run all Cypress tests
-  #     - name: Cypress run
-  #       uses: cypress-io/github-action@v6
-  #       with:
-  #         start: bun run e2e
-  #         browser: chrome
+
+      - name: Install bun
+        run: npm install -g bun
+
+      - name: Install frontend dependencies
+        run: bun install
+        working-directory: frontend
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          install-command: bun add cypress
+          command: bun run e2e:chrome
+          working-directory: frontend
+          browser: chrome
