@@ -48,7 +48,7 @@ jobs:
 
       - name: copy static files
         run: |
-          cp -r frontend/dist/. backend/df_designer/static/
+          cp -r frontend/dist/. backend/df_designer/app/static/
   
       - name: set up python 3.10
         uses: actions/setup-python@v5
