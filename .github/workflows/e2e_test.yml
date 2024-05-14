@@ -113,4 +113,4 @@ jobs:
           install-command: bun add cypress
           command: bun run e2e
 
-        # working-directory: frontend
+          working-directory: frontend
