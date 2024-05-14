@@ -136,6 +136,6 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           install-command: bun add cypress
-          command: bun run e2e
+          command: bun run e2e:chrome
           working-directory: frontend
           browser: chrome
