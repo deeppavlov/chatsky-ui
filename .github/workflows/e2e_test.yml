@@ -37,15 +37,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create dist directory
+        run: mkdir -p frontend/dist
+
       - name: Download frontend dist
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
-          path: frontend
+          path: frontend/dist
 
       - name: copy static files
         run: |
-          cp -r frontend/. backend/df_designer/static/
+          cp -r frontend/dist/. backend/df_designer/static/
   
       - name: set up python 3.10
         uses: actions/setup-python@v5
@@ -93,11 +96,14 @@ jobs:
           python -m poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists
         working-directory: backend/df_designer
 
+      - name: Create dist directory
+        run: mkdir -p backend/df_designer/dist
+
       - name: Download backend dist
         uses: actions/download-artifact@v4
         with:
           name: backend-dist
-          path: backend/df_designer
+          path: backend/df_designer/dist
 
       - name: Run back & front
         # TODO: add poetry install
