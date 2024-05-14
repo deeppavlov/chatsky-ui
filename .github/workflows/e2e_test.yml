@@ -137,5 +137,5 @@ jobs:
         with:
           install-command: bun add cypress
           command: bun run e2e
-
           working-directory: frontend
+          browser: chrome
