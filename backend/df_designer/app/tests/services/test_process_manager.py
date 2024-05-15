@@ -17,6 +17,7 @@ class TestRunManager:
         run_process = mocker.patch("app.services.process_manager.RunProcess")
         run_process_instance = run_process.return_value
         run_process_instance.start = mocker.AsyncMock()
+        run_manager.get_full_info = mocker.AsyncMock(return_value=[{"id":RUN_ID}])
 
         await run_manager.start(build_id=BUILD_ID, preset=preset)
 
