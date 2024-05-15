@@ -23,11 +23,11 @@ def setup_logging(log_type: str, log_name: str) -> Path:  # TODO: rename: setup_
     today_date = datetime.now().strftime("%Y%m%d")
     log_directory = settings.dir_logs / log_type / today_date
 
-    os.makedirs(log_directory, exist_ok=True)
+    log_directory.mkdir(parents=True, exist_ok=True)
 
     log_file = log_directory / f"{log_name}.log"
-    if not os.path.exists(log_file):
-        open(log_file, "w", encoding="UTF-8").close()
+    if not log_file.exists():
+        log_file.touch()
     return log_file
 
 

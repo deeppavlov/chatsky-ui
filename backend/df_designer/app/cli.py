@@ -39,7 +39,7 @@ async def _execute_command(command_to_run):
 
 def _execute_command_file(build_id: int, project_dir: str, command_file: str, preset: str):
     logger = get_logger(__name__)
-    presets_build_path = os.path.join(project_dir, "df_designer", "presets", command_file)
+    presets_build_path = Path(project_dir) / "df_designer" / "presets" / command_file
     with open(presets_build_path) as file:
         presets_build_file = json.load(file)
 
