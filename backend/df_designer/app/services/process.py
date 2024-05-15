@@ -38,7 +38,7 @@ class Process:
 
     async def get_full_info(self) -> dict:
         await self.check_status()
-        return {key: getattr(self, key) for key in self.__dict__ if key not in ["lock", "process", "logger"]}
+        return {key: getattr(self, key) for key in self.__dict__ if key in ["id", "preset_end_status", "status", "timestamp", "log_path"]}
 
     def set_full_info(self, params_dict):
         for key, value in params_dict.items():
