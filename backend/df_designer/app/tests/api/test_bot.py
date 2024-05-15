@@ -61,7 +61,7 @@ async def test_check_process_status(mocker):
 
     response = await _check_process_status(PROCESS_ID, mocked_process_manager)
 
-    assert response == {"status": Status.ALIVE}
+    assert response == {"status": "alive"}
     mocked_process_manager.get_status.assert_awaited_once_with(0)
 
 
