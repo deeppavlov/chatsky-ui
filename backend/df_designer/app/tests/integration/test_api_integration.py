@@ -7,6 +7,7 @@ from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
 from app.main import app
 from app.tests.conftest import override_dependency, start_process
+from app.schemas.process_status import Status
 
 logger = get_logger(__name__)
 
@@ -20,7 +21,7 @@ async def _assert_process_status(response, process_manager, expected_end_status)
             process_manager.processes[process_manager.last_id].process.wait(), timeout=4
         )  # TODO: Consider making this timeout configurable
     except asyncio.exceptions.TimeoutError as exc:
-        if expected_end_status in ["alive", "running"]:
+        if expected_end_status in [Status.ALIVE, Status.RUNNING]:
             logger.debug("Loop process timed out. Expected behavior.")
         else:
             logger.debug("Process with expected end status '%s' timed out with status 'running'.", expected_end_status)
@@ -42,7 +43,7 @@ async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end
             response = await start_process(async_client, endpoint, preset_end_status)
             current_status = await _assert_process_status(response, process_manager, expected_end_status)
 
-            if current_status == "running":
+            if current_status == Status.RUNNING:
                 process_manager.processes[process_manager.last_id].process.terminate()
                 await process_manager.processes[process_manager.last_id].process.wait()
 
@@ -80,7 +81,7 @@ def test_flows(client):  # noqa: F811
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "end_status, process_status", [("failure", "failed"), ("loop", "running"), ("success", "completed")]
+    "end_status, process_status", [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.COMPLETED)]
 )
 async def test_start_build(mocker, end_status, process_status):
     await _test_start_process(
@@ -106,7 +107,7 @@ async def test_stop_build(mocker):
 # Test processes of various end_status + Test integration with get_status. No db interaction (mocked processes)
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "end_status, process_status", [("failure", "failed"), ("loop", "running"), ("success", "alive")]
+    "end_status, process_status", [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.ALIVE)]
 )
 async def test_start_run(mocker, end_status, process_status):
     build_id = 43

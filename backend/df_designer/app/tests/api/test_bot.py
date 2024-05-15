@@ -15,6 +15,7 @@ from app.api.api_v1.endpoints.bot import (
 from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
+from app.schemas.process_status import Status
 
 PROCESS_ID = 0
 RUN_ID = 42
@@ -56,11 +57,11 @@ async def test_stop_process_error(mocker, error_type):
 async def test_check_process_status(mocker):
     mocked_process_manager = mocker.MagicMock()
     mocker.patch.object(mocked_process_manager, "processes", {PROCESS_ID: mocker.MagicMock()})
-    mocker.patch.object(mocked_process_manager, "get_status", mocker.AsyncMock(return_value="alive"))
+    mocker.patch.object(mocked_process_manager, "get_status", mocker.AsyncMock(return_value=Status.ALIVE))
 
     response = await _check_process_status(PROCESS_ID, mocked_process_manager)
 
-    assert response == {"status": "alive"}
+    assert response == {"status": Status.ALIVE}
     mocked_process_manager.get_status.assert_awaited_once_with(0)
 
 

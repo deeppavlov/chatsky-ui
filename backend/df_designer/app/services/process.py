@@ -7,7 +7,7 @@ from typing import List
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
 from app.db.base import read_conf, write_conf
-
+from app.schemas.process_status import Status
 
 def _map_to_str(params: dict):
     for k, v in params.items():
@@ -21,7 +21,7 @@ class Process:
     def __init__(self, id_: int, preset_end_status=""):
         self.id: int = id_
         self.preset_end_status: str = preset_end_status
-        self.status: str = "null"
+        self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
         self.lock = asyncio.Lock()
@@ -51,47 +51,47 @@ class Process:
         while True:
             await self.update_db_info()  # check status and update db
             self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in ["stopped", "completed", "failed"]:
+            if self.status in [Status.STOPPED, Status.COMPLETED, Status.FAILED]:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
-    async def check_status(self) -> str:
-        """Returns the process status [null, alive, running, completed, failed, stopped].
-        - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
+    async def check_status(self) -> Status:
+        """Returns the process status [Status.NULL, Status.ALIVE, Status.RUNNING, Status.COMPLETED, Status.FAILED, Status.STOPPED, Status.FAILED_WITH_UNEXPECTED_CODE].
+        - Status.NULL: When a process is initiated but not started yet. This condition is unusual and typically indicates
         incorrect usage or a process misuse in backend logic.
-        - alive: process is alive and ready to communicate
-        - running: process is still trying to get alive. no communication
-        - completed: returncode is 0
-        - failed: returncode is 1
-        - stopped: returncode is -15
-        - "Exited with return code: {self.process.returncode}. A non-zero return code indicates an error": Otherwise
+        - Status.ALIVE: process is alive and ready to communicate
+        - Status.RUNNING: process is still trying to get alive. no communication
+        - Status.COMPLETED: returncode is 0
+        - Status.FAILED: returncode is 1
+        - Status.STOPPED: returncode is -15
+        - Status.FAILED_WITH_UNEXPECTED_CODE: failed with other returncode
         """
         if self.process is None:
-            self.status = "null"
+            self.status = Status.NULL
         # if process is already alive, don't interrupt potential open channels by checking status periodically.
         elif self.process.returncode is None:
-            if self.status == "alive":
-                self.status = "alive"
+            if self.status == Status.ALIVE:
+                self.status = Status.ALIVE
             else:
                 if await self.is_alive():
-                    self.status = "alive"
+                    self.status = Status.ALIVE
                 else:
-                    self.status = "running"
+                    self.status = Status.RUNNING
 
         elif self.process.returncode == 0:
-            self.status = "completed"
+            self.status = Status.COMPLETED
         elif self.process.returncode == 1:
-            self.status = "failed"
+            self.status = Status.FAILED
         elif self.process.returncode == -15:
-            self.status = "stopped"
+            self.status = Status.STOPPED
         else:
             self.logger.error(
                 "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
                 self.process.returncode,
             )
-            self.status = f"Exited with return code: {str(self.process.returncode)}"
+            self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
-        if self.status not in ["null", "running", "alive", "stopped"]:
+        if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE, Status.STOPPED]:
             stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")

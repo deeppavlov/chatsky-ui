@@ -3,6 +3,7 @@ import asyncio
 import pytest
 
 from app.core.logger_config import get_logger
+from app.schemas.process_status import Status
 
 logger = get_logger(__name__)
 
@@ -16,9 +17,9 @@ class TestRunProcess:
     @pytest.mark.parametrize(
         "cmd_to_run, status",
         [
-            ("sleep 10000", "running"),
-            ("cat /non_existing_file", "failed"),
-            ("echo Hello df_designer", "completed"),
+            ("sleep 10000", Status.RUNNING),
+            ("cat /non_existing_file", Status.FAILED),
+            ("echo Hello df_designer", Status.COMPLETED),
         ],
     )
     async def test_check_status(self, run_process, cmd_to_run, status):

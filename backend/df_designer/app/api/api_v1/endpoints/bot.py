@@ -35,7 +35,7 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> di
             detail="Process not found. It may have already exited.",
         )
     process_status = await process_manager.get_status(id_)
-    return {"status": process_status}
+    return {"status": process_status.value}
 
 
 @router.post("/build/start", status_code=201)
