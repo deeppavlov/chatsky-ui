@@ -69,9 +69,9 @@ async def test_start_build(mocker):
     build_manager = mocker.MagicMock()
     preset = mocker.MagicMock()
 
-    start = mocker.AsyncMock()
+    start = mocker.AsyncMock(return_value=BUILD_ID)
     mocker.patch.multiple(
-        build_manager, start=start, get_last_id=mocker.MagicMock(return_value=BUILD_ID), check_status=mocker.AsyncMock()
+        build_manager, start=start, check_status=mocker.AsyncMock()
     )
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
@@ -113,9 +113,9 @@ async def test_start_run(mocker):
     run_manager = mocker.MagicMock()
     preset = mocker.MagicMock()
 
-    start = mocker.AsyncMock()
+    start = mocker.AsyncMock(return_value=RUN_ID)
     mocker.patch.multiple(
-        run_manager, start=start, get_last_id=mocker.MagicMock(return_value=RUN_ID), check_status=mocker.AsyncMock()
+        run_manager, start=start, check_status=mocker.AsyncMock()
     )
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 

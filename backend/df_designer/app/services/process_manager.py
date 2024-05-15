@@ -81,6 +81,8 @@ class RunManager(ProcessManager):
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process
 
+        return self.last_id
+
     async def get_run_info(self, id_: int):
         return await super().get_process_info(id_, settings.runs_path)
 
@@ -103,6 +105,8 @@ class BuildManager(ProcessManager):
         cmd_to_run = f"dflowd build_bot {id_} --preset {preset.end_status}"
         await process.start(cmd_to_run)
         self.processes[id_] = process
+
+        return self.last_id
 
     async def get_build_info(self, id_: int):
         return await super().get_process_info(id_, settings.builds_path)
