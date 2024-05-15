@@ -6,8 +6,8 @@ from httpx import ASGITransport, AsyncClient
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
 from app.main import app
-from app.tests.conftest import override_dependency, start_process
 from app.schemas.process_status import Status
+from app.tests.conftest import override_dependency, start_process
 
 logger = get_logger(__name__)
 

@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Status(Enum):
     NULL = "null"
     STOPPED = "stopped"

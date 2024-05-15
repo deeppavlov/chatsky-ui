@@ -12,10 +12,10 @@ from app.api.api_v1.endpoints.bot import (
     start_build,
     start_run,
 )
+from app.schemas.process_status import Status
 from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
-from app.schemas.process_status import Status
 
 PROCESS_ID = 0
 RUN_ID = 42
@@ -71,9 +71,7 @@ async def test_start_build(mocker):
     preset = mocker.MagicMock()
 
     start = mocker.AsyncMock(return_value=BUILD_ID)
-    mocker.patch.multiple(
-        build_manager, start=start, check_status=mocker.AsyncMock()
-    )
+    mocker.patch.multiple(build_manager, start=start, check_status=mocker.AsyncMock())
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
     response = await start_build(preset, background_tasks=BackgroundTasks(), build_manager=build_manager)
@@ -115,9 +113,7 @@ async def test_start_run(mocker):
     preset = mocker.MagicMock()
 
     start = mocker.AsyncMock(return_value=RUN_ID)
-    mocker.patch.multiple(
-        run_manager, start=start, check_status=mocker.AsyncMock()
-    )
+    mocker.patch.multiple(run_manager, start=start, check_status=mocker.AsyncMock())
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
     response = await start_run(

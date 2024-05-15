@@ -9,6 +9,7 @@ from app.core.logger_config import get_logger, setup_logging
 from app.db.base import read_conf, write_conf
 from app.schemas.process_status import Status
 
+
 def _map_to_str(params: dict):
     for k, v in params.items():
         if isinstance(v, datetime):
@@ -38,7 +39,11 @@ class Process:
 
     async def get_full_info(self) -> dict:
         await self.check_status()
-        return {key: getattr(self, key) for key in self.__dict__ if key in ["id", "preset_end_status", "status", "timestamp", "log_path"]}
+        return {
+            key: getattr(self, key)
+            for key in self.__dict__
+            if key in ["id", "preset_end_status", "status", "timestamp", "log_path"]
+        }
 
     def set_full_info(self, params_dict):
         for key, value in params_dict.items():
@@ -56,9 +61,9 @@ class Process:
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def check_status(self) -> Status:
-        """Returns the process status [Status.NULL, Status.ALIVE, Status.RUNNING, Status.COMPLETED, Status.FAILED, Status.STOPPED, Status.FAILED_WITH_UNEXPECTED_CODE].
-        - Status.NULL: When a process is initiated but not started yet. This condition is unusual and typically indicates
-        incorrect usage or a process misuse in backend logic.
+        """Returns the process status.
+        - Status.NULL: When a process is initiated but not started yet. This condition is unusual and typically
+            indicates incorrect usage or a process misuse in backend logic.
         - Status.ALIVE: process is alive and ready to communicate
         - Status.RUNNING: process is still trying to get alive. no communication
         - Status.COMPLETED: returncode is 0
