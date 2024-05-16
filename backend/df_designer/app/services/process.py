@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import asyncio
 import logging
 from datetime import datetime
@@ -18,7 +19,7 @@ def _map_to_str(params: dict):
             params[k] = str(v)
 
 
-class Process:
+class Process(ABC):
     def __init__(self, id_: int, preset_end_status=""):
         self.id: int = id_
         self.preset_end_status: str = preset_end_status
@@ -49,8 +50,9 @@ class Process:
         for key, value in params_dict.items():
             setattr(self, key, value)
 
+    @abstractmethod
     async def update_db_info(self):
-        pass
+        raise NotImplementedError
 
     async def periodically_check_status(self):
         while True:
