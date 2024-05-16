@@ -38,17 +38,13 @@ class Process(ABC):
             stdin=asyncio.subprocess.PIPE,
         )
 
-    async def get_full_info(self) -> dict:
+    async def get_full_info(self, attributes: list) -> dict:
         await self.check_status()
-        return {
-            key: getattr(self, key)
-            for key in self.__dict__
-            if key in ["id", "preset_end_status", "status", "timestamp", "log_path"]
-        }
+        info = {key: getattr(self, key) for key in self.__dict__ if key in attributes}
+        if "status" in attributes:
+            info["status"] = self.status.value
 
-    def set_full_info(self, params_dict):
-        for key, value in params_dict.items():
-            setattr(self, key, value)
+        return info
 
     @abstractmethod
     async def update_db_info(self):
@@ -137,12 +133,14 @@ class Process(ABC):
         await self.process.stdin.drain()
 
     async def is_alive(self) -> bool:
-        timeout = 3
+        timeout = 0.5
         message = b"Hi\n"
         try:
             # Attempt to write and read from the process with a timeout.
             await self.write_stdin(message)
             output = await asyncio.wait_for(self.read_stdout(), timeout=timeout)
+            if not output:
+                return False
             self.logger.debug("Process output afer communication: %s", output.decode())
             return True
         except asyncio.exceptions.TimeoutError:
