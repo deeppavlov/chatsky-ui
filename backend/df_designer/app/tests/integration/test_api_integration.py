@@ -1,7 +1,7 @@
 import asyncio
 
-import pytest
 import httpx
+import pytest
 from httpx import ASGITransport, AsyncClient
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
@@ -151,11 +151,11 @@ async def test_connect_to_ws(mocker):
 
             run_id = process_manager.get_last_id()
             try:
-                await asyncio.wait_for(
-                    process_manager.processes[run_id].process.wait(), timeout=4
-                )
+                await asyncio.wait_for(process_manager.processes[run_id].process.wait(), timeout=4)
             except asyncio.exceptions.TimeoutError as exc:
-                raise Exception("Process with expected end status Status.ALIVE timed out with status Status.RUNNING.") from exc
+                raise Exception(
+                    "Process with expected end status Status.ALIVE timed out with status Status.RUNNING."
+                ) from exc
 
             assert await process_manager.get_status(run_id) == Status.ALIVE
 

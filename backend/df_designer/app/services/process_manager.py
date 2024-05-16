@@ -123,7 +123,7 @@ class BuildManager(ProcessManager):
             build["runs"] = []
             for run in runs_info:
                 if build["id"] == run["build_id"]:
-                    run_without_build_id = {k:v for k,v in run.items() if k!="build_id"}
+                    run_without_build_id = {k: v for k, v in run.items() if k != "build_id"}
                     build["runs"].append(run_without_build_id)
 
         return builds_info

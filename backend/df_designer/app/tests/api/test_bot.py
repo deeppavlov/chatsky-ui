@@ -97,7 +97,9 @@ async def test_check_build_processes_all_info(mocker, pagination):
 
     await check_build_processes(build_id, build_manager, run_manager, pagination)
 
-    build_manager.get_full_info_with_runs_info.assert_awaited_once_with(run_manager, offset=pagination.offset(), limit=pagination.limit)
+    build_manager.get_full_info_with_runs_info.assert_awaited_once_with(
+        run_manager, offset=pagination.offset(), limit=pagination.limit
+    )
 
 
 @pytest.mark.asyncio
