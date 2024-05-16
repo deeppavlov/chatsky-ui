@@ -82,20 +82,22 @@ async def test_start_build(mocker):
 @pytest.mark.asyncio
 async def test_check_build_processes_some_info(mocker, pagination):
     build_manager = mocker.MagicMock(spec=BuildManager())
+    run_manager = mocker.MagicMock(spec=RunManager())
 
-    await check_build_processes(BUILD_ID, build_manager, pagination)
+    await check_build_processes(BUILD_ID, build_manager, run_manager, pagination)
 
-    build_manager.get_build_info.assert_awaited_once_with(BUILD_ID)
+    build_manager.get_build_info.assert_awaited_once_with(BUILD_ID, run_manager)
 
 
 @pytest.mark.asyncio
 async def test_check_build_processes_all_info(mocker, pagination):
     build_id = None
     build_manager = mocker.MagicMock(spec=BuildManager())
+    run_manager = mocker.MagicMock(spec=RunManager())
 
-    await check_build_processes(build_id, build_manager, pagination)
+    await check_build_processes(build_id, build_manager, run_manager, pagination)
 
-    build_manager.get_full_info.assert_awaited_once_with(offset=pagination.offset(), limit=pagination.limit)
+    build_manager.get_full_info_with_runs_info.assert_awaited_once_with(run_manager, offset=pagination.offset(), limit=pagination.limit)
 
 
 @pytest.mark.asyncio

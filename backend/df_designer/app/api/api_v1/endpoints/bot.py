@@ -63,12 +63,13 @@ async def check_build_status(*, build_id: int, build_manager: BuildManager = Dep
 async def check_build_processes(
     build_id: Optional[int] = None,
     build_manager: BuildManager = Depends(deps.get_build_manager),
+    run_manager: RunManager = Depends(deps.get_run_manager),
     pagination: Pagination = Depends(),
 ):
     if build_id is not None:
-        return await build_manager.get_build_info(build_id)
+        return await build_manager.get_build_info(build_id, run_manager)
     else:
-        return await build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
+        return await build_manager.get_full_info_with_runs_info(run_manager, offset=pagination.offset(), limit=pagination.limit)
 
 
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)

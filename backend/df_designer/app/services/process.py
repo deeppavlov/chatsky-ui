@@ -3,7 +3,7 @@ import asyncio
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
@@ -159,6 +159,11 @@ class RunProcess(Process):
         self.log_path: Path = setup_logging("runs", log_name)
         self.logger = get_logger(str(id_), self.log_path)
 
+    async def get_full_info(self, attributes: Optional[list] = None) -> dict:
+        if attributes is None:
+            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "build_id"]
+        return await super().get_full_info(attributes)
+
     async def update_db_info(self):
         # save current run info into runs_path
         self.logger.info("Updating db run info")
@@ -177,28 +182,30 @@ class RunProcess(Process):
 
         await write_conf(runs_conf, settings.runs_path)
 
-        # save current run info into the correspoinding build in builds_path
+        # save current run id into the correspoinding build in builds_path
         builds_conf = await read_conf(settings.builds_path)
         for build in builds_conf:
             if build.id == run_params["build_id"]:
-                for run in build.runs:
-                    if run.id == run_params["id"]:
-                        for key, value in run_params.items():
-                            setattr(run, key, value)
-                        break
-                else:
-                    build.runs.append(run_params)
+                if run_params["id"] not in build.run_ids:
+                    build.run_ids.append(run_params["id"])
+                    break
+
         await write_conf(builds_conf, settings.builds_path)
 
 
 class BuildProcess(Process):
     def __init__(self, id_: int, preset_end_status: str = ""):
         super().__init__(id_, preset_end_status)
-        self.runs: List[int] = []
+        self.run_ids: List[int] = []
 
         log_name: str = "_".join([str(id_), datetime.now().time().strftime("%H%M%S")])
         self.log_path: Path = setup_logging("builds", log_name)
         self.logger = get_logger(str(id_), self.log_path)
+
+    async def get_full_info(self, attributes: Optional[list] = None) -> dict:
+        if attributes is None:
+            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "run_ids"]
+        return await super().get_full_info(attributes)
 
     async def update_db_info(self):
         # save current build info into builds_path
