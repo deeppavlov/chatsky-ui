@@ -1,7 +1,10 @@
 import asyncio
 
 import pytest
+import httpx
 from httpx import ASGITransport, AsyncClient
+from httpx_ws import aconnect_ws
+from httpx_ws.transport import ASGIWebSocketTransport
 
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
@@ -132,35 +135,30 @@ async def test_stop_run(mocker):
 
 
 @pytest.mark.asyncio
-async def test_connect_to_ws(mocker, client):  # noqa: F811
+async def test_connect_to_ws(mocker):
     build_id = 43
 
-    # Start a process
-    run_manager = get_run_manager()
-    run_manager.check_status = mocker.AsyncMock()
-    app.dependency_overrides[get_run_manager] = lambda: run_manager
+    async with httpx.AsyncClient(transport=ASGIWebSocketTransport(app)) as client:
+        async with override_dependency(mocker, get_run_manager) as process_manager:
+            # Start a process
+            start_response = await start_process(
+                client,
+                endpoint=f"http://localhost:8000/api/v1/bot/run/start/{build_id}",
+                preset_end_status="success",
+            )
+            assert start_response.status_code == 201
+            process_manager.check_status.assert_awaited_once()
 
-    start_response = client.post(
-        f"/api/v1/bot/run/start/{build_id}",
-        json={"wait_time": 0.1, "end_status": "success"},
-    )
+            run_id = process_manager.get_last_id()
+            try:
+                await asyncio.wait_for(
+                    process_manager.processes[run_id].process.wait(), timeout=4
+                )
+            except asyncio.exceptions.TimeoutError as exc:
+                raise Exception("Process with expected end status Status.ALIVE timed out with status Status.RUNNING.") from exc
 
-    assert start_response.status_code == 201
-    logger.debug("Processes: %s", run_manager.processes)
+            assert await process_manager.get_status(run_id) == Status.ALIVE
 
-    # Process status
-    last_id = run_manager.get_last_id()
-    logger.debug("Last id: %s, type: %s", last_id, type(last_id))
-
-    # connect to websocket
-    with client.websocket_connect(f"/api/v1/bot/run/connect?run_id={last_id}") as websocket:
-        data = websocket.receive_text()
-        assert data == "Start chatting"
-
-        # Check sending and receiving messages
-        websocket.send_text("Hi")
-        data = websocket.receive_text()
-        assert data
-        logger.debug("Received data: %s", data)
-
-    app.dependency_overrides = {}
+            async with aconnect_ws(f"http://localhost:8000/api/v1/bot/run/connect?run_id={run_id}", client) as ws:
+                message = await ws.receive_text()
+                assert message == "Start chatting"

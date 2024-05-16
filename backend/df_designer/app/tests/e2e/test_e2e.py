@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import pytest
 from httpx_ws import aconnect_ws
@@ -7,6 +8,7 @@ from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
 from app.main import app
 from app.tests.conftest import override_dependency, start_process
+from app.schemas.process_status import Status
 
 logger = get_logger(__name__)
 
@@ -25,8 +27,12 @@ async def test_all(mocker):
                 endpoint="http://localhost:8000/api/v1/bot/build/start",
                 preset_end_status="success",
             )
+
             build_id = process_manager.get_last_id()
+
             await _assert_process_status(response, process_manager)
+            await process_manager.processes[build_id].process.wait()
+            assert await process_manager.get_status(build_id) == Status.COMPLETED
 
         async with override_dependency(mocker, get_run_manager) as process_manager:
             response = await start_process(
@@ -34,11 +40,13 @@ async def test_all(mocker):
                 endpoint=f"http://localhost:8000/api/v1/bot/run/start/{build_id}",
                 preset_end_status="success",
             )
-            await _assert_process_status(response, process_manager)
 
             run_id = process_manager.get_last_id()
+
+            await _assert_process_status(response, process_manager)
+            await asyncio.sleep(10)
+            assert await process_manager.get_status(run_id) == Status.ALIVE
+
             async with aconnect_ws(f"http://localhost:8000/api/v1/bot/run/connect?run_id={run_id}", client) as ws:
                 message = await ws.receive_text()
                 assert message == "Start chatting"
-
-                # TODO: Check if it could send message, then recieve reply

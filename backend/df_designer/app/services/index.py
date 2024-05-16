@@ -17,10 +17,6 @@ class Index:
         self.services = []
         self.logger = get_logger(__name__)
 
-        if not self.path.exists():
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.path.touch()
-
     async def _load_index(self):
         db_index = await read_conf(self.path)
         index_dict = OmegaConf.to_container(db_index, resolve=True)
@@ -60,6 +56,9 @@ class Index:
 
     async def load(self):
         """load index and services into memory"""
+        if not self.path.exists():
+            raise FileNotFoundError(f"File {self.path} doesn't exist")
+
         await asyncio.gather(
             self._load_index(),
             self._load_conditions(),
@@ -91,6 +90,9 @@ class Index:
         self.logger.info("Indexed '%s'", service_name)
 
     async def indexit_all(self, services_names: List[str], types: List[str], linenos: List[int]):
+        if not self.path.exists():
+            raise FileNotFoundError(f"File {self.path} doesn't exist")
+
         for service_name, type_, lineno in zip(services_names, types, linenos):
             self.index[service_name] = {
                 "type": type_,  # condition/response/service
