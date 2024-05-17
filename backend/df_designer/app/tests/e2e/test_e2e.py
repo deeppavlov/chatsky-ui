@@ -32,7 +32,12 @@ async def test_all(mocker):
             build_id = process_manager.get_last_id()
 
             await _assert_process_status(response, process_manager)
-            await process_manager.processes[build_id].process.wait()
+            try:
+                await asyncio.wait_for(process_manager.processes[build_id].process.wait(), timeout=20)
+            except asyncio.exceptions.TimeoutError as exc:
+                raise Exception(
+                    "Process with expected end status Status.ALIVE timed out with status Status.RUNNING."
+                ) from exc
             assert await process_manager.get_status(build_id) == Status.COMPLETED
 
         async with override_dependency(mocker, get_run_manager) as process_manager:

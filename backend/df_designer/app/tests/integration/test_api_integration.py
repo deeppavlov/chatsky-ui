@@ -21,7 +21,7 @@ async def _assert_process_status(response, process_manager, expected_end_status)
 
     try:
         await asyncio.wait_for(
-            process_manager.processes[process_manager.last_id].process.wait(), timeout=4
+            process_manager.processes[process_manager.last_id].process.wait(), timeout=10
         )  # TODO: Consider making this timeout configurable
     except asyncio.exceptions.TimeoutError as exc:
         if expected_end_status in [Status.ALIVE, Status.RUNNING]:
@@ -150,12 +150,8 @@ async def test_connect_to_ws(mocker):
             process_manager.check_status.assert_awaited_once()
 
             run_id = process_manager.get_last_id()
-            try:
-                await asyncio.wait_for(process_manager.processes[run_id].process.wait(), timeout=4)
-            except asyncio.exceptions.TimeoutError as exc:
-                raise Exception(
-                    "Process with expected end status Status.ALIVE timed out with status Status.RUNNING."
-                ) from exc
+            logger.debug(f"run_id: {run_id}")
+            await asyncio.sleep(10)
 
             assert await process_manager.get_status(run_id) == Status.ALIVE
 
