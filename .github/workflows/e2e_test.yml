@@ -1,8 +1,13 @@
 name: test app
 
 on:
+  push:
+    branches:
+    - dev
+    - master
   pull_request:
-    branches: [dev]
+    branches:
+    - dev
 
 jobs:
 

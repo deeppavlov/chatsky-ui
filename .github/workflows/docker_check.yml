@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - dev
+    - master
   pull_request:
     branches:
     - dev
@@ -25,5 +26,8 @@ jobs:
         run: python -m poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists
         working-directory: backend/df_designer
 
-      - name: Build Frontend and Backend Images
+      - name: Build Frontend
+        run: docker build -f Dockerfile --build-arg PROJECT_DIR=df_designer_project --target=frontend-builder .
+
+      - name: Build backend & run app
         run: docker build -f Dockerfile --build-arg PROJECT_DIR=df_designer_project --target=runtime .
