@@ -153,8 +153,7 @@ class RunProcess(Process):
         super().__init__(id_, preset_end_status)
         self.build_id: int = build_id
 
-        log_name: str = "_".join([str(id_), datetime.now().time().strftime("%H%M%S")])
-        self.log_path: Path = setup_logging("runs", log_name)
+        self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> dict:
@@ -196,8 +195,7 @@ class BuildProcess(Process):
         super().__init__(id_, preset_end_status)
         self.run_ids: List[int] = []
 
-        log_name: str = "_".join([str(id_), datetime.now().time().strftime("%H%M%S")])
-        self.log_path: Path = setup_logging("builds", log_name)
+        self.log_path: Path = setup_logging("builds", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> dict:
