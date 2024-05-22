@@ -27,8 +27,9 @@ async def _assert_process_status(response, process_manager, expected_end_status)
         if expected_end_status in [Status.ALIVE, Status.RUNNING]:
             logger.debug("Loop process timed out. Expected behavior.")
         else:
-            logger.debug("Process with expected end status '%s' timed out with status 'running'.", expected_end_status)
-            raise exc
+            raise Exception(
+                f"Process with expected end status '{expected_end_status}' timed out with status 'running'."
+            ) from exc
 
     process_id = process_manager.last_id
     logger.debug("Process id is %s", process_id)

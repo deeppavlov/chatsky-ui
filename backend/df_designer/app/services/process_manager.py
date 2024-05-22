@@ -26,8 +26,8 @@ class ProcessManager:
             raise ProcessLookupError
         try:
             await self.processes[id_].stop()
-        except (RuntimeError, ProcessLookupError) as exc:
-            raise exc
+        except (RuntimeError, ProcessLookupError):
+            raise
 
     async def check_status(self, id_):
         await self.processes[id_].periodically_check_status()

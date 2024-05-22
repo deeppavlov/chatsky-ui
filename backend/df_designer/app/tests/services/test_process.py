@@ -18,7 +18,7 @@ class TestRunProcess:
         "cmd_to_run, status",
         [
             ("sleep 10000", Status.RUNNING),
-            ("cat /non_existing_file", Status.FAILED),
+            ("false", Status.FAILED),
             ("echo Hello df_designer", Status.COMPLETED),
         ],
     )

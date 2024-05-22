@@ -44,8 +44,8 @@ class WebSocketManager:
                 await websocket.send_text(response.decode().strip())
         except WebSocketDisconnect:
             logger.info("Websocket connection is closed by client")
-        except RuntimeError as exc:
-            raise exc
+        except RuntimeError:
+            raise
 
     async def forward_websocket_messages_to_process(
         self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
@@ -61,5 +61,5 @@ class WebSocketManager:
             logger.info("Websocket connection is closed")
         except WebSocketDisconnect:
             logger.info("Websocket connection is closed by client")
-        except RuntimeError as exc:
-            raise exc
+        except RuntimeError:
+            raise
