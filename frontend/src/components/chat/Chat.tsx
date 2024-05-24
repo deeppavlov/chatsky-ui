@@ -191,6 +191,7 @@ const Chat = () => {
           className='h-[60vh] bg-chat border-b border-border px-2 py-2 overflow-y-scroll scrollbar-hide flex flex-col gap-2'>
           {messagesT((style, m) => (
             <a.div
+              data-testid={`${m.type}-message`}
               style={style}
               key={m.message + m.type + Math.random()}
               className={`flex items-center ${
@@ -247,6 +248,7 @@ const Chat = () => {
               </div>
             </div>
             <Button
+              data-testid='chat-send'
               onClick={handleMessage}
               variant='light'
               isIconOnly>
@@ -255,6 +257,7 @@ const Chat = () => {
           </div>
         </div>
         <Textarea
+          data-testid='chat-input'
           value={messageValue}
           onChange={(e) => setMessageValue(e.target.value)}
           classNames={{
