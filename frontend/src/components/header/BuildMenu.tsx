@@ -22,6 +22,7 @@ const BuildMenu = () => {
   return (
     <div className={classNames("build-menu", !showBuildMenu && "build-menu-closed")}>
       <Button
+        data-testid='build-menu-open-btn'
         isIconOnly
         className={
           "bg-transparent border border-transparent hover:bg-header-btn-hover hover:border-border-darker rounded p-0 max-w-5 w-5 min-w-5 h-[34px]"
@@ -32,6 +33,7 @@ const BuildMenu = () => {
         />
       </Button>
       <Button
+        data-testid='run-btn'
         isIconOnly
         style={{}}
         onClick={() => {
@@ -63,13 +65,14 @@ const BuildMenu = () => {
             runStatus === "alive"
               ? "bg-emerald-500"
               : runStatus === "stopped"
-              ? "bg-transparent"
-              : "bg-red-500",
+                ? "bg-transparent"
+                : "bg-red-500",
             runPending && "bg-warning"
           )}
         />
       </Button>
       <Button
+        data-testid='build-btn'
         isIconOnly
         spinner={
           <Spinner
@@ -78,7 +81,7 @@ const BuildMenu = () => {
           />
         }
         style={{}}
-        onClick={() => buildStart({ wait_time: 4, end_status: "success" })}
+        onClick={() => buildStart({ wait_time: 1, end_status: "success" })}
         isLoading={buildPending}
         className={classNames("flex items-center justify-center build-menu-item")}>
         <Wrench className='w-5 h-5' />
@@ -88,13 +91,14 @@ const BuildMenu = () => {
             buildStatus === "completed"
               ? "bg-emerald-500"
               : buildStatus === "stopped"
-              ? "bg-transparent"
-              : "bg-red-500",
+                ? "bg-transparent"
+                : "bg-red-500",
             buildPending && "bg-warning"
           )}
         />
       </Button>
       <Button
+        data-testid='chat-btn'
         onClick={() => {
           setSearchParams({
             ...parseSearchParams(searchParams),

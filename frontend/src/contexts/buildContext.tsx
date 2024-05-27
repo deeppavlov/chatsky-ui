@@ -102,7 +102,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         console.log(status_res)
         const status = status_res.status.toLowerCase()
         console.log(status)
-        if (status !== "running") {
+        if (status !== "running" && status !== "alive") {
           flag = false
           setTimeout(async () => {
             const build = await get_builds()
