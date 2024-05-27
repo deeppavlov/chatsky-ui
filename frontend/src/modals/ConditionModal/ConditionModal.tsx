@@ -45,14 +45,17 @@ const ConditionModal = ({
     setCurrentCondition({ ...currentCondition, type: key })
     setSelected(key)
   }
-  const [currentCondition, setCurrentCondition] = useState(
-    is_create || !condition ? generateNewConditionBase(data.name) : condition
-  )
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [conditions, setConditions] = useState<conditionType[]>(data.conditions ?? [])
   const { getNode, setNodes, getNodes } = useReactFlow()
   const { updateFlow, flows } = useContext(flowContext)
   const { flowId } = useParams()
+
+  const [currentCondition, setCurrentCondition] = useState(
+    is_create || !condition ? generateNewConditionBase(data.name) : condition
+  )
+
 
   // useEffect(() => {
   //   if (is_create) {
@@ -140,6 +143,7 @@ const ConditionModal = ({
       updateFlow(currentFlow)
     }
     onClose()
+    setCurrentCondition(is_create || !condition ? generateNewConditionBase(data.name) : condition)
   }
 
   return (

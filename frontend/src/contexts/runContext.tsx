@@ -9,7 +9,7 @@ import {
   runMinifyApiType,
   run_start,
   run_status,
-  run_stop
+  run_stop,
 } from "../api/bot"
 import { buildContext } from "./buildContext"
 
@@ -57,7 +57,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [runPending, setRunPending] = useState(false)
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuildsHandler } = useContext(buildContext)
+  const { setBuildsHandler, builds: context_builds } = useContext(buildContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
     setRuns(runs.map((run) => ({ ...run, type: "run" })))
@@ -89,83 +89,47 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     setRunPending(() => true)
     setRunStatus("running")
     try {
-      const data = await run_start({ wait_time, end_status }, 43)
+      const { run_id } = await run_start({ wait_time, end_status }, context_builds[0].id)
       console.log("run started")
+      await new Promise((resolve) => setTimeout(resolve, 5000))
       const started_runs = await get_runs()
-      const started_run = started_runs.find((r) => r.id === data.run_id)!
-      setRun({ ...started_run, type: "run" })
-      console.log(started_run)
-      setRuns((prev) => [
-        ...prev,
-        {
-          ...started_run,
-          type: "run",
-        },
-      ])
-      const builds = await get_builds()
-      setBuildsHandler(builds)
-      let flag = true
-      let timer = 0
-      const timerId = setInterval(() => timer++, 500)
-      while (flag) {
-        if (timer > 9999) {
-          setRunPending(() => false)
-          setRunStatus("failed")
-          toast.error("Run timeout error!")
-          return (flag = false)
+      console.log(started_runs)
+      const started_run = started_runs.find((r) => r.id === run_id)
+      console.log(run_id)
+      if (started_run) {
+        setRun({ ...started_run, type: "run" })
+        console.log(started_run)
+        setRuns((prev) => [
+          ...prev,
+          {
+            ...started_run,
+            type: "run",
+          },
+        ])
+        const builds = await get_builds()
+        console.log(started_run)
+        setBuildsHandler(builds)
+        let flag = true
+        let timer = 0
+        const timerId = setInterval(() => timer++, 500)
+        while (flag) {
+          if (timer > 9999) {
+            setRunPending(() => false)
+            setRunStatus("failed")
+            toast.error("Run timeout error!")
+            return (flag = false)
+          }
+          const { status } = await run_status(started_run.id)
+          console.log(status)
+          if (status === "alive") {
+            flag = false
+            setRunPending(false)
+            setRunStatus("alive")
+          }
+          await new Promise((resolve) => setTimeout(resolve, 500))
         }
-        const { status } = await run_status(started_run.id)
-        console.log(status)
-        if (status === "running") {
-          flag = false
-          setRunPending(false)
-          setRunStatus("alive")
-        }
-        // if (status !== "running") {
-        //   flag = false
-        //   const {
-        //     data: { run },
-        //   } = await get_runs()
-        //   setRuns((prev) => run.map((run) => ({ ...run, type: "run" })))
-        //   const { data: b } = await get_builds()
-        //   setBuilds((prev) =>
-        //     b.build.map((build) => ({
-        //       ...build,
-        //       type: "build",
-        //       runs: build.runs.map((run) => ({ ...run, type: "run" })),
-        //     }))
-        //   )
-        //   if (status === "completed") {
-        //     setRunPending((prev) => false)
-        //     setRunStatus("completed")
-        //     setRun((prev) => false)
-        //     toast.success("Run successfully closed!")
-        //   } else if (status === "failed") {
-        //     setRunPending((prev) => false)
-        //     setRunStatus("failed")
-        //     setRun((prev) => false)
-        //     toast.error("Run failed!")
-        //   }
-        // } else {
-        //   const {
-        //     data: { run },
-        //   } = await get_runs()
-        //   setRuns((prev) => run.map((run) => ({ ...run, type: "run" })))
-        //   const { data: b } = await get_builds()
-        //   setBuilds((prev) =>
-        //     b.build.map((build) => ({
-        //       ...build,
-        //       type: "build",
-        //       runs: build.runs.map((run) => ({ ...run, type: "run" })),
-        //     }))
-        //   )
-        //   setRunPending((prev) => true)
-        //   setRunStatus("running")
-        //   setRun((prev) => true)
-        // }
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        clearInterval(timerId)
       }
-      clearInterval(timerId)
     } catch (error) {
       console.log(error)
     } finally {
