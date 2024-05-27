@@ -28,7 +28,7 @@ def organize_graph_according_to_nodes(flow_graph, script):
     nodes = {}
     for flow in flow_graph["flows"]:
         for node in flow.data.nodes:
-            if node.type == "start_node":
+            if "flags" in node.data and "start" in node.data.flags:
                 if "start_label" in script["CONFIG"]:
                     raise ValueError("There are more than one start node in the flow")
                 script["CONFIG"]["start_label"] = [flow.name, node.data.name]
