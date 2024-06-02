@@ -88,23 +88,18 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
     # checkout the commit and then run the build
     bot_repo = Repo.init(Path(project_dir) / "bot")
-    try:
-        bot_repo.git.checkout(build_id)
-        
-        script_path = Path(project_dir) / "bot" / "scripts" / "build.yaml"
-        if not script_path.exists():
-            raise FileNotFoundError(f"File {script_path} doesn't exist")
-        command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-        if call_from_open_event_loop:
-            loop = asyncio.get_event_loop()
-            loop.create_task(_execute_command(command_to_run))
-            loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
-        else:
-            asyncio.run(_execute_command(command_to_run))
-    except GitCommandError as exc:
-        raise Exception(f"Build id {build_id} not found") from exc
-    finally:
-        bot_repo.git.checkout("dev")
+    bot_repo.git.checkout(build_id, "scripts/build.yaml")
+
+    script_path = Path(project_dir) / "bot" / "scripts" / "build.yaml"
+    if not script_path.exists():
+        raise FileNotFoundError(f"File {script_path} doesn't exist")
+    command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
+    if call_from_open_event_loop:
+        loop = asyncio.get_event_loop()
+        loop.create_task(_execute_command(command_to_run))
+        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
+    else:
+        asyncio.run(_execute_command(command_to_run))
 
 
 async def _run_server() -> None:

@@ -16,15 +16,11 @@ logger = get_logger(__name__)
 @router.get("/{name}")
 async def flows_get(name: str):
     bot_repo = Repo.init(settings.frontend_flows_path.parent)
-    try:
-        bot_repo.git.checkout(name)
-        omega_flows = await read_conf(settings.frontend_flows_path)
-        dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
-        return {"status": "ok", "data": dict_flows}
-    except GitCommandError:
-        return {"status": "error", "message": "There's no such saved flow"}
-    finally:
-        bot_repo.git.checkout("dev")
+    bot_repo.git.checkout(name, settings.frontend_flows_path.name)
+
+    omega_flows = await read_conf(settings.frontend_flows_path)
+    dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
+    return {"status": "ok", "data": dict_flows}
 
 
 @router.post("/{name}")
