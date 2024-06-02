@@ -4,14 +4,15 @@ from typing import Tuple
 from app.api.deps import get_index
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
+from app.utils.git_cmd import get_repo, commit_changes
 
 logger = get_logger(__name__)
 
 
-def get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path]:
+def get_db_paths(project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path]:
     frontend_graph_path = project_dir / "df_designer" / "frontend_flows.yaml"
     custom_conditions_file = project_dir / "bot" / custom_dir / "conditions.py"
-    script_path = project_dir / "bot" / "scripts" / f"build_{build_id}.yaml"
+    script_path = project_dir / "bot" / "scripts" / f"build.yaml"
 
     if not frontend_graph_path.exists():
         raise FileNotFoundError(f"File {frontend_graph_path} doesn't exist")
@@ -134,11 +135,17 @@ async def replace_condition(condition, conditions_lines, cnd_strt_lineno, index)
 
 
 async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"):
+    repo = get_repo(Path(project_dir) / "bot")
+    # check that there's no already existing tag {build_id}
+    for tag in repo.tags:
+        if tag.name == str(build_id):
+            raise ValueError(f"Tag {build_id} already exists")
+
     index = get_index()
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
-    frontend_graph_path, script_path, custom_conditions_file = get_db_paths(build_id, Path(project_dir), custom_dir)
+    frontend_graph_path, script_path, custom_conditions_file = get_db_paths(Path(project_dir), custom_dir)
 
     script = {
         "CONFIG": {"custom_dir": "/".join(["..", custom_dir])},
@@ -182,3 +189,6 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
 
     write_conditions_to_file(conditions_lines, custom_conditions_file)
     await write_conf(script, script_path)
+
+    commit_changes(repo, f"create build: {build_id}")
+    repo.create_tag(build_id)

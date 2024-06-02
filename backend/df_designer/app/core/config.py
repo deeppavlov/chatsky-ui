@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     APP: str = "app.main:app"
 
-    work_directory: str = "."
+    work_directory: Path = Path(".")
     config_file_path: Path = Path(__file__).absolute()
     static_files: Path = config_file_path.parent.with_name("static")
     start_page: Path = static_files.joinpath("index.html")

@@ -7,12 +7,22 @@ from pathlib import Path
 import typer
 import uvicorn
 from cookiecutter.main import cookiecutter
+from git import Repo
+from git.exc import GitCommandError
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
 from app.services.json_translator import translator
+from app.utils.git_cmd import commit_changes
 
 cli = typer.Typer()
+
+
+def init_new_repo(git_path: Path, tag_name: str):
+    repo = Repo.init(git_path)
+    repo.git.checkout(b="dev")
+    commit_changes(repo, "Init frontend flows")
+    repo.create_tag(tag_name)
 
 
 async def _execute_command(command_to_run):
@@ -76,16 +86,25 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 
 @cli.command("run_scenario")
 def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
-    script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
-    if not script_path.exists():
-        raise FileNotFoundError(f"File {script_path} doesn't exist")
-    command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-    if call_from_open_event_loop:
-        loop = asyncio.get_event_loop()
-        loop.create_task(_execute_command(command_to_run))
-        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
-    else:
-        asyncio.run(_execute_command(command_to_run))
+    # checkout the commit and then run the build
+    bot_repo = Repo.init(Path(project_dir) / "bot")
+    try:
+        bot_repo.git.checkout(build_id)
+        
+        script_path = Path(project_dir) / "bot" / "scripts" / "build.yaml"
+        if not script_path.exists():
+            raise FileNotFoundError(f"File {script_path} doesn't exist")
+        command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
+        if call_from_open_event_loop:
+            loop = asyncio.get_event_loop()
+            loop.create_task(_execute_command(command_to_run))
+            loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
+        else:
+            asyncio.run(_execute_command(command_to_run))
+    except GitCommandError as exc:
+        raise Exception(f"Build id {build_id} not found") from exc
+    finally:
+        bot_repo.git.checkout("dev")
 
 
 async def _run_server() -> None:
@@ -121,10 +140,14 @@ def init(destination: str = settings.work_directory, no_input: bool = False, ove
     original_dir = os.getcwd()
     try:
         os.chdir(destination)
-        cookiecutter(
+        proj_path = cookiecutter(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="feat/versioning",
         )
     finally:
         os.chdir(original_dir)
+
+    init_new_repo(Path(proj_path) / "bot", tag_name=43)
+    init_new_repo(Path(proj_path) / "df_designer", tag_name="init")
