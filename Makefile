@@ -69,7 +69,7 @@ run_dev_backend: check_project_arg install_backend_env ## Runs backend in dev mo
 
 # backend tests
 .PHONY: unit_tests
-unit_tests: ## Runs all backend unit tests
+unit_tests: install_backend_env ## Runs all backend unit tests
 	cd ${BACKEND_DIR} && poetry run pytest ./app/tests/api
 	cd ${BACKEND_DIR} && poetry run pytest ./app/tests/services
 

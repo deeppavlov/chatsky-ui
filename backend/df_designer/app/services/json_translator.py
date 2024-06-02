@@ -1,10 +1,12 @@
 from pathlib import Path
 from typing import Tuple
+from git import Repo
 
 from app.api.deps import get_index
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
 from app.utils.git_cmd import get_repo, commit_changes
+from app.core.config import settings
 
 logger = get_logger(__name__)
 
@@ -134,10 +136,25 @@ async def replace_condition(condition, conditions_lines, cnd_strt_lineno, index)
     return all_lines
 
 
+def save_version_to_git(build_id: int, bot_repo: Repo):
+    # Save current version of frontend script
+    df_designer_repo = get_repo(settings.frontend_flows_path.parent)
+    tag = f"save_{build_id}"
+    commit_changes(df_designer_repo, f"Save script build_{build_id}")
+    df_designer_repo.create_tag(tag)
+    logger.info("Flows saved to git with tag %s", tag)
+
+    # Save built version of dff bot
+    tag = f"build_{build_id}"
+    commit_changes(bot_repo, f"create build: {build_id}")
+    bot_repo.create_tag(tag)
+    logger.info("Bot saved to git with tag %s", tag)
+
+
 async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"):
-    repo = get_repo(Path(project_dir) / "bot")
+    bot_repo = get_repo(Path(project_dir) / "bot")
     # check that there's no already existing tag {build_id}
-    for tag in repo.tags:
+    for tag in bot_repo.tags:
         if tag.name == str(build_id):
             raise ValueError(f"Tag {build_id} already exists")
 
@@ -190,5 +207,4 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
     write_conditions_to_file(conditions_lines, custom_conditions_file)
     await write_conf(script, script_path)
 
-    commit_changes(repo, f"create build: {build_id}")
-    repo.create_tag(build_id)
+    save_version_to_git(build_id, bot_repo)

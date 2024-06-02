@@ -15,7 +15,7 @@ async def test_flows_get(mocker):
     read_conf.assert_called_with(settings.frontend_flows_path)
     repo.init.assert_called_with(settings.frontend_flows_path.parent)
     bot_repo = repo.init.return_value
-    bot_repo.git.checkout.assert_has_calls([mocker.call("save1"), mocker.call("dev")])
+    bot_repo.git.checkout.assert_called_once_with("save1", settings.frontend_flows_path.name)
     assert response["status"] == "ok"
     assert response["data"] == {"foo": "bar"}
 
