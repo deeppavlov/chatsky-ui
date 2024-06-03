@@ -9,13 +9,17 @@ from app.core.config import settings
 @pytest.mark.asyncio
 async def test_flows_get(mocker):
     read_conf = mocker.patch("app.api.api_v1.endpoints.flows.read_conf", return_value=OmegaConf.create({"foo": "bar"}))
-    repo = mocker.patch("app.api.api_v1.endpoints.flows.Repo")
-    response = await flows_get("save1")
+
+    bot_repo = mocker.MagicMock()
+    tag = mocker.MagicMock()
+    tag.name = "43"
+    bot_repo.tags = [tag]
+    mocker.patch("app.api.api_v1.endpoints.flows.Repo.init", return_value=bot_repo)
+
+    response = await flows_get("43")
 
     read_conf.assert_called_with(settings.frontend_flows_path)
-    repo.init.assert_called_with(settings.frontend_flows_path.parent)
-    bot_repo = repo.init.return_value
-    bot_repo.git.checkout.assert_called_once_with("save1", settings.frontend_flows_path.name)
+    bot_repo.git.checkout.assert_called_once_with("43", settings.frontend_flows_path.name)
     assert response["status"] == "ok"
     assert response["data"] == {"foo": "bar"}
 

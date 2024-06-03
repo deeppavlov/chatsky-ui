@@ -70,7 +70,7 @@ async def _test_stop_process(mocker, get_manager_func, start_endpoint, stop_endp
 
 # Test flows endpoints and interaction with db (read and write conf)
 def test_flows(client):  # noqa: F811
-    get_response = client.get("/api/v1/flows/init")
+    get_response = client.get("/api/v1/flows/43")
     assert get_response.status_code == 200
     data = get_response.json()["data"]
     assert "flows" in data
