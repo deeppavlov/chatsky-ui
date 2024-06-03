@@ -21,7 +21,6 @@ FROM python:3.10-slim as backend-builder
 WORKDIR /temp
 
 ARG PROJECT_DIR
-# ENV PROJECT_DIR ${PROJECT_DIR}
 
 ENV POETRY_VERSION=1.8.2 \
     POETRY_HOME=/poetry \
@@ -37,8 +36,6 @@ ENV PATH="${PATH}:${POETRY_VENV}/bin"
 COPY ./backend/df_designer /temp/backend/df_designer
 COPY --from=frontend-builder /temp/frontend/dist /temp/backend/df_designer/app/static
 
-COPY ./${PROJECT_DIR} /temp/${PROJECT_DIR}
-
 # Build the wheel
 WORKDIR /temp/backend/df_designer
 RUN poetry build
@@ -51,6 +48,12 @@ FROM python:3.10-slim as runtime
 
 ARG PROJECT_DIR
 
+# Install Git
+RUN apt-get update && apt-get install -y git
+
+# Set the GIT_PYTHON_GIT_EXECUTABLE environment variable
+ENV GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
+
 COPY --from=backend-builder /poetry-venv /poetry-venv
 
 # Set environment variable to use the virtualenv
@@ -59,12 +62,6 @@ ENV PATH="/poetry-venv/bin:$PATH"
 # Copy only the necessary files
 COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
 COPY ./${PROJECT_DIR} /src2/project_dir
-
-# Install Git
-RUN apt-get update && apt-get install -y git
-
-# Set the GIT_PYTHON_GIT_EXECUTABLE environment variable
-ENV GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
 
 # Install the wheel
 WORKDIR /src2/project_dir
