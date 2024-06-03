@@ -139,16 +139,14 @@ async def replace_condition(condition, conditions_lines, cnd_strt_lineno, index)
 def save_version_to_git(build_id: int, bot_repo: Repo):
     # Save current version of frontend script
     df_designer_repo = get_repo(settings.frontend_flows_path.parent)
-    tag = f"save_{build_id}"
-    commit_changes(df_designer_repo, f"Save script build_{build_id}")
-    df_designer_repo.create_tag(tag)
-    logger.info("Flows saved to git with tag %s", tag)
+    commit_changes(df_designer_repo, f"Save script: {build_id}")
+    df_designer_repo.create_tag(build_id)
+    logger.info("Flows saved to git with tag %s", build_id)
 
     # Save built version of dff bot
-    tag = f"build_{build_id}"
     commit_changes(bot_repo, f"create build: {build_id}")
-    bot_repo.create_tag(tag)
-    logger.info("Bot saved to git with tag %s", tag)
+    bot_repo.create_tag(build_id)
+    logger.info("Bot saved to git with tag %s", build_id)
 
 
 async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"):

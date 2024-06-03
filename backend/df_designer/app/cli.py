@@ -88,7 +88,7 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
     # checkout the commit and then run the build
     bot_repo = Repo.init(Path(project_dir) / "bot")
-    bot_repo.git.checkout(f"build_{build_id}", "scripts/build.yaml")
+    bot_repo.git.checkout(build_id, "scripts/build.yaml")
 
     script_path = Path(project_dir) / "bot" / "scripts" / "build.yaml"
     if not script_path.exists():
@@ -144,5 +144,5 @@ def init(destination: str = settings.work_directory, no_input: bool = False, ove
     finally:
         os.chdir(original_dir)
 
-    init_new_repo(Path(proj_path) / "bot", tag_name=43)
-    init_new_repo(Path(proj_path) / "df_designer", tag_name="init")
+    init_new_repo(Path(proj_path) / "bot", tag_name="43")
+    init_new_repo(Path(proj_path) / "df_designer", tag_name="43")
