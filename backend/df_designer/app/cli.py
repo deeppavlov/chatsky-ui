@@ -8,7 +8,6 @@ import typer
 import uvicorn
 from cookiecutter.main import cookiecutter
 from git import Repo
-from git.exc import GitCommandError
 
 from app.core.config import settings
 from app.core.logger_config import get_logger

@@ -1,12 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
-from omegaconf import OmegaConf
 from git import Repo
-from git.exc import GitCommandError
+from omegaconf import OmegaConf
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
-from app.utils.git_cmd import get_repo, commit_changes
+from app.utils.git_cmd import commit_changes, get_repo
 
 router = APIRouter()
 

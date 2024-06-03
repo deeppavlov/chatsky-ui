@@ -1,17 +1,9 @@
 import pytest
 from fastapi import BackgroundTasks, HTTPException, WebSocket
 
-from app.api.api_v1.endpoints.bot import (
-    _check_process_status,
-    _stop_process,
-    check_build_processes,
-    check_run_processes,
-    connect,
-    get_build_logs,
-    get_run_logs,
-    start_build,
-    start_run,
-)
+from app.api.api_v1.endpoints.bot import (_check_process_status, _stop_process, check_build_processes,
+                                          check_run_processes, connect, get_build_logs, get_run_logs, start_build,
+                                          start_run)
 from app.schemas.process_status import Status
 from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager

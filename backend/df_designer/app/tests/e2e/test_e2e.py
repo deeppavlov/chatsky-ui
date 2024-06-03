@@ -6,12 +6,12 @@ from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
 
 from app.api.deps import get_build_manager, get_run_manager
-from app.core.logger_config import get_logger
 from app.core.config import settings
+from app.core.logger_config import get_logger
 from app.main import app
 from app.schemas.process_status import Status
 from app.tests.conftest import override_dependency, start_process
-from app.utils.git_cmd import get_repo, delete_tag
+from app.utils.git_cmd import delete_tag, get_repo
 
 logger = get_logger(__name__)
 

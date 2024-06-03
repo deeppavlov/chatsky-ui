@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Tuple
+
 from git import Repo
 
 from app.api.deps import get_index
+from app.core.config import settings
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
-from app.utils.git_cmd import get_repo, commit_changes
-from app.core.config import settings
+from app.utils.git_cmd import commit_changes, get_repo
 
 logger = get_logger(__name__)
 
@@ -14,7 +15,7 @@ logger = get_logger(__name__)
 def get_db_paths(project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path]:
     frontend_graph_path = project_dir / "df_designer" / "frontend_flows.yaml"
     custom_conditions_file = project_dir / "bot" / custom_dir / "conditions.py"
-    script_path = project_dir / "bot" / "scripts" / f"build.yaml"
+    script_path = project_dir / "bot" / "scripts" / "build.yaml"
 
     if not frontend_graph_path.exists():
         raise FileNotFoundError(f"File {frontend_graph_path} doesn't exist")
