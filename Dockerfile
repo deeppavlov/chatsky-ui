@@ -60,12 +60,14 @@ ENV PATH="/poetry-venv/bin:$PATH"
 COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
 COPY ./${PROJECT_DIR} /src2/project_dir
 
+# Install Git
+RUN apt-get update && apt-get install -y git
+
+# Set the GIT_PYTHON_GIT_EXECUTABLE environment variable
+ENV GIT_PYTHON_GIT_EXECUTABLE=/usr/bin/git
+
 # Install the wheel
 WORKDIR /src2/project_dir
-RUN poetry lock --no-update \
-    && poetry install
+RUN poetry install
 
 CMD ["poetry", "run", "dflowd", "run_backend"]
-
-
-# #TODO: change scr to app (maybe)
