@@ -29,7 +29,4 @@ class Settings(BaseSettings):
     )
     server: uvicorn.Server = uvicorn.Server(uvicorn_config)
 
-    def read_conf(self, path: Path):
-        return OmegaConf.load(path)
-
 settings = Settings()

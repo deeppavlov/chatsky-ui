@@ -3,12 +3,12 @@ import asyncio
 from datetime import datetime
 import logging
 from pathlib import Path
-import time
 from typing import List
 from omegaconf import OmegaConf
 
 from app.core.logger_config import get_logger, setup_logging
 from app.core.config import settings
+from app.db.base import write_conf, read_conf
 
 
 def _map_to_str(params: dict):
@@ -48,16 +48,16 @@ class Process:
         for key, value in params_dict.items():
             setattr(self, key, value)
 
-    def update_db_info(self):
+    async def update_db_info(self):
         pass
 
-    def periodically_check_status(self):
+    async def periodically_check_status(self):
         while True:
-            self.update_db_info() # check status and update db
+            await self.update_db_info() # check status and update db
             self.logger.info("Status of process '%s': %s",self.id, self.status)
             if self.status in ["stopped", "completed", "failed"]:
                 break
-            time.sleep(2) #TODO: ?sleep time shouldn't be constant
+            await asyncio.sleep(2) #TODO: ?sleep time shouldn't be constant
 
     def check_status(self) -> str:
         """Returns the process status [null, running, completed, failed, stopped].
@@ -118,9 +118,9 @@ class RunProcess(Process):
         self.log_path: Path = setup_logging("runs", log_name)
         self.logger = get_logger(str(id_), self.log_path)
 
-    def update_db_info(self):
+    async def update_db_info(self):
         # save current run info into runs_path
-        runs_conf = settings.read_conf(settings.runs_path)
+        runs_conf = await read_conf(settings.runs_path)
 
         run_params = self.get_full_info()
         _map_to_str(run_params)
@@ -132,11 +132,11 @@ class RunProcess(Process):
                 break
         else:
             runs_conf.append(run_params)
-        with open(settings.runs_path, "w", encoding="UTF-8") as file:
-            OmegaConf.save(config=runs_conf, f=file)
+
+        await write_conf(runs_conf, settings.runs_path)
 
         # save current run info into the correspoinding build in builds_path
-        builds_conf = settings.read_conf(settings.builds_path)
+        builds_conf = await read_conf(settings.builds_path)
         for build in builds_conf:
             if build.id == run_params["build_id"]:
                 for run in build.runs:
@@ -146,8 +146,7 @@ class RunProcess(Process):
                         break
                 else:
                     build.runs.append(run_params)
-        with open(settings.builds_path, "w", encoding="UTF-8") as file:
-            OmegaConf.save(config=builds_conf, f=file)
+        await write_conf(builds_conf, settings.builds_path)
 
 
 class BuildProcess(Process):
@@ -159,9 +158,9 @@ class BuildProcess(Process):
         self.log_path: Path = setup_logging("builds", log_name)
         self.logger = get_logger(str(id_), self.log_path)
 
-    def update_db_info(self):
+    async def update_db_info(self):
         # save current build info into builds_path
-        builds_conf = settings.read_conf(settings.builds_path)
+        builds_conf = await read_conf(settings.builds_path)
 
         build_params = self.get_full_info()
         _map_to_str(build_params)
@@ -174,5 +173,4 @@ class BuildProcess(Process):
         else:
             builds_conf.append(build_params)
 
-        with open(settings.builds_path, "w", encoding="UTF-8") as file:
-            OmegaConf.save(config=builds_conf, f=file)
+        await write_conf(builds_conf, settings.builds_path)
