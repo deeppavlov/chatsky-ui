@@ -1,11 +1,13 @@
 import asyncio
 from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketException, status, BackgroundTasks
+from typing import Optional, Union
 
 from app.schemas.preset import Preset
+from app.schemas.pagination import Pagination
 from app.core.logger_config import get_logger
-from app.clients.process_manager import ProcessManager, BuildManager, RunManager
+from app.services.process_manager import ProcessManager, BuildManager, RunManager
 from app.api import deps
-from app.clients.websocket_manager import WebSocketManager
+from app.services.websocket_manager import WebSocketManager
 
 
 router = APIRouter()
@@ -17,15 +19,19 @@ async def _stop_process(
     pid: int, process_manager: ProcessManager, process= "run"
 ):
     if pid not in process_manager.processes:
-        raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited."
+        )
     await process_manager.stop(pid)
     logger.info("%s process '%s' has stopped", process.capitalize(), pid)
     return {"status": "ok"}
 
 
-def _check_process_status(pid: int, process_manager: ProcessManager):
+def _check_process_status(pid: int, process_manager: ProcessManager) -> dict[str, str]:
     if pid not in process_manager.processes:
-        raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited.",
+        )
     process_status = process_manager.get_status(pid)
     return {"status": process_status}
 
@@ -50,14 +56,25 @@ async def check_build_status(*, pid: int, build_manager: BuildManager = Depends(
     return _check_process_status(pid, build_manager)
 
 
-@router.get("/builds", status_code=200)
-async def check_build_processes(build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return build_manager.get_min_info()
+@router.get("/builds", response_model=Optional[Union[list, dict]], status_code=200)
+async def check_build_processes(
+    build_id: Optional[int] = None,
+    build_manager: BuildManager = Depends(deps.get_build_manager),
+    pagination: Pagination = Depends()
+):
+    if build_id is not None:
+        return build_manager.get_build_info(build_id)
+    else:
+        return build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
-
-@router.get("/builds/{build_id}", status_code=200)
-async def get_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return build_manager.get_full_info(build_id)
+@router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
+async def get_build_logs(
+    build_id: int,
+    build_manager: BuildManager = Depends(deps.get_build_manager),
+    pagination: Pagination = Depends()
+):
+    if build_id is not None:
+        return await build_manager.fetch_build_logs(build_id, pagination.offset(), pagination.limit)
 
 
 @router.post("/run/start/{build_id}", status_code=201)
@@ -80,14 +97,26 @@ async def check_run_status(*, pid: int, run_manager: RunManager = Depends(deps.g
     return _check_process_status(pid, run_manager)
 
 
-@router.get("/runs", status_code=200)
-async def check_run_processes(run_manager: RunManager = Depends(deps.get_run_manager)):
-    return run_manager.get_min_info()
+@router.get("/runs", response_model=Optional[Union[list, dict]], status_code=200)
+async def check_run_processes(
+    run_id: Optional[int] = None,
+    run_manager: RunManager = Depends(deps.get_run_manager),
+    pagination: Pagination = Depends()
+):
+    if run_id is not None:
+        return run_manager.get_run_info(run_id)
+    else:
+        return run_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
 
-@router.get("/runs/{run_id}", status_code=200)
-async def get_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)):
-    return run_manager.get_full_info(run_id)
+@router.get("/runs/logs/{run_id}", response_model=Optional[list], status_code=200)
+async def get_run_logs(
+    run_id: int,
+    run_manager: RunManager = Depends(deps.get_run_manager),
+    pagination: Pagination = Depends()
+):
+    if run_id is not None:
+        return await run_manager.fetch_run_logs(run_id, pagination.offset(), pagination.limit)
 
 
 @router.websocket("/run/connect")

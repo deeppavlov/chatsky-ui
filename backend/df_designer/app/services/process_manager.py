@@ -1,10 +1,12 @@
+import aiofiles
 from pathlib import Path
-from typing import List, Type
+from typing import List, Type, Optional
 
 from app.core.logger_config import get_logger
-from app import BuildProcess, RunProcess, Process
+from app.services.process import BuildProcess, RunProcess
 from app.schemas.preset import Preset
 from app.core.config import settings
+from omegaconf import OmegaConf
 
 logger = get_logger(__name__)
 
@@ -26,17 +28,37 @@ class ProcessManager:
     def get_status(self, pid):
         return self.processes[pid].check_status()
 
-    def get_full_info(self, id_, path: Path, processclass: Type[Process]):
-        if id_ in self.processes:
-            process = self.processes[id_]
-            return process.get_full_info()
-        else:
-            db_conf = settings.read_conf(path)
-            process = processclass(id_)
-            self.processes.update({id_: process})
-            process_info = next((db_process for db_process in db_conf if db_process.id==process.id), None)
-            process.set_full_info(process_info)
-            return process_info
+    def get_process_info(self, id_: int, path: Path):
+        db_conf = settings.read_conf(path)
+        conf_dict = OmegaConf.to_container(db_conf, resolve=True)
+        return next((db_process for db_process in conf_dict if db_process["id"]==id_), None)
+
+    def get_full_info(self, offset: int, limit: int, path: Path) -> List[dict]:
+        db_conf = settings.read_conf(path)
+        conf_dict = OmegaConf.to_container(db_conf, resolve=True)
+        return conf_dict[offset:offset+limit]
+
+    async def fetch_process_logs(self, process_id: int, offset: int, limit: int, path: Path):
+        process_info = self.get_process_info(process_id, path)
+        if process_info is None:
+            logger.warning("Id '%s' not found", process_id)
+            return None
+
+        log_file = process_info["log_path"]
+        try:
+            async with aiofiles.open(log_file, "r", encoding="UTF-8") as file:
+                logs = [line async for line in file if line.strip()]
+        except FileNotFoundError:
+            logger.warning("Log file '%s' not found", log_file)
+            return None
+
+        if offset > len(logs):
+            logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
+            return None
+
+        logger.info("Returning %s logs", len(logs))
+        return logs[offset:offset+limit]
+
 
 
 class RunManager(ProcessManager):
@@ -65,9 +87,14 @@ class RunManager(ProcessManager):
 
         return minimum_info
 
-    def get_full_info(self, id_, path: Path = settings.runs_path, processclass: Type[Process] = RunProcess):
-        return super().get_full_info(id_, path, processclass)
+    def get_run_info(self, id_: int):
+        return super().get_process_info(id_, settings.runs_path)
 
+    def get_full_info(self, offset: int, limit: int, path: Path = settings.runs_path):
+        return super().get_full_info(offset, limit, path)
+
+    async def fetch_run_logs(self, run_id: int, offset: int, limit: int):
+        return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path)
 
 class BuildManager(ProcessManager):
     def __init__(self):
@@ -82,6 +109,7 @@ class BuildManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = BuildProcess(id_, preset.end_status)
+        cmd_to_run = f"dflowd build_bot {id_} --preset {preset.end_status}"
         await process.start(cmd_to_run)
         self.processes[id_] = process
 
@@ -101,5 +129,11 @@ class BuildManager(ProcessManager):
             minimum_info.append(info)
         return minimum_info
 
-    def get_full_info(self, id_, path: Path = settings.builds_path, processclass: Type[Process] = BuildProcess):
-        return super().get_full_info(id_, path, processclass)
+    def get_build_info(self, id_: int):
+        return super().get_process_info(id_, settings.builds_path)
+
+    def get_full_info(self, offset: int, limit: int, path: Path = settings.builds_path):
+        return super().get_full_info(offset, limit, path)
+
+    async def fetch_build_logs(self, build_id: int, offset: int, limit: int):
+        return await self.fetch_process_logs(build_id, offset, limit, settings.builds_path)
