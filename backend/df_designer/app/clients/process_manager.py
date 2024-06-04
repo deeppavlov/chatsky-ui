@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Type
 
 from app.core.logger_config import get_logger
@@ -25,7 +26,7 @@ class ProcessManager:
     def get_status(self, pid):
         return self.processes[pid].check_status()
 
-    def get_full_info(self, id_, path: str, processclass: Type[Process]):
+    def get_full_info(self, id_, path: Path, processclass: Type[Process]):
         if id_ in self.processes:
             process = self.processes[id_]
             return process.get_full_info()
@@ -55,17 +56,16 @@ class RunManager(ProcessManager):
         self.processes[id_] = process
 
     def get_min_info(self) -> List[dict]:
-        conf_path=settings.RUNS_PATH
-        builds_conf = settings.read_conf(conf_path)
+        runs_conf = settings.read_conf(settings.RUNS_PATH)
         minimum_params = ["id", "build_id", "preset_end_status", "status", "timestamp"]
 
         minimum_info = []
-        for build in builds_conf:
-            minimum_info.append({param: getattr(build, param) for param in minimum_params})
+        for run in runs_conf:
+            minimum_info.append({param: getattr(run, param) for param in minimum_params})
 
         return minimum_info
 
-    def get_full_info(self, id_, path: str = settings.RUNS_PATH, processclass: Type[Process] = RunProcess):
+    def get_full_info(self, id_, path: Path = settings.RUNS_PATH, processclass: Type[Process] = RunProcess):
         return super().get_full_info(id_, path, processclass)
 
 
@@ -84,7 +84,6 @@ class BuildManager(ProcessManager):
         process = BuildProcess(id_, preset.end_status)
         await process.start(cmd_to_run)
         self.processes[id_] = process
-        process.update_db_info()
 
     def get_min_info(self) -> List[dict]:
         conf_path=settings.BUILDS_PATH
@@ -102,5 +101,5 @@ class BuildManager(ProcessManager):
             minimum_info.append(info)
         return minimum_info
 
-    def get_full_info(self, id_, path: str = settings.BUILDS_PATH, processclass: Type[Process] = BuildProcess):
+    def get_full_info(self, id_, path: Path = settings.BUILDS_PATH, processclass: Type[Process] = BuildProcess):
         return super().get_full_info(id_, path, processclass)
