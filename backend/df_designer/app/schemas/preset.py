@@ -1,4 +1,5 @@
 from pydantic import BaseModel
 
 class Preset(BaseModel):
-    body: str
+    wait_time: float
+    end_status: str

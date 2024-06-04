@@ -1,7 +1,8 @@
-import asyncio
+from cookiecutter.main import cookiecutter
 import json
 import os
 import subprocess
+import sys
 import typer
 
 from app.core.config import settings
@@ -10,6 +11,23 @@ from app.core.logger_config import get_logger
 logger = get_logger(__name__)
 
 cli = typer.Typer()
+
+
+def _execute_command(command_to_run):
+    try:
+        process = subprocess.run(command_to_run.split(),check=False)
+
+        # Check the return code to determine success
+        if process.returncode == 0:
+            logger.info("Command '%s' executed successfully.", command_to_run)
+        else:
+            logger.error("Command '%s' failed with return code: %d", command_to_run, process.returncode)
+            sys.exit(process.returncode)
+
+    except Exception as e:
+        logger.error("Error executing '%s': %s", command_to_run, str(e))
+        sys.exit(1)
+
 
 @cli.command("build_bot")
 def build_bot(
@@ -24,14 +42,7 @@ def build_bot(
         command_to_run = presets_build_file[preset]["cmd"]
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
-        process = subprocess.run(command_to_run, shell=True, check=False)
-        if process.returncode > 0:
-            logger.error(
-                "Execution of command `%s` was unsuccessful. Exited with code '%s'",
-                command_to_run,
-                process.returncode,
-            )
-            # TODO: inform ui
+        _execute_command(command_to_run)
     else:
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
@@ -49,14 +60,7 @@ def run_bot(
         command_to_run = presets_run_file[preset]["cmd"]
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
-        process = subprocess.run(command_to_run, shell=True, check=False)
-        if process.returncode > 0:
-            logger.error(
-                "Execution of command `%s` was unsuccessful. Exited with code '%s'",
-                command_to_run,
-                process.returncode,
-            )
-            # TODO: inform ui
+        _execute_command(command_to_run)
     else:
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_run_file.keys())}")
 
@@ -65,13 +69,8 @@ def run_bot(
 def run_scenario(
     project_dir: str = "."
 ):
-    process = subprocess.run(f"poetry run python {project_dir}/app.py", shell=True, check=False)
-    if process.returncode > 0:
-        logger.error(
-            "Execution of command `python app.py` was unsuccessful. Exited with code '%s'",
-            process.returncode,
-        )
-        # TODO: inform ui
+    command_to_run = f"poetry run python {project_dir}/app.py"
+    _execute_command(command_to_run)
 
 
 #### TODO: move to DB DIR
@@ -102,3 +101,13 @@ def run_backend(
     """Run the backend."""
     _setup_backend(ip_address, port, conf_reload, project_dir)
     settings.server.run()
+
+
+@cli.command("init")
+def init(destination: str = settings.WORK_DIRECTORY):
+    original_dir = os.getcwd()
+    try:
+        os.chdir(destination)
+        cookiecutter("https://github.com/Ramimashkouk/df_d_template.git")
+    finally:
+        os.chdir(original_dir)

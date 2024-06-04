@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 
 def _stop_process(
-    pid: int, process_manager: ProcessManager = Depends(deps.get_process_manager), process= "run"
+    pid: int, process_manager: ProcessManager, process= "run"
 ):
     if pid not in process_manager.processes:
         raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
@@ -23,7 +23,7 @@ def _stop_process(
     return {"status": "ok"}
 
 
-def _check_process_status(pid: int, process_manager: ProcessManager = Depends(deps.get_process_manager)):
+def _check_process_status(pid: int, process_manager: ProcessManager):
     if pid not in process_manager.processes:
         raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
     process_status = process_manager.check_status(pid)
@@ -31,55 +31,68 @@ def _check_process_status(pid: int, process_manager: ProcessManager = Depends(de
 
 
 @router.post("/build/start", status_code=201)
-async def start_build(preset: Preset, process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    await process_manager.start(f"dflowd build_bot --preset {preset.body}")
-    pid = process_manager.get_last_id()
+async def start_build(preset: Preset, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    await asyncio.sleep(preset.wait_time)
+    await build_manager.start("build", f"dflowd build_bot --preset {preset.end_status}") #TODO: Think about making BuildManager and RunManager
+    pid = build_manager.get_last_id()
     logger.info("Build process '%s' has started", pid)
     return {"status": "ok", "pid": pid}
 
 
 @router.get("/build/stop/{pid}", status_code=200)
-async def stop_build(*, pid: int, process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    return _stop_process(pid, process_manager, process="build")
+async def stop_build(*, pid: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    return _stop_process(pid, build_manager, process="build")
 
 
 @router.get("/build/status/{pid}", status_code=200)
-async def check_build_status(*, pid: int, process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    return _check_process_status(pid, process_manager)
+async def check_build_status(*, pid: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    return _check_process_status(pid, build_manager)
+
+
+@router.get("/builds", status_code=200)
+async def check_build_processes(build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    return build_manager.get_min_info()
+
+
+@router.get("/builds/{build_id}", status_code=200)
+async def get_build(*, build_id: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+    return build_manager.get_full_info(build_id)
 
 
 @router.post("/run/start")
-async def start_run(preset: Preset, process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    await process_manager.start(f"dflowd run_bot --preset {preset.body}")
-    pid = process_manager.get_last_id()
+async def start_run(preset: Preset, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    await asyncio.sleep(preset.wait_time)
+    await run_manager.start("run", f"dflowd run_bot --preset {preset.end_status}")
+    pid = run_manager.get_last_id()
     logger.info("Run process '%s' has started", pid)
     return {"status": "ok", "pid": pid}
 
 
 @router.get("/run/stop/{pid}", status_code=200)
-async def stop_run(*, pid: int, process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    return _stop_process(pid, process_manager, process="run")
+async def stop_run(*, pid: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    return _stop_process(pid, run_manager, process="run")
 
 
 @router.get("/run/status/{pid}", status_code=200)
-async def check_run_status(*, pid: int, process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    return _check_process_status(pid, process_manager)
+async def check_run_status(*, pid: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    return _check_process_status(pid, run_manager)
 
 
-@router.get("/runs/status", status_code=200)
-async def check_all_processes(process_manager: ProcessManager = Depends(deps.get_process_manager)):
-    statuses = {}
-    all_processes = process_manager.get_all()
-    for pid, _ in all_processes.items():
-        statuses[pid] = process_manager.check_status(pid)
-    return statuses
+@router.get("/runs", status_code=200)
+async def check_run_processes(run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    return run_manager.get_min_info()
+
+
+@router.get("/runs/{run_id}", status_code=200)
+async def get_run(*, run_id: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+    return run_manager.get_full_info(run_id)
 
 
 @router.websocket("/run/connect")
 async def connect(
     websocket: WebSocket,
     websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager),
-    process_manager: ProcessManager = Depends(deps.get_process_manager),
+    run_manager: ProcessManager = Depends(deps.get_run_manager),
 ):
     """Open a websocket to connect to a running bot, whose id is 'pid'.
     Websocket url should be of format: `/bot/run/connect?pid=<pid>`
@@ -95,7 +108,7 @@ async def connect(
         logger.error("A non-digit run pid provided")
         raise WebSocketException(code=status.WS_1003_UNSUPPORTED_DATA)
     pid = int(pid)
-    if pid not in process_manager.processes:
+    if pid not in run_manager.processes:
         logger.error("process with pid '%s' exited or never existed", pid)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
 
@@ -103,8 +116,8 @@ async def connect(
     await websocket_manager.connect(websocket)
     logger.info("Websocket for run process '%s' has been opened", pid)
 
-    output_task = asyncio.create_task(websocket_manager.send_process_output_to_websocket(pid, process_manager, websocket))
-    input_task = asyncio.create_task(websocket_manager.forward_websocket_messages_to_process(pid, process_manager, websocket))
+    output_task = asyncio.create_task(websocket_manager.send_process_output_to_websocket(pid, run_manager, websocket))
+    input_task = asyncio.create_task(websocket_manager.forward_websocket_messages_to_process(pid, run_manager, websocket))
 
     # Wait for either task to finish
     _, websocket_manager.pending_tasks[websocket] = await asyncio.wait(
