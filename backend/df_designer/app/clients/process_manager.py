@@ -1,58 +1,106 @@
-from typing import List
-from random import randint
+from typing import List, Type
 
 from app.core.logger_config import get_logger
-from app import BuildProcess, RunProcess
+from app import BuildProcess, RunProcess, Process
+from app.schemas.preset import Preset
+from app.core.config import settings
 
 logger = get_logger(__name__)
-
-
-def _get_preset_end_status(command):
-    if "--preset" in (words:=command.split()):
-        return words[words.index("--preset")+1]
-    return "success" #default
 
 
 class ProcessManager:
     def __init__(self):
         self.processes = {}
 
-    async def start(self, process_type: str, cmd_to_run: str):
-        id_ = randint(1, 10000) #TODO: change it to incremental counter
-        if process_type == "build":
-            process = BuildProcess(id_, _get_preset_end_status(cmd_to_run))
-        elif process_type == "run":
-            process = RunProcess(id_, _get_preset_end_status(cmd_to_run))
-        else: raise ValueError("process_type should be one of [build, run]")
-        await process.start(cmd_to_run)
-        self.processes[id_] = process
-
     def get_last_id(self):
         """Get the process_id of the last started process"""
         return list(self.processes.keys())[-1]
 
-    def stop(self, pid):
-        self.processes[pid].stop()
-        self.processes.pop(pid)
+    async def stop(self, pid):
+        await self.processes[pid].stop()
 
     def check_status(self, pid):
+        self.processes[pid].periodically_check_status()
+
+    def get_status(self, pid):
         return self.processes[pid].check_status()
 
-    def get_min_info(self) -> List[dict]:
-        build_min_info = ["build_id", "build_preset_name", "status", "timestamp"]
-        run_min_info = ["run_id", "run_preset_name", "status", "timestamp"]
-        if isinstance(next(iter(self.processes.values())), RunProcess): #TODO: really doesn't sound clean!
-            min_info = run_min_info
-        elif isinstance(next(iter(self.processes.values())), BuildProcess):
-            min_info = build_min_info
-
-        min_processes_info = []
-        for _, process in self.processes.items():
-            process_info = process.get_full_info()
-            min_processes_info.append({k:v for k,v in process_info.items() if k in min_info})
-        return min_processes_info
-
-    def get_full_info(self, id_: int) -> dict:
+    def get_full_info(self, id_, path: str, processclass: Type[Process]):
         if id_ in self.processes:
-            return self.processes[id_].get_full_info()
-        return {}
+            process = self.processes[id_]
+            return process.get_full_info()
+        else:
+            db_conf = settings.read_conf(path)
+            process = processclass(id_)
+            self.processes.update({id_: process})
+            process_info = next((db_process for db_process in db_conf if db_process.id==process.id), None)
+            process.set_full_info(process_info)
+            return process_info
+
+
+class RunManager(ProcessManager):
+    def __init__(self):
+        super().__init__()
+        self.last_id = max([run["id"] for run in self.get_min_info()])
+
+    def get_last_id(self):
+        return self.last_id
+
+    async def start(self, build_id: int, preset: Preset):
+        cmd_to_run = f"dflowd run_bot {build_id} --preset {preset.end_status}"
+        self.last_id += 1
+        id_ = self.last_id
+        process = RunProcess(id_, build_id, preset.end_status)
+        await process.start(cmd_to_run)
+        self.processes[id_] = process
+
+    def get_min_info(self) -> List[dict]:
+        conf_path=settings.RUNS_PATH
+        builds_conf = settings.read_conf(conf_path)
+        minimum_params = ["id", "build_id", "preset_end_status", "status", "timestamp"]
+
+        minimum_info = []
+        for build in builds_conf:
+            minimum_info.append({param: getattr(build, param) for param in minimum_params})
+
+        return minimum_info
+
+    def get_full_info(self, id_, path: str = settings.RUNS_PATH, processclass: Type[Process] = RunProcess):
+        return super().get_full_info(id_, path, processclass)
+
+
+class BuildManager(ProcessManager):
+    def __init__(self):
+        super().__init__()
+        self.last_id = max([build["id"] for build in self.get_min_info()])
+
+    def get_last_id(self):
+        return self.last_id
+
+    async def start(self, preset: Preset):
+        cmd_to_run = f"dflowd build_bot --preset {preset.end_status}"
+        self.last_id += 1
+        id_ = self.last_id
+        process = BuildProcess(id_, preset.end_status)
+        await process.start(cmd_to_run)
+        self.processes[id_] = process
+        process.update_db_info()
+
+    def get_min_info(self) -> List[dict]:
+        conf_path=settings.BUILDS_PATH
+        builds_conf = settings.read_conf(conf_path)
+        minimum_params = ["id", "preset_end_status", "status", "timestamp", "runs"]
+
+        minimum_info = []
+        for build in builds_conf:
+            info = {}
+            for param in minimum_params:
+                if param != "runs":
+                    info.update({param: getattr(build, param)})
+                else:
+                    info.update({"run_ids": [run.id for run in build.runs]})
+            minimum_info.append(info)
+        return minimum_info
+
+    def get_full_info(self, id_, path: str = settings.BUILDS_PATH, processclass: Type[Process] = BuildProcess):
+        return super().get_full_info(id_, path, processclass)

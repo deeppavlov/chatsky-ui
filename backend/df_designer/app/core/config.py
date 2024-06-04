@@ -1,4 +1,6 @@
 from pydantic_settings import BaseSettings
+from pathlib import Path
+from omegaconf import OmegaConf
 import uvicorn
 
 class Settings(BaseSettings):
@@ -6,13 +8,16 @@ class Settings(BaseSettings):
     WORK_DIRECTORY: str = "."
 
     # consult about the namings
-    APP: str = "app.main:app" 
+    APP: str = "app.main:app"
     HOST: str = "127.0.0.1"
     BACKEND_PORT: int = 8000
     UI_PORT: int = 3000
     LOG_LEVEL: str = "debug"
     CONF_RELOAD: bool = True # Enable auto-reload for development mode
+    BUILDS_PATH: str = f"{WORK_DIRECTORY}/df_designer/builds.yaml"
+    RUNS_PATH: str = f"{WORK_DIRECTORY}/df_designer/runs.yaml"
     DIR_LOGS: str = f"{WORK_DIRECTORY}/logs.log"   #TODO: Ensure this's a good path
+    FRONTEND_FLOWS_PATH : str = f"{WORK_DIRECTORY}/df_designer/frontend_flows.yaml"
     # database_file = "database.sqlite"
     server: uvicorn.Server = uvicorn.Server(
         uvicorn.Config(APP, HOST, BACKEND_PORT, LOG_LEVEL, CONF_RELOAD, reload_dirs=WORK_DIRECTORY)
@@ -28,5 +33,9 @@ class Settings(BaseSettings):
             reload_dirs=project_dir
         )
         self.server = uvicorn.Server(config)
+    
+    def read_conf(self, path: str):
+        path_conf = Path(path)
+        return OmegaConf.load(path_conf)
 
 settings = Settings()

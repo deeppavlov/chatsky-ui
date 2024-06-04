@@ -1,9 +1,9 @@
 import asyncio
-from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketException, status
+from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketException, status, BackgroundTasks
 
 from app.schemas.preset import Preset
 from app.core.logger_config import get_logger
-from app.clients.process_manager import ProcessManager
+from app.clients.process_manager import ProcessManager, BuildManager, RunManager
 from app.api import deps
 from app.clients.websocket_manager import WebSocketManager
 
@@ -13,12 +13,12 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
-def _stop_process(
+async def _stop_process(
     pid: int, process_manager: ProcessManager, process= "run"
 ):
     if pid not in process_manager.processes:
         raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
-    process_manager.stop(pid)
+    await process_manager.stop(pid)
     logger.info("%s process '%s' has stopped", process.capitalize(), pid)
     return {"status": "ok"}
 
@@ -26,65 +26,67 @@ def _stop_process(
 def _check_process_status(pid: int, process_manager: ProcessManager):
     if pid not in process_manager.processes:
         raise HTTPException(status_code=404, detail="Process not found. It may have already exited.")
-    process_status = process_manager.check_status(pid)
+    process_status = process_manager.get_status(pid)
     return {"status": process_status}
 
 
 @router.post("/build/start", status_code=201)
-async def start_build(preset: Preset, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+async def start_build(preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)):
     await asyncio.sleep(preset.wait_time)
-    await build_manager.start("build", f"dflowd build_bot --preset {preset.end_status}") #TODO: Think about making BuildManager and RunManager
-    pid = build_manager.get_last_id()
-    logger.info("Build process '%s' has started", pid)
-    return {"status": "ok", "pid": pid}
+    await build_manager.start(preset) #TODO: Think about making BuildManager and RunManager
+    build_id = build_manager.get_last_id()
+    background_tasks.add_task(build_manager.check_status, build_id)
+    logger.info("Build process '%s' has started", build_id)
+    return {"status": "ok", "build_id": build_id}
 
 
-@router.get("/build/stop/{pid}", status_code=200)
-async def stop_build(*, pid: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
-    return _stop_process(pid, build_manager, process="build")
+@router.get("/build/stop/{build_id}", status_code=200)
+async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
+    return await _stop_process(build_id, build_manager, process="build")
 
 
 @router.get("/build/status/{pid}", status_code=200)
-async def check_build_status(*, pid: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+async def check_build_status(*, pid: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
     return _check_process_status(pid, build_manager)
 
 
 @router.get("/builds", status_code=200)
-async def check_build_processes(build_manager: ProcessManager = Depends(deps.get_build_manager)):
+async def check_build_processes(build_manager: BuildManager = Depends(deps.get_build_manager)):
     return build_manager.get_min_info()
 
 
 @router.get("/builds/{build_id}", status_code=200)
-async def get_build(*, build_id: int, build_manager: ProcessManager = Depends(deps.get_build_manager)):
+async def get_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
     return build_manager.get_full_info(build_id)
 
 
-@router.post("/run/start")
-async def start_run(preset: Preset, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+@router.post("/run/start/{build_id}", status_code=201)
+async def start_run(*, build_id: int, preset: Preset, background_tasks: BackgroundTasks, run_manager: RunManager = Depends(deps.get_run_manager)):
     await asyncio.sleep(preset.wait_time)
-    await run_manager.start("run", f"dflowd run_bot --preset {preset.end_status}")
-    pid = run_manager.get_last_id()
-    logger.info("Run process '%s' has started", pid)
-    return {"status": "ok", "pid": pid}
+    await run_manager.start(build_id, preset)
+    run_id = run_manager.get_last_id()
+    background_tasks.add_task(run_manager.check_status, run_id)
+    logger.info("Run process '%s' has started", run_id)
+    return {"status": "ok", "run_id": run_id}
 
 
 @router.get("/run/stop/{pid}", status_code=200)
-async def stop_run(*, pid: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
-    return _stop_process(pid, run_manager, process="run")
+async def stop_run(*, pid: int, run_manager: RunManager = Depends(deps.get_run_manager)):
+    return await _stop_process(pid, run_manager, process="run")
 
 
 @router.get("/run/status/{pid}", status_code=200)
-async def check_run_status(*, pid: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+async def check_run_status(*, pid: int, run_manager: RunManager = Depends(deps.get_run_manager)):
     return _check_process_status(pid, run_manager)
 
 
 @router.get("/runs", status_code=200)
-async def check_run_processes(run_manager: ProcessManager = Depends(deps.get_run_manager)):
+async def check_run_processes(run_manager: RunManager = Depends(deps.get_run_manager)):
     return run_manager.get_min_info()
 
 
 @router.get("/runs/{run_id}", status_code=200)
-async def get_run(*, run_id: int, run_manager: ProcessManager = Depends(deps.get_run_manager)):
+async def get_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)):
     return run_manager.get_full_info(run_id)
 
 
@@ -92,7 +94,7 @@ async def get_run(*, run_id: int, run_manager: ProcessManager = Depends(deps.get
 async def connect(
     websocket: WebSocket,
     websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager),
-    run_manager: ProcessManager = Depends(deps.get_run_manager),
+    run_manager: RunManager = Depends(deps.get_run_manager),
 ):
     """Open a websocket to connect to a running bot, whose id is 'pid'.
     Websocket url should be of format: `/bot/run/connect?pid=<pid>`
