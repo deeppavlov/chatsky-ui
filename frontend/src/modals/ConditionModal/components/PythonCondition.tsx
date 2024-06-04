@@ -1,4 +1,5 @@
 import { python } from "@codemirror/lang-python"
+import { indentUnit } from '@codemirror/language'
 import { andromeda } from "@uiw/codemirror-theme-andromeda"
 import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
 import CodeMirror from "@uiw/react-codemirror"
@@ -6,6 +7,7 @@ import React, { useContext, useEffect } from "react"
 import { themeContext } from "../../../contexts/themeContext"
 import { conditionType } from "../../../types/ConditionTypes"
 import { firstLinePlugin } from "../editorOptions"
+const tabSize = '    '
 
 const PythonCondition = ({
   condition,
@@ -26,7 +28,7 @@ const PythonCondition = ({
         data: {
           ...condition.data,
           python: {
-            action: `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python condition:\n  return True`,
+            action: `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python condition:\n    return True`,
           },
         },
       })
@@ -75,7 +77,7 @@ const PythonCondition = ({
               "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
           }}
           lang='python'
-          extensions={[python(), firstLinePlugin]}
+          extensions={[python(), firstLinePlugin, indentUnit.of(tabSize)]}
           value={condition.data.python?.action}
           onChange={changeConditionValue}
           className='w-full border-none outline-none focus-within:outline-none focus:outline-none font-mono'

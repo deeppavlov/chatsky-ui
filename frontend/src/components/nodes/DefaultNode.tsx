@@ -34,7 +34,10 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
 
   return (
     <>
-      <div id={data.id} data-testid={data.id} className='default_node'>
+      <div
+        id={data.id}
+        data-testid={data.id}
+        className='default_node'>
         {data.flags?.includes("start") && (
           <span className='-top-2 left-4 bg-[#e5faf5] border border-[#00cc99] absolute text-white text-xs font-medium rounded-small px-0.5 py-0.5 -z-20 transition-transform cursor-auto hover:-z-10 hover:-translate-y-4'>
             <StartNodeIcon />
@@ -47,25 +50,27 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
         )}
         <div className=' w-full flex justify-between items-center bg-node-header border-b border-border rounded-t-node px-6 py-4'>
           <div className='flex items-center'>
-            <Handle
-              isConnectableEnd
-              position={Position.Left}
-              type='target'
-              style={{
-                background: "var(--background)",
-                borderWidth: "2px",
-                borderColor: "var(--condition-input-handle)",
-                borderStyle: "solid",
-                width: "0.7rem",
-                height: "0.7rem",
-                top: "1.875rem",
-                left: "-0.335rem",
-                zIndex: 10,
-              }}
-            />
+            {!data.id.includes("LOCAL_NODE") && !data.id.includes("GLOBAL_NODE") && (
+              <Handle
+                isConnectableEnd
+                position={Position.Left}
+                type='target'
+                style={{
+                  background: "var(--background)",
+                  borderWidth: "2px",
+                  borderColor: "var(--condition-input-handle)",
+                  borderStyle: "solid",
+                  width: "0.7rem",
+                  height: "0.7rem",
+                  top: "1.875rem",
+                  left: "-0.335rem",
+                  zIndex: 10,
+                }}
+              />
+            )}
             <p className='font-medium text-medium flex items-center gap-1'>
-              {data.id.includes('LOCAL_NODE') && <LocalNodeIcon />}
-              {data.id.includes('GLOBAL_NODE') && <GlobalNodeIcon />}
+              {data.id.includes("LOCAL_NODE") && <LocalNodeIcon />}
+              {data.id.includes("GLOBAL_NODE") && <GlobalNodeIcon />}
               {data.name}
             </p>
           </div>
@@ -85,7 +90,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
             ))}
           </div>
           <button
-            data-testid={`${data.name.toLowerCase().replace(' ', '')}-add-condition-btn`}
+            data-testid={`${data.name.toLowerCase().replace(" ", "")}-add-condition-btn`}
             onClick={() => {
               onConditionOpen()
             }}

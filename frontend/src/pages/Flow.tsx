@@ -63,6 +63,7 @@ export default function Flow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
 
+  console.log(flow)
   // const {
   //   isOpen: isLinkModalOpen,
   //   onOpen: onLinkModalOpen,

@@ -10,7 +10,7 @@ import {
   Select,
   SelectItem,
 } from "@nextui-org/react"
-import { HelpCircle, TrashIcon } from "lucide-react"
+import { HelpCircle } from "lucide-react"
 import { useContext, useState } from "react"
 import toast from "react-hot-toast"
 import { FLOW_COLORS } from "../../consts"
@@ -152,11 +152,11 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
               className='rounded-full'>
               <HelpCircle />
             </Button>
-            <Button
+            {/* <Button
               className='hover:bg-red-500'
               isIconOnly>
               <TrashIcon />
-            </Button>
+            </Button> */}
           </div>
           <div>
             <Button
