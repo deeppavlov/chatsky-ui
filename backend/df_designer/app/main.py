@@ -1,8 +1,9 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 
 from app.api.api_v1.api import api_router
+from app.core.config import settings
 
 app = FastAPI(title="DF Designer")
 
@@ -16,18 +17,20 @@ app.add_middleware(
 
 root_router = APIRouter()
 
+@root_router.get("/app/{path:path}")
+async def route_static_file(path: str):
+	if not settings.start_page.exists():
+		return HTMLResponse(content="frontend is not built")
+	file_path = settings.static_files / path.split("/")[-1]
+	if file_path.suffix in (".js", ".css", ".html"):
+		return FileResponse(file_path)
+	return FileResponse(settings.static_files / "index.html")
 
-@root_router.get("/", status_code=200)
-def root() -> dict:
-    """
-    Root GET
-    """
-    return {"msg": "Frontend is not build yet"}
 
+@root_router.get("/")
+async def root() -> Response:
+	"""Redirect '/' to index.html"""
+	return RedirectResponse(url="/app")
 
 app.include_router(root_router)
 app.include_router(api_router)
-
-
-if __name__ == "__main__": #TODO: is this needed? as we already have the run_backend command in cli
-    uvicorn.run(app, host="0.0.0.0", port=8001, log_level="debug")

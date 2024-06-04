@@ -14,13 +14,13 @@ LOG_LEVELS: dict[str, int] = {
     "debug": logging.DEBUG,
 }
 
-def setup_logging(log_type: str, log_name: str) -> Path:
+def setup_logging(log_type: str, log_name: str) -> Path: #TODO: rename: setup_detailed_logging
     # Ensure log_type is either 'builds' or 'runs'
     if log_type not in ['builds', 'runs']:
         raise ValueError("log_type must be 'builds' or 'runs'")
 
     today_date = datetime.now().strftime("%Y%m%d")
-    log_directory = settings.DIR_LOGS / log_type / today_date
+    log_directory = settings.dir_logs / log_type / today_date
 
     os.makedirs(log_directory, exist_ok=True)
 
@@ -31,19 +31,19 @@ def setup_logging(log_type: str, log_name: str) -> Path:
 
 def get_logger(name, file_handler_path: Optional[Path] = None):
     if file_handler_path is None:
-        os.makedirs(settings.DIR_LOGS, exist_ok=True)
-        file_handler_path = settings.DIR_LOGS/ "logs.log"
+        os.makedirs(settings.dir_logs, exist_ok=True)
+        file_handler_path = settings.dir_logs/ "logs.log"
         if not os.path.exists(file_handler_path):
             open(file_handler_path, 'w', encoding="UTF-8").close()
 
     logger = logging.getLogger(name)
     logger.propagate = False
-    logger.setLevel(LOG_LEVELS[settings.LOG_LEVEL])
+    logger.setLevel(LOG_LEVELS[settings.log_level])
 
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler(file_handler_path)
-    c_handler.setLevel(LOG_LEVELS[settings.LOG_LEVEL])
-    f_handler.setLevel(LOG_LEVELS[settings.LOG_LEVEL])
+    c_handler.setLevel(LOG_LEVELS[settings.log_level])
+    f_handler.setLevel(LOG_LEVELS[settings.log_level])
 
     c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
     f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
