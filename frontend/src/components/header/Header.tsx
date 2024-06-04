@@ -20,7 +20,7 @@ const Header = () => {
   return (
     <div className='min-h-14 flex items-center justify-between w-screen z-10 bg-bg-secondary border-b border-border px-2 pr-4'>
       <div className="flex items-center gap-4"> 
-        <Link to='/home'>
+        <Link to='/app/home'>
           <Logo />
         </Link>
         <Button onClick={toggleWorkspaceMode} variant="ghost" >

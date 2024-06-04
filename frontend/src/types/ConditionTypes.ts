@@ -1,5 +1,6 @@
 export type conditionDataType = {
   priority: number
+  transition_type: conditionLabelType
   prompt?: string
   api_key?: string
   action?: string
@@ -14,3 +15,5 @@ export type conditionType = {
   type: conditionTypeType
   data: conditionDataType
 }
+
+export type conditionLabelType = "manual" | "forward" | "backward" | "repeat" | "fallback" | "start" | "previous"
