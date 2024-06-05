@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List
 
 import aiofiles
-from omegaconf import OmegaConf
 
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging

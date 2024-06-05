@@ -20,3 +20,11 @@ omegaconf = "^2.3.0"
 
 [tool.poetry.scripts]
 dflowd = "app.cli:cli"
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+isort = "^5"
+black = "^22"
+flake8 = "^4"

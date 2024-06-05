@@ -1,25 +1,24 @@
 FROM oven/bun:1 as frontend-base
 FROM frontend-base AS frontend-builder
 
-WORKDIR /src
-COPY ./frontend/package.json /src/frontend/package.json
-COPY ./frontend/bun.lockb /src/frontend/bun.lockb
+WORKDIR /temp
+COPY ./frontend/package.json /temp/frontend/package.json
+COPY ./frontend/bun.lockb /temp/frontend/bun.lockb
 
-RUN cd /src/frontend && bun install --frozen-lockfile
+RUN cd /temp/frontend && bun install --frozen-lockfile
 
 # Copy the rest of the application code
-COPY ./frontend/ /src/frontend/
-WORKDIR /src/frontend/
+COPY ./frontend/ /temp/frontend/
+WORKDIR /temp/frontend/
 
 RUN bun run build
-RUN ls /src/frontend/dist
 
 #---------------------------------------------------------
 
 # Use a slim variant to reduce image size where possible
 FROM python:3.10-slim as backend-builder
 
-WORKDIR /src
+WORKDIR /temp
 
 ARG PROJECT_DIR
 # ENV PROJECT_DIR ${PROJECT_DIR}
@@ -35,13 +34,13 @@ RUN python3 -m venv $POETRY_VENV \
 
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
-COPY ./backend/df_designer /src/backend/df_designer
-COPY --from=frontend-builder /src/frontend/dist /src/backend/df_designer/app/static
+COPY ./backend/df_designer /temp/backend/df_designer
+COPY --from=frontend-builder /temp/frontend/dist /temp/backend/df_designer/app/static
 
-COPY ./${PROJECT_DIR} /src/${PROJECT_DIR}
+COPY ./${PROJECT_DIR} /temp/${PROJECT_DIR}
 
 # Build the wheel
-WORKDIR /src/backend/df_designer
+WORKDIR /temp/backend/df_designer
 RUN poetry build
 
 #---------------------------------------------------------
@@ -58,11 +57,11 @@ COPY --from=backend-builder /poetry-venv /poetry-venv
 ENV PATH="/poetry-venv/bin:$PATH"
 
 # Copy only the necessary files
-COPY --from=backend-builder /src/backend/df_designer /df_designer
-COPY ./${PROJECT_DIR} /${PROJECT_DIR}
+COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
+COPY ./${PROJECT_DIR} /src2/${PROJECT_DIR}
 
 # Install the wheel
-WORKDIR /${PROJECT_DIR}
+WORKDIR /src2/${PROJECT_DIR}
 RUN poetry lock --no-update \
     && poetry install
 
