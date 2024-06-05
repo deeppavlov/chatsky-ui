@@ -1,8 +1,13 @@
 [tool.poetry]
-name = "df_designer"
-version = "0.1.0"
-description = ""
-authors = ["Ramimashkouk <rami.n.mashkouk@gmail.com>"]
+name = "dflowd"
+version = "0.1.0-beta.0"
+description = "Dialog Flow Designer"
+license = "Apache-2.0"
+authors = [
+    "Denis Kuznetsov <kuznetsov.den.p@gmail.com>",
+    "Maks Rogatkin <maksim2003003@gmail.com>",
+    "Rami Mashkouk <rami.n.mashkouk@gmail.com>",
+]
 readme = "README.md"
 packages = [{include = "app"}]
 
