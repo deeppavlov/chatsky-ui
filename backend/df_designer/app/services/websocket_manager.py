@@ -1,18 +1,19 @@
 import asyncio
 from asyncio.tasks import Task
+from typing import Dict, Optional, Set
+
 from fastapi import WebSocket, WebSocketDisconnect
-from typing import Optional, Set, Dict
 
 from app.core.logger_config import get_logger
 from app.services.process_manager import ProcessManager
 
 logger = get_logger(__name__)
 
+
 class WebSocketManager:
     def __init__(self):
-        self.pending_tasks : Dict[WebSocket, Set[Task]] = dict()
+        self.pending_tasks: Dict[WebSocket, Set[Task]] = dict()
         self.active_connections: list[WebSocket] = []
-
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -28,9 +29,11 @@ class WebSocketManager:
 
     def check_status(self, websocket: WebSocket):
         if websocket in self.active_connections:
-            return websocket ## return Status!
+            return websocket  ## return Status!
 
-    async def send_process_output_to_websocket(self, run_id: int, process_manager: ProcessManager, websocket: WebSocket):
+    async def send_process_output_to_websocket(
+        self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
+    ):
         """Read and forward process output to the websocket client."""
         try:
             while True:
@@ -43,12 +46,14 @@ class WebSocketManager:
         except RuntimeError as exc:
             raise exc
 
-    async def forward_websocket_messages_to_process(self, run_id: int, process_manager: ProcessManager, websocket: WebSocket):
+    async def forward_websocket_messages_to_process(
+        self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
+    ):
         """Listen for messages from the websocket and send them to the subprocess."""
         try:
             while True:
                 user_message = await websocket.receive_text()
-                process_manager.processes[run_id].write_stdin(user_message.encode() + b'\n')
+                process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
         except asyncio.CancelledError:
             logger.info("Websocket connection is closed")
         except WebSocketDisconnect:

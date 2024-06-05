@@ -1,14 +1,15 @@
-import aiofiles
 import asyncio
-from datetime import datetime
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import List
+
+import aiofiles
 from omegaconf import OmegaConf
 
-from app.core.logger_config import get_logger, setup_logging
 from app.core.config import settings
-from app.db.base import write_conf, read_conf
+from app.core.logger_config import get_logger, setup_logging
+from app.db.base import read_conf, write_conf
 
 
 def _map_to_str(params: dict):
@@ -20,17 +21,17 @@ def _map_to_str(params: dict):
 
 
 class Process:
-    def __init__(self, id_: int, preset_end_status = ""):
+    def __init__(self, id_: int, preset_end_status=""):
         self.id: int = id_
         self.preset_end_status: str = preset_end_status
         self.status: str = "null"
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
-        self.process: asyncio.subprocess.Process # pylint: disable=no-member #TODO: is naming ok? 
+        self.process: asyncio.subprocess.Process  # pylint: disable=no-member #TODO: is naming ok?
         self.logger: logging.Logger
 
     async def start(self, cmd_to_run):
-        async with aiofiles.open(self.log_path, "a", encoding="UTF-8") as file: #TODO: log to files
+        async with aiofiles.open(self.log_path, "a", encoding="UTF-8") as file:  # TODO: log to files
             self.process = await asyncio.create_subprocess_exec(
                 *cmd_to_run.split(),
                 stdout=asyncio.subprocess.PIPE,
@@ -40,9 +41,7 @@ class Process:
 
     def get_full_info(self) -> dict:
         self.check_status()
-        return {
-            key: getattr(self, key) for key in self.__dict__ if key not in ["process", "logger"]
-        }
+        return {key: getattr(self, key) for key in self.__dict__ if key not in ["process", "logger"]}
 
     def set_full_info(self, params_dict):
         for key, value in params_dict.items():
@@ -53,11 +52,11 @@ class Process:
 
     async def periodically_check_status(self):
         while True:
-            await self.update_db_info() # check status and update db
-            self.logger.info("Status of process '%s': %s",self.id, self.status)
+            await self.update_db_info()  # check status and update db
+            self.logger.info("Status of process '%s': %s", self.id, self.status)
             if self.status in ["stopped", "completed", "failed"]:
                 break
-            await asyncio.sleep(2) #TODO: ?sleep time shouldn't be constant
+            await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     def check_status(self) -> str:
         """Returns the process status [null, running, completed, failed, stopped].
@@ -82,7 +81,7 @@ class Process:
         else:
             self.logger.warning(
                 "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
-                self.process.returncode
+                self.process.returncode,
             )
             return str(self.process.returncode)
         return self.status

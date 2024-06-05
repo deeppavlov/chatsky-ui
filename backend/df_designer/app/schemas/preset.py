@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from typing import Literal
+
+from pydantic import BaseModel
+
 
 class Preset(BaseModel):
     wait_time: float

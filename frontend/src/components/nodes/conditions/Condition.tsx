@@ -5,10 +5,17 @@ import { useEffect, useState } from "react"
 import { conditionLabelType } from "../../../types/ConditionTypes"
 import * as ContextMenu from "@radix-ui/react-context-menu"
 import { CONDITION_LABELS } from "../../../consts"
+import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
+import { useDisclosure } from "@nextui-org/react"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
-  const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? 'manual')
+  const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
+  const {
+    onOpen: onConditionOpen,
+    onClose: onConditionClose,
+    isOpen: isConditionOpen,
+  } = useDisclosure()
 
   const edges = useReactFlow().getEdges()
   console.log(edges, condition)
@@ -20,7 +27,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
   return (
     <ContextMenu.Root>
       <div className='w-full relative flex items-center justify-start text-start'>
-        <div className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2'>
+        <div onClick={onConditionOpen} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2'>
           <div className='flex items-center gap-2'>
             <UserConditionIcon
               className='w-5 h-5'
@@ -34,7 +41,9 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
           <ContextMenu.Trigger>
             <Handle
               isConnectableStart
-              isConnectable={edges.filter((edge) => edge.sourceHandle === condition.id).length === 0}
+              isConnectable={
+                edges.filter((edge) => edge.sourceHandle === condition.id).length === 0
+              }
               position={Position.Right}
               type='source'
               id={`${condition.id}`}
@@ -60,14 +69,23 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
         )}
       </div>
       <ContextMenu.Portal>
-        <ContextMenu.Content className="bg-background p-1 w-36 rounded-xl border border-border">
+        <ContextMenu.Content className='bg-background p-1 w-36 rounded-xl border border-border'>
           {Object.values(CONDITION_LABELS).map((item) => (
-            <ContextMenu.Item key={item} onClick={() => setLabel(item)} className="text-sm cursor-pointer py-1 px-2 hover:bg-border rounded-lg">
+            <ContextMenu.Item
+              key={item}
+              onClick={() => setLabel(item)}
+              className='text-sm cursor-pointer py-1 px-2 hover:bg-border rounded-lg'>
               {item}
             </ContextMenu.Item>
           ))}
         </ContextMenu.Content>
       </ContextMenu.Portal>
+      <ConditionModal
+        data={data}
+        isOpen={isConditionOpen}
+        onClose={onConditionClose}
+        condition={condition}
+      />
     </ContextMenu.Root>
   )
 }

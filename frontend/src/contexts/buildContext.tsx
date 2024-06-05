@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react"
 import {
   buildApiStatusType,
   buildApiType,
+  buildMinifyApiType,
   buildPresetType,
   build_start,
   build_status,
@@ -28,6 +29,7 @@ type BuildContextType = {
   setBuildStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
   logsPage: boolean
   setLogsPage: React.Dispatch<React.SetStateAction<boolean>>
+  setBuildsHandler: (builds: buildMinifyApiType[]) => void
 }
 
 export const buildContext = createContext({
@@ -43,6 +45,7 @@ export const buildContext = createContext({
   setBuildStatus: () => {},
   logsPage: false,
   setLogsPage: () => {},
+  setBuildsHandler: () => {},
 } as BuildContextType)
 
 export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
@@ -54,16 +57,21 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [builds, setBuilds] = useState<localBuildType[]>([])
 
+  const setBuildsHandler = (builds: buildMinifyApiType[]) => {
+    setBuilds((prev) =>
+      builds.map((build) => ({
+        ...build,
+        type: "build",
+        runs: build.runs.map((run) => ({ ...run, type: "run" })),
+      }))
+    )
+  }
+
   const getBuildInitial = async () => {
     const builds = await get_builds()
     console.log(builds)
     if (builds) {
-      setBuilds(
-        builds.map((build) => ({
-          ...build,
-          type: "build",
-        }))
-      )
+      setBuildsHandler(builds)
       if (builds[builds.length - 1].status === "completed") {
         setBuild(true)
         setBuildStatus("completed")
@@ -80,14 +88,9 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     setBuildStatus("running")
     try {
       const start_res = await build_start({ end_status, wait_time })
-      const started_build = await get_build(start_res.build_id)
       const started_builds = await get_builds()
-      setBuilds(
-        started_builds.map((s_b) => ({
-          ...s_b,
-          type: "build",
-        }))
-      )
+      const started_build = started_builds.find((build) => build.id === start_res.build_id)
+      setBuildsHandler(started_builds)
       let flag = true
       let timer = 0
       const timerId = setInterval(() => timer++, 1000)
@@ -151,6 +154,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         setBuilds,
         logsPage,
         setLogsPage,
+        setBuildsHandler
       }}>
       {children}
     </buildContext.Provider>

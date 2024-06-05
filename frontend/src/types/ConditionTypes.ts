@@ -1,10 +1,25 @@
 export type conditionDataType = {
   priority: number
   transition_type: conditionLabelType
-  prompt?: string
-  api_key?: string
-  action?: string
-  model_name?: string
+  llm?: {
+    prompt: string
+    api_key: string
+    model_name: string
+  }
+  python?: {
+    action: string
+  }
+  slot?: {
+    slot_name: string
+  }
+  button?: {
+    button_name: string
+  }
+  custom?: {
+    keywords: string[]
+    action: string
+    variables: string[]
+  }
 }
 
 export type conditionTypeType = "llm" | "slot" | "button" | "python" | "custom"
@@ -16,4 +31,11 @@ export type conditionType = {
   data: conditionDataType
 }
 
-export type conditionLabelType = "manual" | "forward" | "backward" | "repeat" | "fallback" | "start" | "previous"
+export type conditionLabelType =
+  | "manual"
+  | "forward"
+  | "backward"
+  | "repeat"
+  | "fallback"
+  | "start"
+  | "previous"
