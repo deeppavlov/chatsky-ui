@@ -1,20 +1,17 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useEffect, useState } from "react"
+import toast from "react-hot-toast"
+import { useSearchParams } from "react-router-dom"
 import {
   buildApiStatusType,
-  buildApiType,
   buildMinifyApiType,
   buildPresetType,
   build_start,
   build_status,
   build_stop,
-  get_build,
   get_builds,
-  get_run,
   localBuildType,
 } from "../api/bot"
-import { apiPresetType } from "../types/buildrunTypes"
-import toast from "react-hot-toast"
-import { useSearchParams } from "react-router-dom"
 
 type BuildContextType = {
   build: boolean
@@ -52,12 +49,13 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   const [build, setBuild] = useState(false)
   const [buildPending, setBuildPending] = useState(false)
   const [buildStatus, setBuildStatus] = useState<buildApiStatusType>("stopped")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams()
   const [logsPage, setLogsPage] = useState(searchParams.get("logs_page") === "opened")
   const [builds, setBuilds] = useState<localBuildType[]>([])
 
   const setBuildsHandler = (builds: buildMinifyApiType[]) => {
-    setBuilds((prev) =>
+    setBuilds(() =>
       builds.map((build) => ({
         ...build,
         type: "build",
@@ -66,36 +64,35 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     )
   }
 
-  const getBuildInitial = async () => {
-    const builds = await get_builds()
-    console.log(builds)
-    if (builds) {
-      setBuildsHandler(builds)
-      if (builds[builds.length - 1].status === "completed") {
-        setBuild(true)
-        setBuildStatus("completed")
+  useEffect(() => {
+    const getBuildInitial = async () => {
+      const builds = await get_builds()
+      console.log(builds)
+      if (builds) {
+        setBuildsHandler(builds)
+        if (builds[builds.length - 1].status === "completed") {
+          setBuild(true)
+          setBuildStatus("completed")
+        }
       }
     }
-  }
-
-  useEffect(() => {
     getBuildInitial()
   }, [])
 
   const buildStart = async ({ end_status = "completed", wait_time = 3 }: buildPresetType) => {
-    setBuildPending((prev) => true)
+    setBuildPending(() => true)
     setBuildStatus("running")
     try {
       const start_res = await build_start({ end_status, wait_time })
       const started_builds = await get_builds()
-      const started_build = started_builds.find((build) => build.id === start_res.build_id)
+      // const started_build = started_builds.find((build) => build.id === start_res.build_id)
       setBuildsHandler(started_builds)
       let flag = true
       let timer = 0
       const timerId = setInterval(() => timer++, 1000)
       while (flag) {
         if (timer > 15) {
-          setBuild((prev) => false)
+          setBuild(() => false)
           setBuildStatus("failed")
           toast.error("Build timeout!")
           await build_stop(start_res.build_id)
@@ -109,7 +106,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           flag = false
           setTimeout(async () => {
             const build = await get_builds()
-            setBuilds((prev) =>
+            setBuilds(() =>
               build.map((build) => ({
                 ...build,
                 type: "build",
@@ -119,11 +116,11 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           }, 1000)
           if (status === "completed") {
             setBuildStatus("completed")
-            setBuild((prev) => true)
+            setBuild(() => true)
             toast.success("Build successfully!")
           } else if (status === "failed") {
             setBuildStatus("failed")
-            setBuild((prev) => false)
+            setBuild(() => false)
             toast.error("Build failed!")
           }
         }
@@ -133,7 +130,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.log(error)
     } finally {
-      setBuildPending((prev) => false)
+      setBuildPending(() => false)
     }
   }
   const buildStop = () => {}
@@ -153,7 +150,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         setBuilds,
         logsPage,
         setLogsPage,
-        setBuildsHandler
+        setBuildsHandler,
       }}>
       {children}
     </buildContext.Provider>

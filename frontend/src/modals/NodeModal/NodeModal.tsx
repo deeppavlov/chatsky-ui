@@ -6,19 +6,12 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalProps,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
+  ModalProps
 } from "@nextui-org/react"
-import { HelpCircle, Trash2Icon, TrashIcon } from "lucide-react"
+import { HelpCircle, TrashIcon } from "lucide-react"
 import React, { useCallback, useState } from "react"
-import { NodeDataType } from "../../types/NodeTypes"
 import { useReactFlow } from "reactflow"
-import { conditionType } from "../../types/ConditionTypes"
+import { NodeDataType } from "../../types/NodeTypes"
 import ConditionRow from "./components/ConditionRow"
 
 type NodeModalProps = {

@@ -1,6 +1,6 @@
 import { Input, Select, SelectItem, Textarea } from "@nextui-org/react"
-import React, { useEffect, useMemo, useState } from "react"
-import { conditionDataType, conditionType } from "../../../types/ConditionTypes"
+import React, { useEffect, useMemo } from "react"
+import { conditionType } from "../../../types/ConditionTypes"
 
 const UsingLLMConditionSection = ({
   condition,
@@ -26,6 +26,7 @@ const UsingLLMConditionSection = ({
         },
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeConditionValue = (

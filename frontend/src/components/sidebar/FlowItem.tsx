@@ -1,8 +1,8 @@
-import { FlowType } from "../../types/FlowTypes"
 import classNames from "classnames"
-import { useContext, useEffect, useState } from "react"
+import { useContext } from "react"
 import { useNavigate } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
+import { FlowType } from "../../types/FlowTypes"
 
 const FlowItem = ({
   flow,

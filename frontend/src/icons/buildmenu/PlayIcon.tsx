@@ -1,7 +1,6 @@
 import React from "react"
 
 const PlayIcon = ({
-  fill,
   stroke = "var(--foreground)",
   strokeOpacity = "0.9",
   ...props

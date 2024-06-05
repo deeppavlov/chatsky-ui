@@ -1,20 +1,12 @@
-import React, { memo, useContext, useMemo } from "react"
-import { NodeDataType } from "../../types/NodeTypes"
+import { memo } from "react"
 import { Handle, Position } from "reactflow"
 import "reactflow/dist/style.css"
 import "../../index.css"
-import Condition from "./conditions/Condition"
-import Response from "./responses/Response"
-import { PlusIcon } from "lucide-react"
-import { useDisclosure } from "@nextui-org/react"
-import ConditionModal from "../../modals/ConditionModal/ConditionModal"
-import { PopUpContext } from "../../contexts/popUpContext"
-import { conditionType } from "../../types/ConditionTypes"
-import { v4 } from "uuid"
+import { NodeDataType } from "../../types/NodeTypes"
 
 const LinkNode = memo(({ data }: { data: NodeDataType }) => {
-  const { onOpen, onClose, isOpen } = useDisclosure()
-  const { openPopUp } = useContext(PopUpContext)
+  // const { onOpen, onClose, isOpen } = useDisclosure()
+  // const { openPopUp } = useContext(PopUpContext)
 
   return (
     <>

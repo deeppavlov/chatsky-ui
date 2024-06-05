@@ -1,8 +1,9 @@
 import React from "react"
 
-const GlobalNodeIcon = ({ stroke='#7000FF', fill='#7000FF', ...props }: React.SVGAttributes<SVGSVGElement>) => {
+const GlobalNodeIcon = ({ stroke='#7000FF', ...props }: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
+      {...props}
       width='24'
       height='24'
       viewBox='0 0 24 24'

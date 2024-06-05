@@ -1,43 +1,39 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 import ReactFlow, {
-  Controls,
   Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
   BackgroundVariant,
-  ReactFlowProvider,
-  ReactFlowInstance,
-  Edge,
   Connection,
+  Controls,
+  Edge,
   NodeChange,
+  ReactFlowInstance,
+  addEdge,
   updateEdge,
-  Node,
+  useEdgesState,
+  useNodesState
 } from "reactflow"
 
-import "reactflow/dist/style.css"
-import "../index.css"
-import { v4 } from "uuid"
-import DefaultNode from "../components/nodes/DefaultNode"
-import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
-import SideBar from "../components/sidebar/SideBar"
-import StartNode from "../components/nodes/StartNode"
-import { NODES, START_FALLBACK_NODE_FLAGS } from "../consts"
-import FallbackNode from "../components/nodes/FallbackNode"
-import { useParams } from "react-router-dom"
-import { FlowType } from "../types/FlowTypes"
-import { flowContext } from "../contexts/flowContext"
 import { a, useTransition } from "@react-spring/web"
-import LinkNode from "../components/nodes/LinkNode"
 import toast from "react-hot-toast"
-import LinkModal from "../modals/LinkModal/LinkModal"
-import { useDisclosure } from "@nextui-org/react"
-import { workspaceContext } from "../contexts/workspaceContext"
-import Logs from "./Logs"
-import { UndoRedoProvider, undoRedoContext } from "../contexts/undoRedoContext"
+import { useParams } from "react-router-dom"
+import "reactflow/dist/style.css"
+import { v4 } from "uuid"
 import Chat from "../components/chat/Chat"
-import NodesLayout from "./NodesLayout"
 import FootBar from "../components/footbar/FootBar"
+import DefaultNode from "../components/nodes/DefaultNode"
+import FallbackNode from "../components/nodes/FallbackNode"
+import LinkNode from "../components/nodes/LinkNode"
+import StartNode from "../components/nodes/StartNode"
+import SideBar from "../components/sidebar/SideBar"
+import { NODES, START_FALLBACK_NODE_FLAGS } from "../consts"
+import { flowContext } from "../contexts/flowContext"
+import { undoRedoContext } from "../contexts/undoRedoContext"
+import { workspaceContext } from "../contexts/workspaceContext"
+import "../index.css"
+import { FlowType } from "../types/FlowTypes"
+import { NodeType, NodesTypes } from "../types/NodeTypes"
+import Logs from "./Logs"
+import NodesLayout from "./NodesLayout"
 import Settings from "./Settings"
 
 const nodeTypes = {
@@ -45,6 +41,10 @@ const nodeTypes = {
   start_node: StartNode,
   fallback_node: FallbackNode,
   link: LinkNode,
+}
+
+export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {
+
 }
 
 export default function Flow() {
@@ -63,11 +63,11 @@ export default function Flow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
 
-  const {
-    isOpen: isLinkModalOpen,
-    onOpen: onLinkModalOpen,
-    onClose: onLinkModalClose,
-  } = useDisclosure()
+  // const {
+  //   isOpen: isLinkModalOpen,
+  //   onOpen: onLinkModalOpen,
+  //   onClose: onLinkModalClose,
+  // } = useDisclosure()
 
   useEffect(() => {
     if (flow && reactFlowInstance) {
@@ -75,6 +75,7 @@ export default function Flow() {
       updateFlow(flow)
       console.log("update flow")
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges])
 
   useEffect(() => {
@@ -126,6 +127,7 @@ export default function Flow() {
       takeSnapshot()
       setEdges((els) => updateEdge(oldEdge, newConnection, els))
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
 
@@ -134,6 +136,7 @@ export default function Flow() {
       takeSnapshot()
       setEdges((eds) => addEdge(params, eds))
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
 
@@ -184,6 +187,7 @@ export default function Flow() {
 
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
+      console.log(e)
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
@@ -215,7 +219,7 @@ export default function Flow() {
   })
 
   return (
-    <div className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
+    <div data-testid="flow-page" className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
       <SideBar />
       {transitions((style) => (
         <a.div

@@ -1,23 +1,20 @@
-import { useContext, useEffect, useMemo, useState } from "react"
-import { DragList } from "./DragList"
 import { Accordion, AccordionItem, Button, Divider, useDisclosure } from "@nextui-org/react"
-import Header from "../header/Header"
-import NodesIcon from "../../icons/sidebar/NodesIcon"
-import LinksIcon from "../../icons/sidebar/LinksIcon"
-import { Logo } from "../../icons/Logo"
-import DragListItem from "./DragListItem"
-import { flowContext } from "../../contexts/flowContext"
-import classNames from "classnames"
-import { useNavigate, useParams } from "react-router-dom"
 import { Plus } from "lucide-react"
-import CreateFlowModal from "../../modals/FlowModal/CreateFlowModal"
-import FlowItem from "./FlowItem"
-import ManageFlowsModal from "../../modals/FlowModal/ManageFlowsModal"
+import { useContext, useMemo } from "react"
+import { useParams } from "react-router-dom"
+import { flowContext } from "../../contexts/flowContext"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
-import SettingsModal from "../../modals/SettingsModal/SettingsModal"
+import LinksIcon from "../../icons/sidebar/LinksIcon"
+import NodesIcon from "../../icons/sidebar/NodesIcon"
+import CreateFlowModal from "../../modals/FlowModal/CreateFlowModal"
+import ManageFlowsModal from "../../modals/FlowModal/ManageFlowsModal"
+import Header from "../header/Header"
+import { DragList } from "./DragList"
+import DragListItem from "./DragListItem"
+import FlowItem from "./FlowItem"
 
 const SideBar = () => {
-  const { flows, getFlows } = useContext(flowContext)
+  const { flows } = useContext(flowContext)
   const {
     isOpen: isCreateFlowModalOpen,
     onOpen: onOpenCreateFlowModal,
@@ -34,12 +31,14 @@ const SideBar = () => {
   const globalFlow = flows.find((flow) => flow.name === "Global")
 
   return (
-    <div className='h-full flex flex-col items-start w-52'>
+    <div
+      data-testid='sidebar'
+      className='h-full flex flex-col items-start w-52'>
       <Header />
       <div className='w-full h-full bg-background border-r border-border flex flex-col justify-between px-2 pb-14'>
         <div className='flex flex-col gap-3'>
           <div>
-            <div className='flex items-center justify-between'>
+            <div data-testid='flows-list' className='flex items-center justify-between'>
               <p className='font-semibold my-4'>Flows</p>
               <div className='flex items-center gap-1.5'>
                 <Button
@@ -89,9 +88,13 @@ const SideBar = () => {
               isCompact
               selectionMode='multiple'>
               <AccordionItem
+                name="nodes"
+                data-testid='nodes-collapse'
                 textValue='some'
                 title={
-                  <div className='flex items-center justify-start gap-2'>
+                  <div
+                    data-testid='nodes-collapse-btn'
+                    className='flex items-center justify-start gap-2'>
                     <NodesIcon />
                     Nodes
                   </div>

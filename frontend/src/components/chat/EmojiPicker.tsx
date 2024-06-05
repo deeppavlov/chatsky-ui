@@ -23,8 +23,10 @@ export type emojiPickerType = {
   onEmojiClick?: onEmojiClickType
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const EmojiPicker = ({ data, lazy = false, theme = 'auto', onEmojiClick }: emojiPickerType) => {
   const [visibleData, setVisibleData] = useState<EmojiType[]>(useDeferredValue(data.slice(0, 84)))
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [limit, setLimit] = useState<{
     up: number
     down: number
@@ -32,7 +34,7 @@ const EmojiPicker = ({ data, lazy = false, theme = 'auto', onEmojiClick }: emoji
   const [recently, setRecently] = useLocalStorage<EmojiType[]>('recently', [])
 
   useEffect(() => {
-    setVisibleData((prev) => data.slice(0, 84))
+    setVisibleData(() => data.slice(0, 84))
   }, [data])
 
   const observerElement_1 = useInView()
@@ -58,12 +60,14 @@ const EmojiPicker = ({ data, lazy = false, theme = 'auto', onEmojiClick }: emoji
       })
       setVisibleData((prev) => [...prev, ...data.slice(prev.length, prev.length + 40)])
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [observerElement_1.inView])
 
   useEffect(() => {
     if (observerElement_2.inView && visibleData.length > 100 && !observerElement_1.inView) {
       setVisibleData((prev) => data.slice(0, prev.length - 35))
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [observerElement_2.inView])
 
   return (
@@ -71,7 +75,7 @@ const EmojiPicker = ({ data, lazy = false, theme = 'auto', onEmojiClick }: emoji
       <div>
         <p className="ml-1 block w-full text-neutral-500">Recently used</p>
         <div className="grid grid-cols-5 flex-wrap justify-evenly gap-0.5 ">
-          {recently?.map((emoji, index) => (
+          {recently?.map((emoji) => (
             <button
               key={emoji.character}
               onClick={(e) => {

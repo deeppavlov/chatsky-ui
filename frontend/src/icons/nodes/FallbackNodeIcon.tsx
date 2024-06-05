@@ -1,6 +1,6 @@
 import React from "react"
 
-const FallbackNodeIcon = ({ fill='#FF3366', stroke='#FF3366', ...props }: React.SVGAttributes<SVGSVGElement>) => {
+const FallbackNodeIcon = ({ stroke='#FF3366', ...props }: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       {...props}

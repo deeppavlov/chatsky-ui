@@ -1,12 +1,12 @@
-import { Handle, Position, useReactFlow } from "reactflow"
-import { NodeComponentConditionType } from "../../../types/NodeTypes"
-import { UserConditionIcon } from "../../../icons/nodes/conditions/UserConditionIcon"
-import { useEffect, useState } from "react"
-import { conditionLabelType } from "../../../types/ConditionTypes"
-import * as ContextMenu from "@radix-ui/react-context-menu"
-import { CONDITION_LABELS } from "../../../consts"
-import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { useDisclosure } from "@nextui-org/react"
+import * as ContextMenu from "@radix-ui/react-context-menu"
+import { useEffect, useState } from "react"
+import { Handle, Position, useReactFlow } from "reactflow"
+import { CONDITION_LABELS } from "../../../consts"
+import { UserConditionIcon } from "../../../icons/nodes/conditions/UserConditionIcon"
+import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
+import { conditionLabelType } from "../../../types/ConditionTypes"
+import { NodeComponentConditionType } from "../../../types/NodeTypes"
 
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
@@ -21,6 +21,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
 
   useEffect(() => {
     condition.data.transition_type = label
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label])
 
   return (

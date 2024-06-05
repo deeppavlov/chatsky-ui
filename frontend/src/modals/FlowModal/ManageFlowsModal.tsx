@@ -1,6 +1,5 @@
 import {
   Button,
-  Checkbox,
   Input,
   Modal,
   ModalBody,
@@ -8,17 +7,17 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem,
+  SelectItem
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
-import { FlowType } from "../../types/FlowTypes"
-import { useContext, useEffect, useMemo, useState } from "react"
-import { ModalType } from "../../types/ModalTypes"
-import { FLOW_COLORS } from "../../consts"
-import { flowContext } from "../../contexts/flowContext"
-import { generateNewFlow, validateFlowName } from "../../utils"
+import { useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
+import { FLOW_COLORS } from "../../consts"
+import { flowContext } from "../../contexts/flowContext"
+import { FlowType } from "../../types/FlowTypes"
+import { ModalType } from "../../types/ModalTypes"
+import { validateFlowName } from "../../utils"
 
 interface CreateFlowModalProps extends ModalType {}
 
@@ -36,15 +35,16 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   const [flow, setFlow] = useState<FlowType>(
     newFlows.find((_flow) => _flow.name === flowId) ?? [][0]
   )
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSubFlow, setIsSubFlow] = useState(false)
   const [isGlobal, setIsGlobal] = useState(false)
 
   useEffect(() => {
-    setNewFlows((prev) => [...flows])
+    setNewFlows(() => [...flows])
   }, [flows, isOpen])
 
   useEffect(() => {
-    setFlow((prev) => newFlows.find((_flow) => _flow.name === flowId) ?? [][0])
+    setFlow(() => newFlows.find((_flow) => _flow.name === flowId) ?? [][0])
     if (flowId === "Global") {
       setIsGlobal(true)
     }

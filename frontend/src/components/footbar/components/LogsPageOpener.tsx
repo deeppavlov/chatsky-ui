@@ -1,11 +1,11 @@
 import { useContext, useEffect } from 'react'
-import { buildContext } from '../../../contexts/buildContext'
 import { useSearchParams } from 'react-router-dom'
+import { buildContext } from '../../../contexts/buildContext'
 import { parseSearchParams } from '../../../utils'
 
 const LogsPageOpener = () => {
 
-  const { setLogsPage, logsPage } = useContext(buildContext)
+  const { setLogsPage } = useContext(buildContext)
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -22,6 +22,7 @@ const LogsPageOpener = () => {
         logs_page: "closed"
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

@@ -1,20 +1,15 @@
 import { Button, Tab, Tabs, useDisclosure } from "@nextui-org/react"
+import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import React, { useContext } from "react"
-import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
-import { Link, useSearchParams } from "react-router-dom"
-import { buildContext } from "../../contexts/buildContext"
-import { parseSearchParams } from "../../utils"
-import LogsPageOpener from "./components/LogsPageOpener"
-import SettingsPageOpener from "./components/SettingsPageOpener"
+import { Link } from "react-router-dom"
 import { Logo } from "../../icons/Logo"
+import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import LocalStogareIcon from "../../icons/footbar/LocalStogareIcon"
 import LocalStorage from "../../modals/LocalStorage/LocalStorage"
-import classNames from "classnames"
+import LogsPageOpener from "./components/LogsPageOpener"
+import SettingsPageOpener from "./components/SettingsPageOpener"
 
 const FootBar = () => {
-  const { setLogsPage, logsPage } = useContext(buildContext)
-  const [searchParams, setSearchParams] = useSearchParams()
   const {
     isOpen: isLocalStogareOpen,
     onOpen: onLocalStogareOpen,
@@ -22,7 +17,7 @@ const FootBar = () => {
   } = useDisclosure()
 
   return (
-    <div className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
+    <div data-testid="footbar" className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
       <div className='absolute w-full h-12 flex items-center justify-center'>
         <Tabs
           variant='light'
@@ -71,11 +66,11 @@ const FootBar = () => {
           </Tab>
         </Tabs>
       </div>
-      <Link to={"/app/home"} className='flex items-center gap-1 z-10 cursor-pointer'>
+      <Link data-testid='logo' to={"/app/home"} className='flex items-center gap-1 z-10 cursor-pointer'>
         <Logo />
-        <div className="flex flex-col items-start justify-start gap-0">
-          <span className='flex font-bold text-lg h-6'>DF Designer</span>
-          <span className='flex font-bold text-sm'>v 0.1.0</span>
+        <div className="flex items-end justify-start gap-1">
+          <span className='flex font-bold text-lg'>DF Designer</span>
+          <span className='flex font-semibold text-neutral-400 text-sm'>v 0.1.0</span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>

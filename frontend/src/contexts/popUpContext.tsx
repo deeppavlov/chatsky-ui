@@ -1,11 +1,18 @@
-import { createContext, useContext } from "react";
-import React, { useState } from "react";
+import React, { createContext, useState } from "react";
 
 // context to set JSX element on the DOM
-export const PopUpContext = createContext({
-  openPopUp: (popUpElement: JSX.Element) => {},
+
+type PopUpContextType = {
+  openPopUp: (element: JSX.Element) => void;
+  closePopUp: () => void;
+  setCloseEdit: React.Dispatch<React.SetStateAction<string>>;
+  closeEdit: string;
+};
+
+export const PopUpContext = createContext<PopUpContextType>({
+  openPopUp: () => {},
   closePopUp: () => {},
-  setCloseEdit: (value: string) => {},
+  setCloseEdit: () => {},
   closeEdit: "",
 });
 

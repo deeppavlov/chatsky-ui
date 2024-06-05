@@ -1,11 +1,10 @@
-import { Input, Select, SelectItem, Textarea } from "@nextui-org/react"
-import React, { useContext, useEffect, useMemo, useState } from "react"
-import { conditionDataType, conditionType } from "../../../types/ConditionTypes"
-import CodeMirror from "@uiw/react-codemirror"
 import { python } from "@codemirror/lang-python"
-import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
 import { andromeda } from "@uiw/codemirror-theme-andromeda"
+import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
+import CodeMirror from "@uiw/react-codemirror"
+import React, { useContext, useEffect } from "react"
 import { themeContext } from "../../../contexts/themeContext"
+import { conditionType } from "../../../types/ConditionTypes"
 import { firstLinePlugin } from "../editorOptions"
 
 const PythonCondition = ({
@@ -32,6 +31,7 @@ const PythonCondition = ({
         },
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeConditionValue = (value: string) => {
@@ -60,6 +60,7 @@ const PythonCondition = ({
         },
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [condition.name])
 
   return (
@@ -68,6 +69,7 @@ const PythonCondition = ({
       <div
         className={`mt-2 w-full flex flex-col items-start justify-start gap-4 p-4 ${theme === "light" ? "bg-[#f2f1f8]" : "bg-[#24262e]"} rounded-lg font-mono`}>
         <CodeMirror
+          data-testid='python-condition-editor'
           style={{
             fontFamily:
               "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",

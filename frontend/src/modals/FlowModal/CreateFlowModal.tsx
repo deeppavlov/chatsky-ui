@@ -11,13 +11,12 @@ import {
   SelectItem,
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
-import { FlowType } from "../../types/FlowTypes"
 import { useContext, useState } from "react"
-import { ModalType } from "../../types/ModalTypes"
+import toast from "react-hot-toast"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
+import { ModalType } from "../../types/ModalTypes"
 import { generateNewFlow, validateFlowName } from "../../utils"
-import toast from "react-hot-toast"
 
 interface CreateFlowModalProps extends ModalType {}
 
@@ -75,6 +74,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
         <ModalBody>
           <div className='grid gap-4'>
             <Input
+              data-testid='flow-name-input'
               label='Name'
               labelPlacement='outside'
               placeholder="Enter flow's name here"
@@ -96,6 +96,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
             <div className='flex items-center gap-2'>
               {FLOW_COLORS.map((color) => (
                 <button
+                  data-testid={`flow-color-${color.replace("#", "")}`}
                   key={color}
                   onClick={() => setFlow({ ...flow, color })}
                   className='rounded-full w-8 h-8 transition-all'
@@ -159,6 +160,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
           </div>
           <div>
             <Button
+              data-testid='flow-save-btn'
               onClick={onFlowSave}
               className='bg-foreground text-background'>
               Create flow

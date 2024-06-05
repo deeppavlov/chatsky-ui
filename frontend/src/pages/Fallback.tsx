@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const Fallback = () => {
@@ -13,7 +13,7 @@ const Fallback = () => {
   }, [navigate, pathname])
 
   return (
-    <div>404 NOT FOUND</div>
+    <div data-testid="fallback-page">404 NOT FOUND</div>
   )
 }
 

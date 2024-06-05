@@ -1,15 +1,15 @@
-import { useContext } from "react"
 import { Button, useDisclosure } from "@nextui-org/react"
+import classNames from "classnames"
 import { BellRing, Moon, Settings, Sun } from "lucide-react"
+import { useContext } from "react"
+import { flowContext } from "../../contexts/flowContext"
 import { themeContext } from "../../contexts/themeContext"
-import BuildMenu from "./BuildMenu"
-import SettingsModal from "../../modals/SettingsModal/SettingsModal"
 import { workspaceContext } from "../../contexts/workspaceContext"
+import GrabModeIcon from "../../icons/header/GrabModeIcon"
 import GridModeIcon from "../../icons/header/GridModeIcon"
 import ListViewIcon from "../../icons/header/ListViewIcon"
-import GrabModeIcon from "../../icons/header/GrabModeIcon"
-import classNames from "classnames"
-import { flowContext } from "../../contexts/flowContext"
+import SettingsModal from "../../modals/SettingsModal/SettingsModal"
+import BuildMenu from "./BuildMenu"
 import NodeInstruments from "./components/NodeInstruments"
 
 const Header = () => {
@@ -31,7 +31,7 @@ const Header = () => {
   
 
   return (
-    <div className='min-h-14 flex items-center justify-between w-screen z-10 bg-bg-secondary border-b border-border px-2 pr-4'>
+    <div data-testid="header" className='min-h-14 flex items-center justify-between w-screen z-10 bg-bg-secondary border-b border-border px-2 pr-4'>
       <div className='flex items-center gap-4 w-52'>
         <div className='flex items-center gap-1.5'>
           <Button

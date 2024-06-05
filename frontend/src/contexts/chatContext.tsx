@@ -13,10 +13,12 @@ type chatContextType = {
   setMessages: React.Dispatch<React.SetStateAction<messageType[]>>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const chatContext = createContext({} as chatContextType)
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams()
   const [chat, setChat] = useState(searchParams.get('chat') === 'opened')
   const [messages, setMessages] = useState<messageType[]>([])
