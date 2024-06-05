@@ -4,8 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-import aiofiles
-
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
 from app.db.base import read_conf, write_conf
@@ -30,16 +28,15 @@ class Process:
         self.logger: logging.Logger
 
     async def start(self, cmd_to_run):
-        async with aiofiles.open(self.log_path, "a", encoding="UTF-8") as file:  # TODO: log to files
-            self.process = await asyncio.create_subprocess_exec(
-                *cmd_to_run.split(),
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                stdin=asyncio.subprocess.PIPE,
-            )
+        self.process = await asyncio.create_subprocess_exec(
+            *cmd_to_run.split(),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
 
-    def get_full_info(self) -> dict:
-        self.check_status()
+    async def get_full_info(self) -> dict:
+        await self.check_status()
         return {key: getattr(self, key) for key in self.__dict__ if key not in ["process", "logger"]}
 
     def set_full_info(self, params_dict):
@@ -57,11 +54,12 @@ class Process:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
-    def check_status(self) -> str:
-        """Returns the process status [null, running, completed, failed, stopped].
+    async def check_status(self) -> str:
+        """Returns the process status [null, alive, running, completed, failed, stopped].
         - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
         incorrect usage or a process misuse in backend logic.
-        - running: returncode is None
+        - alive: process is alive and ready to communicate
+        - running: process is still trying to get alive. no communication
         - completed: returncode is 0
         - failed: returncode is 1
         - stopped: returncode is -15
@@ -69,8 +67,16 @@ class Process:
         """
         if self.process is None:
             self.status = "null"
+        # if process is already alive, don't interrupt potential open channels by checking status periodically.
         elif self.process.returncode is None:
-            self.status = "running"
+            if self.status == "alive":
+                self.status = "alive"
+            else:
+                if await self.is_alive():
+                    self.status = "alive"
+                else:
+                    self.status = "running"
+
         elif self.process.returncode == 0:
             self.status = "completed"
         elif self.process.returncode == 1:
@@ -78,11 +84,19 @@ class Process:
         elif self.process.returncode == -15:
             self.status = "stopped"
         else:
-            self.logger.warning(
+            self.logger.error(
                 "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
                 self.process.returncode,
             )
-            return str(self.process.returncode)
+            self.status = f"Exited with return code: {str(self.process.returncode)}"
+
+        if self.status not in ["null", "running", "alive", "stopped"]:
+            stdout, stderr = await self.process.communicate()
+            if stdout:
+                self.logger.info(f"[stdout]\n{stdout.decode()}")
+            if stderr:
+                self.logger.error(f"[stderr]\n{stderr.decode()}")
+
         return self.status
 
     async def stop(self):
@@ -93,22 +107,38 @@ class Process:
             self.logger.debug("Terminating process '%s'", self.id)
             self.process.terminate()
             await self.process.wait()
+            self.logger.debug("Process returencode '%s' ", self.process.returncode)
+
         except ProcessLookupError as exc:
             self.logger.error("Process '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
-    def read_stdout(self):
+    async def read_stdout(self):
         if self.process is None:
             self.logger.error("Cannot read stdout from a process '%s' that has not started yet.", self.id)
             raise RuntimeError
 
-        return self.process.stdout.readline()
+        return await self.process.stdout.readline()
 
-    def write_stdin(self, message):
+    async def write_stdin(self, message):
         if self.process is None:
             self.logger.error("Cannot write into stdin of a process '%s' that has not started yet.", self.id)
             raise RuntimeError
         self.process.stdin.write(message)
+        await self.process.stdin.drain()
+
+    async def is_alive(self) -> bool:
+        timeout = 3
+        message = b"Hi\n"
+        try:
+            # Attempt to write and read from the process with a timeout.
+            await self.write_stdin(message)
+            output = await asyncio.wait_for(self.read_stdout(), timeout=timeout)
+            self.logger.debug("Process output afer communication: %s", output.decode())
+            return True
+        except asyncio.exceptions.TimeoutError:
+            self.logger.debug("Process did not accept input within the timeout period.")
+            return False
 
 
 class RunProcess(Process):
@@ -122,9 +152,10 @@ class RunProcess(Process):
 
     async def update_db_info(self):
         # save current run info into runs_path
+        self.logger.info("Updating db run info")
         runs_conf = await read_conf(settings.runs_path)
 
-        run_params = self.get_full_info()
+        run_params = await self.get_full_info()
         _map_to_str(run_params)
 
         for run in runs_conf:
@@ -164,7 +195,7 @@ class BuildProcess(Process):
         # save current build info into builds_path
         builds_conf = await read_conf(settings.builds_path)
 
-        build_params = self.get_full_info()
+        build_params = await self.get_full_info()
         _map_to_str(build_params)
 
         for build in builds_conf:

@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -16,14 +15,19 @@ from app.services.json_translator import translator
 cli = typer.Typer()
 
 
-def _execute_command(command_to_run):
+async def _execute_command(command_to_run):
     logger = get_logger(__name__)
     try:
-        process = subprocess.run(command_to_run.split(), check=False)
+        process = await asyncio.create_subprocess_exec(*command_to_run.split())
 
         # Check the return code to determine success
         if process.returncode == 0:
             logger.info("Command '%s' executed successfully.", command_to_run)
+        elif process.returncode is None:
+            logger.info("Process by command '%s' is running.", command_to_run)
+            await process.wait()
+            logger.info("Process ended with return code: %d.", process.returncode)
+            sys.exit(process.returncode)
         else:
             logger.error("Command '%s' failed with return code: %d", command_to_run, process.returncode)
             sys.exit(process.returncode)
@@ -42,10 +46,10 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
     if preset in presets_build_file:
         command_to_run = presets_build_file[preset]["cmd"]
         if preset == "success":
-            command_to_run += f" {build_id}"
+            command_to_run += f" {build_id} --call_from_open_event_loop True"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
-        _execute_command(command_to_run)
+        asyncio.run(_execute_command(command_to_run))
     else:
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
@@ -56,8 +60,13 @@ def build_bot(build_id: int, project_dir: str = settings.work_directory, preset:
 
 
 @cli.command("build_scenario")
-def build_scenario(build_id: int, project_dir: str = "."):
-    asyncio.run(translator(build_id=build_id, project_dir=project_dir))
+def build_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
+    if call_from_open_event_loop:
+        loop = asyncio.get_event_loop()
+        loop.create_task(translator(build_id=build_id, project_dir=project_dir))
+        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
+    else:
+        asyncio.run(translator(build_id=build_id, project_dir=project_dir))
 
 
 @cli.command("run_bot")
@@ -66,10 +75,15 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 
 
 @cli.command("run_scenario")
-def run_scenario(build_id: int, project_dir: str = "."):
+def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-    _execute_command(command_to_run)
+    if call_from_open_event_loop:
+        loop = asyncio.get_event_loop()
+        loop.create_task(_execute_command(command_to_run))
+        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
+    else:
+        asyncio.run(_execute_command(command_to_run))
 
 
 async def _run_server() -> None:

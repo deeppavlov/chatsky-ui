@@ -16,15 +16,11 @@ logger = get_logger(__name__)
 
 
 async def _stop_process(id_: int, process_manager: ProcessManager, process="run"):
-    if id_ not in process_manager.processes:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Process not found. It may have already exited."
-        )
     try:
         await process_manager.stop(id_)
     except (RuntimeError, ProcessLookupError) as e:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Process not found. It may have already exited or not started yet. Please check logs.",
         ) from e
 
@@ -32,13 +28,13 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
     return {"status": "ok"}
 
 
-def _check_process_status(id_: int, process_manager: ProcessManager) -> dict[str, str]:
+async def _check_process_status(id_: int, process_manager: ProcessManager) -> dict[str, str]:
     if id_ not in process_manager.processes:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Process not found. It may have already exited.",
         )
-    process_status = process_manager.get_status(id_)
+    process_status = await process_manager.get_status(id_)
     return {"status": process_status}
 
 
@@ -61,7 +57,7 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
 
 @router.get("/build/status/{build_id}", status_code=200)
 async def check_build_status(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)):
-    return _check_process_status(build_id, build_manager)
+    return await _check_process_status(build_id, build_manager)
 
 
 @router.get("/builds", response_model=Optional[Union[list, dict]], status_code=200)
@@ -107,7 +103,7 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
 
 @router.get("/run/status/{run_id}", status_code=200)
 async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)):
-    return _check_process_status(run_id, run_manager)
+    return await _check_process_status(run_id, run_manager)
 
 
 @router.get("/runs", response_model=Optional[Union[list, dict]], status_code=200)
@@ -156,6 +152,8 @@ async def connect(
 
     await websocket_manager.connect(websocket)
     logger.info("Websocket for run process '%s' has been opened", run_id)
+
+    await websocket.send_text("Start chatting")
 
     output_task = asyncio.create_task(
         websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket)

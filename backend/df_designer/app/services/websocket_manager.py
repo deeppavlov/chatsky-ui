@@ -20,6 +20,7 @@ class WebSocketManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
+        # TODO: await websocket.close()
         if websocket in self.pending_tasks:
             logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:
@@ -53,7 +54,9 @@ class WebSocketManager:
         try:
             while True:
                 user_message = await websocket.receive_text()
-                process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
+                if not user_message:
+                    break
+                await process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
         except asyncio.CancelledError:
             logger.info("Websocket connection is closed")
         except WebSocketDisconnect:
