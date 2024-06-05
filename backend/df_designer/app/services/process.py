@@ -24,6 +24,7 @@ class Process:
         self.status: str = "null"
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
+        self.lock = asyncio.Lock()
         self.process: asyncio.subprocess.Process  # pylint: disable=no-member #TODO: is naming ok?
         self.logger: logging.Logger
 
@@ -37,7 +38,7 @@ class Process:
 
     async def get_full_info(self) -> dict:
         await self.check_status()
-        return {key: getattr(self, key) for key in self.__dict__ if key not in ["process", "logger"]}
+        return {key: getattr(self, key) for key in self.__dict__ if key not in ["lock", "process", "logger"]}
 
     def set_full_info(self, params_dict):
         for key, value in params_dict.items():
@@ -114,11 +115,12 @@ class Process:
             raise ProcessLookupError from exc
 
     async def read_stdout(self):
-        if self.process is None:
-            self.logger.error("Cannot read stdout from a process '%s' that has not started yet.", self.id)
-            raise RuntimeError
+        async with self.lock:
+            if self.process is None:
+                self.logger.error("Cannot read stdout from a process '%s' that has not started yet.", self.id)
+                raise RuntimeError
 
-        return await self.process.stdout.readline()
+            return await self.process.stdout.readline()
 
     async def write_stdin(self, message):
         if self.process is None:
