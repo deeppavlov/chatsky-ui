@@ -54,7 +54,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   const [buildStatus, setBuildStatus] = useState<buildApiStatusType>("stopped")
   const [searchParams, setSearchParams] = useSearchParams()
   const [logsPage, setLogsPage] = useState(searchParams.get("logs_page") === "opened")
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [builds, setBuilds] = useState<localBuildType[]>([])
 
   const setBuildsHandler = (builds: buildMinifyApiType[]) => {

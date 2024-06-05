@@ -53,12 +53,18 @@ export default {
           colors: {
             background: "#212121",
             content1: "#212121",
+            overlay: '#121212',
+            success: '#00CC99',
+            danger: '#FF3333'
           },
         },
         light: {
           colors: {
             background: "#fff",
             content1: "#fff",
+            overlay: '#f8fafc',
+            success: '#00CC99',
+            danger: '#FF3333'
           },
         },
       },

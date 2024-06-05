@@ -11,6 +11,7 @@ import Home from "./pages/Home.tsx"
 import { ReactFlowProvider } from "reactflow"
 import { UndoRedoProvider } from "./contexts/undoRedoContext.tsx"
 import Fallback from "./pages/Fallback.tsx"
+import Settings from "./pages/Settings.tsx"
 
 const router = createBrowserRouter([
   {
@@ -34,11 +35,7 @@ const router = createBrowserRouter([
         ),
         loader: Preloader,
       },
-      {
-        path: "app/home",
-        element: <Home />,
-        loader: Preloader,
-      },
+      { path: "app/home", element: <Home />, loader: Preloader },
     ],
   },
 ])

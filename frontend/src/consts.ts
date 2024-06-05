@@ -2,9 +2,13 @@ import { conditionLabelType } from "./types/ConditionTypes"
 
 export const NODE_TYPES = {
   default_node: "default_node",
-  start_node: "start_node",
-  fallback_node: "fallback_node",
+  // start_node: "start_node",
+  // fallback_node: "fallback_node",
 }
+
+export const START_FALLBACK_NODE_FLAGS = ['start', 'fallback']
+export const START_NODE_FLAGS = ['start']
+export const FALLBACK_NODE_FLAGS = ['fallback']
 
 export const NODES = {
   default_node: {
@@ -15,22 +19,22 @@ export const NODES = {
     local_conditions: [],
     response: "Default response",
   },
-  start_node: {
-    name: "Start Node",
-    type: "start_node",
-    conditions: [],
-    global_conditions: [],
-    local_conditions: [],
-    response: "Start response",
-  },
-  fallback_node: {
-    name: "Fallback Node",
-    type: "fallback_node",
-    conditions: [],
-    global_conditions: [],
-    local_conditions: [],
-    response: "Fallback response",
-  },
+  // start_node: {
+  //   name: "Start Node",
+  //   type: "start_node",
+  //   conditions: [],
+  //   global_conditions: [],
+  //   local_conditions: [],
+  //   response: "Start response",
+  // },
+  // fallback_node: {
+  //   name: "Fallback Node",
+  //   type: "fallback_node",
+  //   conditions: [],
+  //   global_conditions: [],
+  //   local_conditions: [],
+  //   response: "Fallback response",
+  // },
   default_link: {
     name: "Link",
     type: "link",

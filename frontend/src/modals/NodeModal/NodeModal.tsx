@@ -55,7 +55,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
     onClose()
   }
 
-  console.log(data.conditions)
+  // console.log(data.conditions)
 
   return (
     <Modal

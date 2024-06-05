@@ -57,7 +57,7 @@ export const generateNewConditionBase = (node_name: string): conditionType => {
   return {
     id: node_name + "_" + v4(),
     name: "new_cnd",
-    type: "llm",
+    type: "python",
     data: {
       priority: 1,
       transition_type: "manual",

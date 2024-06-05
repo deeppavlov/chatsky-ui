@@ -8,7 +8,6 @@ import { CONDITION_LABELS } from "../../../consts"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { useDisclosure } from "@nextui-org/react"
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
   const {
@@ -27,7 +26,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
   return (
     <ContextMenu.Root>
       <div className='w-full relative flex items-center justify-start text-start'>
-        <div onClick={onConditionOpen} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2'>
+        <div onClick={onConditionOpen} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer'>
           <div className='flex items-center gap-2'>
             <UserConditionIcon
               className='w-5 h-5'
