@@ -25,6 +25,7 @@
     font-size: 16px;
     line-height: 1.5;
     font-weight: 400;
+    color: #191919;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -32,7 +33,7 @@
     -moz-osx-font-smoothing: grayscale;
 
     --background: #fff;
-    --foreground: #141414;
+    --foreground: #191919;
     --bg-secondary: #f8fafc;
     --fg-secondary: #333;
 
@@ -86,8 +87,11 @@
     --status-blue: #2563eb;
 
     .dark {
+
+      color: #ebebeb;
+
       --background: #212121;
-      --foreground: #f2f2f2;
+      --foreground: #ebebeb;
       --bg-secondary: #121212;
       --fg-secondary: #f2f2f2;
       --chat-background: #363535;
