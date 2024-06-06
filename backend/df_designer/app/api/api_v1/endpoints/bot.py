@@ -74,7 +74,6 @@ async def check_build_processes(
         )
 
 
-
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
 async def get_build_logs(
     build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager), pagination: Pagination = Depends()

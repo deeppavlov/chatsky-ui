@@ -10,7 +10,7 @@ on:
     - dev
 
 jobs:
-  build_backend_and_check_codestyle:
+  check_backend_codestyle:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
