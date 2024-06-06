@@ -35,7 +35,7 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> di
             detail="Process not found. It may have already exited.",
         )
     process_status = await process_manager.get_status(id_)
-    return {"status": process_status}
+    return {"status": process_status.value}
 
 
 @router.post("/build/start", status_code=201)
@@ -43,8 +43,7 @@ async def start_build(
     preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)
 ):
     await asyncio.sleep(preset.wait_time)
-    await build_manager.start(preset)
-    build_id = build_manager.get_last_id()
+    build_id = await build_manager.start(preset)
     background_tasks.add_task(build_manager.check_status, build_id)
     logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
@@ -64,12 +63,15 @@ async def check_build_status(*, build_id: int, build_manager: BuildManager = Dep
 async def check_build_processes(
     build_id: Optional[int] = None,
     build_manager: BuildManager = Depends(deps.get_build_manager),
+    run_manager: RunManager = Depends(deps.get_run_manager),
     pagination: Pagination = Depends(),
 ):
     if build_id is not None:
-        return await build_manager.get_build_info(build_id)
+        return await build_manager.get_build_info(build_id, run_manager)
     else:
-        return await build_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
+        return await build_manager.get_full_info_with_runs_info(
+            run_manager, offset=pagination.offset(), limit=pagination.limit
+        )
 
 
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
@@ -89,8 +91,7 @@ async def start_run(
     run_manager: RunManager = Depends(deps.get_run_manager)
 ):
     await asyncio.sleep(preset.wait_time)
-    await run_manager.start(build_id, preset)
-    run_id = run_manager.get_last_id()
+    run_id = await run_manager.start(build_id, preset)
     background_tasks.add_task(run_manager.check_status, run_id)
     logger.info("Run process '%s' has started", run_id)
     return {"status": "ok", "run_id": run_id}

@@ -12,6 +12,7 @@ from app.api.api_v1.endpoints.bot import (
     start_build,
     start_run,
 )
+from app.schemas.process_status import Status
 from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
@@ -56,7 +57,7 @@ async def test_stop_process_error(mocker, error_type):
 async def test_check_process_status(mocker):
     mocked_process_manager = mocker.MagicMock()
     mocker.patch.object(mocked_process_manager, "processes", {PROCESS_ID: mocker.MagicMock()})
-    mocker.patch.object(mocked_process_manager, "get_status", mocker.AsyncMock(return_value="alive"))
+    mocker.patch.object(mocked_process_manager, "get_status", mocker.AsyncMock(return_value=Status.ALIVE))
 
     response = await _check_process_status(PROCESS_ID, mocked_process_manager)
 
@@ -69,10 +70,8 @@ async def test_start_build(mocker):
     build_manager = mocker.MagicMock()
     preset = mocker.MagicMock()
 
-    start = mocker.AsyncMock()
-    mocker.patch.multiple(
-        build_manager, start=start, get_last_id=mocker.MagicMock(return_value=BUILD_ID), check_status=mocker.AsyncMock()
-    )
+    start = mocker.AsyncMock(return_value=BUILD_ID)
+    mocker.patch.multiple(build_manager, start=start, check_status=mocker.AsyncMock())
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
     response = await start_build(preset, background_tasks=BackgroundTasks(), build_manager=build_manager)
@@ -83,20 +82,24 @@ async def test_start_build(mocker):
 @pytest.mark.asyncio
 async def test_check_build_processes_some_info(mocker, pagination):
     build_manager = mocker.MagicMock(spec=BuildManager())
+    run_manager = mocker.MagicMock(spec=RunManager())
 
-    await check_build_processes(BUILD_ID, build_manager, pagination)
+    await check_build_processes(BUILD_ID, build_manager, run_manager, pagination)
 
-    build_manager.get_build_info.assert_awaited_once_with(BUILD_ID)
+    build_manager.get_build_info.assert_awaited_once_with(BUILD_ID, run_manager)
 
 
 @pytest.mark.asyncio
 async def test_check_build_processes_all_info(mocker, pagination):
     build_id = None
     build_manager = mocker.MagicMock(spec=BuildManager())
+    run_manager = mocker.MagicMock(spec=RunManager())
 
-    await check_build_processes(build_id, build_manager, pagination)
+    await check_build_processes(build_id, build_manager, run_manager, pagination)
 
-    build_manager.get_full_info.assert_awaited_once_with(offset=pagination.offset(), limit=pagination.limit)
+    build_manager.get_full_info_with_runs_info.assert_awaited_once_with(
+        run_manager, offset=pagination.offset(), limit=pagination.limit
+    )
 
 
 @pytest.mark.asyncio
@@ -113,10 +116,8 @@ async def test_start_run(mocker):
     run_manager = mocker.MagicMock()
     preset = mocker.MagicMock()
 
-    start = mocker.AsyncMock()
-    mocker.patch.multiple(
-        run_manager, start=start, get_last_id=mocker.MagicMock(return_value=RUN_ID), check_status=mocker.AsyncMock()
-    )
+    start = mocker.AsyncMock(return_value=RUN_ID)
+    mocker.patch.multiple(run_manager, start=start, check_status=mocker.AsyncMock())
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
     response = await start_run(

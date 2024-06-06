@@ -1,12 +1,14 @@
 import asyncio
 import logging
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
 from app.db.base import read_conf, write_conf
+from app.schemas.process_status import Status
 
 
 def _map_to_str(params: dict):
@@ -17,11 +19,11 @@ def _map_to_str(params: dict):
             params[k] = str(v)
 
 
-class Process:
+class Process(ABC):
     def __init__(self, id_: int, preset_end_status=""):
         self.id: int = id_
         self.preset_end_status: str = preset_end_status
-        self.status: str = "null"
+        self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
         self.lock = asyncio.Lock()
@@ -36,62 +38,63 @@ class Process:
             stdin=asyncio.subprocess.PIPE,
         )
 
-    async def get_full_info(self) -> dict:
+    async def get_full_info(self, attributes: list) -> dict:
         await self.check_status()
-        return {key: getattr(self, key) for key in self.__dict__ if key not in ["lock", "process", "logger"]}
+        info = {key: getattr(self, key) for key in self.__dict__ if key in attributes}
+        if "status" in attributes:
+            info["status"] = self.status.value
 
-    def set_full_info(self, params_dict):
-        for key, value in params_dict.items():
-            setattr(self, key, value)
+        return info
 
+    @abstractmethod
     async def update_db_info(self):
-        pass
+        raise NotImplementedError
 
     async def periodically_check_status(self):
         while True:
             await self.update_db_info()  # check status and update db
             self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in ["stopped", "completed", "failed"]:
+            if self.status in [Status.STOPPED, Status.COMPLETED, Status.FAILED]:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
-    async def check_status(self) -> str:
-        """Returns the process status [null, alive, running, completed, failed, stopped].
-        - null: When a process is initiated but not started yet. This condition is unusual and typically indicates
-        incorrect usage or a process misuse in backend logic.
-        - alive: process is alive and ready to communicate
-        - running: process is still trying to get alive. no communication
-        - completed: returncode is 0
-        - failed: returncode is 1
-        - stopped: returncode is -15
-        - "Exited with return code: {self.process.returncode}. A non-zero return code indicates an error": Otherwise
+    async def check_status(self) -> Status:
+        """Returns the process status.
+        - Status.NULL: When a process is initiated but not started yet. This condition is unusual and typically
+            indicates incorrect usage or a process misuse in backend logic.
+        - Status.ALIVE: process is alive and ready to communicate
+        - Status.RUNNING: process is still trying to get alive. no communication
+        - Status.COMPLETED: returncode is 0
+        - Status.FAILED: returncode is 1
+        - Status.STOPPED: returncode is -15
+        - Status.FAILED_WITH_UNEXPECTED_CODE: failed with other returncode
         """
         if self.process is None:
-            self.status = "null"
+            self.status = Status.NULL
         # if process is already alive, don't interrupt potential open channels by checking status periodically.
         elif self.process.returncode is None:
-            if self.status == "alive":
-                self.status = "alive"
+            if self.status == Status.ALIVE:
+                self.status = Status.ALIVE
             else:
                 if await self.is_alive():
-                    self.status = "alive"
+                    self.status = Status.ALIVE
                 else:
-                    self.status = "running"
+                    self.status = Status.RUNNING
 
         elif self.process.returncode == 0:
-            self.status = "completed"
+            self.status = Status.COMPLETED
         elif self.process.returncode == 1:
-            self.status = "failed"
+            self.status = Status.FAILED
         elif self.process.returncode == -15:
-            self.status = "stopped"
+            self.status = Status.STOPPED
         else:
             self.logger.error(
                 "Unexpected code was returned: '%s'. A non-zero return code indicates an error.",
                 self.process.returncode,
             )
-            self.status = f"Exited with return code: {str(self.process.returncode)}"
+            self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
-        if self.status not in ["null", "running", "alive", "stopped"]:
+        if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE, Status.STOPPED]:
             stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")
@@ -130,12 +133,14 @@ class Process:
         await self.process.stdin.drain()
 
     async def is_alive(self) -> bool:
-        timeout = 3
+        timeout = 0.5
         message = b"Hi\n"
         try:
             # Attempt to write and read from the process with a timeout.
             await self.write_stdin(message)
             output = await asyncio.wait_for(self.read_stdout(), timeout=timeout)
+            if not output:
+                return False
             self.logger.debug("Process output afer communication: %s", output.decode())
             return True
         except asyncio.exceptions.TimeoutError:
@@ -148,9 +153,13 @@ class RunProcess(Process):
         super().__init__(id_, preset_end_status)
         self.build_id: int = build_id
 
-        log_name: str = "_".join([str(id_), datetime.now().time().strftime("%H%M%S")])
-        self.log_path: Path = setup_logging("runs", log_name)
+        self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
+
+    async def get_full_info(self, attributes: Optional[list] = None) -> dict:
+        if attributes is None:
+            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "build_id"]
+        return await super().get_full_info(attributes)
 
     async def update_db_info(self):
         # save current run info into runs_path
@@ -170,28 +179,29 @@ class RunProcess(Process):
 
         await write_conf(runs_conf, settings.runs_path)
 
-        # save current run info into the correspoinding build in builds_path
+        # save current run id into the correspoinding build in builds_path
         builds_conf = await read_conf(settings.builds_path)
         for build in builds_conf:
             if build.id == run_params["build_id"]:
-                for run in build.runs:
-                    if run.id == run_params["id"]:
-                        for key, value in run_params.items():
-                            setattr(run, key, value)
-                        break
-                else:
-                    build.runs.append(run_params)
+                if run_params["id"] not in build.run_ids:
+                    build.run_ids.append(run_params["id"])
+                    break
+
         await write_conf(builds_conf, settings.builds_path)
 
 
 class BuildProcess(Process):
     def __init__(self, id_: int, preset_end_status: str = ""):
         super().__init__(id_, preset_end_status)
-        self.runs: List[int] = []
+        self.run_ids: List[int] = []
 
-        log_name: str = "_".join([str(id_), datetime.now().time().strftime("%H%M%S")])
-        self.log_path: Path = setup_logging("builds", log_name)
+        self.log_path: Path = setup_logging("builds", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
+
+    async def get_full_info(self, attributes: Optional[list] = None) -> dict:
+        if attributes is None:
+            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "run_ids"]
+        return await super().get_full_info(attributes)
 
     async def update_db_info(self):
         # save current build info into builds_path

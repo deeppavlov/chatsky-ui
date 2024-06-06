@@ -10,6 +10,7 @@ async def test_flows_get(mocker):
     mocker.patch("app.api.api_v1.endpoints.flows.read_conf", return_value=OmegaConf.create({"foo": "bar"}))
     response = await flows_get()
     assert response["status"] == "ok"
+    assert response["data"] == {"foo": "bar"}
 
 
 @pytest.mark.asyncio

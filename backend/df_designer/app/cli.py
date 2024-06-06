@@ -39,7 +39,7 @@ async def _execute_command(command_to_run):
 
 def _execute_command_file(build_id: int, project_dir: str, command_file: str, preset: str):
     logger = get_logger(__name__)
-    presets_build_path = os.path.join(project_dir, "df_designer", "presets", command_file)
+    presets_build_path = Path(project_dir) / "df_designer" / "presets" / command_file
     with open(presets_build_path) as file:
         presets_build_file = json.load(file)
 
@@ -77,6 +77,8 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 @cli.command("run_scenario")
 def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
+    if not script_path.exists():
+        raise FileNotFoundError(f"File {script_path} doesn't exist")
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
     if call_from_open_event_loop:
         loop = asyncio.get_event_loop()

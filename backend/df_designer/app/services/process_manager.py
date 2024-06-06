@@ -26,8 +26,8 @@ class ProcessManager:
             raise ProcessLookupError
         try:
             await self.processes[id_].stop()
-        except (RuntimeError, ProcessLookupError) as exc:
-            raise exc
+        except (RuntimeError, ProcessLookupError):
+            raise
 
     async def check_status(self, id_):
         await self.processes[id_].periodically_check_status()
@@ -81,6 +81,8 @@ class RunManager(ProcessManager):
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process
 
+        return self.last_id
+
     async def get_run_info(self, id_: int):
         return await super().get_process_info(id_, settings.runs_path)
 
@@ -104,11 +106,27 @@ class BuildManager(ProcessManager):
         await process.start(cmd_to_run)
         self.processes[id_] = process
 
-    async def get_build_info(self, id_: int):
-        return await super().get_process_info(id_, settings.builds_path)
+        return self.last_id
+
+    async def get_build_info(self, id_: int, run_manager):
+        builds_info = await self.get_full_info_with_runs_info(run_manager, offset=0, limit=10**5)
+        return next((build for build in builds_info if build["id"] == id_), None)
 
     async def get_full_info(self, offset: int, limit: int, path: Path = settings.builds_path):
         return await super().get_full_info(offset, limit, path)
+
+    async def get_full_info_with_runs_info(self, run_manager, offset: int, limit: int):
+        builds_info = await self.get_full_info(offset=offset, limit=limit)
+        runs_info = await run_manager.get_full_info(offset=0, limit=10**5)
+        for build in builds_info:
+            del build["run_ids"]
+            build["runs"] = []
+            for run in runs_info:
+                if build["id"] == run["build_id"]:
+                    run_without_build_id = {k: v for k, v in run.items() if k != "build_id"}
+                    build["runs"].append(run_without_build_id)
+
+        return builds_info
 
     async def fetch_build_logs(self, build_id: int, offset: int, limit: int):
         return await self.fetch_process_logs(build_id, offset, limit, settings.builds_path)

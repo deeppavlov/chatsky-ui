@@ -1,9 +1,16 @@
 name: check backend
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - dev
+    - master
+  pull_request:
+    branches:
+    - dev
 
 jobs:
-  build_backend_and_check_codestyle:
+  check_backend_codestyle:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,11 +27,6 @@ jobs:
           python -m poetry install --with lint --no-interaction
         working-directory: backend/df_designer
 
-      - name: build wheel
-        run: |
-          python -m poetry build
-        working-directory: backend/df_designer
-
       - name: run black codestyle
         run: |
           python -m poetry run black --line-length=120 --check .
@@ -32,10 +34,8 @@ jobs:
 
       - name: run flake8 codestyle
         run: |
-          ls
-          bash ./bin/run_codestyle.sh DIFF_BRANCH=${BASE_BRANCH}
-        env:
-          BASE_BRANCH: ${{github.base_ref}}
+          python -m poetry run flake8 --max-line-length 120 --ignore=E203 .
+        working-directory: backend/df_designer
 
       - name: run isort codestyle
         run: |

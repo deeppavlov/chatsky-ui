@@ -58,10 +58,10 @@ ENV PATH="/poetry-venv/bin:$PATH"
 
 # Copy only the necessary files
 COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
-COPY ./${PROJECT_DIR} /src2/${PROJECT_DIR}
+COPY ./${PROJECT_DIR} /src2/project_dir
 
 # Install the wheel
-WORKDIR /src2/${PROJECT_DIR}
+WORKDIR /src2/project_dir
 RUN poetry lock --no-update \
     && poetry install
 

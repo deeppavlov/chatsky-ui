@@ -1,8 +1,7 @@
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 
 from app.core.config import settings
 
@@ -15,19 +14,21 @@ LOG_LEVELS: dict[str, int] = {
 }
 
 
-def setup_logging(log_type: str, log_name: str) -> Path:  # TODO: rename: setup_detailed_logging
+def setup_logging(log_type: Literal["builds", "runs"], id_: int, timestamp: datetime) -> Path:
     # Ensure log_type is either 'builds' or 'runs'
     if log_type not in ["builds", "runs"]:
         raise ValueError("log_type must be 'builds' or 'runs'")
 
-    today_date = datetime.now().strftime("%Y%m%d")
+    # Get today's date separated with '_' using the timestamp
+    log_name = "_".join([str(id_), timestamp.strftime("%H:%M:%S")])
+    today_date = timestamp.strftime("%Y%m%d")
+
     log_directory = settings.dir_logs / log_type / today_date
 
-    os.makedirs(log_directory, exist_ok=True)
+    log_directory.mkdir(parents=True, exist_ok=True)
 
     log_file = log_directory / f"{log_name}.log"
-    if not os.path.exists(log_file):
-        open(log_file, "w", encoding="UTF-8").close()
+    log_file.touch(exist_ok=True)
     return log_file
 
 
@@ -35,8 +36,7 @@ def get_logger(name, file_handler_path: Optional[Path] = None):
     if file_handler_path is None:
         file_handler_path = settings.dir_logs / "logs.log"
     file_handler_path.parent.mkdir(parents=True, exist_ok=True)
-    if not file_handler_path.exists():
-        file_handler_path.touch()
+    file_handler_path.touch(exist_ok=True)
 
     logger = logging.getLogger(name)
     logger.propagate = False
