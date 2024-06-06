@@ -1,0 +1,15 @@
+volumes:
+  project_data:
+
+services:
+  backend:
+    build:
+      args:
+       PROJECT_DIR: df_designer_project
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - project_data:/src2/df_designer_project
+version: '3.8'
