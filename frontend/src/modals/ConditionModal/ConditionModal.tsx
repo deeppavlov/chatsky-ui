@@ -143,7 +143,7 @@ const ConditionModal = ({
       updateFlow(currentFlow)
     }
     onClose()
-    setCurrentCondition(is_create || !condition ? generateNewConditionBase(data.name) : condition)
+    setCurrentCondition(is_create || !condition ? generateNewConditionBase(data.name) : currentCondition)
   }
 
   return (

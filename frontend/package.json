@@ -29,7 +29,6 @@
     "@codemirror/lang-python": "^6.1.5",
     "@jest/globals": "^29.7.0",
     "@nextui-org/react": "^2.2.9",
-    "@playwright/test": "^1.43.1",
     "@radix-ui/react-context-menu": "^2.1.5",
     "@react-spring/web": "^9.7.3",
     "@rollup/rollup-linux-arm64-gnu": "4.13.0",
@@ -43,6 +42,7 @@
     "axios": "^1.6.7",
     "babel-jest": "^29.7.0",
     "classnames": "^2.5.1",
+    "esbuild": "^0.21.4",
     "esbuild-wasm": "0.20.2",
     "framer-motion": "^11.0.6",
     "identity-obj-proxy": "^3.0.0",
@@ -67,6 +67,7 @@
     "yaml": "^2.4.1"
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.0",
     "@types/react": "^18.3.1",
@@ -82,8 +83,7 @@
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
-    "vite": "^5.2.11",
-    "@types/bun": "latest"
+    "vite": "^5.2.11"
   },
   "module": "index.ts"
 }
