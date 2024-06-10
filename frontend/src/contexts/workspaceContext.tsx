@@ -37,7 +37,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [settingsPage, setSettingsPage] = useState(false)
   const [selectedNode, setSelectedNode] = useState("")
-  const { updateFlow, flows, tab } = useContext(flowContext)
+  const { updateFlow, flows, tab, quietSaveFlows } = useContext(flowContext)
   const flow = flows.find((flow) => flow.name === tab)
 
   const toggleWorkspaceMode = () => {
@@ -69,6 +69,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     if (flow) {
       updateFlow(flow)
     }
+    quietSaveFlows()
   }
 
   return (
