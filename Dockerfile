@@ -65,7 +65,7 @@ WORKDIR /src2/project_dir
 RUN poetry lock --no-update \
     && poetry install
 
-CMD ["poetry", "run", "dflowd", "run_backend"]
+CMD ["poetry", "run", "dflowd", "run_app"]
 
 
 # #TODO: change scr to app (maybe)
