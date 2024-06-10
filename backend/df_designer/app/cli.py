@@ -106,6 +106,7 @@ def run_app(
         settings.backend_port,
         reload=settings.conf_reload,
         reload_dirs=str(settings.work_directory),
+        loop="asyncio",
     )
     settings.server = uvicorn.Server(settings.uvicorn_config)
     settings.server.run()
