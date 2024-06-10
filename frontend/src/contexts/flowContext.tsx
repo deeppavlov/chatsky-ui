@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { v4 } from "uuid"
 import { get_flows, save_flows } from "../api/flows"
@@ -46,6 +47,7 @@ type TabContextType = {
   setFlows: React.Dispatch<React.SetStateAction<FlowType[]>>
   deleteFlow: (flow: FlowType) => void
   saveFlows: (flows: FlowType[]) => void
+  quietSaveFlows: () => void
   updateFlow: (flow: FlowType) => void
   getLocaleFlows: () => FlowType[]
   getFlows: () => void
@@ -59,6 +61,7 @@ const initialValue: TabContextType = {
   setFlows: () => {},
   deleteFlow: () => {},
   saveFlows: () => {},
+  quietSaveFlows: () => {},
   updateFlow: () => {},
   getLocaleFlows: () => {
     return []
@@ -101,6 +104,14 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     setFlows(flows)
   }
 
+  const quietSaveFlows = async () => {
+    setTimeout(async () => {
+      console.log("quiet save flows")
+      await saveFlows(flows)
+      toast.success("DEBUG: Flows saved")
+    }, 100)
+  }
+
   const getLocaleFlows = () => {
     return flows
   }
@@ -127,7 +138,11 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
     if (!flow) return -1
     const newNodes = flow.data.nodes.filter((node) => node.id !== id)
-    saveFlows(flows.map((flow) => (flow.name === flowId ? { ...flow, data: { ...flow.data, nodes: newNodes } } : flow)))
+    saveFlows(
+      flows.map((flow) =>
+        flow.name === flowId ? { ...flow, data: { ...flow.data, nodes: newNodes } } : flow
+      )
+    )
     setFlows((flows) => flows.map((flow) => ({ ...flow, data: { ...flow.data, nodes: newNodes } })))
   }
 
@@ -140,10 +155,11 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         setFlows,
         deleteFlow,
         saveFlows,
+        quietSaveFlows,
         updateFlow,
         getLocaleFlows,
         getFlows,
-        deleteNode
+        deleteNode,
       }}>
       {children}
     </flowContext.Provider>
