@@ -2,6 +2,7 @@ import { Button, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, Moon, Settings, Sun } from "lucide-react"
 import { useContext } from "react"
+import { useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
 import { themeContext } from "../../contexts/themeContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
@@ -14,6 +15,7 @@ import NodeInstruments from "./components/NodeInstruments"
 
 const Header = () => {
   const { toggleTheme, theme } = useContext(themeContext)
+  const location = useLocation()
   const {
     toggleWorkspaceMode,
     workspaceMode,
@@ -64,7 +66,7 @@ const Header = () => {
         </div>
       </div>
       <div className='flex items-center'>
-        {selectedNode && flow && (
+        {selectedNode && flow && location.pathname.includes('flow') && (
           <NodeInstruments flow={flow} />
         )}
       </div>
