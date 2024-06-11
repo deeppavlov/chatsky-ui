@@ -22,6 +22,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
     onClose: onConditionClose,
     isOpen: isConditionOpen,
   } = useDisclosure()
+
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { handleNodeFlags } = useContext(workspaceContext)
@@ -39,12 +40,12 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
         data-testid={data.id}
         className='default_node'>
         {data.flags?.includes("start") && (
-          <span className='-top-2 left-4 bg-[#e5faf5] border border-[#00cc99] absolute text-white text-xs font-medium rounded-small px-0.5 py-0.5 -z-20 transition-transform cursor-auto hover:-z-10 hover:-translate-y-4'>
+          <span className='-top-2 left-4 bg-[#e5faf5] border border-[#00cc99] absolute text-white text-xs font-medium rounded-small px-0.5 py-0.5 pb-4 -z-20 transition-transform cursor-auto hover:-z-10 hover:-translate-y-5'>
             <StartNodeIcon />
           </span>
         )}
         {data.flags?.includes("fallback") && (
-          <span className='-top-2 left-14 bg-[#fde9e9] border border-[#ff3333] absolute text-white text-xs font-medium rounded-small px-0.5 py-0.5 -z-20 transition-transform cursor-auto hover:-z-10 hover:-translate-y-4'>
+          <span className='-top-2 left-14 bg-[#fde9e9] border border-[#ff3333] absolute text-white text-xs font-medium rounded-small px-0.5 py-0.5 pb-4 -z-20 transition-transform cursor-auto hover:-z-10 hover:-translate-y-5'>
             <FallbackNodeIcon />
           </span>
         )}
