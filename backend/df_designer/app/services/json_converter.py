@@ -1,3 +1,9 @@
+"""
+JSON Converter
+---------------
+
+Converts a user project's frontend graph to a script understandable by DFF json-importer.
+"""
 from pathlib import Path
 from typing import Tuple
 
@@ -65,7 +71,7 @@ def _write_conditions_to_file(conditions_lines: list, custom_conditions_file: Pa
     # TODO: make reading and writing conditions async
     with open(custom_conditions_file, "w", encoding="UTF-8") as file:
         for line in conditions_lines:
-            if line[-1:] != "\n":
+            if not line.endswith("\n"):
                 line = "".join([line, "\n"])
             file.write(line)
 
@@ -144,7 +150,7 @@ async def _replace_condition(condition: DictConfig, conditions_lines: list, cnd_
 
     old_cnd_lines_num = 0
     for lineno, line in enumerate(all_lines[cnd_strt_lineno:]):
-        if line[:4] == "def " and lineno != 0:
+        if line.startswith("def ") and lineno != 0:
             break
         old_cnd_lines_num += 1
 
@@ -162,7 +168,7 @@ async def _replace_condition(condition: DictConfig, conditions_lines: list, cnd_
     return all_lines
 
 
-async def translator(build_id: int, project_dir: str, custom_dir: str = "custom") -> None:
+async def converter(build_id: int, project_dir: str, custom_dir: str = "custom") -> None:
     """Translate frontend flow script into dff script."""
     index = get_index()
     await index.load()
