@@ -14,6 +14,9 @@ from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
 
 
+DUMMY_BUILD_ID = -1
+
+
 async def start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:
     return await async_client.post(
         endpoint,
@@ -57,7 +60,7 @@ def pagination() -> Pagination:
 @pytest.fixture()
 def run_process():
     async def _run_process(cmd_to_run):
-        process = RunProcess(id_=0)
+        process = RunProcess(id_=0, build_id=DUMMY_BUILD_ID)
         await process.start(cmd_to_run)
         return process
 

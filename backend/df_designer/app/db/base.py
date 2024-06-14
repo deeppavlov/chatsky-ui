@@ -5,6 +5,7 @@ import aiofiles
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 from omegaconf.listconfig import ListConfig
+from typing import List
 
 file_lock = Lock()
 
@@ -17,14 +18,14 @@ async def read_conf(path: Path) -> DictConfig | ListConfig:
     return omega_data
 
 
-async def write_conf(data: list | dict, path: Path) -> None:
+async def write_conf(data: DictConfig | ListConfig, path: Path) -> None:
     yaml_conf = OmegaConf.to_yaml(data)
     async with file_lock:
         async with aiofiles.open(path, "w", encoding="UTF-8") as file:  # TODO: change to "a" for append
             await file.write(yaml_conf)
 
 
-async def read_logs(log_file: Path) -> list:
+async def read_logs(log_file: Path) -> List[str]:
     logs = []
     if not log_file.exists():
         raise FileNotFoundError(f"Log file '{log_file}' not found")
