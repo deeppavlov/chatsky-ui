@@ -1,3 +1,9 @@
+"""
+Process classes.
+-----------------
+
+Classes for build and run processes.
+"""
 import asyncio
 import logging
 from abc import ABC, abstractmethod
@@ -20,6 +26,8 @@ def _map_to_str(params: Dict[str, Any]):
 
 
 class Process(ABC):
+    """Base class for build and run processes."""
+
     def __init__(self, id_: int, preset_end_status: str = ""):
         self.id: int = id_
         self.preset_end_status: str = preset_end_status
