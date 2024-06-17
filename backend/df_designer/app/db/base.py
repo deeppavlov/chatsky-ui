@@ -18,7 +18,7 @@ async def read_conf(path: Path) -> DictConfig | ListConfig:
     return omega_data
 
 
-async def write_conf(data: DictConfig | ListConfig, path: Path) -> None:
+async def write_conf(data: DictConfig | ListConfig | dict | list, path: Path) -> None:
     yaml_conf = OmegaConf.to_yaml(data)
     async with file_lock:
         async with aiofiles.open(path, "w", encoding="UTF-8") as file:  # TODO: change to "a" for append
