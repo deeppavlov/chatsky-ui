@@ -1,10 +1,6 @@
 import pytest
 from fastapi import WebSocket
 
-from app.services.process import RunProcess
-from app.services.process_manager import RunManager
-
-
 class TestWebSocketManager:
     @pytest.mark.asyncio
     async def test_connect(self, mocker, websocket_manager):
@@ -31,9 +27,9 @@ class TestWebSocketManager:
         run_id = 42
         awaited_response = "Hello from DF-Designer"
 
-        websocket = mocker.MagicMock(spec=WebSocket)
-        run_manager = mocker.MagicMock(spec=RunManager())
-        run_process = mocker.MagicMock(spec=RunProcess(run_id))
+        websocket = mocker.AsyncMock()
+        run_manager = mocker.MagicMock()
+        run_process = mocker.MagicMock()
         run_process.read_stdout = mocker.AsyncMock(side_effect=[awaited_response.encode(), None])
         run_manager.processes = {run_id: run_process}
 
@@ -47,10 +43,10 @@ class TestWebSocketManager:
         run_id = 42
         awaited_message = "Hello from DF-Designer"
 
-        websocket = mocker.MagicMock(spec=WebSocket)
+        websocket = mocker.AsyncMock()
         websocket.receive_text = mocker.AsyncMock(side_effect=[awaited_message, None])
-        run_manager = mocker.MagicMock(spec=RunManager())
-        run_process = mocker.MagicMock(spec=RunProcess(run_id))
+        run_manager = mocker.MagicMock()
+        run_process = mocker.MagicMock()
         run_process.write_stdin = mocker.AsyncMock()
         run_manager.processes = {run_id: run_process}
 
