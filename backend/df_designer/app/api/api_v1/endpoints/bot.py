@@ -9,6 +9,7 @@ from app.schemas.pagination import Pagination
 from app.schemas.preset import Preset
 from app.services.process_manager import BuildManager, ProcessManager, RunManager
 from app.services.websocket_manager import WebSocketManager
+from app.services.index import Index
 
 router = APIRouter()
 
@@ -40,11 +41,14 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> di
 
 @router.post("/build/start", status_code=201)
 async def start_build(
-    preset: Preset, background_tasks: BackgroundTasks, build_manager: BuildManager = Depends(deps.get_build_manager)
+    preset: Preset,
+    background_tasks: BackgroundTasks,
+    build_manager: BuildManager = Depends(deps.get_build_manager),
+    index: Index = Depends(deps.get_index),
 ):
     await asyncio.sleep(preset.wait_time)
     build_id = await build_manager.start(preset)
-    background_tasks.add_task(build_manager.check_status, build_id)
+    background_tasks.add_task(build_manager.check_status, build_id, index)
     logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
 

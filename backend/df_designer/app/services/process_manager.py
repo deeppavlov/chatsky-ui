@@ -29,7 +29,7 @@ class ProcessManager:
         except (RuntimeError, ProcessLookupError):
             raise
 
-    async def check_status(self, id_):
+    async def check_status(self, id_, *args, **kwargs):
         await self.processes[id_].periodically_check_status()
 
     async def get_status(self, id_):
@@ -107,6 +107,10 @@ class BuildManager(ProcessManager):
         self.processes[id_] = process
 
         return self.last_id
+
+    async def check_status(self, id_, index, *args, **kwargs):
+        await self.processes[id_].periodically_check_status()
+        await index.load()
 
     async def get_build_info(self, id_: int, run_manager):
         builds_info = await self.get_full_info_with_runs_info(run_manager, offset=0, limit=10**5)
