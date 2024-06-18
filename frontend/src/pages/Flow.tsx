@@ -52,7 +52,7 @@ export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
   const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
-  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode } =
+  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode, mouseOnPane } =
     useContext(workspaceContext)
   const { takeSnapshot, undo } = useContext(undoRedoContext)
 
@@ -244,7 +244,7 @@ export default function Flow() {
         toast.success("Workspace mode: " + (workspaceMode ? "Fixed" : "Free"))
       }
 
-      if (e.key === "Backspace") {
+      if (e.key === "Backspace" && mouseOnPane) {
         e.preventDefault()
         takeSnapshot()
         console.log("backspace")
@@ -264,6 +264,7 @@ export default function Flow() {
     flow,
     flowId,
     flows,
+    mouseOnPane,
     reactFlowInstance,
     saveFlows,
     selected,
@@ -272,6 +273,7 @@ export default function Flow() {
     toggleWorkspaceMode,
     workspaceMode,
   ])
+
 
   const transitions = useTransition(location.pathname, {
     config: { duration: 300 },
