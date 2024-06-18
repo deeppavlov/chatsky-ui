@@ -8,15 +8,16 @@ import {
   ModalHeader,
   ModalProps,
   Tab,
-  Tabs
+  Tabs,
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
+import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
 import { flowContext } from "../../contexts/flowContext"
 import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
-import { NodeDataType } from "../../types/NodeTypes"
+import { NodeDataType, NodeType } from "../../types/NodeTypes"
 import { generateNewConditionBase } from "../../utils"
 import PythonCondition from "./components/PythonCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
@@ -46,23 +47,19 @@ const ConditionModal = ({
     setSelected(key)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [conditions, setConditions] = useState<conditionType[]>(data.conditions ?? [])
   const { getNode, setNodes, getNodes } = useReactFlow()
-  const { updateFlow, flows } = useContext(flowContext)
+  const { updateFlow, flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
 
   const [currentCondition, setCurrentCondition] = useState(
     is_create || !condition ? generateNewConditionBase(data.name) : condition
   )
 
-
-  // useEffect(() => {
-  //   if (is_create) {
-  //     const new_condition = generateNewConditionBase(data.name)
-  //     setCurrentCondition(new_condition)
-  //   }
-  // }, [data.name, is_create, isOpen])
+  const validateConditionName = (is_create: boolean) => {
+    const nodes = getNodes() as NodeType[]
+    if (!is_create) return !nodes.some((node: NodeType) => node.data.conditions?.some(c => (c.name === currentCondition.name && c.id !== currentCondition.id)))
+    return !nodes.some((node: NodeType) => node.data.conditions?.some(c => c.name === currentCondition.name))
+  }
 
   const tabItems: {
     title: ConditionModalTab
@@ -126,24 +123,53 @@ const ConditionModal = ({
     const nodes = getNodes()
     const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
+    if (validateConditionName(is_create)) {
+      if (node && currentFlow) {
+        const new_node = {
+          ...node,
+          data: {
+            ...node.data,
+            conditions: is_create
+              ? [...node.data.conditions, currentCondition]
+              : data.conditions?.map((condition) =>
+                  condition.id === currentCondition.id ? currentCondition : condition
+                ),
+          },
+        }
+        const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+        setNodes(() => new_nodes)
+        currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+        updateFlow(currentFlow)
+        quietSaveFlows()
+      }
+      onClose()
+      setCurrentCondition(
+        is_create || !condition ? generateNewConditionBase(data.name) : currentCondition
+      )
+    } else {
+      toast.error("Condition name already exists!")
+    }
+  }
+
+  const deleteCondition = () => {
+    const nodes = getNodes()
+    const node = getNode(data.id)
+    const currentFlow = flows.find((flow) => flow.name === flowId)
     if (node && currentFlow) {
       const new_node = {
         ...node,
         data: {
           ...node.data,
-          conditions: is_create
-            ? [...node.data.conditions, currentCondition]
-            : conditions.map((condition) =>
-                condition.id === currentCondition.id ? currentCondition : condition
-              ),
+          conditions: data.conditions?.filter((condition) => condition.id !== currentCondition.id),
         },
       }
-      console.log(node, new_node)
-      setNodes(nodes.map((node) => (node.id === data.id ? new_node : node)))
+      const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+      setNodes(() => new_nodes)
+      currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
       updateFlow(currentFlow)
+      quietSaveFlows()
     }
     onClose()
-    setCurrentCondition(is_create || !condition ? generateNewConditionBase(data.name) : condition)
   }
 
   return (
@@ -198,6 +224,7 @@ const ConditionModal = ({
               <HelpCircle />
             </Button>
             <Button
+              onClick={deleteCondition}
               className='hover:bg-red-500'
               isIconOnly>
               <TrashIcon />

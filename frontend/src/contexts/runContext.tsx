@@ -89,7 +89,8 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     setRunPending(() => true)
     setRunStatus("running")
     try {
-      const { run_id } = await run_start({ wait_time, end_status }, context_builds[0].id)
+      const builds = await get_builds()
+      const { run_id } = await run_start({ wait_time, end_status }, builds[builds.length - 1].id)
       console.log("run started")
       await new Promise((resolve) => setTimeout(resolve, 5000))
       const started_runs = await get_runs()
@@ -138,6 +139,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   async function runStop(run_id: number) {
+    setRunPending(() => true)
     try {
       const res = await run_stop(run_id)
       if (res.status === "ok") {
@@ -147,6 +149,8 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           const runs = await get_runs()
           setRunsHandler(runs)
           setRunStatus("stopped")
+          setRunPending(() => false)
+          toast.success("Run stopped!")
         }, 500)
       }
     } catch (error) {

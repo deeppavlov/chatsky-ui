@@ -1,11 +1,15 @@
-import { python } from "@codemirror/lang-python"
+import { CompletionContext, autocompletion } from "@codemirror/autocomplete"
+import { globalCompletion, python } from "@codemirror/lang-python"
+import { indentUnit } from '@codemirror/language'
 import { andromeda } from "@uiw/codemirror-theme-andromeda"
 import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
-import CodeMirror from "@uiw/react-codemirror"
+import ReactCodeMirror from "@uiw/react-codemirror"
 import React, { useContext, useEffect } from "react"
 import { themeContext } from "../../../contexts/themeContext"
 import { conditionType } from "../../../types/ConditionTypes"
 import { firstLinePlugin } from "../editorOptions"
+
+const tabSize = '    '
 
 const PythonCondition = ({
   condition,
@@ -26,7 +30,7 @@ const PythonCondition = ({
         data: {
           ...condition.data,
           python: {
-            action: `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python condition:\n  return True`,
+            action: `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python condition:\n    return True`,
           },
         },
       })
@@ -63,19 +67,53 @@ const PythonCondition = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [condition.name])
 
+  const dffMethods = ["method1", "method2", "method3"];
+
+function dffAutocomplete(context: CompletionContext) {
+  const word = context.matchBefore(/\b(?:dff)\.\w*/);
+  if (!word) return null;
+  if (word.from === word.to && !context.explicit) return null;
+
+  const options = dffMethods.map((method) => ({
+    label: `dff.${method}`,
+    type: "function",
+  }));
+  
+
+  return {
+    from: word.from,
+    options,
+    validFor: /^\w*$/,
+  };
+}
+
+function myCompletion(context: CompletionContext) {
+  const word = context.matchBefore(/\w*/)
+  if (!word) return null;
+  if (word.from == word.to && !context.explicit)
+    return null
+  return {
+    from: word.from,
+    options: [
+      {label: "dff", type: "keyword", description: 'DFF base methods object'}
+    ]
+  }
+}
+
+
   return (
     <>
       <p className='text-sm font-medium'>Action</p>
       <div
         className={`mt-2 w-full flex flex-col items-start justify-start gap-4 p-4 ${theme === "light" ? "bg-[#f2f1f8]" : "bg-[#24262e]"} rounded-lg font-mono`}>
-        <CodeMirror
+        <ReactCodeMirror
           data-testid='python-condition-editor'
           style={{
             fontFamily:
               "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
           }}
           lang='python'
-          extensions={[python(), firstLinePlugin]}
+          extensions={[firstLinePlugin, indentUnit.of(tabSize), autocompletion({ override: [dffAutocomplete, globalCompletion, myCompletion], maxRenderedOptions: 10 }), python()]}
           value={condition.data.python?.action}
           onChange={changeConditionValue}
           className='w-full border-none outline-none focus-within:outline-none focus:outline-none font-mono'

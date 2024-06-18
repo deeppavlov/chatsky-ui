@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
 import { runContext } from "../../contexts/runContext"
+import { DEV } from "../../env.consts"
 import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import { parseSearchParams } from "../../utils"
@@ -116,9 +117,11 @@ const Chat = () => {
     },
   })
 
+  console.log(window.location)
+
   useEffect(() => {
     if (runStatus === "alive" && run) {
-      const socket = new WebSocket(`ws://localhost:8000/api/v1/bot/run/connect?run_id=${run.id}`)
+      const socket = new WebSocket(`ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`)
       socket.onopen = (e) => {
         console.log(e)
         toast.success("Chat was successfully connected!")
