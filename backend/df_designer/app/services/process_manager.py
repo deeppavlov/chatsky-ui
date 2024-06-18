@@ -49,7 +49,10 @@ class ProcessManager:
 
     async def check_status(self, id_: int) -> None:
         """Checks the status of the process with the given id by calling the `periodically_check_status`
-        method of the process."""
+        method of the process.
+
+        This updates the process status in the database every 2 seconds.
+        """
         await self.processes[id_].periodically_check_status()
 
     async def get_status(self, id_: int) -> Status:
@@ -57,14 +60,14 @@ class ProcessManager:
         return await self.processes[id_].check_status()
 
     async def get_process_info(self, id_: int, path: Path) -> Optional[Dict[str, Any]]:
-        """Returns the info of one process according to its id."""
+        """Returns metadata of a specific process identified by its unique ID."""
         db_conf = await read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
         return next((db_process for db_process in conf_dict if db_process["id"] == id_), None)  # type: ignore
 
     async def get_full_info(self, offset: int, limit: int, path: Path) -> List[Dict[str, Any]]:
-        """Returns the info of number of processes, starting from offset and limited by limit,
-        ordered as they are in the db."""
+        """Returns metadata of `limit` number of processes, starting from the `offset`th process."""
+
         db_conf = await read_conf(path)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
         return conf_dict[offset : offset + limit]  # type: ignore
@@ -120,11 +123,11 @@ class RunManager(ProcessManager):
         return self.last_id
 
     async def get_run_info(self, id_: int) -> Optional[Dict[str, Any]]:
-        """Returns the info of one run according to its id."""
+        """Returns metadata of  a specific run process identified by its unique ID."""
         return await super().get_process_info(id_, settings.runs_path)
 
     async def get_full_info(self, offset: int, limit: int, path: Path = settings.runs_path) -> List[Dict[str, Any]]:
-        """Returns the info of number of runs, starting from offset and limited by limit."""
+        """Returns metadata of `limit` number of run processes, starting from the `offset`th process."""
         return await super().get_full_info(offset, limit, path)
 
     async def fetch_run_logs(self, run_id: int, offset: int, limit: int) -> Optional[List[str]]:
@@ -161,7 +164,7 @@ class BuildManager(ProcessManager):
         return self.last_id
 
     async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
-        """Returns the info of one build according to its id. If the build is not found, returns None.
+        """Returns metadata of a specific build process identified by its unique ID.
 
         Args:
             id_ (int): the id of the build
@@ -171,13 +174,13 @@ class BuildManager(ProcessManager):
         return next((build for build in builds_info if build["id"] == id_), None)
 
     async def get_full_info(self, offset: int, limit: int, path: Path = settings.builds_path) -> List[Dict[str, Any]]:
-        """Returns the info of number of builds, starting from offset and limited by limit."""
+        """Returns metadata of `limit` number of processes, starting from the `offset`th process."""
         return await super().get_full_info(offset, limit, path)
 
     async def get_full_info_with_runs_info(
         self, run_manager: RunManager, offset: int, limit: int
     ) -> List[Dict[str, Any]]:
-        """Returns the info of number of builds, starting from offset and limited by limit.
+        """Returns metadata of `limit` number of processes, starting from the `offset`th process.
 
         Args:
             run_manager (RunManager): the run manager to use for getting all runs of this build

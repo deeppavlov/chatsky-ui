@@ -1,6 +1,7 @@
 import pytest
 from fastapi import WebSocket
 
+
 class TestWebSocketManager:
     @pytest.mark.asyncio
     async def test_connect(self, mocker, websocket_manager):

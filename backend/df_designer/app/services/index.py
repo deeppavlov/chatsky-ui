@@ -19,7 +19,7 @@ from app.db.base import read_conf, read_logs, write_conf
 
 
 class Index:
-    def __init__(self) -> None:
+    def __init__(self):
         self.path: Path = settings.index_path
         self.index: dict = {}
         self.conditions: List[str] = []
@@ -29,8 +29,8 @@ class Index:
 
     async def _load_index(self) -> None:
         """Load indexed conditions, responses and services from disk."""
-        db_index: DictConfig = await read_conf(self.path) # type: ignore
-        index_dict: Dict[str, dict] = OmegaConf.to_container(db_index, resolve=True) # type: ignore
+        db_index: DictConfig = await read_conf(self.path)  # type: ignore
+        index_dict: Dict[str, dict] = OmegaConf.to_container(db_index, resolve=True)  # type: ignore
         self.index = index_dict
         self.logger.debug("Index loaded")
 
@@ -63,7 +63,7 @@ class Index:
 
     def _get_service_code(self, services_lst: List[str], lineno: int) -> List[str]:
         """Get service code from services list.
-        
+
         Example:
             >>> _get_service_code(["def is_upper_case(name):\n", "    return name.isupper()"], 1)
             ['def is_upper_case(name):\n', '    return name.isupper()']
@@ -105,7 +105,7 @@ class Index:
 
     async def search_service(self, service_name: str) -> Optional[List[str]]:
         """Get the body code of a service based on its indexed info (type, lineno).
-        
+
         Example:
             >>> search_service("is_upper_case")
             ["def is_upper_case(name):\n", "    return name.isupper()"]
@@ -129,11 +129,9 @@ class Index:
         await self.indexit_all([service_name], [type_], [lineno])
         self.logger.info("Indexed '%s'", service_name)
 
-    async def indexit_all(
-        self, services_names: List[str], types: List[str], linenos: List[int]
-    ) -> None:
+    async def indexit_all(self, services_names: List[str], types: List[str], linenos: List[int]) -> None:
         """Index multiple services.
-        
+
         The index is added to the index in the form: {service_name: {"type": type_, "lineno": lineno}}.
 
         Args:
@@ -148,7 +146,7 @@ class Index:
             >>> services_names = ["is_upper_case", "say_hi"]
             >>> types = ["condition", "response"]
             >>> linenos = [3, 5]
-            >>> await indexit_all(services_names, types, linenos)            
+            >>> await indexit_all(services_names, types, linenos)
 
             # Added index:
             {
