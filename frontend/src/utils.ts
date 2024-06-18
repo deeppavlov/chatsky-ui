@@ -112,5 +112,4 @@ export const isNodeDeletionValid = (nodes: NodeType[], id: string) => {
   const node = nodes.find((n) => n.id === id)
   if (!node) return false
   return !node.data.flags?.includes("start")
-  return true
 }
