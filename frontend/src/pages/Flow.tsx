@@ -5,12 +5,15 @@ import ReactFlow, {
   Connection,
   Controls,
   Edge,
+  HandleType,
+  Node,
   NodeChange,
+  OnSelectionChangeParams,
   ReactFlowInstance,
   addEdge,
   updateEdge,
   useEdgesState,
-  useNodesState
+  useNodesState,
 } from "reactflow"
 
 import { a, useTransition } from "@react-spring/web"
@@ -43,17 +46,15 @@ const nodeTypes = {
   link: LinkNode,
 }
 
-export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {
-
-}
+export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
-  const { flows, updateFlow, saveFlows } = useContext(flowContext)
+  const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
   const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode } =
     useContext(workspaceContext)
-  const { takeSnapshot } = useContext(undoRedoContext)
+  const { takeSnapshot, undo } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -62,6 +63,9 @@ export default function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
+  const [selection, setSelection] = useState<OnSelectionChangeParams>()
+  const [selected, setSelected] = useState<string>()
+  const isEdgeUpdateSuccess = useRef(false)
 
   // const {
   //   isOpen: isLinkModalOpen,
@@ -75,7 +79,7 @@ export default function Flow() {
       updateFlow(flow)
       console.log("update flow")
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges])
 
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function Flow() {
       setNodes(flow?.data?.nodes ?? [])
       setEdges(flow?.data?.edges ?? [])
       if (flow?.data?.viewport) {
-        reactFlowInstance.fitView({ padding: 0.5 })
+        // reactFlowInstance.fitView({ padding: 0.5 })
       } else {
         reactFlowInstance.fitView({ padding: 0.5 })
       }
@@ -99,7 +103,7 @@ export default function Flow() {
       if (nds) {
         nds
           .sort((nd1: NodeChange, nd2: NodeChange) => {
-            if (nd1.type === 'select' && nd2.type === 'select') {
+            if (nd1.type === "select" && nd2.type === "select") {
               return nd1.selected === nd2.selected ? 0 : nd2.selected ? -1 : 1
             } else {
               return 0
@@ -122,13 +126,47 @@ export default function Flow() {
     [onNodesChange, selectedNode, setSelectedNode]
   )
 
+  const onEdgeUpdateStart = useCallback(() => {
+    isEdgeUpdateSuccess.current = false
+  }, [])
+
   const onEdgeUpdate = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
       takeSnapshot()
       setEdges((els) => updateEdge(oldEdge, newConnection, els))
+      isEdgeUpdateSuccess.current = true
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
+  )
+
+  const onEdgeUpdateEnd = useCallback(
+    (event: MouseEvent | TouchEvent, edge: Edge, handleType: HandleType) => {
+      takeSnapshot()
+      console.log("edge update end", edge)
+      if (!isEdgeUpdateSuccess.current) {
+        deleteObject(edge.id)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onEdgeUpdate, deleteObject]
+  )
+
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      const node_ = node as NodeType
+      console.log("node click", node)
+      setSelected(node_.id)
+    },
+    [setSelected]
+  )
+
+  const onEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      console.log("edge click", edge)
+      setSelected(edge.id)
+    },
+    [setSelected]
   )
 
   const onConnect = useCallback(
@@ -139,6 +177,10 @@ export default function Flow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
+
+  const onSelectionChange = useCallback((params: OnSelectionChangeParams) => {
+    setSelection(params)
+  }, [])
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
@@ -201,6 +243,15 @@ export default function Flow() {
         toggleWorkspaceMode()
         toast.success("Workspace mode: " + (workspaceMode ? "Fixed" : "Free"))
       }
+
+      if (e.key === "Backspace") {
+        e.preventDefault()
+        takeSnapshot()
+        console.log("backspace")
+        if (selected) {
+          deleteObject(selected)
+        }
+      }
     }
 
     document.addEventListener("keydown", kbdHandler)
@@ -208,7 +259,19 @@ export default function Flow() {
     return () => {
       document.removeEventListener("keydown", kbdHandler)
     }
-  }, [flow, flowId, flows, reactFlowInstance, saveFlows, toggleWorkspaceMode, workspaceMode])
+  }, [
+    deleteObject,
+    flow,
+    flowId,
+    flows,
+    reactFlowInstance,
+    saveFlows,
+    selected,
+    selectedNode,
+    takeSnapshot,
+    toggleWorkspaceMode,
+    workspaceMode,
+  ])
 
   const transitions = useTransition(location.pathname, {
     config: { duration: 300 },
@@ -219,7 +282,9 @@ export default function Flow() {
   })
 
   return (
-    <div data-testid="flow-page" className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
+    <div
+      data-testid='flow-page'
+      className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
       <SideBar />
       {transitions((style) => (
         <a.div
@@ -227,6 +292,7 @@ export default function Flow() {
           style={{ width: "100%", height: "100vh", ...style }}
           className='col-span-6 opacity-0 pb-10'>
           <ReactFlow
+            deleteKeyCode={""}
             style={{
               background: "var(--background)",
             }}
@@ -246,11 +312,16 @@ export default function Flow() {
                 }
               }
             }}
+            onSelectionChange={onSelectionChange}
             onDragOver={onDragOver}
             onDrop={onDrop}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
             onNodesChange={onNodesChangeMod}
             onEdgesChange={onEdgesChange}
             onEdgeUpdate={onEdgeUpdate}
+            onEdgeUpdateStart={onEdgeUpdateStart}
+            onEdgeUpdateEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
             onConnect={onConnect}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}

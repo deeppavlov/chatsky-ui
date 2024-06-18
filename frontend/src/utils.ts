@@ -2,6 +2,7 @@ import { v4 } from "uuid"
 import { CreateFlowType } from "./modals/FlowModal/CreateFlowModal"
 import { conditionType } from "./types/ConditionTypes"
 import { FlowType } from "./types/FlowTypes"
+import { NodeType } from "./types/NodeTypes"
 
 export const generateNewFlow = (flow: CreateFlowType) => {
   const node_id = v4()
@@ -105,4 +106,11 @@ export const generateNewConditionBase = (node_name: string): conditionType => {
       transition_type: "manual",
     },
   }
+}
+
+export const isNodeDeletionValid = (nodes: NodeType[], id: string) => {
+  const node = nodes.find((n) => n.id === id)
+  if (!node) return false
+  return !node.data.flags?.includes("start")
+  return true
 }
