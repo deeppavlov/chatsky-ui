@@ -1,5 +1,5 @@
 app.api.api\_v1 package
-===============
+=========================
 
 Subpackages
 -----------
@@ -12,9 +12,9 @@ Subpackages
 
 
 app.api.api\_v1.api module
-------------------
+----------------------------
 
-.. automodule:: app.api_v1.api
+.. automodule:: app.api.api_v1.api
    :members:
    :undoc-members:
    :show-inheritance:
