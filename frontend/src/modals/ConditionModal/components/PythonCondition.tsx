@@ -5,6 +5,7 @@ import { andromeda } from "@uiw/codemirror-theme-andromeda"
 import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
 import ReactCodeMirror from "@uiw/react-codemirror"
 import React, { useContext, useEffect } from "react"
+import { IdeContext } from "../../../contexts/ideContext"
 import { themeContext } from "../../../contexts/themeContext"
 import { conditionType } from "../../../types/ConditionTypes"
 import { firstLinePlugin } from "../editorOptions"
@@ -19,6 +20,7 @@ const PythonCondition = ({
   setData: React.Dispatch<React.SetStateAction<conditionType>>
 }) => {
   const { theme } = useContext(themeContext)
+  const { methods: dffMethods } = useContext(IdeContext)
 
   const firstString = `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:`
 
@@ -67,15 +69,14 @@ const PythonCondition = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [condition.name])
 
-  const dffMethods = ["method1", "method2", "method3"];
 
 function dffAutocomplete(context: CompletionContext) {
-  const word = context.matchBefore(/\b(?:dff)\.\w*/);
+  const word = context.matchBefore(/\b(?:cnd)\.\w*/);
   if (!word) return null;
   if (word.from === word.to && !context.explicit) return null;
 
   const options = dffMethods.map((method) => ({
-    label: `dff.${method}`,
+    label: `cnd.${method}`,
     type: "function",
   }));
   
@@ -95,7 +96,7 @@ function myCompletion(context: CompletionContext) {
   return {
     from: word.from,
     options: [
-      {label: "dff", type: "keyword", description: 'DFF base methods object'}
+      {label: "cnd", type: "function", info: 'DFF conditions base methods object'}
     ]
   }
 }
