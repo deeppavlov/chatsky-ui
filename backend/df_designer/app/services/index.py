@@ -132,7 +132,7 @@ class Index:
     async def indexit_all(self, services_names: List[str], types: List[str], linenos: List[int]) -> None:
         """Index multiple services.
 
-        The index is added to the index in the form: {service_name: {"type": type_, "lineno": lineno}}.
+        The index is added to the index in the form: {service_name: {"type": ``type_``, "lineno": lineno}}.
 
         Args:
             services_names: list of service names
@@ -147,8 +147,6 @@ class Index:
             >>> types = ["condition", "response"]
             >>> linenos = [3, 5]
             >>> await indexit_all(services_names, types, linenos)
-
-            # Added index:
             {
                 "is_upper_case": {"type": "condition", "lineno": 3},
                 "say_hi": {"type": "response", "lineno": 5}
