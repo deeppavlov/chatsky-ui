@@ -20,6 +20,9 @@ type WorkspaceContextType = {
   setMouseOnPane: React.Dispatch<React.SetStateAction<boolean>>
   onModalClose: (onClose: () => void) => void
   onModalOpen: (onOpen: () => void) => void
+  managerMode: boolean
+  setManagerMode: React.Dispatch<React.SetStateAction<boolean>>
+  toggleManagerMode: () => void
 }
 
 export const workspaceContext = createContext<WorkspaceContextType>({
@@ -38,11 +41,15 @@ export const workspaceContext = createContext<WorkspaceContextType>({
   setMouseOnPane: () => {},
   onModalClose: () => {},
   onModalOpen: () => {},
+  managerMode: false,
+  setManagerMode: () => {},
+  toggleManagerMode: () => {},
 } as WorkspaceContextType)
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
+  const [managerMode, setManagerMode] = useState(false)
   const [settingsPage, setSettingsPage] = useState(false)
   const [selectedNode, setSelectedNode] = useState("")
   const { updateFlow, flows, tab, quietSaveFlows } = useContext(flowContext)
@@ -55,6 +62,10 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
 
   const toggleNodesLayoutMode = () => {
     setNodesLayoutMode(() => !nodesLayoutMode)
+  }
+
+  const toggleManagerMode = () => {
+    setManagerMode(() => !managerMode)
   }
 
   const handleNodeFlags = (e: React.MouseEvent<HTMLButtonElement>, setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>) => {
@@ -109,6 +120,9 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         setMouseOnPane,
         onModalClose,
         onModalOpen,
+        managerMode,
+        setManagerMode,
+        toggleManagerMode
       }}>
       {children}
     </workspaceContext.Provider>

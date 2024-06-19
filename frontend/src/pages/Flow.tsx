@@ -52,7 +52,7 @@ export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
   const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
-  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode, mouseOnPane } =
+  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode, mouseOnPane, managerMode } =
     useContext(workspaceContext)
   const { takeSnapshot, undo } = useContext(undoRedoContext)
 
@@ -326,6 +326,11 @@ export default function Flow() {
             onEdgeUpdateEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
             onConnect={onConnect}
+            nodesConnectable={!managerMode}
+            nodesDraggable={!managerMode}
+            nodesFocusable={!managerMode}
+            edgesUpdatable={!managerMode}
+            edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
             snapToGrid={!workspaceMode}>
             <Controls
