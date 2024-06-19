@@ -1,7 +1,7 @@
-import { Button, Textarea } from "@nextui-org/react"
+import { Button, Textarea, Tooltip } from "@nextui-org/react"
 import { a, useTransition } from "@react-spring/web"
 import axios from "axios"
-import { Paperclip, Send, Smile, X } from "lucide-react"
+import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
 import { useContext, useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { useSearchParams } from "react-router-dom"
@@ -10,7 +10,6 @@ import { chatContext } from "../../contexts/chatContext"
 import { runContext } from "../../contexts/runContext"
 import { DEV } from "../../env.consts"
 import ChatIcon from "../../icons/buildmenu/ChatIcon"
-import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import { parseSearchParams } from "../../utils"
 import EmojiPicker, { EmojiType } from "./EmojiPicker"
 
@@ -87,7 +86,7 @@ const Chat = () => {
     document.addEventListener("keydown", enterDownEvent)
 
     return () => document.removeEventListener("keydown", enterDownEvent)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageValue, messages, setMessages])
 
   const chatWindowRef = useRef<HTMLDivElement>(null)
@@ -121,7 +120,9 @@ const Chat = () => {
 
   useEffect(() => {
     if (runStatus === "alive" && run) {
-      const socket = new WebSocket(`ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`)
+      const socket = new WebSocket(
+        `ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`
+      )
       socket.onopen = (e) => {
         console.log(e)
         toast.success("Chat was successfully connected!")
@@ -134,7 +135,7 @@ const Chat = () => {
           // console.log(data)
           setTimeout(() => {
             setMessages((prev) => [...prev, { message: data, type: "bot" }])
-          }, 500);
+          }, 500)
         }
         socket.onclose = (event) => {
           socket.close()
@@ -146,7 +147,7 @@ const Chat = () => {
     return () => {
       ws.current?.close()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run, runStatus])
 
   return (
@@ -162,18 +163,17 @@ const Chat = () => {
             Chat
           </div>
           <div className='flex items-center gap-1'>
-            <Button
-              size='sm'
-              onClick={() => {
-                setSearchParams({
-                  ...parseSearchParams(searchParams),
-                  logs_page: !logsPage ? "opened" : "closed",
-                })
-                setLogsPage(!logsPage)
-              }}>
-              <MonitorIcon />
-              Logs
-            </Button>
+            <Tooltip placement="bottom" radius="sm" content='Reset chat'>
+              <Button
+                isIconOnly
+                variant='light'
+                size='sm'
+                onClick={() => {
+                  setMessages([])
+                }}>
+                <RefreshCcw strokeWidth={1.2} />
+              </Button>
+            </Tooltip>
             <Button
               onClick={() => {
                 setSearchParams({
