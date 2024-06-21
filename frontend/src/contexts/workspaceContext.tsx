@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import { Node } from "reactflow"
 import { NodeDataType } from "../types/NodeTypes"
 import { flowContext } from "./flowContext"
@@ -53,7 +53,10 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [settingsPage, setSettingsPage] = useState(false)
   const [selectedNode, setSelectedNode] = useState("")
   const { updateFlow, flows, tab, quietSaveFlows } = useContext(flowContext)
-  const [mouseOnPane, setMouseOnPane] = useState(false)
+  const [mouseOnPane, setMouseOnPane] = useState(true)
+  
+  useEffect(() => console.log(mouseOnPane), [mouseOnPane])
+
   const flow = flows.find((flow) => flow.name === tab)
 
   const toggleWorkspaceMode = () => {

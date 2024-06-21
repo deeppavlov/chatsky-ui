@@ -2,17 +2,17 @@ import {
   Button,
   Checkbox,
   Input,
-  Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem,
+  SelectItem
 } from "@nextui-org/react"
 import { HelpCircle } from "lucide-react"
 import { useContext, useState } from "react"
 import toast from "react-hot-toast"
+import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
 import { ModalType } from "../../types/ModalTypes"
@@ -63,7 +63,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
   }
 
   return (
-    <Modal
+    <ModalComponent
       className='bg-background min-h-[584px]'
       motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
       isOpen={isOpen}
@@ -163,7 +163,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
           </div>
         </ModalFooter>
       </ModalContent>
-    </Modal>
+    </ModalComponent>
   )
 }
 

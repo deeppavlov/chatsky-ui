@@ -17,13 +17,33 @@ import Condition from "./conditions/Condition"
 import Response from "./responses/Response"
 
 const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
+
+  const { onModalClose, onModalOpen } = useContext(workspaceContext)
+
   const {
     onOpen: onConditionOpen,
     onClose: onConditionClose,
     isOpen: isConditionOpen,
   } = useDisclosure()
 
+  const onConditionOpenHandler = () => {
+    onModalOpen(onConditionOpen)
+  }
+
+  const onConditionCloseHandler = () => {
+    onModalClose(onConditionClose)
+  }
+
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
+
+  const onNodeOpenHandler = () => {
+    onModalOpen(onNodeOpen)
+  }
+
+  const onNodeCloseHandler = () => {
+    onModalClose(onNodeClose)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { handleNodeFlags } = useContext(workspaceContext)
   // console.log({ data, flows })
@@ -75,7 +95,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
               {data.name}
             </p>
           </div>
-          <button onClick={onNodeOpen}>
+          <button onClick={onNodeOpenHandler}>
             <EditNodeIcon />
           </button>
         </div>
@@ -92,9 +112,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
           </div>
           <button
             data-testid={`${data.name.toLowerCase().replace(" ", "")}-add-condition-btn`}
-            onClick={() => {
-              onConditionOpen()
-            }}
+            onClick={onConditionOpenHandler}
             className='add-cnd-btn'>
             <PlusIcon color='var(--condition-default)' />
           </button>
@@ -103,13 +121,13 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
       <ConditionModal
         data={data}
         isOpen={isConditionOpen}
-        onClose={onConditionClose}
+        onClose={onConditionCloseHandler}
         is_create
       />
       <NodeModal
         data={data}
         isOpen={isNodeOpen}
-        onClose={onNodeClose}
+        onClose={onNodeCloseHandler}
       />
     </>
   )

@@ -1,20 +1,20 @@
 import {
   Button,
   Input,
-  Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalProps,
   Tab,
-  Tabs,
+  Tabs
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
+import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
 import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
 import { NodeDataType, NodeType } from "../../types/NodeTypes"
@@ -173,7 +173,7 @@ const ConditionModal = ({
   }
 
   return (
-    <Modal
+    <ModalComponent
       className='bg-background min-h-[584px]'
       motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
       isOpen={isOpen}
@@ -240,7 +240,7 @@ const ConditionModal = ({
           </div>
         </ModalFooter>
       </ModalContent>
-    </Modal>
+    </ModalComponent>
   )
 }
 

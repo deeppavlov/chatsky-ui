@@ -1,16 +1,16 @@
 import {
   Button,
   Input,
-  Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  ModalProps,
+  ModalProps
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useReactFlow } from "reactflow"
+import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
 import { NodeDataType } from "../../types/NodeTypes"
 import ConditionRow from "./components/ConditionRow"
@@ -77,7 +77,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
   // console.log(data.conditions)
 
   return (
-    <Modal
+    <ModalComponent
       className='bg-background min-h-[584px]'
       motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
       isOpen={isOpen}
@@ -147,7 +147,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
           </div>
         </ModalFooter>
       </ModalContent>
-    </Modal>
+    </ModalComponent>
   )
 }
 

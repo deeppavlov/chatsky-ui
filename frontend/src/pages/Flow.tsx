@@ -246,9 +246,9 @@ export default function Flow() {
 
       if (e.key === "Backspace" && mouseOnPane) {
         e.preventDefault()
-        takeSnapshot()
         console.log("backspace")
         if (selected) {
+          takeSnapshot()
           deleteObject(selected)
         }
       }
