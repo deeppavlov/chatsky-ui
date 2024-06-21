@@ -158,8 +158,8 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
                 )
             node["info"].data.response = f"custom_dir.responses.{response.name}"
         elif response.type == "text":
-            logger.debug("Adding response: %s", response.text)
-            node["info"].data.response = {"dff.Message": {"text": node["info"].data.response.text}}
+            logger.debug("Adding response: %s", response.data.text)
+            node["info"].data.response = {"dff.Message": {"text": response.data.text}}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
 
