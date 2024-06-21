@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
 import { runContext } from "../../contexts/runContext"
+import { workspaceContext } from "../../contexts/workspaceContext"
 import { DEV } from "../../env.consts"
 import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import { parseSearchParams } from "../../utils"
@@ -19,6 +20,7 @@ const Chat = () => {
   const { run, runStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const ws = useRef<WebSocket | null>(null)
+  const { setMouseOnPane } = useContext(workspaceContext)
 
   const [isEmoji, setIsEmoji] = useState(false)
 
@@ -260,6 +262,7 @@ const Chat = () => {
           </div>
         </div>
         <Textarea
+          onFocusChange={(focus: boolean) => setMouseOnPane(!focus)}
           data-testid='chat-input'
           value={messageValue}
           onChange={(e) => setMessageValue(e.target.value)}
