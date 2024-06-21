@@ -4,24 +4,28 @@ from typing import Tuple
 from app.api.deps import get_index
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
+from app.services.index import Index
 
 logger = get_logger(__name__)
 
 
-def get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path]:
+def get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
     frontend_graph_path = project_dir / "df_designer" / "frontend_flows.yaml"
     custom_conditions_file = project_dir / "bot" / custom_dir / "conditions.py"
+    custom_responses_file = project_dir / "bot" / custom_dir / "responses.py"
     script_path = project_dir / "bot" / "scripts" / f"build_{build_id}.yaml"
 
     if not frontend_graph_path.exists():
         raise FileNotFoundError(f"File {frontend_graph_path} doesn't exist")
     if not custom_conditions_file.exists():
         raise FileNotFoundError(f"File {custom_conditions_file} doesn't exist")
+    if not custom_responses_file.exists():
+        raise FileNotFoundError(f"File {custom_responses_file} doesn't exist")
     if not script_path.exists():
         script_path.parent.mkdir(parents=True, exist_ok=True)
         script_path.touch()
 
-    return frontend_graph_path, script_path, custom_conditions_file
+    return frontend_graph_path, script_path, custom_conditions_file, custom_responses_file
 
 
 def organize_graph_according_to_nodes(flow_graph, script):
@@ -39,17 +43,13 @@ def organize_graph_according_to_nodes(flow_graph, script):
 
 
 def get_condition(nodes, edge):
-    try:
-        return next(
-            condition
-            for condition in nodes[edge.source]["info"].data.conditions
-            if condition["id"] == edge.sourceHandle
-        )
-    except StopIteration:
-        return None
+    return next(
+        (condition for condition in nodes[edge.source]["info"].data.conditions if condition["id"] == edge.sourceHandle),
+        None,
+    )
 
 
-def write_conditions_to_file(conditions_lines, custom_conditions_file):
+def write_list_to_file(conditions_lines, custom_conditions_file):
     # TODO: make reading and writing conditions async
     with open(custom_conditions_file, "w", encoding="UTF-8") as file:
         for line in conditions_lines:
@@ -78,18 +78,19 @@ def fill_nodes_into_script(nodes, script):
         script[node["flow"]].update(
             {
                 node["info"].data.name: {
-                    "RESPONSE": {"dff.Message": {"text": node["info"].data.response}},
+                    "RESPONSE": node["info"].data.response,
                     "TRANSITIONS": node["TRANSITIONS"],
                 }
             }
         )
 
 
-def append_condition(condition, conditions_lines):
-    condition = "".join([condition.data.python.action + "\n\n"])
-    logger.debug(f"Condition to append: {condition}")
-    logger.debug(f"conditions_lines before appending: {conditions_lines}")
-    all_lines = conditions_lines + condition.split("\n")
+def append(service, services_lines):
+    if service.type == "python":
+        service = "".join([service.data.python.action + "\n\n"])
+    logger.debug("Condition to append: %s", service)
+    logger.debug("services_lines before appending: %s", services_lines)
+    all_lines = services_lines + service.split("\n")
     return all_lines
 
 
@@ -107,10 +108,11 @@ async def _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines):
     )
 
 
-async def replace_condition(condition, conditions_lines, cnd_strt_lineno, index):
+async def replace(service, services_lines, cnd_strt_lineno, index):
     cnd_strt_lineno = cnd_strt_lineno - 1  # conversion from file numeration to list numeration
-    all_lines = conditions_lines.copy()
-    condition = "".join([condition.data.python.action + "\n\n"])
+    all_lines = services_lines.copy()
+    if service.type == "python":
+        condition = "".join([service.data.python.action + "\n\n"])
     new_cnd_lines = condition.split("\n")
 
     old_cnd_lines_num = 0
@@ -133,12 +135,43 @@ async def replace_condition(condition, conditions_lines, cnd_strt_lineno, index)
     return all_lines
 
 
+async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> None:
+    """Organizes the responses in nodes in a format that json-importer accepts.
+    
+    If the response type is "python", its function will be added to responses_lines to be written 
+    to the custom_conditions_file later.
+    * If the response already exists in the responses_lines, it will be replaced with the new one.
+    """
+    for node in nodes.values():
+        response = node["info"].data.response
+        logger.debug("response type: %s", response.type)
+        if response.type == "python":
+            if response.name not in (rsp_names := index.index):
+                logger.debug("Adding response: %s", response.name)
+                rsp_lineno = len(responses_lines)
+                responses_lines = append(response, responses_lines)
+                await index.indexit(response.name, "response", rsp_lineno + 1)
+            else:
+                logger.debug("Replacing response: %s", response.name)
+                responses_lines = await replace(
+                    response, responses_lines, rsp_names[response.name]["lineno"], index
+                )
+            node["info"].data.response = f"custom_dir.responses.{response.name}"
+        elif response.type == "text":
+            logger.debug("Adding response: %s", response.text)
+            node["info"].data.response = {"dff.Message": {"text": node["info"].data.response.text}}
+        else:
+            raise ValueError(f"Unknown response type: {response.type}")
+
+
 async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"):
     index = get_index()
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
-    frontend_graph_path, script_path, custom_conditions_file = get_db_paths(build_id, Path(project_dir), custom_dir)
+    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = get_db_paths(
+        build_id, Path(project_dir), custom_dir
+    )
 
     script = {
         "CONFIG": {"custom_dir": "/".join(["..", custom_dir])},
@@ -146,6 +179,11 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
     flow_graph = await read_conf(frontend_graph_path)
 
     nodes = organize_graph_according_to_nodes(flow_graph, script)
+
+    with open(custom_responses_file, "r", encoding="UTF-8") as file:
+        responses_lines = file.readlines()
+
+    await update_responses_lines(nodes, responses_lines, index)
 
     with open(custom_conditions_file, "r", encoding="UTF-8") as file:
         conditions_lines = file.readlines()
@@ -166,11 +204,11 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
                 if condition.name not in (cnd_names := index.index):
                     logger.debug("Adding condition: %s", condition.name)
                     cnd_lineno = len(conditions_lines)
-                    conditions_lines = append_condition(condition, conditions_lines)
+                    conditions_lines = append(condition, conditions_lines)
                     await index.indexit(condition.name, "condition", cnd_lineno + 1)
                 else:
                     logger.debug("Replacing condition: %s", condition.name)
-                    conditions_lines = await replace_condition(
+                    conditions_lines = await replace(
                         condition, conditions_lines, cnd_names[condition.name]["lineno"], index
                     )
 
@@ -180,5 +218,6 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
 
     fill_nodes_into_script(nodes, script)
 
-    write_conditions_to_file(conditions_lines, custom_conditions_file)
+    write_list_to_file(conditions_lines, custom_conditions_file)
+    write_list_to_file(responses_lines, custom_responses_file)
     await write_conf(script, script_path)
