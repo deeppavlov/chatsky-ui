@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react"
-import { get_condition_methods } from "../api/dff"
+import { get_condition_methods } from "../api/services"
 
 // context to set JSX element on the DOM
 
