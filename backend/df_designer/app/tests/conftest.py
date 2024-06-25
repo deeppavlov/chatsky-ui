@@ -13,7 +13,6 @@ from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
 
-
 DUMMY_BUILD_ID = -1
 
 

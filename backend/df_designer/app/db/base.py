@@ -1,11 +1,11 @@
 from asyncio import Lock
 from pathlib import Path
+from typing import List
 
 import aiofiles
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 from omegaconf.listconfig import ListConfig
-from typing import List
 
 file_lock = Lock()
 
