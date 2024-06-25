@@ -15,10 +15,16 @@ def get_imports_from_file(file_path):
     for item in ast.walk(node):
         if isinstance(item, ast.Import):
             for alias in item.names:
-                imports.append(f"import {alias.name}")
+                if alias.asname:
+                    imports.append(f"import {alias.name} as {alias.asname}")
+                else:
+                    imports.append(f"import {alias.name}")
         elif isinstance(item, ast.ImportFrom):
             module = item.module if item.module else ""
             for alias in item.names:
-                imports.append(f"from {module} import {alias.name}")
+                if alias.asname:
+                    imports.append(f"from {module} import {alias.name} as {alias.asname}")
+                else:
+                    imports.append(f"from {module} import {alias.name}")
 
     return "\n".join(imports)
