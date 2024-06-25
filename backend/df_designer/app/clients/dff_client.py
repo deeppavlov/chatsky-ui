@@ -1,6 +1,5 @@
-from dff.pipeline.pipeline import script_parsing
 import dff.script.conditions as cnd
-
+from dff.pipeline.pipeline import script_parsing
 
 AUTO_COMPLETION_MAP = {
     "exact_match": 'cnd.exact_match(Message("hello"))(ctx, pipeline)',
@@ -10,7 +9,16 @@ AUTO_COMPLETION_MAP = {
 }
 
 
-def get_dff_conditions():
+def get_dff_conditions() -> list[dict]:
+    """Gets the DFF's out-of-the-box conditions.
+
+    Returns:
+        List of conditions info with the following keys:
+            "label": The condition name suggestions to pop up for user.
+            "type": "function".
+            "info": Detailed info about every condition, parsed from DFF docs.
+            "apply": Autocompletion of the conditon call.
+    """
     native_services = script_parsing.get_dff_objects()
     native_conditions = [k.split(".")[-1] for k, _ in native_services.items() if k.startswith("dff.cnd.")]
     cnd_full_info = []

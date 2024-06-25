@@ -7,7 +7,7 @@ starting, stopping, updating, and checking status of processes. Processes themse
 are stored in the `processes` dictionary of process managers.
 """
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from omegaconf import OmegaConf
 
@@ -164,6 +164,12 @@ class BuildManager(ProcessManager):
         return self.last_id
 
     async def check_status(self, id_, index, *args, **kwargs):
+        """Checks the build "id_" process status by calling the `periodically_check_status`
+        method of the process.
+
+        This updates the process status in the database every 2 seconds.
+        The index is refreshed after the build is done/failed.
+        """
         await self.processes[id_].periodically_check_status()
         await index.load()
 
