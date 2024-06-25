@@ -1,6 +1,12 @@
 from io import StringIO
 
+import re
 import aiofiles
+from fastapi import APIRouter, Depends
+from pylint.lint import Run
+from pylint.reporters.text import TextReporter
+from pylint.lint import pylinter
+
 from app.api.deps import get_index
 from app.clients.dff_client import get_dff_objects
 from app.core.config import settings
@@ -36,19 +42,27 @@ async def refresh_index(index: Index = Depends(get_index)):
 
 
 @router.post("/lint_snippet", status_code=200)
-async def lint_snippet(snippet: str) -> str:
+async def lint_snippet(snippet: str) -> dict[str, str]:
     """Lints a snippet with Pylint.
 
     This endpoint Joins the snippet with all imports existing in the conditions.py file and then runs Pylint on it.
     """
+    snippet = snippet.replace(r"\n", "\n")
+
     imports = get_imports_from_file(settings.snippet2lint_path.parent / "conditions.py")
     snippet = "\n\n".join([imports, snippet])
 
-    async with aiofiles.open(settings.snippet2lint_path, "w", encoding="UTF-8") as file:
+    async with aiofiles.open(settings.snippet2lint_path, "wt", encoding="UTF-8") as file:
         await file.write(snippet)
 
     pylint_output = StringIO()
     reporter = TextReporter(pylint_output)
     Run([str(settings.snippet2lint_path), "--disable=W,I,R,C"], reporter=reporter, exit=False)
 
-    return pylint_output.getvalue()
+    error = pylint_output.getvalue()
+    if re.search(r": E\d{4}:", error):
+        response = {"status": "error", "message": error}
+    else:
+        response = {"status": "ok", "message": ""}
+    pylinter.MANAGER.clear_cache()
+    return response

@@ -28,6 +28,8 @@ pytest-mock = "^3.14.0"
 httpx = "^0.27.0"
 httpx-ws = "^0.6.0"
 pylint = "^3.2.3"
+sphinx = "^7.3.7"
+sphinx-rtd-theme = "^2.0.0"
 
 [tool.poetry.scripts]
 dflowd = "app.cli:cli"

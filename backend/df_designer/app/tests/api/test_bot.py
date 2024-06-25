@@ -1,5 +1,5 @@
 import pytest
-from fastapi import BackgroundTasks, HTTPException, WebSocket
+from fastapi import BackgroundTasks, HTTPException
 
 from app.api.api_v1.endpoints.bot import (
     _check_process_status,
@@ -13,9 +13,7 @@ from app.api.api_v1.endpoints.bot import (
     start_run,
 )
 from app.schemas.process_status import Status
-from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
-from app.services.websocket_manager import WebSocketManager
 
 PROCESS_ID = 0
 RUN_ID = 42
@@ -157,10 +155,11 @@ async def test_get_run_logs(mocker, pagination):
 
 @pytest.mark.asyncio
 async def test_connect(mocker):
-    websocket = mocker.MagicMock(spec=WebSocket)
-    websocket_manager = mocker.MagicMock(spec=WebSocketManager())
-    run_manager = mocker.MagicMock(spec=RunManager())
-    run_process = mocker.MagicMock(spec=RunProcess(RUN_ID))
+    websocket = mocker.AsyncMock()
+    websocket_manager = mocker.AsyncMock()
+    websocket_manager.disconnect = mocker.MagicMock()
+    run_manager = mocker.MagicMock()
+    run_process = mocker.MagicMock()
     run_manager.processes = {RUN_ID: run_process}
     mocker.patch.object(websocket, "query_params", {"run_id": str(RUN_ID)})
 
