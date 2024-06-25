@@ -26,7 +26,7 @@ def _map_to_str(params: Dict[str, Any]):
 
 
 class Process(ABC):
-    """Base class for build and run processes."""
+    """Base for build and run processes."""
 
     def __init__(self, id_: int, preset_end_status: str = ""):
         self.id: int = id_

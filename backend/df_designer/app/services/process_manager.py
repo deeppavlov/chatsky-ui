@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 
 
 class ProcessManager:
-    """Base class for build and run process managers."""
+    """Base for build and run process managers."""
 
     def __init__(self):
         self.processes: Dict[int, BuildProcess | RunProcess] = {}
