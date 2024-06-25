@@ -136,3 +136,8 @@ run_dev: check_project_arg install_env ## Runs both backend and frontend in dev 
 .PHONY: init_proj
 init_proj: install_backend_env ## Initiates a new project using dflowd
 	cd ${BACKEND_DIR} && poetry run dflowd init --destination ../../
+
+
+.PHONY: build_docs
+build_docs: install_backend_env ## Builds the docs
+	cd docs && make html && cd ../
