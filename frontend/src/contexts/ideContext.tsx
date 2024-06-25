@@ -1,11 +1,18 @@
 import React, { createContext, useEffect, useState } from "react"
-import { get_condition_methods } from "../api/dff"
+import { get_condition_methods } from "../api/services"
 
 // context to set JSX element on the DOM
 
+type dffMethodType = {
+  label: string
+  type: string
+  info: string
+  apply: string
+}
+
 type ideContextType = {
-  methods: string[]
-  setMethods: React.Dispatch<React.SetStateAction<string[]>>
+  methods: dffMethodType[]
+  setMethods: React.Dispatch<React.SetStateAction<dffMethodType[]>>
 }
 
 export const IdeContext = createContext<ideContextType>({
@@ -18,12 +25,11 @@ interface PopUpProviderProps {
 }
 
 const IdeProvider = ({ children }: PopUpProviderProps) => {
-  const [methods, setMethods] = useState<string[]>([])
+  const [methods, setMethods] = useState<dffMethodType[]>([])
 
   const getConditionMethods = async () => {
     const methods_data = await get_condition_methods()
-    setMethods(methods_data)
-    console.log(methods_data)
+    setMethods(methods_data.data.map((method: dffMethodType) => ({ ...method, apply: "" })))
   }
 
   useEffect(() => {

@@ -75,10 +75,7 @@ function dffAutocomplete(context: CompletionContext) {
   if (!word) return null;
   if (word.from === word.to && !context.explicit) return null;
 
-  const options = dffMethods.map((method) => ({
-    label: `cnd.${method}`,
-    type: "function",
-  }));
+  const options = dffMethods
   
 
   return {
