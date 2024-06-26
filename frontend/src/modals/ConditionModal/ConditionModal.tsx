@@ -263,7 +263,6 @@ const ConditionModal = ({
     const currentFlow = flows.find((flow) => flow.name === flowId)
     const [validate_name, validate_action]: ValidateErrorType[] = [
       validateConditionName(is_create),
-      validateConditionAction(),
     ]
     if (validate_name.status && validate_action.status) {
       if (node && currentFlow) {
@@ -291,9 +290,6 @@ const ConditionModal = ({
     } else {
       if (!validate_name.status) {
         toast.error(`Condition name is not valid: \n ${validate_name.reason}`)
-      }
-      if (!validate_action.status) {
-        toast.error(`Condition action is not valid: \n ${validate_action.reason}`)
       }
     }
   }
