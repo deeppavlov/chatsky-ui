@@ -18,26 +18,30 @@ class WebSocketManager:
 
     def __init__(self):
         self.pending_tasks: Dict[WebSocket, Set[Task]] = dict()
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: dict[int, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, run_id: int, websocket: WebSocket):
         """Accepts the websocket connection and marks it as active connection."""
         await websocket.accept()
-        self.active_connections.append(websocket)
+        self.active_connections.update({run_id: websocket})
 
-    def disconnect(self, websocket: WebSocket):
+    async def close(self, run_id: int):
+        """Closes an active websocket connection."""
+        websocket = self.active_connections[run_id]
+        await websocket.close()
+
+    def disconnect(self, run_id:int, websocket: WebSocket): # no need to pass websocket. use active_connections[run_id]
         """Cancels pending tasks of the open websocket process and removes it from active connections."""
-        # TODO: await websocket.close()
         if websocket in self.pending_tasks:
             logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:
                 task.cancel()
             del self.pending_tasks[websocket]
-        self.active_connections.remove(websocket)
+        del self.active_connections[run_id]
 
-    def check_status(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            return websocket  # return Status!
+    def is_connected(self, run_id: int):
+        """Returns True if the run_id is connected to a websocket, False otherwise."""
+        return run_id in self.active_connections
 
     async def send_process_output_to_websocket(
         self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
@@ -50,9 +54,13 @@ class WebSocketManager:
                     break
                 await websocket.send_text(response.decode().strip())
         except WebSocketDisconnect:
-            logger.info("Websocket connection is closed by client")
-        except RuntimeError:
-            raise
+            logger.info("Websocket connection is closed")
+            self.disconnect(run_id, websocket)
+        except RuntimeError as e:
+            if "Unexpected ASGI message 'websocket.send'" in str(e) or "Cannot call 'send' once a close message has been sent" in str(e):
+                logger.info("Websocket connection was forced to close.")
+            else:
+                raise e
 
     async def forward_websocket_messages_to_process(
         self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
@@ -65,8 +73,12 @@ class WebSocketManager:
                     break
                 await process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
         except asyncio.CancelledError:
-            logger.info("Websocket connection is closed")
+            logger.info("Websocket connection is cancelled")
         except WebSocketDisconnect:
-            logger.info("Websocket connection is closed by client")
-        except RuntimeError:
-            raise
+            logger.info("Websocket connection is closed")
+            self.disconnect(run_id, websocket)
+        except RuntimeError as e:
+            if "Unexpected ASGI message 'websocket.send'" in str(e) or "Cannot call 'send' once a close message has been sent" in str(e):
+                logger.info("Websocket connection was forced to close.")
+            else:
+                raise e

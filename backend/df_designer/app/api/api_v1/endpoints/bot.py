@@ -10,6 +10,7 @@ from app.schemas.preset import Preset
 from app.services.index import Index
 from app.services.process_manager import BuildManager, ProcessManager, RunManager
 from app.services.websocket_manager import WebSocketManager
+from app.schemas.process_status import Status
 
 router = APIRouter()
 
@@ -169,7 +170,7 @@ async def start_run(
 
 
 @router.get("/run/stop/{run_id}", status_code=200)
-async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)) -> dict[str, str]:
+async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager), websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager)) -> dict[str, str]:
     """Stops a `run` process with the given id.
 
     Args:
@@ -182,7 +183,9 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
     Returns:
         {"status": "ok"}: in case of stopping a process successfully.
     """
-
+    if websocket_manager.is_connected(run_id):
+        logger.info("Closing websocket connection")
+        await websocket_manager.close(run_id)
     return await _stop_process(run_id, run_manager, process="run")
 
 
@@ -263,8 +266,11 @@ async def connect(
     if run_id not in run_manager.processes:
         logger.error("process with run_id '%s' exited or never existed", run_id)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
+    if await run_manager.get_status(run_id) != Status.ALIVE:
+        logger.error("process with run_id '%s' isn't Alive.", run_id)
+        raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
 
-    await websocket_manager.connect(websocket)
+    await websocket_manager.connect(run_id, websocket)
     logger.info("Websocket for run process '%s' has been opened", run_id)
 
     await websocket.send_text("Start chatting")
@@ -281,4 +287,3 @@ async def connect(
         [output_task, input_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
-    websocket_manager.disconnect(websocket)
