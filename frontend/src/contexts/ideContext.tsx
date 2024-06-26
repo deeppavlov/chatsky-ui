@@ -29,7 +29,7 @@ const IdeProvider = ({ children }: PopUpProviderProps) => {
 
   const getConditionMethods = async () => {
     const methods_data = await get_condition_methods()
-    setMethods(methods_data.data.map((method: dffMethodType) => ({ ...method, apply: "" })))
+    setMethods(methods_data.data)
   }
 
   useEffect(() => {
