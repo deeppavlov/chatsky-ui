@@ -49,6 +49,7 @@ class WebSocketManager:
         - Cancels pending tasks of the open websocket process.
         - Removes the websocket from active connections."""
         dict_chats = await read_conf_as_obj(settings.chats_path)
+        dict_chats = dict_chats or []
         dict_chats.append(self.active_connections[run_id]["chat"]) # type: ignore
         await write_conf(dict_chats, settings.chats_path)
         logger.info("Chats info were written to DB")
