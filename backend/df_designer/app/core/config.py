@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     builds_path: Path = Path(f"{work_directory}/df_designer/builds.yaml")
     runs_path: Path = Path(f"{work_directory}/df_designer/runs.yaml")
+    chats_path: Path = Path(f"{work_directory}/df_designer/chats.yaml")
     dir_logs: Path = Path(f"{work_directory}/df_designer/logs")
     frontend_flows_path: Path = Path(f"{work_directory}/df_designer/frontend_flows.yaml")
     index_path: Path = Path(f"{work_directory}/bot/custom/.services_index.yaml")

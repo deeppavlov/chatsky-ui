@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketException, status
+from omegaconf import OmegaConf
 
 from app.api import deps
 from app.core.logger_config import get_logger
@@ -11,6 +12,8 @@ from app.services.index import Index
 from app.services.process_manager import BuildManager, ProcessManager, RunManager
 from app.services.websocket_manager import WebSocketManager
 from app.schemas.process_status import Status
+from app.core.config import settings
+from app.db.base import read_conf
 
 router = APIRouter()
 
@@ -287,3 +290,10 @@ async def connect(
         [output_task, input_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
+
+
+@router.get("/run/chats/read", response_model=dict[str, str | list[dict]], status_code=200)
+async def read_chats():
+    omega_chats = await read_conf(settings.chats_path)
+    dict_chats = OmegaConf.to_container(omega_chats, resolve=True)
+    return {"status": "ok", "data": dict_chats}  # type: ignore

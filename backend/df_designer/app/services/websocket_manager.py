@@ -4,11 +4,14 @@ Websocket class for controling websocket operations.
 import asyncio
 from asyncio.tasks import Task
 from typing import Dict, Set
-
+from uuid import uuid4
 from fastapi import WebSocket, WebSocketDisconnect
+from datetime import datetime
 
 from app.core.logger_config import get_logger
 from app.services.process_manager import ProcessManager
+from app.db.base import write_conf, read_conf_as_obj
+from app.core.config import settings
 
 logger = get_logger(__name__)
 
@@ -18,20 +21,38 @@ class WebSocketManager:
 
     def __init__(self):
         self.pending_tasks: Dict[WebSocket, Set[Task]] = dict()
-        self.active_connections: dict[int, WebSocket] = {}
+        self.active_connections: dict[int, dict] = {}
 
     async def connect(self, run_id: int, websocket: WebSocket):
         """Accepts the websocket connection and marks it as active connection."""
         await websocket.accept()
-        self.active_connections.update({run_id: websocket})
+
+        ws_id = uuid4().hex
+        self.active_connections[run_id] = {
+            "websocket": websocket,
+            "chat": {
+                "id": ws_id,
+                "timestamp" : datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+                "messages" : []
+            }
+        }
 
     async def close(self, run_id: int):
         """Closes an active websocket connection."""
-        websocket = self.active_connections[run_id]
+        websocket = self.active_connections[run_id]["websocket"]
         await websocket.close()
 
-    def disconnect(self, run_id:int, websocket: WebSocket): # no need to pass websocket. use active_connections[run_id]
-        """Cancels pending tasks of the open websocket process and removes it from active connections."""
+    async def disconnect(self, run_id:int, websocket: WebSocket): # no need to pass websocket. use active_connections[run_id]
+        """Executes cleanup.
+        
+        - Writes the chat info to DB.
+        - Cancels pending tasks of the open websocket process.
+        - Removes the websocket from active connections."""
+        dict_chats = await read_conf_as_obj(settings.chats_path)
+        dict_chats.append(self.active_connections[run_id]["chat"]) # type: ignore
+        await write_conf(dict_chats, settings.chats_path)
+        logger.info("Chats info were written to DB")
+
         if websocket in self.pending_tasks:
             logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:
@@ -52,10 +73,12 @@ class WebSocketManager:
                 response = await process_manager.processes[run_id].read_stdout()
                 if not response:
                     break
-                await websocket.send_text(response.decode().strip())
+                text = response.decode().strip()
+                await websocket.send_text(text)
+                self.active_connections[run_id]["chat"]["messages"].append(text)
         except WebSocketDisconnect:
             logger.info("Websocket connection is closed")
-            self.disconnect(run_id, websocket)
+            await self.disconnect(run_id, websocket)
         except RuntimeError as e:
             if "Unexpected ASGI message 'websocket.send'" in str(e) or "Cannot call 'send' once a close message has been sent" in str(e):
                 logger.info("Websocket connection was forced to close.")
@@ -72,11 +95,12 @@ class WebSocketManager:
                 if not user_message:
                     break
                 await process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
+                self.active_connections[run_id]["chat"]["messages"].append(user_message)
         except asyncio.CancelledError:
             logger.info("Websocket connection is cancelled")
         except WebSocketDisconnect:
             logger.info("Websocket connection is closed")
-            self.disconnect(run_id, websocket)
+            await self.disconnect(run_id, websocket)
         except RuntimeError as e:
             if "Unexpected ASGI message 'websocket.send'" in str(e) or "Cannot call 'send' once a close message has been sent" in str(e):
                 logger.info("Websocket connection was forced to close.")
