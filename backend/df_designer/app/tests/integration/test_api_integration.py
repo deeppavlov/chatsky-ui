@@ -159,3 +159,17 @@ async def test_connect_to_ws(mocker):
             async with aconnect_ws(f"http://localhost:8000/api/v1/bot/run/connect?run_id={run_id}", client) as ws:
                 message = await ws.receive_text()
                 assert message == "Start chatting"
+
+
+def test_search_service(client):
+    get_response = client.get("/api/v1/services/search/is_upper_case")
+    assert get_response.status_code == 200
+    data = get_response.json()["data"]
+    assert data
+
+
+def test_get_conditions(client):
+    get_response = client.get("/api/v1/services/get_conditions")
+    assert get_response.status_code == 200
+    data = get_response.json()["data"]
+    assert data

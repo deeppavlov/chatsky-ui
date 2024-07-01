@@ -61,11 +61,11 @@ check_project_arg:
 
 .PHONY: run_backend
 run_backend: check_project_arg ## Runs backend using the built dist. NEEDS arg: PROJECT_NAME
-	cd ${PROJECT_NAME} && poetry install && poetry run dflowd run_backend --conf-reload="False"
+	cd ${PROJECT_NAME} && poetry install && poetry run dflowd run_app --conf-reload="False"
 
 .PHONY: run_dev_backend
 run_dev_backend: check_project_arg install_backend_env ## Runs backend in dev mode. NEEDS arg: PROJECT_NAME
-	cd ${BACKEND_DIR} && poetry run dflowd run_backend --project-dir ../../${PROJECT_NAME}
+	cd ${BACKEND_DIR} && poetry run dflowd run_app --project-dir ../../${PROJECT_NAME}
 
 # backend tests
 .PHONY: unit_tests
