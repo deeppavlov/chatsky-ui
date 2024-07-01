@@ -1,7 +1,8 @@
 import axios from "axios";
-import { VITE_BASE_API_URL } from "../env.consts";
+import { DEV, VITE_BASE_API_URL } from "../env.consts";
 
-const baseURL = VITE_BASE_API_URL ?? "http://localhost:8000/api/v1"
+// const baseURL = VITE_BASE_API_URL ?? "http://localhost:8000/api/v1"
+const baseURL = DEV ? VITE_BASE_API_URL : window.location.href.replace(window.location.pathname, '/api/v1').replace('localhost', '0.0.0.0')
 
 export const $v1 = axios.create({
   baseURL: baseURL
