@@ -88,13 +88,8 @@ def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loo
         asyncio.run(_execute_command(command_to_run))
 
 
-async def _run_server() -> None:
-    """Run the server."""
-    await settings.server.run()
-
-
-@cli.command("run_backend")
-def run_backend(
+@cli.command("run_app")
+def run_app(
     ip_address: str = settings.host,
     port: int = settings.backend_port,
     conf_reload: str = str(settings.conf_reload),
@@ -111,6 +106,7 @@ def run_backend(
         settings.backend_port,
         reload=settings.conf_reload,
         reload_dirs=str(settings.work_directory),
+        loop="asyncio",
     )
     settings.server = uvicorn.Server(settings.uvicorn_config)
     settings.server.run()

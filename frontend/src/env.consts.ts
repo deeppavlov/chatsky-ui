@@ -1,5 +1,3 @@
-const { VITE_BASE_API_URL } = import.meta.env
+const { VITE_BASE_API_URL, DEV } = import.meta.env
 
-export {
-  VITE_BASE_API_URL
-}
+export { DEV, VITE_BASE_API_URL }

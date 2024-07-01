@@ -7,9 +7,9 @@ By indexing the project, the Index service creates an in-memory representation t
 quickly accessed when needed.
 """
 import asyncio
+from pathlib import Path
 from typing import Dict, List, Optional
 
-from pathlib import Path
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 

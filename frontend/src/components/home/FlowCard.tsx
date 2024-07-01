@@ -1,6 +1,7 @@
+import classNames from "classnames"
 import { Edit, Trash2 } from "lucide-react"
 import React, { useCallback, useContext, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
 import { FlowType } from "../../types/FlowTypes"
 
@@ -13,7 +14,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
     (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      deleteFlow(flow)
+      if (flow.name !== "Global") deleteFlow(flow)
     },
     [deleteFlow, flow]
   )
@@ -23,7 +24,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       className='flow-card'
-      data-testid={'flow-card'}
+      data-testid={"flow-card"}
       key={flow.name}>
       <div>
         <div className='flex items-center justify-between min-h-9'>
@@ -47,13 +48,18 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
         <p className=''>{flow.description}</p>
       </div>
       <div className='w-full flex items-center justify-end'>
-        <Link
+        <button
           data-testid={`${flow.name}-edit-btn`}
-          className='bg-bg-secondary border border-border hover:border-node-selected hover:bg-node-header rounded-md py-1 px-2 flex items-center gap-2'
-          to={`/app/flow/${flow.name}`}>
+          className={classNames(
+            "bg-bg-secondary border border-border hover:border-node-selected hover:bg-node-header rounded-md py-1 px-2 flex items-center gap-2",
+            flow.name === "Global" && "hidden"
+          )}
+          onClick={() => {
+            if (flow.name !== "Global") navigate(`/app/flow/${flow.name}`)
+          }}>
           <Edit className='w-5 h-5' />
           Edit flow
-        </Link>
+        </button>
       </div>
     </div>
   )

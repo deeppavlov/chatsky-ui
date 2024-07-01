@@ -9,7 +9,7 @@ import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
@@ -174,10 +174,10 @@ class Process(ABC):
             output = await asyncio.wait_for(self.read_stdout(), timeout=timeout)
             if not output:
                 return False
-            self.logger.debug("Process output afer communication: %s", output.decode())
+            self.logger.debug("Process is alive and output afer communication is: %s", output.decode())
             return True
         except asyncio.exceptions.TimeoutError:
-            self.logger.debug("Process did not accept input within the timeout period.")
+            self.logger.debug("Process is still running.")
             return False
 
 
@@ -198,7 +198,7 @@ class RunProcess(Process):
 
     async def update_db_info(self) -> None:
         # save current run info into runs_path
-        self.logger.info("Updating db run info")
+        self.logger.debug("Updating db run info")
         runs_conf = await read_conf(settings.runs_path)
 
         run_params = await self.get_full_info()

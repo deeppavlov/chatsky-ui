@@ -1,6 +1,6 @@
 import { Button, Spinner } from "@nextui-org/react"
 import classNames from "classnames"
-import { ChevronLeft, Wrench } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import { useContext, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
@@ -36,14 +36,15 @@ const BuildMenu = () => {
         data-testid='run-btn'
         isIconOnly
         style={{}}
-        onClick={() => {
+        onClick={async () => {
           if (runStatus !== "alive") {
-            runStart({ end_status: "success", wait_time: 0 })
+            await buildStart({ wait_time: 1, end_status: "success" })
+            await runStart({ end_status: "success", wait_time: 0 })
           } else if (runStatus === "alive" && run) {
             runStop(run?.id)
           }
         }}
-        isLoading={runPending}
+        isLoading={runPending || buildPending}
         spinner={
           <Spinner
             color='danger'
@@ -51,8 +52,7 @@ const BuildMenu = () => {
           />
         }
         className={classNames(
-          "flex items-center justify-center build-menu-item",
-          !showBuildMenu && "build-menu-item-disabled"
+          "flex items-center justify-center build-menu-item"
         )}>
         {runStatus !== "alive" ? (
           <PlayIcon className='w-[18px] h-[18px]' />
@@ -71,7 +71,7 @@ const BuildMenu = () => {
           )}
         />
       </Button>
-      <Button
+      {/* <Button
         data-testid='build-btn'
         isIconOnly
         spinner={
@@ -96,7 +96,7 @@ const BuildMenu = () => {
             buildPending && "bg-warning"
           )}
         />
-      </Button>
+      </Button> */}
       <Button
         data-testid='chat-btn'
         onClick={() => {

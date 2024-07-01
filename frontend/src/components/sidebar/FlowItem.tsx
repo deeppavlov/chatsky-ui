@@ -22,18 +22,22 @@ const FlowItem = ({
           <div
             key={flow.name}
             onClick={() => {
-              navigate(`/app/flow/${flow.name}`)
+              if (flow.name !== "Global") navigate(`/app/flow/${flow.name}`)
             }}
             className={classNames(
               "w-full flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer",
-              flow.name === activeFlow && "bg-bg-secondary"
+              flow.name === "Global" && "mb-2",
+              flow.name === activeFlow && "bg-bg-secondary",
             )}>
             <span
               style={{
                 backgroundColor: flow.color ?? "#999",
               }}
               className='block min-w-4 min-h-4 rounded-full'></span>
-            <p>{flow?.name}</p>
+            <p>
+              {flow?.name}
+              {flow?.name === "Global" && <span className="text-xs"> (in progress)</span>}
+            </p>
           </div>
           <div className='pl-3'>
             {contextFlows.filter((f) => f.subflow === flow.name).length > 0 && (
