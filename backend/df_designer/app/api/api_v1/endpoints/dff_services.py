@@ -13,9 +13,6 @@ from app.core.config import settings
 from app.core.logger_config import get_logger
 from app.services.index import Index
 from app.utils.ast_utils import get_imports_from_file
-from fastapi import APIRouter, Depends
-from pylint.lint import Run
-from pylint.reporters.text import TextReporter
 
 router = APIRouter()
 

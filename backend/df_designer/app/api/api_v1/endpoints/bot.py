@@ -10,7 +10,6 @@ from app.schemas.preset import Preset
 from app.services.index import Index
 from app.services.process_manager import BuildManager, ProcessManager, RunManager
 from app.services.websocket_manager import WebSocketManager
-from app.services.index import Index
 
 router = APIRouter()
 
