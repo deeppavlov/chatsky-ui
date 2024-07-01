@@ -1,14 +1,14 @@
-from io import StringIO
-
 import re
+from io import StringIO
+from typing import Optional
+
 import aiofiles
 from fastapi import APIRouter, Depends
-from pylint.lint import Run
+from pylint.lint import Run, pylinter
 from pylint.reporters.text import TextReporter
-from pylint.lint import pylinter
 
 from app.api.deps import get_index
-from app.clients.dff_client import get_dff_objects
+from app.clients.dff_client import get_dff_conditions
 from app.core.config import settings
 from app.core.logger_config import get_logger
 from app.services.index import Index
@@ -23,22 +23,13 @@ logger = get_logger(__name__)
 
 
 @router.get("/search/{service_name}", status_code=200)
-async def search_service(service_name: str, index: Index = Depends(get_index)):
+async def search_service(service_name: str, index: Index = Depends(get_index)) -> dict[str, str | Optional[list]]:
+    """Searches for a custom service by name and returns its code.
+
+    A service could be a condition, reponse, or pre/postservice.
+    """
     response = await index.search_service(service_name)
-    return response
-
-
-@router.get("/get_conditions", status_code=200)
-async def get_all_services():
-    native_services = get_dff_objects()
-    native_conditions = [k.split(".")[-1] for k, _ in native_services.items() if k.startswith("dff.cnd.")]
-
-    return native_conditions
-
-@router.get("/refresh_index", status_code=200)
-async def refresh_index(index: Index = Depends(get_index)):
-    await index.load()
-    return {"status": "ok"}
+    return {"status": "ok", "data": response}
 
 
 @router.post("/lint_snippet", status_code=200)
@@ -66,3 +57,9 @@ async def lint_snippet(snippet: str) -> dict[str, str]:
         response = {"status": "ok", "message": ""}
     pylinter.MANAGER.clear_cache()
     return response
+
+
+@router.get("/get_conditions", status_code=200)
+async def get_conditions() -> dict[str, str | list]:
+    """Gets the dff's out-of-the-box conditions."""
+    return {"status": "ok", "data": get_dff_conditions()}
