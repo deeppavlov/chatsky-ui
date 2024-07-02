@@ -73,7 +73,7 @@ class FirstLineWidget extends WidgetType {
   }
 
   toDOM() {
-    const html = `<span style="color: #ff8800;">def</span> <span style="color: #0400ff;">${this.name}</span>(<span style="color: #00cc99;">ctx</span>: <span style="color: #00cc99;">Context</span>, <span style="color: #00cc99;">pipeline</span>: <span style="color: #00cc99;">Pipeline</span>)-&gt; <span style="color: #00cc99;">bool</span>:`;
+    const html = `<span style="color: #999;">def</span> <span style="color: #999;">${this.name}</span>(<span style="color: #999;">ctx</span>: <span style="color: #999;">Context</span>, <span style="color: #999;">pipeline</span>: <span style="color: #999;">Pipeline</span>)-&gt; <span style="color: #999;">bool</span>:`;
     const wrap = document.createElement("span");
     wrap.innerHTML = html;
     return wrap;
