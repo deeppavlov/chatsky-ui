@@ -119,7 +119,7 @@
 
 #       - name: Run back & front
 #         run: |
-#           python -m poetry run dflowd run_backend &
+#           python -m poetry run dflowd run_app &
 #           sleep 10
 #         working-directory: df_designer_project
 
