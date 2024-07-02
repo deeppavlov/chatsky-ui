@@ -11,6 +11,7 @@ from app.api.deps import get_index
 from app.clients.dff_client import get_dff_conditions
 from app.core.config import settings
 from app.core.logger_config import get_logger
+from app.schemas.code_snippet import CodeSnippet
 from app.services.index import Index
 from app.utils.ast_utils import get_imports_from_file
 
@@ -30,18 +31,18 @@ async def search_service(service_name: str, index: Index = Depends(get_index)) -
 
 
 @router.post("/lint_snippet", status_code=200)
-async def lint_snippet(snippet: str) -> dict[str, str]:
+async def lint_snippet(snippet: CodeSnippet) -> dict[str, str]:
     """Lints a snippet with Pylint.
 
     This endpoint Joins the snippet with all imports existing in the conditions.py file and then runs Pylint on it.
     """
-    snippet = snippet.replace(r"\n", "\n")
+    code_snippet = snippet.code.replace(r"\n", "\n")
 
     imports = get_imports_from_file(settings.snippet2lint_path.parent / "conditions.py")
-    snippet = "\n\n".join([imports, snippet])
+    code_snippet = "\n\n".join([imports, code_snippet])
 
     async with aiofiles.open(settings.snippet2lint_path, "wt", encoding="UTF-8") as file:
-        await file.write(snippet)
+        await file.write(code_snippet)
 
     pylint_output = StringIO()
     reporter = TextReporter(pylint_output)
