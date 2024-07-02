@@ -9,11 +9,13 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react"
+import classNames from "classnames"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
+import { lint_service } from "../../api/services"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
 import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
@@ -21,8 +23,6 @@ import { NodeDataType, NodeType } from "../../types/NodeTypes"
 import { generateNewConditionBase } from "../../utils"
 import PythonCondition from "./components/PythonCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
-import { lint_service } from "../../api/services"
-import classNames from "classnames"
 
 type ConditionModalProps = {
   data: NodeDataType
@@ -261,10 +261,8 @@ const ConditionModal = ({
     const nodes = getNodes()
     const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
-    const [validate_name, validate_action]: ValidateErrorType[] = [
-      validateConditionName(is_create),
-    ]
-    if (validate_name.status && validate_action.status) {
+    const validate_name: ValidateErrorType = validateConditionName(is_create)
+    if (validate_name.status) {
       if (node && currentFlow) {
         const new_node = {
           ...node,
