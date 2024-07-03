@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dflowd"
-version = "0.1.0-beta.1"
+version = "0.1.0b1"
 description = "Dialog Flow Designer"
 license = "Apache-2.0"
 authors = [
@@ -30,6 +30,7 @@ httpx-ws = "^0.6.0"
 pylint = "^3.2.3"
 sphinx = "^7.3.7"
 sphinx-rtd-theme = "^2.0.0"
+toml = "^0.10.2"
 
 [tool.poetry.scripts]
 dflowd = "app.cli:cli"

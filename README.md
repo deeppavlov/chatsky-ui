@@ -5,7 +5,7 @@ Ensure you have Python version 3.10 or higher installed.
 ## Installation
 To install the necessary package, run the following command:
 ```bash
-pip install dflowd==0.1.0b0
+pip install dflowd --pre
 ```
 
 ## Project Initiation
