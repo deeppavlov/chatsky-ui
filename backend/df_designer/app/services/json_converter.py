@@ -169,10 +169,10 @@ async def _replace(service: DictConfig, services_lines: list, cnd_strt_lineno: i
     return all_lines
 
 
-async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> None:
+async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> tuple[dict, list[str]]:
     """Organizes the responses in nodes in a format that json-importer accepts.
-    
-    If the response type is "python", its function will be added to responses_lines to be written 
+
+    If the response type is "python", its function will be added to responses_lines to be written
     to the custom_conditions_file later.
     * If the response already exists in the responses_lines, it will be replaced with the new one.
     """
@@ -187,15 +187,23 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
                 await index.indexit(response.name, "response", rsp_lineno + 1)
             else:
                 logger.debug("Replacing response: %s", response.name)
-                responses_lines = await _replace(
-                    response, responses_lines, rsp_names[response.name]["lineno"], index
-                )
+                responses_lines = await _replace(response, responses_lines, rsp_names[response.name]["lineno"], index)
             node["info"].data.response = f"custom_dir.responses.{response.name}"
         elif response.type == "text":
             logger.debug("Adding response: %s", response.data.text)
             node["info"].data.response = {"dff.Message": {"text": response.data.text}}
+        elif response.type == "choice":
+            # logger.debug("Adding response: %s", )
+            dff_responses = []
+            for message in response.data:
+                if message.type == "text":
+                    dff_responses.append({"dff.Message": {"text": message["text"]}})
+                else:
+                    raise ValueError(f"Unknown response type: {response.type}. Choice messages accept only texts.")
+            node["info"].data.response = {"dff.rsp.choice": dff_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
+    return nodes, responses_lines
 
 
 async def converter(build_id: int, project_dir: str, custom_dir: str = "custom") -> None:
@@ -204,7 +212,9 @@ async def converter(build_id: int, project_dir: str, custom_dir: str = "custom")
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
-    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id, Path(project_dir), custom_dir)
+    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(
+        build_id, Path(project_dir), custom_dir
+    )
 
     script = {
         "CONFIG": {"custom_dir": "/".join(["..", custom_dir])},
@@ -216,7 +226,7 @@ async def converter(build_id: int, project_dir: str, custom_dir: str = "custom")
     with open(custom_responses_file, "r", encoding="UTF-8") as file:
         responses_lines = file.readlines()
 
-    await update_responses_lines(nodes, responses_lines, index)
+    nodes, responses_lines = await update_responses_lines(nodes, responses_lines, index)
 
     with open(custom_conditions_file, "r", encoding="UTF-8") as file:
         conditions_lines = file.readlines()
