@@ -1,7 +1,6 @@
 import {
   Button,
   Input,
-  Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
@@ -13,6 +12,7 @@ import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
+import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
 import { FlowType } from "../../types/FlowTypes"
@@ -83,7 +83,7 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   }
 
   return (
-    <Modal
+    <ModalComponent
       className='bg-background min-h-[584px]'
       motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
       isOpen={isOpen}
@@ -216,7 +216,7 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
           </ModalFooter>
         </ModalContent>
       )}
-    </Modal>
+    </ModalComponent>
   )
 }
 

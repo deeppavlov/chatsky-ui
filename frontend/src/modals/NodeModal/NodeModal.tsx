@@ -1,7 +1,6 @@
 import {
   Button,
   Input,
-  Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
@@ -9,8 +8,10 @@ import {
   ModalProps
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useReactFlow } from "reactflow"
+import ModalComponent from "../../components/ModalComponent"
+import { flowContext } from "../../contexts/flowContext"
 import { NodeDataType } from "../../types/NodeTypes"
 import ConditionRow from "./components/ConditionRow"
 
@@ -22,8 +23,15 @@ type NodeModalProps = {
 }
 
 const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
-  const [nodeDataState, setNodeDataState] = useState<NodeDataType>(data)
   const { getNodes, setNodes } = useReactFlow()
+  const { quietSaveFlows } = useContext(flowContext)
+  const [nodeDataState, setNodeDataState] = useState<NodeDataType>(data)
+
+  useEffect(() => {
+    setNodeDataState(getNodes().find((node) => node.data.id === data.id)?.data ?? data)
+    console.log('NODE_MODAL_CHANGES')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   const setDataStateValue = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,23 +43,41 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
   const onNodeSave = () => {
     const nodes = getNodes()
     const node = nodes.find((node) => node.data.id === data.id)
+    const new_nodes = nodes.map((node) => {
+      if (node.data.id === data.id) {
+        return { ...node, data: { ...node.data, ...nodeDataState } }
+      }
+      return node
+    })
     if (node) {
-      setNodes(
-        nodes.map((node) => {
-          if (node.data.id === data.id) {
-            return { ...node, data: { ...node.data, ...nodeDataState } }
-          }
-          return node
-        })
-      )
+      setNodes(() => new_nodes)
+      console.log("new nodes is", new_nodes)
     }
+    quietSaveFlows()
     onClose()
+  }
+
+  const onNodeDelete = () => {
+    const nodes = getNodes()
+    const new_nodes = nodes.filter((node) => node.data.id !== data.id)
+    setNodes(new_nodes)
+    quietSaveFlows()
+    onClose()
+  }
+
+  const deleteCondition = (id: string) => {
+    if (nodeDataState.conditions) {
+      setNodeDataState({
+        ...nodeDataState,
+        conditions: nodeDataState.conditions.filter((c) => c.id !== id),
+      })
+    }
   }
 
   // console.log(data.conditions)
 
   return (
-    <Modal
+    <ModalComponent
       className='bg-background min-h-[584px]'
       motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
       isOpen={isOpen}
@@ -80,16 +106,17 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
             />
           </div>
           <div>
-            <p className="text-sm font-medium mb-2 mt-2"> Conditions (x) </p>
-            <div className="border border-border rounded-xl">
+            <p className='text-sm font-medium mb-2 mt-2'> Conditions (x) </p>
+            <div className='border border-border rounded-xl'>
               <div className='grid grid-cols-3 gap-4 px-4 py-2'>
                 <div>NAME</div>
                 <div>PRIORITY</div>
                 <div>ACTIONS</div>
               </div>
-              <div className="grid">
-                {data.conditions?.map((cnd) => (
+              <div className='grid'>
+                {nodeDataState.conditions?.map((cnd) => (
                   <ConditionRow
+                    deleteConditionFn={deleteCondition}
                     key={cnd.id}
                     cnd={cnd}
                   />
@@ -120,7 +147,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
           </div>
         </ModalFooter>
       </ModalContent>
-    </Modal>
+    </ModalComponent>
   )
 }
 

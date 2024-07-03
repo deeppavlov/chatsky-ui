@@ -1,8 +1,9 @@
 import { useDisclosure } from "@nextui-org/react"
 import * as ContextMenu from "@radix-ui/react-context-menu"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Handle, Position, useReactFlow } from "reactflow"
 import { CONDITION_LABELS } from "../../../consts"
+import { workspaceContext } from "../../../contexts/workspaceContext"
 import { UserConditionIcon } from "../../../icons/nodes/conditions/UserConditionIcon"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { conditionLabelType } from "../../../types/ConditionTypes"
@@ -10,6 +11,7 @@ import { NodeComponentConditionType } from "../../../types/NodeTypes"
 
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
+  const { onModalOpen, onModalClose } = useContext(workspaceContext)
   const {
     onOpen: onConditionOpen,
     onClose: onConditionClose,
@@ -24,10 +26,18 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label])
 
+  const conditionOpenHandler = () => {
+    onModalOpen(onConditionOpen)
+  }
+  
+  const conditionCloseHandler = () => {
+    onModalClose(onConditionClose)
+  }
+
   return (
     <ContextMenu.Root>
       <div className='w-full relative flex items-center justify-start text-start'>
-        <div onClick={onConditionOpen} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer'>
+        <div onClick={conditionOpenHandler} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer'>
           <div className='flex items-center gap-2'>
             <UserConditionIcon
               className='w-5 h-5'
@@ -83,7 +93,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
       <ConditionModal
         data={data}
         isOpen={isConditionOpen}
-        onClose={onConditionClose}
+        onClose={conditionCloseHandler}
         condition={condition}
       />
     </ContextMenu.Root>

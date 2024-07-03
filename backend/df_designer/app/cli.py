@@ -10,7 +10,7 @@ from cookiecutter.main import cookiecutter
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
-from app.services.json_translator import translator
+from app.services.json_converter import converter
 
 cli = typer.Typer()
 
@@ -63,10 +63,10 @@ def build_bot(build_id: int, project_dir: str = settings.work_directory, preset:
 def build_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
     if call_from_open_event_loop:
         loop = asyncio.get_event_loop()
-        loop.create_task(translator(build_id=build_id, project_dir=project_dir))
+        loop.create_task(converter(build_id=build_id, project_dir=project_dir))
         loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
     else:
-        asyncio.run(translator(build_id=build_id, project_dir=project_dir))
+        asyncio.run(converter(build_id=build_id, project_dir=project_dir))
 
 
 @cli.command("run_bot")
@@ -88,13 +88,8 @@ def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loo
         asyncio.run(_execute_command(command_to_run))
 
 
-async def _run_server() -> None:
-    """Run the server."""
-    await settings.server.run()
-
-
-@cli.command("run_backend")
-def run_backend(
+@cli.command("run_app")
+def run_app(
     ip_address: str = settings.host,
     port: int = settings.backend_port,
     conf_reload: str = str(settings.conf_reload),
@@ -111,6 +106,7 @@ def run_backend(
         settings.backend_port,
         reload=settings.conf_reload,
         reload_dirs=str(settings.work_directory),
+        loop="asyncio",
     )
     settings.server = uvicorn.Server(settings.uvicorn_config)
     settings.server.run()

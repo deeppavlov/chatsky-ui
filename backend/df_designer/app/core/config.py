@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     dir_logs: Path = Path(f"{work_directory}/df_designer/logs")
     frontend_flows_path: Path = Path(f"{work_directory}/df_designer/frontend_flows.yaml")
     index_path: Path = Path(f"{work_directory}/bot/custom/.services_index.yaml")
+    snippet2lint_path: Path = Path(f"{work_directory}/bot/custom/.snippet2lint.py")
 
     uvicorn_config: uvicorn.Config = uvicorn.Config(
         APP, host, backend_port, log_level=log_level, reload=conf_reload, reload_dirs=[work_directory, str(package_dir)]

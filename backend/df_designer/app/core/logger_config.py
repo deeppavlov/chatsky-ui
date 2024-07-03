@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from app.core.config import settings
 

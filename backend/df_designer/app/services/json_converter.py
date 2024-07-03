@@ -1,5 +1,13 @@
+"""
+JSON Converter
+---------------
+
+Converts a user project's frontend graph to a script understandable by DFF json-importer.
+"""
 from pathlib import Path
 from typing import Tuple
+
+from omegaconf.dictconfig import DictConfig
 
 from app.api.deps import get_index
 from app.core.logger_config import get_logger
@@ -9,7 +17,9 @@ from app.services.index import Index
 logger = get_logger(__name__)
 
 
-def get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
+def _get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
+    """Get paths to frontend graph, dff script, and dff custom conditions files."""
+
     frontend_graph_path = project_dir / "df_designer" / "frontend_flows.yaml"
     custom_conditions_file = project_dir / "bot" / custom_dir / "conditions.py"
     custom_responses_file = project_dir / "bot" / custom_dir / "responses.py"
@@ -28,37 +38,45 @@ def get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Pat
     return frontend_graph_path, script_path, custom_conditions_file, custom_responses_file
 
 
-def organize_graph_according_to_nodes(flow_graph, script):
+def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> dict:
     nodes = {}
     for flow in flow_graph["flows"]:
         for node in flow.data.nodes:
-            if "flags" in node.data and "start" in node.data.flags:
-                if "start_label" in script["CONFIG"]:
-                    raise ValueError("There are more than one start node in the flow")
-                script["CONFIG"]["start_label"] = [flow.name, node.data.name]
+            if "flags" in node.data:
+                if "start" in node.data.flags:
+                    if "start_label" in script["CONFIG"]:
+                        raise ValueError("There are more than one start node in the script")
+                    script["CONFIG"]["start_label"] = [flow.name, node.data.name]
+                if "fallback" in node.data.flags:
+                    if "fallback_label" in script["CONFIG"]:
+                        raise ValueError("There are more than one fallback node in the script")
+                    script["CONFIG"]["fallback_label"] = [flow.name, node.data.name]
             nodes[node.id] = {"info": node}
             nodes[node.id]["flow"] = flow.name
             nodes[node.id]["TRANSITIONS"] = []
     return nodes
 
 
-def get_condition(nodes, edge):
+def _get_condition(nodes: dict, edge: DictConfig) -> DictConfig | None:
+    """Get node's condition from `nodes` according to `edge` info."""
     return next(
         (condition for condition in nodes[edge.source]["info"].data.conditions if condition["id"] == edge.sourceHandle),
         None,
     )
 
 
-def write_list_to_file(conditions_lines, custom_conditions_file):
+def _write_list_to_file(conditions_lines: list, custom_conditions_file: Path) -> None:
+    """Write dff custom conditions from list to file."""
     # TODO: make reading and writing conditions async
     with open(custom_conditions_file, "w", encoding="UTF-8") as file:
         for line in conditions_lines:
-            if line[-1:] != "\n":
+            if not line.endswith("\n"):
                 line = "".join([line, "\n"])
             file.write(line)
 
 
-def add_transitions(nodes, edge, condition):
+def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> None:
+    """Add transitions to a node according to `edge` and `condition`."""
     nodes[edge.source]["TRANSITIONS"].append(
         {
             "lbl": [
@@ -71,7 +89,8 @@ def add_transitions(nodes, edge, condition):
     )
 
 
-def fill_nodes_into_script(nodes, script):
+def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
+    """Fill nodes into dff script dictunary."""
     for _, node in nodes.items():
         if node["flow"] not in script:
             script[node["flow"]] = {}
@@ -85,16 +104,20 @@ def fill_nodes_into_script(nodes, script):
         )
 
 
-def append(service, services_lines):
+def _append(service: DictConfig, services_lines: list) -> list:
+    """Append a condition to a list"""
     if service.type == "python":
-        service = "".join([service.data.python.action + "\n\n"])
-    logger.debug("Condition to append: %s", service)
+        service_with_newline = "".join([service.data.python.action + "\n\n"])
+
+    logger.debug("Service to append: %s", service_with_newline)
     logger.debug("services_lines before appending: %s", services_lines)
-    all_lines = services_lines + service.split("\n")
+
+    all_lines = services_lines + service_with_newline.split("\n")
     return all_lines
 
 
-async def _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines):
+async def _shift_cnds_in_index(index: Index, cnd_strt_lineno: int, diff_in_lines: int) -> None:
+    """Update the start line number of conditions in index by shifting them by `diff_in_lines`."""
     services = index.get_services()
     for _, service in services.items():
         if service["type"] == "condition":
@@ -108,7 +131,18 @@ async def _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines):
     )
 
 
-async def replace(service, services_lines, cnd_strt_lineno, index):
+async def _replace(service: DictConfig, services_lines: list, cnd_strt_lineno: int, index: Index) -> list:
+    """Replace a servuce in a services list with a new one.
+
+    Args:
+        service: service to replace. `condition.data.python.action` is a string with the new service(condition)
+        conditions_lines: list of conditions lines
+        cnd_strt_lineno: a pointer to the service start line in custom conditions file
+        index: index object to update
+
+    Returns:
+        list of all conditions as lines
+    """
     cnd_strt_lineno = cnd_strt_lineno - 1  # conversion from file numeration to list numeration
     all_lines = services_lines.copy()
     if service.type == "python":
@@ -117,7 +151,7 @@ async def replace(service, services_lines, cnd_strt_lineno, index):
 
     old_cnd_lines_num = 0
     for lineno, line in enumerate(all_lines[cnd_strt_lineno:]):
-        if line[:4] == "def " and lineno != 0:
+        if line.startswith("def ") and lineno != 0:
             break
         old_cnd_lines_num += 1
 
@@ -149,11 +183,11 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
             if response.name not in (rsp_names := index.index):
                 logger.debug("Adding response: %s", response.name)
                 rsp_lineno = len(responses_lines)
-                responses_lines = append(response, responses_lines)
+                responses_lines = _append(response, responses_lines)
                 await index.indexit(response.name, "response", rsp_lineno + 1)
             else:
                 logger.debug("Replacing response: %s", response.name)
-                responses_lines = await replace(
+                responses_lines = await _replace(
                     response, responses_lines, rsp_names[response.name]["lineno"], index
                 )
             node["info"].data.response = f"custom_dir.responses.{response.name}"
@@ -164,21 +198,20 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
             raise ValueError(f"Unknown response type: {response.type}")
 
 
-async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"):
+async def converter(build_id: int, project_dir: str, custom_dir: str = "custom") -> None:
+    """Translate frontend flow script into dff script."""
     index = get_index()
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
-    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = get_db_paths(
-        build_id, Path(project_dir), custom_dir
-    )
+    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id, Path(project_dir), custom_dir)
 
     script = {
         "CONFIG": {"custom_dir": "/".join(["..", custom_dir])},
     }
-    flow_graph = await read_conf(frontend_graph_path)
+    flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
 
-    nodes = organize_graph_according_to_nodes(flow_graph, script)
+    nodes = _organize_graph_according_to_nodes(flow_graph, script)
 
     with open(custom_responses_file, "r", encoding="UTF-8") as file:
         responses_lines = file.readlines()
@@ -191,7 +224,7 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
     for flow in flow_graph["flows"]:
         for edge in flow.data.edges:
             if edge.source in nodes and edge.target in nodes:
-                condition = get_condition(nodes, edge)
+                condition = _get_condition(nodes, edge)
                 if condition is None:
                     logger.error(
                         "A condition of edge '%s' - '%s' and id of '%s' is not found in the corresponding node",
@@ -204,20 +237,20 @@ async def translator(build_id: int, project_dir: str, custom_dir: str = "custom"
                 if condition.name not in (cnd_names := index.index):
                     logger.debug("Adding condition: %s", condition.name)
                     cnd_lineno = len(conditions_lines)
-                    conditions_lines = append(condition, conditions_lines)
+                    conditions_lines = _append(condition, conditions_lines)
                     await index.indexit(condition.name, "condition", cnd_lineno + 1)
                 else:
                     logger.debug("Replacing condition: %s", condition.name)
-                    conditions_lines = await replace(
+                    conditions_lines = await _replace(
                         condition, conditions_lines, cnd_names[condition.name]["lineno"], index
                     )
 
-                add_transitions(nodes, edge, condition)
+                _add_transitions(nodes, edge, condition)
             else:
                 logger.error("A node of edge '%s-%s' is not found in nodes", edge.source, edge.target)
 
-    fill_nodes_into_script(nodes, script)
+    _fill_nodes_into_script(nodes, script)
 
-    write_list_to_file(conditions_lines, custom_conditions_file)
-    write_list_to_file(responses_lines, custom_responses_file)
+    _write_list_to_file(conditions_lines, custom_conditions_file)
+    _write_list_to_file(responses_lines, custom_responses_file)
     await write_conf(script, script_path)
