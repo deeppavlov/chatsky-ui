@@ -137,7 +137,13 @@ class Process(ABC):
         try:
             self.logger.debug("Terminating process '%s'", self.id)
             self.process.terminate()
-            await self.process.wait()
+            try:
+                await asyncio.wait_for(self.process.wait(), timeout=10.0)
+                self.logger.debug("Process '%s' was peacefully terminated.", self.id)
+            except asyncio.TimeoutError:
+                self.process.kill()
+                await self.process.wait()
+                self.logger.debug("Process '%s' was forcefully killed.", self.id)
             self.logger.debug("Process returencode '%s' ", self.process.returncode)
 
         except ProcessLookupError as exc:
