@@ -193,6 +193,7 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
         response = node["info"].data.response
         logger.debug("response type: %s", response.type)
         if response.type == "python":
+            response.data = response.data[0]
             if response.name not in (rsp_names := index.index):
                 logger.debug("Adding response: %s", response.name)
                 rsp_lineno = len(responses_lines)
@@ -203,16 +204,17 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
                 responses_lines = await _replace(response, responses_lines, rsp_names[response.name]["lineno"], index)
             node["info"].data.response = f"custom_dir.responses.{response.name}"
         elif response.type == "text":
+            response.data = response.data[0]
             logger.debug("Adding response: %s", response.data.text)
             node["info"].data.response = {"dff.Message": {"text": response.data.text}}
         elif response.type == "choice":
             # logger.debug("Adding response: %s", )
             dff_responses = []
             for message in response.data:
-                if message.type == "text":
+                if "text" in message:
                     dff_responses.append({"dff.Message": {"text": message["text"]}})
                 else:
-                    raise ValueError(f"Unknown response type: {response.type}. Choice messages accept only texts.")
+                    raise ValueError(f"Unknown response type. There must be a 'text' field in each message.")
             node["info"].data.response = {"dff.rsp.choice": dff_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
