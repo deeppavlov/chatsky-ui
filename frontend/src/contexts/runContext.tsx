@@ -65,16 +65,12 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getRunInitial = async () => {
     const data = await get_runs()
-    // console.log(data)
     if (data) {
       const _runs: localRunType[] = data.map((run) => {
-        console.log(run)
         return { ...run, type: "run" }
       })
-      console.log(_runs)
       setRuns(_runs)
       if (_runs[_runs.length - 1].status === "running") {
-        console.log(1)
         setRun(_runs[_runs.length - 1])
         setRunStatus("alive")
       }
@@ -91,15 +87,11 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const builds = await get_builds()
       const { run_id } = await run_start({ wait_time, end_status }, builds[builds.length - 1].id)
-      console.log("run started")
       await new Promise((resolve) => setTimeout(resolve, 5000))
       const started_runs = await get_runs()
-      console.log(started_runs)
       const started_run = started_runs.find((r) => r.id === run_id)
-      console.log(run_id)
       if (started_run) {
         setRun({ ...started_run, type: "run" })
-        console.log(started_run)
         setRuns((prev) => [
           ...prev,
           {
@@ -108,7 +100,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           },
         ])
         const builds = await get_builds()
-        console.log(started_run)
         setBuildsHandler(builds)
         let flag = true
         let timer = 0
@@ -121,11 +112,16 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
             return (flag = false)
           }
           const { status } = await run_status(started_run.id)
-          console.log(status)
           if (status === "alive") {
             flag = false
             setRunPending(false)
             setRunStatus("alive")
+          }
+          if (status === 'failed') {
+            flag = false
+            setRunPending(false)
+            setRunStatus("failed")
+            toast.error("Run failed!")
           }
           await new Promise((resolve) => setTimeout(resolve, 500))
         }

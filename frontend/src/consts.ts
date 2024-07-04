@@ -6,9 +6,9 @@ export const NODE_TYPES = {
   // fallback_node: "fallback_node",
 }
 
-export const START_FALLBACK_NODE_FLAGS = ['start', 'fallback']
-export const START_NODE_FLAGS = ['start']
-export const FALLBACK_NODE_FLAGS = ['fallback']
+export const START_FALLBACK_NODE_FLAGS = ["start", "fallback"]
+export const START_NODE_FLAGS = ["start"]
+export const FALLBACK_NODE_FLAGS = ["fallback"]
 
 export const NODES = {
   default_node: {
@@ -17,7 +17,11 @@ export const NODES = {
     conditions: [],
     global_conditions: [],
     local_conditions: [],
-    response: "Default response",
+    response: {
+      name: "Default node response",
+      type: "text",
+      data: [{ text: "Default node response", priority: 1 }],
+    },
   },
   // start_node: {
   //   name: "Start Node",
@@ -41,8 +45,12 @@ export const NODES = {
     conditions: [],
     global_conditions: [],
     local_conditions: [],
-    response: "",
-  }
+    response: {
+      name: "Link response",
+      type: "text",
+      data: [{ text: "Link response", priority: 1 }],
+    }
+  },
 }
 
 export const FLOW_COLORS = [
@@ -53,7 +61,7 @@ export const FLOW_COLORS = [
   "#3300FF",
   "#7000FF",
   "#CC66CC",
-  "#FF3366"
+  "#FF3366",
 ]
 
 export const CONDITION_LABELS: {
@@ -64,6 +72,6 @@ export const CONDITION_LABELS: {
   backward: "backward",
   repeat: "repeat",
   fallback: "fallback",
-  start: 'start',
+  start: "start",
   previous: "previous",
 }

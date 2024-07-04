@@ -59,9 +59,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
   const takeSnapshot = useCallback(() => {
     // push the current graph to the past state
-    // console.log(tabIndex)
     if (tabIndex > -1) {
-      console.log(tabIndex)
       setPast((old) => {
         const newPast = cloneDeep(old)
         newPast[tabIndex] = old[tabIndex].slice(

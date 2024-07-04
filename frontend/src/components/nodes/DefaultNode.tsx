@@ -46,12 +46,8 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { handleNodeFlags } = useContext(workspaceContext)
-  // console.log({ data, flows })
-  // useEffect(() => {
-  //   console.log("111")
-  // }, [flows])
 
-  console.log(data)
+
 
   return (
     <>

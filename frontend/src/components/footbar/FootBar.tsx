@@ -70,7 +70,7 @@ const FootBar = () => {
         <Logo />
         <div className="flex items-end justify-start gap-1">
           <span className='flex font-bold text-lg'>DF Designer</span>
-          <span className='flex font-semibold text-neutral-400 text-sm'>v 0.1.0</span>
+          <span className='flex font-semibold text-neutral-400 text-sm'>v 0.1.0-beta1</span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>
