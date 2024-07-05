@@ -1,5 +1,6 @@
 import {
   Button,
+  Input,
   ModalBody,
   ModalContent,
   ModalFooter,
@@ -97,7 +98,6 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
     }
   }
 
-
   return (
     <ModalComponent
       className='min-h-[584px]'
@@ -130,6 +130,16 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
               )}
             </Tabs>
           </label>
+          <div>
+            <Input
+              label='Name'
+              variant='bordered'
+              labelPlacement='outside'
+              placeholder="Enter response's name here"
+              value={currentResponse.name}
+              onChange={(e) => setCurrentResponse({ ...currentResponse, name: e.target.value })}
+            />
+          </div>
           <div>{bodyItems[selected]}</div>
         </ModalBody>
         <ModalFooter>

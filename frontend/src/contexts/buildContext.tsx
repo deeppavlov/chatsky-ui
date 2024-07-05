@@ -78,7 +78,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     getBuildInitial()
   }, [])
 
-  const buildStart = async ({ end_status = "completed", wait_time = 3 }: buildPresetType) => {
+  const buildStart = async ({ end_status = "completed", wait_time = 0 }: buildPresetType) => {
     setBuildPending(() => true)
     setBuildStatus("running")
     try {
