@@ -89,6 +89,7 @@ def run_app(
 
     # Patch nest_asyncio before import DFF
     import nest_asyncio
+
     nest_asyncio.apply = lambda: None
 
     settings.host = ip_address
