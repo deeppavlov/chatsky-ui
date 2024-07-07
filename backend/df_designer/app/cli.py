@@ -46,7 +46,7 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
     if preset in presets_build_file:
         command_to_run = presets_build_file[preset]["cmd"]
         if preset == "success":
-            command_to_run += f" {build_id} --call_from_open_event_loop True"
+            command_to_run += f" {build_id}"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
         asyncio.run(_execute_command(command_to_run))
@@ -60,13 +60,8 @@ def build_bot(build_id: int, project_dir: str = settings.work_directory, preset:
 
 
 @cli.command("build_scenario")
-def build_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
-    if call_from_open_event_loop:
-        loop = asyncio.get_event_loop()
-        loop.create_task(converter(build_id=build_id, project_dir=project_dir))
-        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
-    else:
-        asyncio.run(converter(build_id=build_id, project_dir=project_dir))
+def build_scenario(build_id: int, project_dir: str = "."):
+    asyncio.run(converter(build_id=build_id, project_dir=project_dir))
 
 
 @cli.command("run_bot")
@@ -75,17 +70,12 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 
 
 @cli.command("run_scenario")
-def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
+def run_scenario(build_id: int, project_dir: str = "."):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     if not script_path.exists():
         raise FileNotFoundError(f"File {script_path} doesn't exist")
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-    if call_from_open_event_loop:
-        loop = asyncio.get_event_loop()
-        loop.create_task(_execute_command(command_to_run))
-        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
-    else:
-        asyncio.run(_execute_command(command_to_run))
+    asyncio.run(_execute_command(command_to_run))
 
 
 @cli.command("run_app")
@@ -96,6 +86,11 @@ def run_app(
     project_dir: str = settings.work_directory,
 ) -> None:
     """Run the backend."""
+
+    # Patch nest_asyncio before import DFF
+    import nest_asyncio
+    nest_asyncio.apply = lambda: None
+
     settings.host = ip_address
     settings.backend_port = port
     settings.conf_reload = conf_reload.lower() in ["true", "yes", "t", "y", "1"]
@@ -106,7 +101,6 @@ def run_app(
         settings.backend_port,
         reload=settings.conf_reload,
         reload_dirs=str(settings.work_directory),
-        loop="asyncio",
     )
     settings.server = uvicorn.Server(settings.uvicorn_config)
     settings.server.run()
