@@ -10,7 +10,11 @@ from cookiecutter.main import cookiecutter
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
-from app.services.json_converter import converter
+try:
+    from app.services.json_converter import converter
+except FileNotFoundError:
+    # The logger file doesn't exist. Expected behaviour.
+    pass
 
 cli = typer.Typer()
 
