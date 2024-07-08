@@ -5,6 +5,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
+from fastapi import status
 
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
@@ -68,6 +69,22 @@ async def _test_stop_process(mocker, get_manager_func, start_endpoint, stop_endp
             assert stop_response.json() == {"status": "ok"}
 
 
+async def _test_stop_inexistent_process(mocker, get_manager_func, start_endpoint, stop_endpoint):
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+        async with override_dependency(mocker, get_manager_func) as manager:
+            start_response = await start_process(async_client, start_endpoint, preset_end_status="loop")
+            assert start_response.status_code == 201
+            logger.debug("Processes: %s", manager.processes)
+
+            inexistent_id = 9999
+
+            stop_response = await async_client.get(f"{stop_endpoint}/{inexistent_id}")
+            assert stop_response.status_code == status.HTTP_404_NOT_FOUND
+            assert stop_response.json() == {
+                "detail": "Process not found. It may have already exited or not started yet. Please check logs."
+            }
+
+
 # Test flows endpoints and interaction with db (read and write conf)
 def test_flows(client):  # noqa: F811
     get_response = client.get("/api/v1/flows")
@@ -104,6 +121,13 @@ async def test_stop_build(mocker):
     )
 
 
+@pytest.mark.asyncio
+async def test_stop_build_bad_id(mocker):
+    await _test_stop_inexistent_process(
+        mocker, get_build_manager, start_endpoint="/api/v1/bot/build/start", stop_endpoint="/api/v1/bot/build/stop"
+    )
+
+
 # def test_get_run_status(client):
 #     pass
 
@@ -128,6 +152,17 @@ async def test_start_run(mocker, end_status, process_status):
 async def test_stop_run(mocker):
     build_id = 43
     await _test_stop_process(
+        mocker,
+        get_run_manager,
+        start_endpoint=f"/api/v1/bot/run/start/{build_id}",
+        stop_endpoint="/api/v1/bot/run/stop",
+    )
+
+
+@pytest.mark.asyncio
+async def test_stop_run_bad_id(mocker):
+    build_id = 43
+    await _test_stop_inexistent_process(
         mocker,
         get_run_manager,
         start_endpoint=f"/api/v1/bot/run/start/{build_id}",
