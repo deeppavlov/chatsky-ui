@@ -201,7 +201,7 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
                 if "text" in message:
                     dff_responses.append({"dff.Message": {"text": message["text"]}})
                 else:
-                    raise ValueError(f"Unknown response type. There must be a 'text' field in each message.")
+                    raise ValueError("Unknown response type. There must be a 'text' field in each message.")
             node["info"].data.response = {"dff.rsp.choice": dff_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
