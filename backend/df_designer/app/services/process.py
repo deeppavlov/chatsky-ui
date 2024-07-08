@@ -139,7 +139,7 @@ class Process(ABC):
             self.process.terminate()
             try:
                 await asyncio.wait_for(self.process.wait(), timeout=10.0)
-                self.logger.debug("Process '%s' was peacefully terminated.", self.id)
+                self.logger.debug("Process '%s' was gracefully terminated.", self.id)
             except asyncio.TimeoutError:
                 self.process.kill()
                 await self.process.wait()
