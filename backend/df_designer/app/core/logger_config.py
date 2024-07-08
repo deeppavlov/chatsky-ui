@@ -35,7 +35,8 @@ def setup_logging(log_type: Literal["builds", "runs"], id_: int, timestamp: date
 def get_logger(name, file_handler_path: Optional[Path] = None):
     if file_handler_path is None:
         file_handler_path = settings.dir_logs / "logs.log"
-    file_handler_path.parent.mkdir(parents=True, exist_ok=True)
+    if not file_handler_path.parent.exists():
+        raise FileNotFoundError(f"File {file_handler_path} doesn't exist")
     file_handler_path.touch(exist_ok=True)
 
     logger = logging.getLogger(name)

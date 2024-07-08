@@ -10,7 +10,7 @@ from cookiecutter.main import cookiecutter
 
 from app.core.config import settings
 from app.core.logger_config import get_logger
-from app.services.json_converter import converter
+
 
 cli = typer.Typer()
 
@@ -61,6 +61,8 @@ def build_bot(build_id: int, project_dir: str = settings.work_directory, preset:
 
 @cli.command("build_scenario")
 def build_scenario(build_id: int, project_dir: str = "."):
+    from app.services.json_converter import converter  # pylint: disable=C0415
+
     asyncio.run(converter(build_id=build_id, project_dir=project_dir))
 
 
