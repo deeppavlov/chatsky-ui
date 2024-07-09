@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 
 import uvicorn
-from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 
@@ -20,8 +20,8 @@ class Settings(BaseSettings):
 
     host: str = os.getenv("HOST", "0.0.0.0")
     port: int = int(os.getenv("PORT", 8000))
-    log_level: str = os.getenv('LOG_LEVEL', 'info')
-    conf_reload: bool = os.getenv('CONF_RELOAD', 'true').lower() in ['true', '1', 't', 'y', 'yes']
+    log_level: str = os.getenv("LOG_LEVEL", "info")
+    conf_reload: bool = os.getenv("CONF_RELOAD", "true").lower() in ["true", "1", "t", "y", "yes"]
 
     builds_path: Path = Path(f"{work_directory}/df_designer/builds.yaml")
     runs_path: Path = Path(f"{work_directory}/df_designer/runs.yaml")
@@ -36,7 +36,7 @@ class AppRunner:
         self.settings = settings
 
     def run(self):
-        if reload:= self.settings.conf_reload:
+        if reload := self.settings.conf_reload:
             reload_conf = {
                 "reload": reload,
                 "reload_dirs": [self.settings.work_directory, str(self.settings.package_dir)],
@@ -49,7 +49,7 @@ class AppRunner:
             host=self.settings.host,
             port=self.settings.port,
             log_level=self.settings.log_level,
-            **reload_conf
+            **reload_conf,
         )
 
 

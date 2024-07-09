@@ -4,15 +4,15 @@ import os
 import sys
 from pathlib import Path
 
+import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
 
-import nest_asyncio
-# Patch nest_asyncio before import DFF
+# Patch nest_asyncio before importing DFF
 nest_asyncio.apply = lambda: None
 
-from app.core.config import settings, app_runner
-from app.core.logger_config import get_logger
+from app.core.config import app_runner, settings  # noqa: E402
+from app.core.logger_config import get_logger  # noqa: E402
 
 cli = typer.Typer()
 
