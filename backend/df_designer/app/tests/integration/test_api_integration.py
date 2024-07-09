@@ -1,11 +1,13 @@
 import asyncio
+import os
 
 import httpx
 import pytest
+from dotenv import load_dotenv
+from fastapi import status
 from httpx import ASGITransport, AsyncClient
 from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
-from fastapi import status
 
 from app.api.deps import get_build_manager, get_run_manager
 from app.core.logger_config import get_logger
@@ -13,17 +15,20 @@ from app.main import app
 from app.schemas.process_status import Status
 from app.tests.conftest import override_dependency, start_process
 
+load_dotenv()
+
+BUILD_COMPLETION_TIMEOUT = float(os.getenv("BUILD_COMPLETION_TIMEOUT", 10))
+RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
+
 logger = get_logger(__name__)
 
 
-async def _assert_process_status(response, process_manager, expected_end_status):
+async def _assert_process_status(response, process_manager, expected_end_status, timeout):
     assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
     process_manager.check_status.assert_awaited_once()
 
     try:
-        await asyncio.wait_for(
-            process_manager.processes[process_manager.last_id].process.wait(), timeout=10
-        )  # TODO: Consider making this timeout configurable
+        await asyncio.wait_for(process_manager.processes[process_manager.last_id].process.wait(), timeout=timeout)
     except asyncio.exceptions.TimeoutError as exc:
         if expected_end_status in [Status.ALIVE, Status.RUNNING]:
             logger.debug("Loop process timed out. Expected behavior.")
@@ -42,11 +47,11 @@ async def _assert_process_status(response, process_manager, expected_end_status)
     return current_status
 
 
-async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end_status, expected_end_status):
+async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end_status, expected_end_status, timeout):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(mocker_obj, get_manager_func) as process_manager:
             response = await start_process(async_client, endpoint, preset_end_status)
-            current_status = await _assert_process_status(response, process_manager, expected_end_status)
+            current_status = await _assert_process_status(response, process_manager, expected_end_status, timeout)
 
             if current_status == Status.RUNNING:
                 process_manager.processes[process_manager.last_id].process.terminate()
@@ -111,6 +116,7 @@ async def test_start_build(mocker, end_status, process_status):
         endpoint="/api/v1/bot/build/start",
         preset_end_status=end_status,
         expected_end_status=process_status,
+        timeout=BUILD_COMPLETION_TIMEOUT,
     )
 
 
@@ -145,6 +151,7 @@ async def test_start_run(mocker, end_status, process_status):
         endpoint=f"/api/v1/bot/run/start/{build_id}",
         preset_end_status=end_status,
         expected_end_status=process_status,
+        timeout=RUN_RUNNING_TIMEOUT,
     )
 
 
