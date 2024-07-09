@@ -30,10 +30,28 @@ class Settings(BaseSettings):
     index_path: Path = Path(f"{work_directory}/bot/custom/.services_index.yaml")
     snippet2lint_path: Path = Path(f"{work_directory}/bot/custom/.snippet2lint.py")
 
-    uvicorn_config: uvicorn.Config = uvicorn.Config(
-        APP, host, port, log_level=log_level, reload=conf_reload, reload_dirs=[work_directory, str(package_dir)]
-    )
-    server: uvicorn.Server = uvicorn.Server(uvicorn_config)
+
+class AppRunner:
+    def __init__(self, settings: Settings):
+        self.settings = settings
+
+    def run(self):
+        if reload:= self.settings.conf_reload:
+            reload_conf = {
+                "reload": reload,
+                "reload_dirs": [self.settings.work_directory, str(self.settings.package_dir)],
+            }
+        else:
+            reload_conf = {"reload": reload}
+
+        uvicorn.run(
+            self.settings.APP,
+            host=self.settings.host,
+            port=self.settings.port,
+            log_level=self.settings.log_level,
+            **reload_conf
+        )
 
 
 settings = Settings()
+app_runner = AppRunner(settings)

@@ -5,10 +5,13 @@ import sys
 from pathlib import Path
 
 import typer
-import uvicorn
 from cookiecutter.main import cookiecutter
 
-from app.core.config import settings
+import nest_asyncio
+# Patch nest_asyncio before import DFF
+nest_asyncio.apply = lambda: None
+
+from app.core.config import settings, app_runner
 from app.core.logger_config import get_logger
 
 cli = typer.Typer()
@@ -87,25 +90,12 @@ def run_app(
     project_dir: str = settings.work_directory,
 ) -> None:
     """Run the backend."""
-
-    # Patch nest_asyncio before import DFF
-    import nest_asyncio
-
-    nest_asyncio.apply = lambda: None
-
     settings.host = ip_address
     settings.port = port
     settings.conf_reload = conf_reload.lower() in ["true", "yes", "t", "y", "1"]
     settings.work_directory = project_dir
-    settings.uvicorn_config = uvicorn.Config(
-        settings.APP,
-        settings.host,
-        settings.port,
-        reload=settings.conf_reload,
-        reload_dirs=str(settings.work_directory),
-    )
-    settings.server = uvicorn.Server(settings.uvicorn_config)
-    settings.server.run()
+
+    app_runner.run()
 
 
 @cli.command("init")
