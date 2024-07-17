@@ -18,6 +18,8 @@ type WorkspaceContextType = {
   handleNodeFlags: (e: React.MouseEvent<HTMLButtonElement>, setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>) => void
   mouseOnPane: boolean
   setMouseOnPane: React.Dispatch<React.SetStateAction<boolean>>
+  modalsOpened: number
+  setModalsOpened: React.Dispatch<React.SetStateAction<number>>
   onModalClose: (onClose: () => void) => void
   onModalOpen: (onOpen: () => void) => void
   managerMode: boolean
@@ -26,6 +28,8 @@ type WorkspaceContextType = {
 }
 
 export const workspaceContext = createContext<WorkspaceContextType>({
+  modalsOpened: 0,
+  setModalsOpened: () => {},
   setWorkspaceMode: () => {},
   toggleWorkspaceMode: () => {},
   workspaceMode: false,
@@ -54,6 +58,23 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [selectedNode, setSelectedNode] = useState("")
   const { updateFlow, flows, tab, quietSaveFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
+  const [modalsOpened, setModalsOpened] = useState(0)
+
+
+  useEffect(() => {
+    console.log(modalsOpened)
+  }, [modalsOpened])
+
+  useEffect(() => {
+    if (modalsOpened === 0) {
+      setMouseOnPane(true)
+    } else if (modalsOpened > 0) {
+      setMouseOnPane(false)
+    }
+    if (modalsOpened < 0) {
+      setModalsOpened(0)
+    }
+  }, [modalsOpened])
   
   useEffect(() => console.log(mouseOnPane), [mouseOnPane])
 
@@ -108,6 +129,8 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   return (
     <workspaceContext.Provider
       value={{
+        modalsOpened,
+        setModalsOpened,
         workspaceMode,
         setWorkspaceMode,
         toggleWorkspaceMode,

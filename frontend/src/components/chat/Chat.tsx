@@ -50,7 +50,6 @@ const Chat = () => {
   const handleMessage = () => {
     if (messageValue) {
       if (ws.current && ws.current.readyState === 1) {
-        console.log(ws.current)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         ws.current.send(messageValue)
@@ -125,15 +124,11 @@ const Chat = () => {
         `ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`
       )
       socket.onopen = (e) => {
-        console.log(e)
         toast.success("Chat was successfully connected!")
       }
       socket.onmessage = (event: MessageEvent) => {
-        console.log(event)
         if (event.data) {
-          // console.log(event.data)
           const data = event.data.split(":")[2].split("attachments")[0].slice(0, -2)
-          // console.log(data)
           setTimeout(() => {
             setMessages((prev) => [...prev, { message: data, type: "bot" }])
           }, 500)

@@ -1,4 +1,5 @@
 import { conditionType } from "./ConditionTypes"
+import { responseType } from "./ResponseTypes"
 
 export type NodesTypes = 'default_node' | 'link_node'
 
@@ -19,10 +20,10 @@ export type NodeDataType = {
   conditions?: conditionType[]
   global_conditions?: string[]
   local_conditions?: string[]
-  response?: string
   transition: {
     target_node: string
   }
+  response?: responseType
 }
 
 export type NodeComponentType = {
