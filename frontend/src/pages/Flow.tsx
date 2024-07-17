@@ -43,10 +43,10 @@ const nodeTypes = {
   default_node: DefaultNode,
   start_node: StartNode,
   fallback_node: FallbackNode,
-  link: LinkNode,
+  link_node: LinkNode,
 }
 
-export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
+// export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
   const reactFlowWrapper = useRef(null)
@@ -219,7 +219,9 @@ export default function Flow() {
           global_conditions: [],
           local_conditions: [],
           response: NODES[type].response,
-          to: "",
+          transition: {
+            target_node: ""
+          },
         },
       }
       setNodes((nds) => nds.concat(newNode))

@@ -118,7 +118,6 @@ const Chat = () => {
     },
   })
 
-  console.log(window.location)
 
   useEffect(() => {
     if (runStatus === "alive" && run) {

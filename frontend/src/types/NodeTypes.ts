@@ -1,6 +1,6 @@
 import { conditionType } from "./ConditionTypes"
 
-export type NodesTypes = 'default_node' | 'default_link'
+export type NodesTypes = 'default_node' | 'link_node'
 
 export type NodeType = {
   id: string
@@ -20,7 +20,9 @@ export type NodeDataType = {
   global_conditions?: string[]
   local_conditions?: string[]
   response?: string
-  to?: string
+  transition: {
+    target_node: string
+  }
 }
 
 export type NodeComponentType = {

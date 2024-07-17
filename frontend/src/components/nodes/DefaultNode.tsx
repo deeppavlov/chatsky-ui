@@ -51,7 +51,6 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
   //   console.log("111")
   // }, [flows])
 
-  console.log(data)
 
   return (
     <>
