@@ -28,7 +28,6 @@ const Logs = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [builds, runs])
 
-  console.log(currentItem)
 
   return (
     <div
