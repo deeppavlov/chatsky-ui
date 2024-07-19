@@ -2,10 +2,12 @@ import { Button, Tooltip, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, Moon, Settings, Sun } from "lucide-react"
 import { useContext } from "react"
-import { useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
+import { MetaContext } from "../../contexts/metaContext"
 import { themeContext } from "../../contexts/themeContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
+import { Logo } from "../../icons/Logo"
 import GrabModeIcon from "../../icons/header/GrabModeIcon"
 import GridModeIcon from "../../icons/header/GridModeIcon"
 import ListViewIcon from "../../icons/header/ListViewIcon"
@@ -14,6 +16,7 @@ import BuildMenu from "./BuildMenu"
 import NodeInstruments from "./components/NodeInstruments"
 
 const Header = () => {
+  const { version } = useContext(MetaContext)
   const { toggleTheme, theme } = useContext(themeContext)
   const location = useLocation()
   const {
@@ -37,50 +40,61 @@ const Header = () => {
     <div
       data-testid='header'
       className='min-h-14 flex items-center justify-between w-screen z-10 bg-bg-secondary border-b border-border px-2 pr-4'>
-      <div className='flex items-center gap-4 w-52'>
-        <div className='flex items-center gap-1.5'>
-          <Tooltip
-            radius='sm'
-            content={`Grab mode ${managerMode ? "on" : "off"}`}>
-            <Button
-              isIconOnly
-              onClick={toggleManagerMode}
-              className={classNames(
-                " bg-overlay hover:bg-background border border-border rounded-small",
-                !managerMode ? "bg-background border-border-darker" : ""
-              )}>
-              <GrabModeIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip
-            radius='sm'
-            content={`Free grid mode ${workspaceMode ? "on" : "off"}`}>
-            <Button
-              onClick={toggleWorkspaceMode}
-              isIconOnly
-              className={classNames(
-                " bg-overlay hover:bg-background border border-border rounded-small",
-                !workspaceMode ? "bg-background border-border-darker" : ""
-              )}>
-              <GridModeIcon />
-            </Button>
-          </Tooltip>
-          <Tooltip
-            radius='sm'
-            content={`List mode ${nodesLayoutMode ? "on" : "off"}`}>
-            <Button
-              onClick={toggleNodesLayoutMode}
-              isIconOnly
-              className={classNames(
-                " bg-overlay hover:bg-background border border-border rounded-small",
-                !nodesLayoutMode ? "bg-background border-border-darker" : ""
-              )}>
-              {/* {nodesLayoutMode ? "Canvas Mode" : "List mode"} */}
-              <ListViewIcon />
-            </Button>
-          </Tooltip>
+        {location.pathname.includes("app/home") && (
+          <Link data-testid='logo-header' to={"/app/home"} className='flex items-center gap-1 z-10 cursor-pointer'>
+          <Logo />
+          <div className="flex items-end justify-start gap-1">
+            <span className='flex font-bold text-lg'>DF Designer</span>
+            <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
+          </div>
+        </Link>
+        )}
+      {location.pathname.includes("flow") && (
+        <div className='flex items-center gap-4 w-52'>
+          <div className='flex items-center gap-1.5'>
+            <Tooltip
+              radius='sm'
+              content={`Grab mode ${managerMode ? "on" : "off"}`}>
+              <Button
+                isIconOnly
+                onClick={toggleManagerMode}
+                className={classNames(
+                  " bg-overlay hover:bg-background border border-border rounded-small",
+                  !managerMode ? "bg-background border-border-darker" : ""
+                )}>
+                <GrabModeIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip
+              radius='sm'
+              content={`Free grid mode ${workspaceMode ? "on" : "off"}`}>
+              <Button
+                onClick={toggleWorkspaceMode}
+                isIconOnly
+                className={classNames(
+                  " bg-overlay hover:bg-background border border-border rounded-small",
+                  !workspaceMode ? "bg-background border-border-darker" : ""
+                )}>
+                <GridModeIcon />
+              </Button>
+            </Tooltip>
+            <Tooltip
+              radius='sm'
+              content={`List mode ${nodesLayoutMode ? "on" : "off"}`}>
+              <Button
+                onClick={toggleNodesLayoutMode}
+                isIconOnly
+                className={classNames(
+                  " bg-overlay hover:bg-background border border-border rounded-small",
+                  !nodesLayoutMode ? "bg-background border-border-darker" : ""
+                )}>
+                {/* {nodesLayoutMode ? "Canvas Mode" : "List mode"} */}
+                <ListViewIcon />
+              </Button>
+            </Tooltip>
+          </div>
         </div>
-      </div>
+      )}
       <div className='flex items-center'>
         {selectedNode && flow && location.pathname.includes("flow") && (
           <NodeInstruments flow={flow} />

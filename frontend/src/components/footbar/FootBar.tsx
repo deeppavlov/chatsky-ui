@@ -1,7 +1,9 @@
 import { Button, Tab, Tabs, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
+import { useContext } from "react"
 import { Link } from "react-router-dom"
+import { MetaContext } from "../../contexts/metaContext"
 import { Logo } from "../../icons/Logo"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import LocalStogareIcon from "../../icons/footbar/LocalStogareIcon"
@@ -15,6 +17,8 @@ const FootBar = () => {
     onOpen: onLocalStogareOpen,
     onClose: onLocalStogareClose,
   } = useDisclosure()
+
+  const { version } = useContext(MetaContext)
 
   return (
     <div data-testid="footbar" className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
@@ -70,7 +74,7 @@ const FootBar = () => {
         <Logo />
         <div className="flex items-end justify-start gap-1">
           <span className='flex font-bold text-lg'>DF Designer</span>
-          <span className='flex font-semibold text-neutral-400 text-sm'>v 0.1.0</span>
+          <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>
