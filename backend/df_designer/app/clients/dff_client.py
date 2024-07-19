@@ -9,6 +9,9 @@ AUTO_COMPLETION_MAP = {
 }
 
 
+MOST_IMPORTATANT_NATIVE_LIBS = ["requests", "urllib.request", "urllib.error", "random", "datetime", "json", "re"]
+
+
 def get_dff_conditions() -> list[dict]:
     """Gets the DFF's out-of-the-box conditions.
 
@@ -32,4 +35,4 @@ def get_dff_conditions() -> list[dict]:
             }
         )
 
-    return cnd_full_info
+    return native_conditions, cnd_full_info
