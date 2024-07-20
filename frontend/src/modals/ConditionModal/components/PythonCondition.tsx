@@ -1,6 +1,6 @@
 import { CompletionContext, autocompletion } from "@codemirror/autocomplete"
 import { globalCompletion, python } from "@codemirror/lang-python"
-import { indentUnit } from '@codemirror/language'
+import { indentUnit } from "@codemirror/language"
 import { andromeda } from "@uiw/codemirror-theme-andromeda"
 import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
 import ReactCodeMirror from "@uiw/react-codemirror"
@@ -10,7 +10,7 @@ import { themeContext } from "../../../contexts/themeContext"
 import { conditionType } from "../../../types/ConditionTypes"
 import { firstLinePlugin } from "../editorOptions"
 
-const tabSize = '    '
+const tabSize = "    "
 
 const PythonCondition = ({
   condition,
@@ -37,7 +37,7 @@ const PythonCondition = ({
         },
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeConditionValue = (value: string) => {
@@ -66,38 +66,34 @@ const PythonCondition = ({
         },
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [condition.name])
 
+  function dffAutocomplete(context: CompletionContext) {
+    const word = context.matchBefore(/\b(?:cnd)\.\w*/)
+    if (!word) return null
+    if (word.from === word.to && !context.explicit) return null
 
-function dffAutocomplete(context: CompletionContext) {
-  const word = context.matchBefore(/\b(?:cnd)\.\w*/);
-  if (!word) return null;
-  if (word.from === word.to && !context.explicit) return null;
-
-  const options = dffMethods
-  
-
-  return {
-    from: word.from,
-    options,
-    validFor: /^\w*$/,
-  };
-}
-
-function myCompletion(context: CompletionContext) {
-  const word = context.matchBefore(/\w*/)
-  if (!word) return null;
-  if (word.from == word.to && !context.explicit)
-    return null
-  return {
-    from: word.from,
-    options: [
-      {label: "cnd", type: "function", info: 'DFF conditions base methods object'}
-    ]
+    return {
+      from: word.from,
+      options: dffMethods,
+      validFor: /^\w*$/,
+      sort: false,
+      filter: false
+    }
   }
-}
 
+  function myCompletion(context: CompletionContext) {
+    const word = context.matchBefore(/\w*/)
+    if (!word) return null
+    if (word.from == word.to && !context.explicit) return null
+    return {
+      from: word.from,
+      options: [{ label: "cnd", type: "function", info: "DFF conditions base methods object" }],
+      sort: false,
+      filter: false
+    }
+  }
 
   return (
     <>
@@ -111,7 +107,19 @@ function myCompletion(context: CompletionContext) {
               "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
           }}
           lang='python'
-          extensions={[firstLinePlugin, indentUnit.of(tabSize), autocompletion({ override: [dffAutocomplete, globalCompletion, myCompletion], maxRenderedOptions: 10 }), python()]}
+          extensions={[
+            firstLinePlugin,
+            indentUnit.of(tabSize),
+            autocompletion({
+              override: [
+                dffAutocomplete,
+                globalCompletion,
+                myCompletion,
+              ],
+              maxRenderedOptions: 10,
+            }),
+            python(),
+          ]}
           value={condition.data.python?.action}
           onChange={changeConditionValue}
           className='w-full border-none outline-none focus-within:outline-none focus:outline-none font-mono'
