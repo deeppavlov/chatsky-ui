@@ -6,6 +6,7 @@ Converts a user project's frontend graph to a script understandable by DFF json-
 """
 from pathlib import Path
 from typing import Tuple
+from collections import defaultdict
 
 from omegaconf.dictconfig import DictConfig
 
@@ -15,6 +16,8 @@ from app.db.base import read_conf, write_conf
 from app.services.index import Index
 
 logger = get_logger(__name__)
+
+PRE_TRANSITIONS_PROCESSING = "PRE_TRANSITIONS_PROCESSING"
 
 
 def _get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
@@ -54,7 +57,26 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
             nodes[node.id] = {"info": node}
             nodes[node.id]["flow"] = flow.name
             nodes[node.id]["TRANSITIONS"] = []
-    return nodes
+            nodes[node.id][PRE_TRANSITIONS_PROCESSING] = dict()
+
+    def _convert_slots(slots: dict) -> dict:
+        group_slot = defaultdict(dict)
+        for slot_name, slot_values in slots.copy().items():
+            if slot_values["type"] != "GroupSlot":
+                slot_type = slot_values["type"]
+                del slot_values["id"]
+                del [slot_values["type"]]
+                group_slot[slot_type].update({slot_name: slot_values})
+            else:
+                del [slot_values["id"]]
+                del [slot_values["type"]]
+                group_slot.update({slot_name: _convert_slots(slot_values)})
+                # group_slot[key].update(value)
+        return dict(group_slot)
+
+    script["CONFIG"]["slots"] = _convert_slots(flow_graph["slots"])
+
+    return nodes, script
 
 
 def _get_condition(nodes: dict, edge: DictConfig) -> DictConfig | None:
@@ -75,8 +97,33 @@ def _write_list_to_file(conditions_lines: list, custom_conditions_file: Path) ->
             file.write(line)
 
 
-def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> None:
+def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots: DictConfig) -> None:
     """Add transitions to a node according to `edge` and `condition`."""
+    def _get_slot(slots, id_):
+        if not slots:
+            return ""
+        for name, value in slots.copy().items():
+            slot_path = name
+            if value.get("id") == id_:
+                return name
+            elif value.get("type") != "GroupSlot":
+                continue
+            else:
+                del value["id"]
+                del value["type"]
+                slot_path = _get_slot(value, id_)
+                if slot_path:
+                    slot_path = ".".join([name, slot_path])
+        return slot_path
+
+    if condition["type"] == "python":
+        converted_cnd = f"custom_dir.conditions.{condition.name}"
+    elif condition["type"] == "slot":
+        slot = _get_slot(slots, condition.data.slot_id)
+        converted_cnd = {"chatsky.slots.conditions.slots_extracted": slot}
+        nodes[edge.source][PRE_TRANSITIONS_PROCESSING].update({slot: {"chatsky.slots.processing.extract": slot}})
+    else:
+        raise ValueError(f"Unknown condition type: {condition['type']}")
     nodes[edge.source]["TRANSITIONS"].append(
         {
             "lbl": [
@@ -84,7 +131,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> No
                 nodes[edge.target]["info"].data.name,
                 condition.data.priority,
             ],
-            "cnd": f"custom_dir.conditions.{condition.name}",
+            "cnd": converted_cnd,
         }
     )
 
@@ -99,6 +146,7 @@ def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
                 node["info"].data.name: {
                     "RESPONSE": node["info"].data.response,
                     "TRANSITIONS": node["TRANSITIONS"],
+                    PRE_TRANSITIONS_PROCESSING: node[PRE_TRANSITIONS_PROCESSING],
                 }
             }
         )
@@ -223,7 +271,7 @@ async def converter(build_id: int, project_dir: str, custom_dir: str = "custom")
     }
     flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
 
-    nodes = _organize_graph_according_to_nodes(flow_graph, script)
+    nodes, script = _organize_graph_according_to_nodes(flow_graph, script)
 
     with open(custom_responses_file, "r", encoding="UTF-8") as file:
         responses_lines = file.readlines()
@@ -245,19 +293,19 @@ async def converter(build_id: int, project_dir: str, custom_dir: str = "custom")
                         edge.sourceHandle,
                     )
                     continue
+                if condition.type == "python":
+                    if condition.name not in (cnd_names := index.index):
+                        logger.debug("Adding condition: %s", condition.name)
+                        cnd_lineno = len(conditions_lines)
+                        conditions_lines = _append(condition, conditions_lines)
+                        await index.indexit(condition.name, "condition", cnd_lineno + 1)
+                    else:
+                        logger.debug("Replacing condition: %s", condition.name)
+                        conditions_lines = await _replace(
+                            condition, conditions_lines, cnd_names[condition.name]["lineno"], index
+                        )
 
-                if condition.name not in (cnd_names := index.index):
-                    logger.debug("Adding condition: %s", condition.name)
-                    cnd_lineno = len(conditions_lines)
-                    conditions_lines = _append(condition, conditions_lines)
-                    await index.indexit(condition.name, "condition", cnd_lineno + 1)
-                else:
-                    logger.debug("Replacing condition: %s", condition.name)
-                    conditions_lines = await _replace(
-                        condition, conditions_lines, cnd_names[condition.name]["lineno"], index
-                    )
-
-                _add_transitions(nodes, edge, condition)
+                _add_transitions(nodes, edge, condition, flow_graph["slots"])
             else:
                 logger.error("A node of edge '%s-%s' is not found in nodes", edge.source, edge.target)
 
