@@ -12,55 +12,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
     ...flow,
     id: v4(),
     data: {
-      nodes: [
-        {
-          id: node_id,
-          type: "default_node",
-          data: {
-            id: node_id,
-            name: "START_NODE",
-            conditions: [
-              {
-                id: condition_id,
-                name: "start_condition",
-                type: "python",
-                data: {
-                  priority: 1,
-                  transition_type: "manual",
-                  python: {
-                    action: 'def start_condition(ctx: Context, pipeline: Pipeline) -> bool:\n    # enter your python condition:\n    return True',
-                  }
-                },
-              }
-            ],
-            global_conditions: [],
-            local_conditions: [],
-            response: "Default node response",
-            flags: ["start", "fallback"],
-          },
-          position: {
-            x: 0,
-            y: 0,
-          },
-        },
-        {
-          id: node_2_id,
-          type: "default_node",
-          data: {
-            id: node_2_id,
-            name: "NODE_1",
-            conditions: [],
-            global_conditions: [],
-            local_conditions: [],
-            response: "Default node response",
-            flags: [],
-          },
-          position: {
-            x: 500,
-            y: 0,
-          },
-        },
-      ],
+      nodes: [],
       edges: [
         {
           id: v4(),
