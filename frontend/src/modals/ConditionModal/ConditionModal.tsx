@@ -160,6 +160,10 @@ const ConditionModal = ({
   }[] = useMemo(
     () => [
       {
+        title: "Python code",
+        value: "python",
+      },
+      {
         title: "Using LLM",
         value: "llm",
       },
@@ -170,10 +174,6 @@ const ConditionModal = ({
       {
         title: "Button",
         value: "button",
-      },
-      {
-        title: "Python code",
-        value: "python",
       },
       {
         title: "Custom",
@@ -322,6 +322,7 @@ const ConditionModal = ({
         <ModalBody>
           <label>
             <Tabs
+              disabledKeys={["llm", "custom", "slot", "button"]}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore

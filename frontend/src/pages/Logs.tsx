@@ -28,7 +28,6 @@ const Logs = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [builds, runs])
 
-
   return (
     <div
       className='w-full h-full absolute transition-transform duration-300 bg-background pt-20 pb-6 px-8 grid grid-cols-6 gap-6'
@@ -44,7 +43,11 @@ const Logs = () => {
               currentItem
                 ? currentItem.type === "build"
                   ? [currentItem.id.toString()]
-                  : [builds.find((build) => build.runs.some((run) => run.id === currentItem.id))!.id.toString()]
+                  : [
+                      builds
+                        .find((build) => build.runs.some((run) => run.id === currentItem.id))!
+                        .id.toString(),
+                    ]
                 : []
             }
             className='w-full flex flex-col gap-2'
@@ -192,7 +195,12 @@ const Logs = () => {
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
-                      {currentItem.log_path}
+                      <a
+                        download
+                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        className='text-blue-500 underline'>
+                        {currentItem.log_path}
+                      </a>
                     </p>
                   </div>
                 </div>
@@ -238,7 +246,12 @@ const Logs = () => {
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
-                      <a download href={`../../../backend/df_designer/${currentItem.log_path}`} className='text-blue-500 underline'>{currentItem.log_path}</a>
+                      <a
+                        download
+                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        className='text-blue-500 underline'>
+                        {currentItem.log_path}
+                      </a>
                     </p>
                   </div>
                 </div>

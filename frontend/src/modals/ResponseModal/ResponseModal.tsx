@@ -46,16 +46,16 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
   }[] = useMemo(
     () => [
       {
-        title: "Using LLM",
-        value: "llm",
-      },
-      {
         title: "Python code",
         value: "python",
       },
       {
         title: "Custom",
         value: "custom",
+      },
+      {
+        title: "Using LLM",
+        value: "llm",
       },
     ],
     []
@@ -109,6 +109,7 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
         <ModalBody>
           <label htmlFor=''>
             <Tabs
+              disabledKeys={['llm']}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore

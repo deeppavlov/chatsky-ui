@@ -209,6 +209,7 @@ const Chat = () => {
         </div>
         <div className='flex items-center justify-between p-1 border-b border-border'>
           <Button
+            isDisabled
             variant='light'
             isIconOnly>
             <Paperclip />

@@ -115,7 +115,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
                   placeholder="Enter node's response here"
                   name='response'
                   variant='bordered'
-                  value={nodeDataState.response?.data[0].text ?? "No text response"}
+                  value={nodeDataState.response?.data[0]?.text ?? "No text response"}
                   onChange={setTextResponseValue}
                 />
                 <button
