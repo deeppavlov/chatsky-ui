@@ -28,13 +28,13 @@ import FallbackNode from "../components/nodes/FallbackNode"
 import LinkNode from "../components/nodes/LinkNode"
 import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
-import { NODES, START_FALLBACK_NODE_FLAGS } from "../consts"
+import { NODES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
-import { NodeType, NodesTypes } from "../types/NodeTypes"
+import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
@@ -203,6 +203,15 @@ export default function Flow() {
         y: event.clientY,
       })
       const newId = v4()
+
+      const START_FALLBACK_FLAGS = []
+      if (!flows.some(flow => flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("start")))) {
+        START_FALLBACK_FLAGS.push('start')
+      }
+      if (!flow?.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("fallback"))) {
+        START_FALLBACK_FLAGS.push('fallback')
+      }
+
       const newNode: NodeType = {
         id: newId,
         type,
@@ -210,12 +219,13 @@ export default function Flow() {
         data: {
           id: newId,
           name: NODES[type].name,
-          flags: flow?.data.nodes.length ? [] : START_FALLBACK_NODE_FLAGS,
+          flags: START_FALLBACK_FLAGS,
           conditions: NODES[type].conditions,
           global_conditions: [],
           local_conditions: [],
           response: NODES[type].response as responseType,
           transition: {
+            target_flow: "",
             target_node: ""
           },
         },
