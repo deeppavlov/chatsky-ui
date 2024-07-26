@@ -37,8 +37,12 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
 
   useEffect(() => {
     if (data.transition.target_node) {
-      const to_flow = flows.find((flow) => flow.data.nodes.some((node) => node.data.id === data.transition.target_node))
-      const to_node = to_flow?.data.nodes.find((node) => node.data.id === data.transition.target_node)
+      const to_flow = flows.find((flow) =>
+        flow.data.nodes.some((node) => node.data.id === data.transition.target_node)
+      )
+      const to_node = to_flow?.data.nodes.find(
+        (node) => node.data.id === data.transition.target_node
+      )
       if (to_node && to_flow) {
         setToFlow(to_flow)
         setToNode(to_node)
@@ -58,8 +62,8 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
   }
 
   const TO_FLOW = useMemo(
-    () => flows.find((flow) => flow.data.nodes.some((node) => node.data.id === data.transition.target_node)),
-    [data.transition.target_node, flows]
+    () => flows.find((flow) => flow.name === data.transition.target_flow),
+    [data.transition.target_flow, flows]
   )
   const TO_NODE = useMemo(
     () => TO_FLOW?.data.nodes.find((node) => node.data.id === data.transition.target_node),
@@ -79,10 +83,13 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
 
   const onSave = () => {
     if (toFlow && toNode) {
+      data.transition.target_flow = toFlow.name
       data.transition.target_node = toNode.data.id
       onClose()
     }
   }
+
+  console.log(toFlow, toNode)
 
   return (
     <>
@@ -113,14 +120,16 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
             <PopoverContent>ID: {data.id}</PopoverContent>
           </Popover>
           {(!toFlow || !toNode) && (
-            <Tooltip content='It looks like this node/flow is not defined. Please, re-create it!' radius="sm">
+            <Tooltip
+              content='It looks like this node/flow is not defined. Please, re-create it!'
+              radius='sm'>
               <Button
                 size='sm'
                 isIconOnly
                 color='danger'
                 onClick={() => deleteNode(data.id)}>
-                  <Trash2 className="stroke-white" />
-                </Button>
+                <Trash2 className='stroke-white' />
+              </Button>
             </Tooltip>
           )}
         </div>
@@ -210,11 +219,13 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
                       onChange={handleNodeSelectionChange}
                       selectedKeys={toNode ? [toNode.data.name] : []}
                       items={
-                        toFlow?.data.nodes.filter(
-                          (node) =>
-                            !["link", "global", "local"].includes(node.type!) &&
+                        toFlow?.data.nodes.filter((node) => {
+                          console.log(node)
+                          return (
+                            !["link_node", "global", "local"].includes(node.type!) &&
                             !["LOCAL NODE", "GLOBAL NODE"].includes(node.data.name!)
-                        ) ?? []
+                          )
+                        }) ?? []
                       }>
                       {(node) => <SelectItem key={node.data.name}>{node.data.name}</SelectItem>}
                     </Select>

@@ -21,6 +21,7 @@ export type NodeDataType = {
   global_conditions?: string[]
   local_conditions?: string[]
   transition: {
+    target_flow: string
     target_node: string
   }
   response?: responseType
