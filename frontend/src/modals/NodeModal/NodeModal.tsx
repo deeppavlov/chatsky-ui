@@ -115,7 +115,8 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
                   placeholder="Enter node's response here"
                   name='response'
                   variant='bordered'
-                  value={nodeDataState.response?.data[0]?.text ?? "No text response"}
+                  disabled
+                  value={nodeDataState.response?.data[0].text ?? "No text response"}
                   onChange={setTextResponseValue}
                 />
                 <button
@@ -171,6 +172,7 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
         </ModalContent>
         <ResponseModal
           data={nodeDataState}
+          setData={setNodeDataState}
           isOpen={isResponseModalOpen}
           onClose={onResponseModalClose}
           response={nodeDataState.response!}

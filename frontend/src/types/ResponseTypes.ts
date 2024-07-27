@@ -20,7 +20,7 @@ export type responseDataType = {
 }
 
 export type responseType = {
-  id?: string
+  id: string
   name: string
   type: responseTypeType
   data: responseDataType[]
