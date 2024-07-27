@@ -208,7 +208,7 @@ export default function Flow() {
       if (!flows.some(flow => flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("start")))) {
         START_FALLBACK_FLAGS.push('start')
       }
-      if (!flow?.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("fallback"))) {
+      if (!flows.some(flow => flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("fallback")))) {
         START_FALLBACK_FLAGS.push('fallback')
       }
 
