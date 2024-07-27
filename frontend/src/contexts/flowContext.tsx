@@ -24,7 +24,11 @@ const globalFlow: FlowType = {
           global_conditions: [],
           local_conditions: [],
           name: "Global node",
-          response: "Global response",
+          response: {
+            name: "global_response",
+            type: "text",
+            data: [{ text: "Global node response", priority: 1 }],
+          },
         },
         position: {
           x: 0,
