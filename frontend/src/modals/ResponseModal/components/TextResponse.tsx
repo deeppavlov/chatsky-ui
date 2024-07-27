@@ -41,6 +41,8 @@ const TextResponse = ({
   return (
     <div>
       <Textarea
+        label="Value"
+        labelPlacement="outside"
         placeholder="Enter text response"
         variant="bordered"
         value={response.data[0].text}

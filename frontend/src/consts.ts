@@ -18,7 +18,7 @@ export const NODES = {
     global_conditions: [],
     local_conditions: [],
     response: {
-      name: "Default node response",
+      name: "default_response",
       type: "text",
       data: [{ text: "Default node response", priority: 1 }],
     },
