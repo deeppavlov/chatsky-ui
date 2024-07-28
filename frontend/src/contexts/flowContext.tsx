@@ -2,6 +2,7 @@
 import React, { createContext, useCallback, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
+import { Edge } from "reactflow"
 import { v4 } from "uuid"
 import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
@@ -156,12 +157,16 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
       // any_node.data.flags?.push("fallback")
     }
     const newNodes = flow.data.nodes.filter((node) => node.id !== id)
-    saveFlows(
-      flows.map((flow) =>
-        flow.name === flowId ? { ...flow, data: { ...flow.data, nodes: newNodes } } : flow
-      )
+    const newEdges = flow.data.edges.filter(
+      (edge: Edge) => edge.source !== id && edge.target !== id
     )
-    setFlows((flows) => flows.map((flow) => ({ ...flow, data: { ...flow.data, nodes: newNodes } })))
+    const newFlows = flows.map((flow) =>
+      flow.name === flowId
+        ? { ...flow, data: { ...flow.data, nodes: newNodes, edges: newEdges } }
+        : flow
+    )
+    saveFlows(newFlows)
+    setFlows(newFlows)
   }
 
   const deleteEdge = (id: string) => {
