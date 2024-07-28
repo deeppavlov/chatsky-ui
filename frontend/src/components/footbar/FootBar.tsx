@@ -1,13 +1,15 @@
 import { Button, Tab, Tabs, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Key, useContext } from "react"
+import { Link, useSearchParams } from "react-router-dom"
+import { buildContext } from "../../contexts/buildContext"
+import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import LocalStogareIcon from "../../icons/footbar/LocalStogareIcon"
 import LocalStorage from "../../modals/LocalStorage/LocalStorage"
-import LogsPageOpener from "./components/LogsPageOpener"
-import SettingsPageOpener from "./components/SettingsPageOpener"
+import { parseSearchParams } from "../../utils"
 
 const FootBar = () => {
   const {
@@ -16,10 +18,42 @@ const FootBar = () => {
     onClose: onLocalStogareClose,
   } = useDisclosure()
 
+  const { settingsPage, setSettingsPage } = useContext(workspaceContext)
+  const { logsPage, setLogsPage } = useContext(buildContext)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const onSelectionChange = (key: Key) => {
+    setSearchParams({
+      ...parseSearchParams(searchParams),
+      logs_page: "closed",
+      settings: "closed",
+    })
+    setSettingsPage(false)
+    setLogsPage(false)
+    if (key === "Inspect") {
+      setLogsPage(true)
+      setSearchParams({
+        ...parseSearchParams(searchParams),
+        logs_page: "opened",
+        settings: "closed",
+      })
+    } else if (key === "Settings") {
+      setSettingsPage(true)
+      setSearchParams({
+        ...parseSearchParams(searchParams),
+        logs_page: "closed",
+        settings: "opened",
+      })
+    }
+  }
+
   return (
-    <div data-testid="footbar" className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
+    <div
+      data-testid='footbar'
+      className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
       <div className='absolute w-full h-12 flex items-center justify-center'>
         <Tabs
+          onSelectionChange={onSelectionChange}
           variant='light'
           className=''
           classNames={{
@@ -52,7 +86,7 @@ const FootBar = () => {
                 Inspect
               </span>
             }>
-            <LogsPageOpener />
+            {/* <LogsPageOpener /> */}
           </Tab>
           <Tab
             key={"Settings"}
@@ -62,13 +96,16 @@ const FootBar = () => {
                 Settings
               </span>
             }>
-            <SettingsPageOpener />
+            {/* <SettingsPageOpener /> */}
           </Tab>
         </Tabs>
       </div>
-      <Link data-testid='logo' to={"/app/home"} className='flex items-center gap-1 z-10 cursor-pointer'>
+      <Link
+        data-testid='logo'
+        to={"/app/home"}
+        className='flex items-center gap-1 z-10 cursor-pointer'>
         <Logo />
-        <div className="flex items-end justify-start gap-1">
+        <div className='flex items-end justify-start gap-1'>
           <span className='flex font-bold text-lg'>DF Designer</span>
           <span className='flex font-semibold text-neutral-400 text-sm'>v 0.1.0-beta1</span>
         </div>
