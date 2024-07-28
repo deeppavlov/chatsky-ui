@@ -23,13 +23,6 @@ const FootBar = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const onSelectionChange = (key: Key) => {
-    setSearchParams({
-      ...parseSearchParams(searchParams),
-      logs_page: "closed",
-      settings: "closed",
-    })
-    setSettingsPage(false)
-    setLogsPage(false)
     if (key === "Inspect") {
       setLogsPage(true)
       setSearchParams({
@@ -44,6 +37,24 @@ const FootBar = () => {
         logs_page: "closed",
         settings: "opened",
       })
+    } else {
+      setSearchParams({
+        ...parseSearchParams(searchParams),
+        logs_page: "closed",
+        settings: "closed",
+      })
+      setSettingsPage(false)
+      setLogsPage(false)
+    }
+  }
+
+  const findDefaultSelectedKey = () => {
+    if (settingsPage) {
+      return "Settings"
+    } else if (logsPage) {
+      return "Inspect"
+    } else {
+      return "Edit"
     }
   }
 
@@ -54,6 +65,7 @@ const FootBar = () => {
       <div className='absolute w-full h-12 flex items-center justify-center'>
         <Tabs
           onSelectionChange={onSelectionChange}
+          defaultSelectedKey={findDefaultSelectedKey()}
           variant='light'
           className=''
           classNames={{
