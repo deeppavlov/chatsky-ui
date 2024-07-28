@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { Node } from "reactflow"
 import { FlowType } from "../types/FlowTypes"
 import { NodeDataType } from "../types/NodeTypes"
@@ -58,7 +59,8 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [managerMode, setManagerMode] = useState(false)
-  const [settingsPage, setSettingsPage] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [settingsPage, setSettingsPage] = useState(searchParams.get('settings') === 'opened')
   const [selectedNode, setSelectedNode] = useState("")
   const { updateFlow, flows, tab, quietSaveFlows, setFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
