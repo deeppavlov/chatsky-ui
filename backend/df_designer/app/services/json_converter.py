@@ -7,12 +7,11 @@ Converts a user project's frontend graph to a script understandable by DFF json-
 from pathlib import Path
 from typing import Tuple
 
-from omegaconf.dictconfig import DictConfig
-
 from app.api.deps import get_index
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
 from app.services.index import Index
+from omegaconf.dictconfig import DictConfig
 
 logger = get_logger(__name__)
 
@@ -214,7 +213,7 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
                 if "text" in message:
                     dff_responses.append({"dff.Message": {"text": message["text"]}})
                 else:
-                    raise ValueError(f"Unknown response type. There must be a 'text' field in each message.")
+                    raise ValueError("Unknown response type. There must be a 'text' field in each message.")
             node["info"].data.response = {"dff.rsp.choice": dff_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
