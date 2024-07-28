@@ -28,13 +28,13 @@ import FallbackNode from "../components/nodes/FallbackNode"
 import LinkNode from "../components/nodes/LinkNode"
 import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
-import { NODES, START_FALLBACK_NODE_FLAGS } from "../consts"
+import { NODES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
-import { NodeType, NodesTypes } from "../types/NodeTypes"
+import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
@@ -53,8 +53,15 @@ export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
   const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
-  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode, mouseOnPane, managerMode } =
-    useContext(workspaceContext)
+  const {
+    toggleWorkspaceMode,
+    workspaceMode,
+    nodesLayoutMode,
+    setSelectedNode,
+    selectedNode,
+    mouseOnPane,
+    managerMode,
+  } = useContext(workspaceContext)
   const { takeSnapshot, undo } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
@@ -203,6 +210,23 @@ export default function Flow() {
         y: event.clientY,
       })
       const newId = v4()
+
+      const START_FALLBACK_FLAGS = []
+      if (
+        !flows.some((flow) =>
+          flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("start"))
+        )
+      ) {
+        START_FALLBACK_FLAGS.push("start")
+      }
+      if (
+        !flows.some((flow) =>
+          flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("fallback"))
+        )
+      ) {
+        START_FALLBACK_FLAGS.push("fallback")
+      }
+
       const newNode: NodeType = {
         id: newId,
         type,
@@ -210,13 +234,14 @@ export default function Flow() {
         data: {
           id: newId,
           name: NODES[type].name,
-          flags: flow?.data.nodes.length ? [] : START_FALLBACK_NODE_FLAGS,
+          flags: START_FALLBACK_FLAGS,
           conditions: NODES[type].conditions,
           global_conditions: [],
           local_conditions: [],
           response: NODES[type].response as responseType,
           transition: {
-            target_node: ""
+            target_flow: "",
+            target_node: "",
           },
         },
       }
@@ -269,7 +294,6 @@ export default function Flow() {
     toggleWorkspaceMode,
     workspaceMode,
   ])
-
 
   const transitions = useTransition(location.pathname, {
     config: { duration: 300 },
@@ -331,7 +355,7 @@ export default function Flow() {
             snapToGrid={!workspaceMode}>
             <Controls
               fitViewOptions={{ padding: 0.25 }}
-              className='fill-foreground stroke-foreground text-foreground [&>button]:my-1 [&>button]:rounded [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
+              className='rounded-lg [&>button]:fill-foreground [&>button]:rounded-lg shadow-none [&>button]:my-1  [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
             />
             {/* <MiniMap style={{
               background: "var(--background)",

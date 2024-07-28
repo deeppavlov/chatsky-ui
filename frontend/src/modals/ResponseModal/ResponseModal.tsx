@@ -10,6 +10,7 @@ import {
   Tabs,
 } from "@nextui-org/react"
 import { useContext, useMemo, useState } from "react"
+import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
 import ModalComponent from "../../components/ModalComponent"
@@ -17,22 +18,31 @@ import { flowContext } from "../../contexts/flowContext"
 import { NodeDataType } from "../../types/NodeTypes"
 import { responseType, responseTypeType } from "../../types/ResponseTypes"
 import PythonResponse from "./components/PythonResponse"
+import TextResponse from "./components/TextResponse"
 
-type ResponseModalTab = "Using LLM" | "Python code" | "Custom"
+type ResponseModalTab = "Using LLM" | "Python code" | "Custom" | "Text"
 
 type ResponseModalProps = {
   data: NodeDataType
+  setData: React.Dispatch<React.SetStateAction<NodeDataType>>
   response: responseType
   size?: ModalProps["size"]
   isOpen: boolean
   onClose: () => void
 }
 
-const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: ResponseModalProps) => {
+const ResponseModal = ({
+  isOpen,
+  onClose,
+  data,
+  setData,
+  response,
+  size = "3xl",
+}: ResponseModalProps) => {
   const { getNode, setNodes, getNodes } = useReactFlow()
-  const { flows, quietSaveFlows } = useContext(flowContext)
+  const { flows, quietSaveFlows, updateFlow } = useContext(flowContext)
   const { flowId } = useParams()
-  const [selected, setSelected] = useState<responseTypeType>("python")
+  const [selected, setSelected] = useState<responseTypeType>(response.type ?? "python")
   // const [nodeDataState, setNodeDataState] = useState(data)
   const [currentResponse, setCurrentResponse] = useState(response)
   const setSelectedHandler = (key: responseTypeType) => {
@@ -46,16 +56,16 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
   }[] = useMemo(
     () => [
       {
-        title: "Using LLM",
-        value: "llm",
-      },
-      {
         title: "Python code",
         value: "python",
       },
       {
-        title: "Custom",
-        value: "custom",
+        title: "Text",
+        value: "text",
+      },
+      {
+        title: "Using LLM",
+        value: "llm",
       },
     ],
     []
@@ -71,30 +81,43 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
         />
       ),
       custom: <div>Custom</div>,
-      text: <div>text</div>,
+      text: (
+        <TextResponse
+          response={currentResponse}
+          setData={setCurrentResponse}
+        />
+      ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentResponse]
   )
 
   const saveResponse = () => {
-    const nodes = getNodes()
-    const node = getNode(data.id)
-    const currentFlow = flows.find((flow) => flow.name === flowId)
-    if (node && currentFlow) {
-      const new_node = {
-        ...node,
-        data: {
-          ...node.data,
-          response: currentResponse,
-        },
+    if (!currentResponse.name) {
+      return toast.error("Response name is required!")
+    }
+    if (flows.some((flow) => flow.data.nodes.some((node) => (node.data.response.name === currentResponse.name && node.id !== data.id)))) {
+      return toast.error("Response name must be unique!")
+    } else {
+      const nodes = getNodes()
+      const node = getNode(data.id)
+      const currentFlow = flows.find((flow) => flow.name === flowId)
+      if (node && currentFlow) {
+        const new_node = {
+          ...node,
+          data: {
+            ...node.data,
+            response: currentResponse,
+          },
+        }
+        const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+        setNodes(() => new_nodes)
+        setData(new_node.data)
+        // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+        // updateFlow(currentFlow)
+        quietSaveFlows()
+        onClose()
       }
-      const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-      setNodes(() => new_nodes)
-      // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-      // updateFlow(currentFlow)
-      quietSaveFlows()
-      onClose()
     }
   }
 
@@ -109,6 +132,7 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
         <ModalBody>
           <label htmlFor=''>
             <Tabs
+              disabledKeys={['llm']}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
@@ -137,6 +161,7 @@ const ResponseModal = ({ isOpen, onClose, data, response, size = "3xl" }: Respon
               labelPlacement='outside'
               placeholder="Enter response's name here"
               value={currentResponse.name}
+              isRequired
               onChange={(e) => setCurrentResponse({ ...currentResponse, name: e.target.value })}
             />
           </div>

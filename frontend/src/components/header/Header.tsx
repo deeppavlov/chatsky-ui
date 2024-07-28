@@ -44,7 +44,7 @@ const Header = () => {
               isIconOnly
               onClick={toggleManagerMode}
               className={classNames(
-                " bg-overlay hover:bg-background border border-border rounded-small",
+                "bg-overlay hover:bg-background border border-border rounded-small",
                 !managerMode ? "bg-background border-border-darker" : ""
               )}>
               <GrabModeIcon />
