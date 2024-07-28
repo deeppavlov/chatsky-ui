@@ -69,12 +69,19 @@ run_dev_backend: check_project_arg install_backend_env ## Runs backend in dev mo
 
 # backend tests
 .PHONY: unit_tests
-unit_tests: install_backend_env ## Runs all backend unit tests
-	cd ${BACKEND_DIR} && poetry run pytest ./app/tests/api
-	cd ${BACKEND_DIR} && poetry run pytest ./app/tests/services
+unit_tests: ## Runs all backend unit tests
+	if [ ! -d "./df_designer_project" ]; then \
+		cd "${BACKEND_DIR}" && \
+		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
+	fi
+
+	cd df_designer_project && \
+	poetry install && \
+	poetry run pytest ../${BACKEND_DIR}/app/tests/api ../${BACKEND_DIR}/app/tests/services
+
 
 .PHONY: integration_tests
-integration_tests: build_backend ## Runs all backend integration tests
+integration_tests: ## Runs all backend integration tests
 	if [ ! -d "./df_designer_project" ]; then \
 		cd "${BACKEND_DIR}" && \
 		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
@@ -86,7 +93,7 @@ integration_tests: build_backend ## Runs all backend integration tests
 
 
 .PHONY: backend_e2e_test
-backend_e2e_test: build_backend ## Runs e2e backend test
+backend_e2e_test: ## Runs e2e backend test
 	if [ ! -d "./df_designer_project" ]; then \
 		cd "${BACKEND_DIR}" && \
 		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
