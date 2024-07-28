@@ -35,6 +35,7 @@ import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
 import { NodeType, NodesTypes } from "../types/NodeTypes"
+import { responseType } from "../types/ResponseTypes"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
 import Settings from "./Settings"
@@ -43,10 +44,10 @@ const nodeTypes = {
   default_node: DefaultNode,
   start_node: StartNode,
   fallback_node: FallbackNode,
-  link: LinkNode,
+  link_node: LinkNode,
 }
 
-export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
+// export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
   const reactFlowWrapper = useRef(null)
@@ -117,10 +118,8 @@ export default function Flow() {
                 setSelectedNode("")
               }
             }
-            console.log(selectedNode)
           })
       }
-      console.log("nds change", nds)
       onNodesChange(nds)
     },
     [onNodesChange, selectedNode, setSelectedNode]
@@ -143,7 +142,6 @@ export default function Flow() {
   const onEdgeUpdateEnd = useCallback(
     (event: MouseEvent | TouchEvent, edge: Edge, handleType: HandleType) => {
       takeSnapshot()
-      console.log("edge update end", edge)
       if (!isEdgeUpdateSuccess.current) {
         deleteObject(edge.id)
       }
@@ -155,7 +153,6 @@ export default function Flow() {
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       const node_ = node as NodeType
-      console.log("node click", node)
       setSelected(node_.id)
     },
     [setSelected]
@@ -163,7 +160,6 @@ export default function Flow() {
 
   const onEdgeClick = useCallback(
     (event: React.MouseEvent, edge: Edge) => {
-      console.log("edge click", edge)
       setSelected(edge.id)
     },
     [setSelected]
@@ -218,8 +214,10 @@ export default function Flow() {
           conditions: NODES[type].conditions,
           global_conditions: [],
           local_conditions: [],
-          response: NODES[type].response,
-          to: "",
+          response: NODES[type].response as responseType,
+          transition: {
+            target_node: ""
+          },
         },
       }
       setNodes((nds) => nds.concat(newNode))
@@ -229,7 +227,6 @@ export default function Flow() {
 
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
-      console.log(e)
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
@@ -246,7 +243,6 @@ export default function Flow() {
 
       if (e.key === "Backspace" && mouseOnPane) {
         e.preventDefault()
-        console.log("backspace")
         if (selected) {
           takeSnapshot()
           deleteObject(selected)

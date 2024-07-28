@@ -7,12 +7,11 @@ Converts a user project's frontend graph to a script understandable by DFF json-
 from pathlib import Path
 from typing import Tuple
 
-from omegaconf.dictconfig import DictConfig
-
 from app.api.deps import get_index
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
 from app.services.index import Index
+from omegaconf.dictconfig import DictConfig
 
 logger = get_logger(__name__)
 

@@ -96,7 +96,7 @@ export const parseSearchParams = (
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
 }
 
-export const generateNewConditionBase = (node_name: string): conditionType => {
+export const generateNewConditionBase = (): conditionType => {
   return {
     id: v4(),
     name: "new_cnd",

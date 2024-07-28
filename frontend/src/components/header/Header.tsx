@@ -1,6 +1,5 @@
 import { Button, Tooltip, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
-import { BellRing, Moon, Settings, Sun } from "lucide-react"
 import { useContext } from "react"
 import { useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
@@ -9,7 +8,6 @@ import { workspaceContext } from "../../contexts/workspaceContext"
 import GrabModeIcon from "../../icons/header/GrabModeIcon"
 import GridModeIcon from "../../icons/header/GridModeIcon"
 import ListViewIcon from "../../icons/header/ListViewIcon"
-import SettingsModal from "../../modals/SettingsModal/SettingsModal"
 import BuildMenu from "./BuildMenu"
 import NodeInstruments from "./components/NodeInstruments"
 
@@ -88,28 +86,13 @@ const Header = () => {
       </div>
       <div className='flex items-center justify-start gap-1'>
         <BuildMenu />
-        <Button
-          onClick={onOpenSettingsModal}
-          isIconOnly
-          className='header-service-btn'>
-          <Settings />
-        </Button>
-        <Button
+        {/* <Button
           onClick={toggleTheme}
           isIconOnly
           className='header-service-btn'>
           {theme === "light" ? <Sun /> : <Moon />}
-        </Button>
-        <Button
-          isIconOnly
-          className='header-service-btn'>
-          <BellRing />
-        </Button>
+        </Button> */}
       </div>
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={onCloseSettingsModal}
-      />
     </div>
   )
 }

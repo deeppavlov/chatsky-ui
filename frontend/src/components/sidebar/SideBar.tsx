@@ -114,7 +114,7 @@ const SideBar = () => {
                     item={{
                       color: "#f5b75a",
                       name: "Link",
-                      type: "link",
+                      type: "link_node",
                     }}
                   />
                 </div>

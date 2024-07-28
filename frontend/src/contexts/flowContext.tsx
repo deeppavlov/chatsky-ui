@@ -84,12 +84,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     setTab(flowId || "")
-    console.log(flowId)
   }, [flowId])
 
   const getFlows = async () => {
     const { data } = await get_flows()
-    // console.log(data)
     if (data.flows.length) {
       if (data.flows.some((flow) => flow.name === "Global")) {
         setFlows(data.flows)
@@ -105,7 +103,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
 
   const saveFlows = async (flows: FlowType[]) => {
     const res = await save_flows(flows)
-    console.log(res)
     setFlows(flows)
   }
 
