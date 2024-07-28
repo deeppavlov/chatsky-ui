@@ -21,6 +21,7 @@ const globalFlow: FlowType = {
         id: v4(),
         type: "default_node",
         data: {
+          flags: [],
           conditions: [],
           global_conditions: [],
           local_conditions: [],
@@ -93,16 +94,18 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
 
   const getFlows = async () => {
     const { data } = await get_flows()
-    if (data.flows.length) {
+    if (data.flows) {
       if (data.flows.some((flow) => flow.name === "Global")) {
         setFlows(data.flows)
       } else {
         setFlows([globalFlow, ...data.flows])
       }
+    } else {
+      setFlows([globalFlow])
     }
   }
 
-  useEffect(() => {
+  useEffect(() => { 
     getFlows()
   }, [])
 
