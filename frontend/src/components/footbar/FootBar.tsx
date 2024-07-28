@@ -124,6 +124,7 @@ const FootBar = () => {
       </Link>
       <div className='flex items-end gap-0.5'>
         <Button
+          isDisabled
           onClick={onLocalStogareOpen}
           className={classNames(
             "local-storage-button px-2 cursor-pointer rounded-small h-9 flex items-center bg-transparent justify-center gap-2 border border-transparent hover:bg-background hover:border-foreground hover:text-foreground",
