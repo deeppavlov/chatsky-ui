@@ -67,10 +67,6 @@ const ResponseModal = ({
         title: "Using LLM",
         value: "llm",
       },
-      {
-        title: "Using LLM",
-        value: "llm",
-      },
     ],
     []
   )

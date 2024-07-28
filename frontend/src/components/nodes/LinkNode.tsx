@@ -89,8 +89,6 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
     }
   }
 
-  console.log(toFlow, toNode)
-
   return (
     <>
       <div

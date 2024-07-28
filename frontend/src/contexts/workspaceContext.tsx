@@ -80,7 +80,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
       setModalsOpened(0)
     }
   }, [modalsOpened])
-
+  
   useEffect(() => console.log(mouseOnPane), [mouseOnPane])
 
   const flow = flows.find((flow) => flow.name === tab)
