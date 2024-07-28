@@ -77,11 +77,20 @@ def _write_list_to_file(conditions_lines: list, custom_conditions_file: Path) ->
 
 def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> None:
     """Add transitions to a node according to `edge` and `condition`."""
+    # if the edge is a link_node, we add transition of its source and target
+    if nodes[edge.target]["info"].type == "link_node":
+        flow = nodes[edge.target]["info"].data.transition.target_flow
+
+        target_node = nodes[edge.target]["info"].data.transition.target_node
+        node = nodes[target_node]["info"].data.name
+    else:
+        flow = nodes[edge.target]["flow"]
+        node = nodes[edge.target]["info"].data.name
     nodes[edge.source]["TRANSITIONS"].append(
         {
             "lbl": [
-                nodes[edge.target]["flow"],
-                nodes[edge.target]["info"].data.name,
+                flow,
+                node,
                 condition.data.priority,
             ],
             "cnd": f"custom_dir.conditions.{condition.name}",
@@ -92,6 +101,8 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> No
 def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
     """Fill nodes into dff script dictunary."""
     for _, node in nodes.items():
+        if node["info"].type == "link_node":
+            continue
         if node["flow"] not in script:
             script[node["flow"]] = {}
         script[node["flow"]].update(
@@ -177,6 +188,8 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
     * If the response already exists in the responses_lines, it will be replaced with the new one.
     """
     for node in nodes.values():
+        if node["info"].type == "link_node":
+            continue
         response = node["info"].data.response
         logger.debug("response type: %s", response.type)
         if response.type == "python":
