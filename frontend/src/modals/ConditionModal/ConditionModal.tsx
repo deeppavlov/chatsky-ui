@@ -66,7 +66,7 @@ const ConditionModal = ({
   const { flowId } = useParams()
 
   const [currentCondition, setCurrentCondition] = useState(
-    is_create || !condition ? generateNewConditionBase(data.name) : condition
+    is_create || !condition ? generateNewConditionBase() : condition
   )
 
   const validateConditionName = (is_create: boolean) => {
@@ -160,6 +160,10 @@ const ConditionModal = ({
   }[] = useMemo(
     () => [
       {
+        title: "Python code",
+        value: "python",
+      },
+      {
         title: "Using LLM",
         value: "llm",
       },
@@ -172,10 +176,6 @@ const ConditionModal = ({
         value: "button",
       },
       {
-        title: "Python code",
-        value: "python",
-      },
-      {
         title: "Custom",
         value: "custom",
       },
@@ -183,9 +183,6 @@ const ConditionModal = ({
     []
   )
 
-  useEffect(() => {
-    console.log(currentCondition)
-  }, [currentCondition])
 
   const bodyItems = useMemo(
     () => ({
@@ -283,7 +280,7 @@ const ConditionModal = ({
       }
       onClose()
       setCurrentCondition(
-        is_create || !condition ? generateNewConditionBase(data.name) : currentCondition
+        is_create || !condition ? generateNewConditionBase() : currentCondition
       )
     } else {
       if (!validate_name.status) {
@@ -325,6 +322,7 @@ const ConditionModal = ({
         <ModalBody>
           <label>
             <Tabs
+              disabledKeys={["llm", "custom", "slot", "button"]}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
@@ -349,6 +347,7 @@ const ConditionModal = ({
           <div>
             <Input
               label='Name'
+              variant="bordered"
               labelPlacement='outside'
               placeholder="Enter condition's name here"
               value={currentCondition.name}

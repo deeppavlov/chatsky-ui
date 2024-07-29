@@ -6,15 +6,23 @@ Classes for build and run processes.
 """
 import asyncio
 import logging
+import os
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from dotenv import load_dotenv
+
 from app.core.config import settings
 from app.core.logger_config import get_logger, setup_logging
 from app.db.base import read_conf, write_conf
 from app.schemas.process_status import Status
+
+load_dotenv()
+
+GRACEFUL_TERMINATION_TIMEOUT = float(os.getenv("GRACEFUL_TERMINATION_TIMEOUT", 2))
+PING_PONG_TIMEOUT = float(os.getenv("PING_PONG_TIMEOUT", 0.5))
 
 
 def _map_to_str(params: Dict[str, Any]):
@@ -137,7 +145,13 @@ class Process(ABC):
         try:
             self.logger.debug("Terminating process '%s'", self.id)
             self.process.terminate()
-            await self.process.wait()
+            try:
+                await asyncio.wait_for(self.process.wait(), timeout=GRACEFUL_TERMINATION_TIMEOUT)
+                self.logger.debug("Process '%s' was gracefully terminated.", self.id)
+            except asyncio.TimeoutError:
+                self.process.kill()
+                await self.process.wait()
+                self.logger.debug("Process '%s' was forcefully killed.", self.id)
             self.logger.debug("Process returencode '%s' ", self.process.returncode)
 
         except ProcessLookupError as exc:
@@ -166,12 +180,11 @@ class Process(ABC):
 
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
-        timeout = 0.5
         message = b"Hi\n"
         try:
             # Attempt to write and read from the process with a timeout.
             await self.write_stdin(message)
-            output = await asyncio.wait_for(self.read_stdout(), timeout=timeout)
+            output = await asyncio.wait_for(self.read_stdout(), timeout=PING_PONG_TIMEOUT)
             if not output:
                 return False
             self.logger.debug("Process is alive and output afer communication is: %s", output.decode())
