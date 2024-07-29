@@ -141,7 +141,7 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                         className='rounded-full w-8 h-8 transition-all'
                         style={{
                           backgroundColor: color,
-                          border: flow.color === color ? "4px solid white" : "none",
+                          border: flow.color === color ? "4px solid var(--foreground)" : "none",
                         }}></button>
                     ))}
                   </div>

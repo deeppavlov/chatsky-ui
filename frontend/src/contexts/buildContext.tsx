@@ -67,7 +67,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const getBuildInitial = async () => {
       const builds = await get_builds()
-      console.log(builds)
       if (builds) {
         setBuildsHandler(builds)
         if (builds[builds.length - 1].status === "completed") {
@@ -79,7 +78,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     getBuildInitial()
   }, [])
 
-  const buildStart = async ({ end_status = "completed", wait_time = 3 }: buildPresetType) => {
+  const buildStart = async ({ end_status = "completed", wait_time = 0 }: buildPresetType) => {
     setBuildPending(() => true)
     setBuildStatus("running")
     try {
@@ -99,9 +98,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           return (flag = false)
         }
         const status_res = await build_status(start_res.build_id)
-        console.log(status_res)
         const status = status_res.status.toLowerCase()
-        console.log(status)
         if (status !== "running" && status !== "alive") {
           flag = false
           setTimeout(async () => {
@@ -112,7 +109,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
                 type: "build",
               }))
             )
-            console.log(build)
           }, 1000)
           if (status === "completed") {
             setBuildStatus("completed")

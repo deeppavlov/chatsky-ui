@@ -20,8 +20,8 @@ const StopIcon = ({
         height='12.5'
         rx='1.25'
         stroke={stroke}
-        stroke-opacity={strokeOpacity}
-        stroke-width='1.5'
+        strokeOpacity={strokeOpacity}
+        strokeWidth='1.5'
       />
     </svg>
   )

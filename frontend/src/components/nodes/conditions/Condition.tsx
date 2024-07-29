@@ -19,7 +19,6 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
   } = useDisclosure()
 
   const edges = useReactFlow().getEdges()
-  console.log(edges, condition)
 
   useEffect(() => {
     condition.data.transition_type = label
