@@ -79,7 +79,7 @@ class ProcessManager:
             logger.error("Id '%s' not found", id_)
             return None
 
-        log_file = process_info["log_path"]
+        log_file = Path(process_info["log_path"])
         try:
             logs = await read_logs(log_file)
             logs = [log for log in logs if log.strip()]

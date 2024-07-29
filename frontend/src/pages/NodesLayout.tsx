@@ -19,7 +19,6 @@ const NodesLayout = () => {
       node.type !== "link" && node.data.name !== "LOCAL NODE" && node.data.name !== "GLOBAL NODE"
   )
   const edges = useEdges()
-  console.log(nodes, edges)
   const [hoveredNode, setHoveredNode] = useState<string>("")
   const setHoveredNodeHandler: MouseEventHandler<HTMLDivElement> = (e) => {
     const id = (e.target as HTMLElement).id
@@ -39,7 +38,7 @@ const NodesLayout = () => {
               key={node.id}
               className='flex flex-col gap-1'>
               <div
-                id={node.id}
+                id={`${node.id}-layout`}
                 onMouseEnter={setHoveredNodeHandler}
                 onMouseLeave={resetHoveredNodeHandler}
                 className='p-2 border border-border rounded-lg cursor-pointer hover:border-foreground'>
@@ -69,11 +68,11 @@ const NodesLayout = () => {
             return (
               <Xarrow
                 key={edge.id}
-                start={edge.source}
-                end={edge.target}
+                start={`${edge.source}-layout`}
+                end={`${edge.target}-layout`}
                 headSize={5}
                 strokeWidth={1}
-                color={hoveredNode === edge.source ? "var(--foreground)" : "var(--border)"}
+                color={hoveredNode === `${edge.source}-layout` ? "var(--foreground)" : "var(--border)"}
                 path='grid'
                 _cpy1Offset={0}
                 _cpy2Offset={0}

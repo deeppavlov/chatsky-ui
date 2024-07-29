@@ -2,31 +2,25 @@ import { v4 } from "uuid"
 import { CreateFlowType } from "./modals/FlowModal/CreateFlowModal"
 import { conditionType } from "./types/ConditionTypes"
 import { FlowType } from "./types/FlowTypes"
+import { NodeType } from "./types/NodeTypes"
 
 export const generateNewFlow = (flow: CreateFlowType) => {
+  const node_id = v4()
+  const node_2_id = v4()
+  const condition_id = v4()
   const newFlow: FlowType = {
     ...flow,
     id: v4(),
     data: {
-      nodes: [
+      nodes: [],
+      edges: [
         {
-          id: `${flow.name}/LOCAL_NODE`,
-          type: "default_node",
-          data: {
-            id: `${flow.name}/LOCAL_NODE`,
-            name: "LOCAL NODE",
-            conditions: [],
-            global_conditions: [],
-            local_conditions: [],
-            response: "Default local node response",
-          },
-          position: {
-            x: 0,
-            y: 0,
-          },
+          id: v4(),
+          source: node_id,
+          sourceHandle: condition_id,
+          target: node_2_id,
         },
       ],
-      edges: [],
       viewport: {
         x: 0,
         y: 0,
@@ -41,7 +35,9 @@ export const validateFlowName = (name: string, flows: FlowType[]) => {
   return !flows.some((flow) => flow.name === name) && name.length > 2
 }
 
-export const parseSearchParams = (searchParams: URLSearchParams): {
+export const parseSearchParams = (
+  searchParams: URLSearchParams
+): {
   [key: string]: string
 } => {
   if (!searchParams.toString()) return {}
@@ -52,9 +48,9 @@ export const parseSearchParams = (searchParams: URLSearchParams): {
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
 }
 
-export const generateNewConditionBase = (node_name: string): conditionType => {
+export const generateNewConditionBase = (): conditionType => {
   return {
-    id: node_name + "_" + v4(),
+    id: v4(),
     name: "new_cnd",
     type: "python",
     data: {
@@ -62,4 +58,10 @@ export const generateNewConditionBase = (node_name: string): conditionType => {
       transition_type: "manual",
     },
   }
+}
+
+export const isNodeDeletionValid = (nodes: NodeType[], id: string) => {
+  const node = nodes.find((n) => n.id === id)
+  if (!node) return false
+  return !node.data.flags?.includes("start")
 }

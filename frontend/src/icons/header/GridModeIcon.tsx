@@ -11,9 +11,9 @@ const GridModeIcon = ({stroke='var(--foreground)'}: React.SVGAttributes<SVGSVGEl
       <path
         d='M5 2V9M2 5H9M15 5H22M19 2V9M5 15V19M5 19V22M5 19H2M5 19H9M15 19H19M19 19H22M19 19V15M19 19V22'
         stroke={stroke}
-        stroke-opacity='0.9'
-        stroke-width='1.5'
-        stroke-linecap='round'
+        strokeOpacity='0.9'
+        strokeWidth='1.5'
+        strokeLinecap='round'
       />
     </svg>
   )

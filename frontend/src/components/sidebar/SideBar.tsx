@@ -42,16 +42,18 @@ const SideBar = () => {
               <p className='font-semibold my-4'>Flows</p>
               <div className='flex items-center gap-1.5'>
                 <Button
+                  className="border-1"
                   onClick={onOpenManageFlowsModal}
                   size='sm'
-                  variant='ghost'
+                  variant='bordered'
                   isIconOnly>
                   <EditNodeIcon fillOpacity={"1"} />
                 </Button>
                 <Button
+                  className="border-1"
                   onClick={onOpenCreateFlowModal}
                   size='sm'
-                  variant='ghost'
+                  variant='bordered'
                   isIconOnly>
                   <Plus />
                 </Button>
@@ -114,7 +116,7 @@ const SideBar = () => {
                     item={{
                       color: "#f5b75a",
                       name: "Link",
-                      type: "link",
+                      type: "link_node",
                     }}
                   />
                 </div>
@@ -131,7 +133,7 @@ const SideBar = () => {
             href='https://deeppavlov.ai'
             target='_blank'>
             <Logo className='w-4 h-4' />
-            df_designer v0.1.0
+            df_designer v0.1.0-beta.1
           </a> */}
         </div>
       </div>
