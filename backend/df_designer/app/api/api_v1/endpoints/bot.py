@@ -173,7 +173,12 @@ async def start_run(
 
 
 @router.get("/run/stop/{run_id}", status_code=200)
-async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager), websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager)) -> dict[str, str]:
+async def stop_run(
+    *,
+    run_id: int,
+    run_manager: RunManager = Depends(deps.get_run_manager),
+    websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager)
+) -> dict[str, str]:
     """Stops a `run` process with the given id.
 
     Args:

@@ -22,7 +22,7 @@ async def read_conf_as_obj(path: Path) -> dict | list:
     """Returns the configurations read as python objects."""
     omega_data = await read_conf(path)
     conf_dict = OmegaConf.to_container(omega_data, resolve=True)
-    return conf_dict # type: ignore
+    return conf_dict  # type: ignore
 
 
 async def write_conf(data: DictConfig | ListConfig | dict | list, path: Path) -> None:

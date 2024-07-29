@@ -30,11 +30,7 @@ class WebSocketManager:
         ws_id = uuid4().hex
         self.active_connections[run_id] = {
             "websocket": websocket,
-            "chat": {
-                "id": ws_id,
-                "timestamp" : datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-                "messages" : []
-            }
+            "chat": {"id": ws_id, "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), "messages": []},
         }
 
     async def close(self, run_id: int):
@@ -42,15 +38,17 @@ class WebSocketManager:
         websocket = self.active_connections[run_id]["websocket"]
         await websocket.close()
 
-    async def disconnect(self, run_id:int, websocket: WebSocket): # no need to pass websocket. use active_connections[run_id]
+    async def disconnect(
+        self, run_id: int, websocket: WebSocket
+    ):  # no need to pass websocket. use active_connections[run_id]
         """Executes cleanup.
-        
+
         - Writes the chat info to DB.
         - Cancels pending tasks of the open websocket process.
         - Removes the websocket from active connections."""
         dict_chats = await read_conf_as_obj(settings.chats_path)
         dict_chats = dict_chats or []
-        dict_chats.append(self.active_connections[run_id]["chat"]) # type: ignore
+        dict_chats.append(self.active_connections[run_id]["chat"])  # type: ignore
         await write_conf(dict_chats, settings.chats_path)
         logger.info("Chats info were written to DB")
 
@@ -81,7 +79,9 @@ class WebSocketManager:
             logger.info("Websocket connection is closed")
             await self.disconnect(run_id, websocket)
         except RuntimeError as e:
-            if "Unexpected ASGI message 'websocket.send'" in str(e) or "Cannot call 'send' once a close message has been sent" in str(e):
+            if "Unexpected ASGI message 'websocket.send'" in str(
+                e
+            ) or "Cannot call 'send' once a close message has been sent" in str(e):
                 logger.info("Websocket connection was forced to close.")
             else:
                 raise e
@@ -103,7 +103,9 @@ class WebSocketManager:
             logger.info("Websocket connection is closed")
             await self.disconnect(run_id, websocket)
         except RuntimeError as e:
-            if "Unexpected ASGI message 'websocket.send'" in str(e) or "Cannot call 'send' once a close message has been sent" in str(e):
+            if "Unexpected ASGI message 'websocket.send'" in str(
+                e
+            ) or "Cannot call 'send' once a close message has been sent" in str(e):
                 logger.info("Websocket connection was forced to close.")
             else:
                 raise e

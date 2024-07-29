@@ -81,6 +81,7 @@ def run_scenario(build_id: int, project_dir: str = "."):
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
     asyncio.run(_execute_command(command_to_run))
 
+
 @cli.command("run_app")
 def run_app(
     ip_address: str = settings.host,
