@@ -10,6 +10,7 @@ import {
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import React, { useCallback, useContext, useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { useReactFlow } from "reactflow"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
@@ -55,6 +56,9 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
   const onNodeSave = () => {
     const nodes = getNodes()
     const node = nodes.find((node) => node.data.id === data.id)
+    if (nodes.some((node) => (node.data.name === nodeDataState.name && node.data.id !== nodeDataState.id))) {
+      return toast.error("Node name must be unique!")
+    }
     const new_nodes = nodes.map((node) => {
       if (node.data.id === data.id) {
         return { ...node, data: { ...node.data, ...nodeDataState } }
