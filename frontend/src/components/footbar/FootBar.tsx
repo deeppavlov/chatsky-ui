@@ -3,6 +3,7 @@ import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
 import { Key, useContext } from "react"
 import { Link, useSearchParams } from "react-router-dom"
+import { MetaContext } from "../../contexts/metaContext"
 import { buildContext } from "../../contexts/buildContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
@@ -18,6 +19,7 @@ const FootBar = () => {
     onClose: onLocalStogareClose,
   } = useDisclosure()
 
+  const { version } = useContext(MetaContext)
   const { settingsPage, setSettingsPage } = useContext(workspaceContext)
   const { logsPage, setLogsPage } = useContext(buildContext)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -119,7 +121,7 @@ const FootBar = () => {
         <Logo />
         <div className='flex items-end justify-start gap-1'>
           <span className='flex font-bold text-lg'>DF Designer</span>
-          <span className='flex font-semibold text-neutral-400 text-sm'>v 0.1.0-beta1</span>
+          <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>

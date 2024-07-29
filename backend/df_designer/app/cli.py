@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+import toml
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
@@ -101,12 +102,14 @@ def run_app(
 @cli.command("init")
 def init(destination: str = settings.work_directory, no_input: bool = False, overwrite_if_exists: bool = True):
     original_dir = os.getcwd()
+    pyproject = toml.load(settings.pyproject_path)
     try:
         os.chdir(destination)
         cookiecutter(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            extra_context={"dflowd_version": pyproject["tool"]["poetry"]["version"]},
         )
     finally:
         os.chdir(original_dir)
