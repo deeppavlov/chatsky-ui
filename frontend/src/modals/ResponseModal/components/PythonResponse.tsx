@@ -33,7 +33,7 @@ const PythonResponse = ({
           {
             priority: 1,
             python: {
-              action: `def ${response.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python response:\n    return Message('Hello')`,
+              action: `def ${response.name}(ctx: Context, pipeline: Pipeline) -> Message(""):\n  # enter your python response:\n    return Message('Hello')`,
             },
           },
         ],
