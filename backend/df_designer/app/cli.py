@@ -107,7 +107,7 @@ def init(destination: str = settings.work_directory, no_input: bool = False, ove
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            extra_context={"dflowd_version": "0.1.0b2"},
+            extra_context={"dflowd_version": "0.1.0b3"},
         )
     finally:
         os.chdir(original_dir)
