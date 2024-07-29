@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dflowd"
-version = "0.1.0b1"
+version = "0.1.0b2"
 description = "Dialog Flow Designer"
 license = "Apache-2.0"
 authors = [
