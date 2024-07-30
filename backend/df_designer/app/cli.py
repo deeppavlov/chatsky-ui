@@ -11,6 +11,7 @@ from cookiecutter.main import cookiecutter
 # Patch nest_asyncio before importing DFF
 nest_asyncio.apply = lambda: None
 
+from app import __version__
 from app.core.config import app_runner, settings  # noqa: E402
 from app.core.logger_config import get_logger  # noqa: E402
 
@@ -78,7 +79,7 @@ def run_scenario(build_id: int, project_dir: str = "."):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     if not script_path.exists():
         raise FileNotFoundError(f"File {script_path} doesn't exist")
-    command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
+    command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
     asyncio.run(_execute_command(command_to_run))
 
 
@@ -107,7 +108,7 @@ def init(destination: str = settings.work_directory, no_input: bool = False, ove
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            extra_context={"dflowd_version": "0.1.0b4"},
+            extra_context={"dflowd_version": __version__},
         )
     finally:
         os.chdir(original_dir)

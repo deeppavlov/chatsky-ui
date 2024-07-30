@@ -17,7 +17,6 @@ class Settings(BaseSettings):
     static_files: Path = config_file_path.parent.with_name("static")
     start_page: Path = static_files.joinpath("index.html")
     package_dir: Path = config_file_path.parents[3]
-    pyproject_path: Path = package_dir / "df_designer" / "pyproject.toml"
 
     host: str = os.getenv("HOST", "0.0.0.0")
     port: int = int(os.getenv("PORT", 8000))
