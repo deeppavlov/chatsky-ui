@@ -104,7 +104,6 @@ export default function Flow() {
   }, [nodes]);
 
   useEffect(() => {
-    // console.log('first')
     handleUpdateFlowData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edges])
@@ -119,7 +118,6 @@ export default function Flow() {
         reactFlowInstance.fitView({ padding: 0.5 })
       }
     }
-    console.log('ss')
   }, [flow, flowId, reactFlowInstance, setEdges, setNodes])
 
   const onInit = useCallback((e: ReactFlowInstance) => {
