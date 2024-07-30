@@ -107,6 +107,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
+    console.log('flows changed')
+  }, [flows])
+
+  useEffect(() => {
     getFlows()
   }, [])
 
@@ -123,9 +127,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     }, 100)
   }
 
-  const getLocaleFlows = () => {
+  const getLocaleFlows = useCallback(() => {
     return flows
-  }
+  }, [flows])
 
   const deleteFlow = useCallback(
     (flow: FlowType) => {
@@ -145,7 +149,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     [flows]
   )
 
-  const deleteNode = (id: string) => {
+  const deleteNode = useCallback((id: string) => {
     const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
     if (!flow) return -1
     const deleted_node: NodeType = flow.data.nodes.find((node) => node.id === id) as NodeType
@@ -172,9 +176,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     )
     saveFlows(newFlows)
     setFlows(newFlows)
-  }
+  }, [flowId, flows, n])
 
-  const deleteEdge = (id: string) => {
+  const deleteEdge = useCallback((id: string) => {
     const flow = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
     if (!flow) return -1
     const newEdges = flow.data.edges.filter((edge) => edge.id !== id)
@@ -184,15 +188,15 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
       )
     )
     setFlows((flows) => flows.map((flow) => ({ ...flow, data: { ...flow.data, edges: newEdges } })))
-  }
+  }, [flowId, flows])
 
-  const deleteObject = (id: string) => {
+  const deleteObject = useCallback((id: string) => {
     const flow_node = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
     const flow_edge = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
     if (!flow_node && !flow_edge) return -1
     if (flow_node) deleteNode(id)
     if (flow_edge) deleteEdge(id)
-  }
+  }, [deleteEdge, deleteNode, flows])
 
   return (
     <flowContext.Provider

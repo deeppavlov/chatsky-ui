@@ -127,16 +127,6 @@ const SideBar = memo(() => {
           </div>
         </div>
         <div className='flex flex-col items-center justify-start gap-1'>
-          {/* <Button className='bg-bg-secondary h-max w-full rounded-md py-0.5 text-center text-md font-medium'>
-            My storage
-          </Button> */}
-          {/* <a
-            className='bg-bg-secondary w-full rounded-md py-0.5 flex items-center justify-center gap-2 text-xs'
-            href='https://deeppavlov.ai'
-            target='_blank'>
-            <Logo className='w-4 h-4' />
-            df_designer v0.1.0-beta.1
-          </a> */}
         </div>
       </div>
       <ManageFlowsModal

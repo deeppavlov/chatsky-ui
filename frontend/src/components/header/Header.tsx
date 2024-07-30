@@ -1,6 +1,6 @@
 import { Button, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { useContext, useMemo } from "react"
+import { memo, useContext, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
 import { MetaContext } from "../../contexts/metaContext"
@@ -12,7 +12,7 @@ import ListViewIcon from "../../icons/header/ListViewIcon"
 import BuildMenu from "./BuildMenu"
 import NodeInstruments from "./components/NodeInstruments"
 
-const Header = () => {
+const Header = memo(() => {
   const { version } = useContext(MetaContext)
   const location = useLocation()
   const {
@@ -31,15 +31,18 @@ const Header = () => {
     <div
       data-testid='header'
       className='min-h-14 flex items-center justify-between w-screen z-10 bg-bg-secondary border-b border-border px-2 pr-4'>
-        {location.pathname.includes("app/home") && (
-          <Link data-testid='logo-header' to={"/app/home"} className='flex items-center gap-1 z-10 cursor-pointer'>
+      {location.pathname.includes("app/home") && (
+        <Link
+          data-testid='logo-header'
+          to={"/app/home"}
+          className='flex items-center gap-1 z-10 cursor-pointer'>
           <Logo />
-          <div className="flex items-end justify-start gap-1">
+          <div className='flex items-end justify-start gap-1'>
             <span className='flex font-bold text-lg'>DF Designer</span>
             <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
           </div>
         </Link>
-        )}
+      )}
       {location.pathname.includes("flow") && (
         <div className='flex items-center gap-4 w-52'>
           <div className='flex items-center gap-1.5'>
@@ -102,6 +105,6 @@ const Header = () => {
       </div>
     </div>
   )
-}
+})
 
 export default Header

@@ -87,23 +87,23 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
 
   const flow = flows.find((flow) => flow.name === tab)
 
-  const toggleWorkspaceMode = () => {
+  const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
     n.add({
       message: `Workspace mode is now ${workspaceMode ? "fixed" : "free"}.`,
       title: "Workspace mode changed!",
       type: "info",
     })
-  }
+  }, [n, workspaceMode])
 
-  const toggleNodesLayoutMode = () => {
+  const toggleNodesLayoutMode = useCallback(() => {
     setNodesLayoutMode(() => !nodesLayoutMode)
     n.add({
       message: `Nodes layout mode is now ${!nodesLayoutMode ? "on" : "off"}.`,
       title: "Layout mode changed!",
       type: "info",
     })
-  }
+  }, [n, nodesLayoutMode])
 
   const toggleManagerMode = useCallback(() => {
     setManagerMode(() => !managerMode)
@@ -144,13 +144,12 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         },
       }
     })
-    setFlows(new_flows)
-
-    if (flow) {
-      updateFlow(flow)
-    }
+    setFlows(() => new_flows)
+    // if (flow) {
+    //   updateFlow(flow)
+    // }
     quietSaveFlows()
-  }, [])
+  }, [flows, quietSaveFlows, selectedNode, setFlows])
 
   const onModalOpen = useCallback((onOpen: () => void) => {
     setMouseOnPane(false)

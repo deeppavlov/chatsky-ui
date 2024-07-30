@@ -2,7 +2,7 @@ import { Button, Textarea, Tooltip } from "@nextui-org/react"
 import { a, useTransition } from "@react-spring/web"
 import axios from "axios"
 import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
-import { useContext, useEffect, useRef, useState } from "react"
+import { memo, useContext, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
@@ -14,7 +14,7 @@ import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import { parseSearchParams } from "../../utils"
 import EmojiPicker, { EmojiType } from "./EmojiPicker"
 
-const Chat = () => {
+const Chat = memo(() => {
   const { logsPage, setLogsPage } = useContext(buildContext)
   const { chat, setChat, messages, setMessages } = useContext(chatContext)
   const { run, runStatus } = useContext(runContext)
@@ -274,6 +274,6 @@ const Chat = () => {
       </div>
     </div>
   )
-}
+})
 
 export default Chat

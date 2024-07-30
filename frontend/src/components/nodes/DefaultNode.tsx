@@ -1,8 +1,9 @@
 import { Button, useDisclosure } from "@nextui-org/react"
 import { PlusIcon } from "lucide-react"
-import { memo } from "react"
+import { memo, useContext } from "react"
 import { Handle, Position } from "reactflow"
 import "reactflow/dist/style.css"
+import { workspaceContext } from "../../contexts/workspaceContext"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
 import FallbackNodeIcon from "../../icons/nodes/FallbackNodeIcon"
 import GlobalNodeIcon from "../../icons/nodes/GlobalNodeIcon"
@@ -21,6 +22,8 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
     onClose: onConditionClose,
     isOpen: isConditionOpen,
   } = useDisclosure()
+
+  const { selectedNode } = useContext(workspaceContext)
 
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
 

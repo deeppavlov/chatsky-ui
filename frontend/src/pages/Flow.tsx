@@ -1,9 +1,8 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import ReactFlow, {
   Background,
   BackgroundVariant,
   Connection,
-  Controls,
   Edge,
   HandleType,
   Node,
@@ -47,6 +46,8 @@ const nodeTypes = {
   link_node: LinkNode,
 }
 
+const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sourcePosition"];
+
 // export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
@@ -81,15 +82,32 @@ export default function Flow() {
   //   onOpen: onLinkModalOpen,
   //   onClose: onLinkModalClose,
   // } = useDisclosure()
+ 
+
+
+  const handleUpdateFlowData = useCallback(() => {
+    if (reactFlowInstance && flow && flow.name === flowId) {
+      const _node = reactFlowInstance.getNodes()[0]
+      if (_node && _node.id === flow.data.nodes[0].id) {
+        flow.data = reactFlowInstance.toObject()
+        updateFlow(flow)
+      }
+    }
+  }, [flow, flowId, reactFlowInstance, updateFlow])
+
+  const filteredNodes = useMemo(() => {
+    return nodes.map(obj => {
+      return Object.fromEntries(
+        Object.entries(obj).filter(([key]) => !untrackedFields.includes(key))
+      );
+    });
+  }, [nodes]);
 
   useEffect(() => {
-    if (flow && reactFlowInstance) {
-      flow.data = reactFlowInstance.toObject()
-      updateFlow(flow)
-      console.log("update flow")
-    }
+    // console.log('first')
+    handleUpdateFlowData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges])
+  }, [edges])
 
   useEffect(() => {
     if (reactFlowInstance && flow?.name === flowId) {
@@ -101,6 +119,7 @@ export default function Flow() {
         reactFlowInstance.fitView({ padding: 0.5 })
       }
     }
+    console.log('ss')
   }, [flow, flowId, reactFlowInstance, setEdges, setNodes])
 
   const onInit = useCallback((e: ReactFlowInstance) => {
@@ -266,7 +285,7 @@ export default function Flow() {
         toggleWorkspaceMode()
       }
 
-      if (e.key === "Backspace" && mouseOnPane) {
+      if ((e.key === "Backspace" || e.key === "Delete") && mouseOnPane) {
         e.preventDefault()
         if (selected) {
           takeSnapshot()
@@ -286,6 +305,7 @@ export default function Flow() {
     flowId,
     flows,
     mouseOnPane,
+    n,
     reactFlowInstance,
     saveFlows,
     selected,
@@ -325,7 +345,16 @@ export default function Flow() {
             nodeTypes={nodeTypes}
             nodes={nodes}
             edges={edges}
-            onMove={() => {
+            onMoveStart={() => {
+              if (reactFlowInstance && flow && flow.name === flowId) {
+                const _node = reactFlowInstance.getNodes()[0]
+                if (_node && _node.id === flow.data.nodes[0].id) {
+                  flow.data = reactFlowInstance.toObject()
+                  updateFlow(flow)
+                }
+              }
+            }}
+            onMoveEnd={() => {
               if (reactFlowInstance && flow && flow.name === flowId) {
                 const _node = reactFlowInstance.getNodes()[0]
                 if (_node && _node.id === flow.data.nodes[0].id) {
@@ -346,6 +375,15 @@ export default function Flow() {
             onEdgeUpdateStart={onEdgeUpdateStart}
             onEdgeUpdateEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
+            onNodeDragStop={() => {
+              if (reactFlowInstance && flow && flow.name === flowId) {
+                const _node = reactFlowInstance.getNodes()[0]
+                if (_node && _node.id === flow.data.nodes[0].id) {
+                  flow.data = reactFlowInstance.toObject()
+                  updateFlow(flow)
+                }
+              }
+            }}
             onConnect={onConnect}
             nodesConnectable={!managerMode}
             nodesDraggable={!managerMode}
@@ -354,13 +392,10 @@ export default function Flow() {
             edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
             snapToGrid={!workspaceMode}>
-            <Controls
+            {/* <Controls
               fitViewOptions={{ padding: 0.25 }}
               className='rounded-lg [&>button]:fill-foreground [&>button]:rounded-lg shadow-none [&>button]:my-1  [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
-            />
-            {/* <MiniMap style={{
-              background: "var(--background)",
-            }} /> */}
+            /> */}
             <Background
               className='bg-background'
               variant={BackgroundVariant.Dots}

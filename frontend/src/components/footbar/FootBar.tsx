@@ -1,7 +1,7 @@
 import { Button, Popover, PopoverTrigger, Tab, Tabs, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import { Key, useContext, useState } from "react"
+import { Key, memo, useCallback, useContext, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { MetaContext } from "../../contexts/metaContext"
@@ -14,7 +14,7 @@ import LocalStorage from "../../modals/LocalStorage/LocalStorage"
 import { parseSearchParams } from "../../utils"
 import { NotificationsWindow } from "../notifications/NotificationsWindow"
 
-const FootBar = () => {
+const FootBar = memo(() => {
   const {
     isOpen: isLocalStogareOpen,
     onOpen: onLocalStogareOpen,
@@ -28,35 +28,38 @@ const FootBar = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const { notifications } = useContext(notificationsContext)
 
-  const onSelectionChange = (key: Key) => {
-    if (key === "Inspect") {
-      setLogsPage(true)
-      setSettingsPage(false)
-      setSearchParams({
-        ...parseSearchParams(searchParams),
-        logs_page: "opened",
-        settings: "closed",
-      })
-    } else if (key === "Settings") {
-      setLogsPage(false)
-      setSettingsPage(true)
-      setSearchParams({
-        ...parseSearchParams(searchParams),
-        logs_page: "closed",
-        settings: "opened",
-      })
-    } else {
-      setSearchParams({
-        ...parseSearchParams(searchParams),
-        logs_page: "closed",
-        settings: "closed",
-      })
-      setSettingsPage(false)
-      setLogsPage(false)
-    }
-  }
+  const onSelectionChange = useCallback(
+    (key: Key) => {
+      if (key === "Inspect") {
+        setLogsPage(true)
+        setSettingsPage(false)
+        setSearchParams({
+          ...parseSearchParams(searchParams),
+          logs_page: "opened",
+          settings: "closed",
+        })
+      } else if (key === "Settings") {
+        setLogsPage(false)
+        setSettingsPage(true)
+        setSearchParams({
+          ...parseSearchParams(searchParams),
+          logs_page: "closed",
+          settings: "opened",
+        })
+      } else {
+        setSearchParams({
+          ...parseSearchParams(searchParams),
+          logs_page: "closed",
+          settings: "closed",
+        })
+        setSettingsPage(false)
+        setLogsPage(false)
+      }
+    },
+    [searchParams, setLogsPage, setSearchParams, setSettingsPage]
+  )
 
-  const findDefaultSelectedKey = () => {
+  const findDefaultSelectedKey = useCallback(() => {
     if (settingsPage) {
       return "Settings"
     } else if (logsPage) {
@@ -64,7 +67,7 @@ const FootBar = () => {
     } else {
       return "Edit"
     }
-  }
+  }, [logsPage, settingsPage])
 
   return (
     <div
@@ -106,7 +109,6 @@ const FootBar = () => {
                 Inspect
               </span>
             }>
-            {/* <LogsPageOpener /> */}
           </Tab>
           <Tab
             key={"Settings"}
@@ -116,7 +118,6 @@ const FootBar = () => {
                 Settings
               </span>
             }>
-            {/* <SettingsPageOpener /> */}
           </Tab>
         </Tabs>
       </div>
@@ -170,6 +171,6 @@ const FootBar = () => {
       />
     </div>
   )
-}
+})
 
 export default FootBar
