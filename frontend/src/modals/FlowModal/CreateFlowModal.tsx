@@ -11,10 +11,10 @@ import {
 } from "@nextui-org/react"
 import { HelpCircle } from "lucide-react"
 import { useContext, useState } from "react"
-import toast from "react-hot-toast"
 import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { ModalType } from "../../types/ModalTypes"
 import { generateNewFlow, validateFlowName } from "../../utils"
 
@@ -29,6 +29,7 @@ export type CreateFlowType = {
 
 const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
+  const { notification: n } = useContext(notificationsContext)
   const [flow, setFlow] = useState<CreateFlowType>({
     name: "",
     description: "",
@@ -58,7 +59,11 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
       setIsSubFlow(false)
       onClose()
     } else {
-      toast.error("Please fill all the fields correctly!")
+      n.add({
+        title: "Creating error!",
+        message: "Please fill all the fields correctly.",
+        type: "error",
+      })
     }
   }
 

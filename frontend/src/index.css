@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   src: url(../public/Inter-VariableFont.ttf);
 }
 
 @layer base {
   :root {
     font-family:
-      'Inter',
+      "Inter",
       system-ui,
       -apple-system,
       BlinkMacSystemFont,
@@ -86,8 +86,13 @@
     --status-green: #00cc9a;
     --status-blue: #2563eb;
 
-    .dark {
+    --node-start-label-bg: #e5faf5;
+    --node-start-label-fg: #00cc99;
 
+    --node-fallback-label-bg: #fde9e9;
+    --node-fallback-label-fg: #ff3333;
+
+    .dark {
       color: #ebebeb;
 
       --background: #212121;
@@ -128,6 +133,12 @@
       --info-background: #172554;
 
       --condition-default: rgba(51, 153, 204, 1);
+
+      --node-start-label-bg: #00cc99;
+      --node-start-label-fg: #e5faf5;
+
+      --node-fallback-label-bg: #ff3333;
+      --node-fallback-label-fg: #fde9e9;
     }
   }
 }
@@ -138,7 +149,7 @@
   margin: 0;
   color: var(--text);
   font-family:
-    'Inter',
+    "Inter",
     system-ui,
     -apple-system,
     BlinkMacSystemFont,

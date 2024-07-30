@@ -10,11 +10,11 @@ import {
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useState } from "react"
-import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { FlowType } from "../../types/FlowTypes"
 import { ModalType } from "../../types/ModalTypes"
 import { validateFlowName } from "../../utils"
@@ -30,6 +30,7 @@ export type CreateFlowType = {
 
 const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
+  const { notification: n } = useContext(notificationsContext)
   const [newFlows, setNewFlows] = useState<FlowType[]>([...flows] ?? [])
   const { flowId } = useParams()
   const [flow, setFlow] = useState<FlowType>(
@@ -78,7 +79,11 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
       setIsSubFlow(false)
       onClose()
     } else {
-      toast.error("Please fill all the fields correct!")
+      n.add({
+        title: "Saving error!",
+        message: "Please fill all the fields correctly.",
+        type: "error",
+      })
     }
   }
 

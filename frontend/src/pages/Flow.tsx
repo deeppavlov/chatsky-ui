@@ -17,7 +17,6 @@ import ReactFlow, {
 } from "reactflow"
 
 import { a, useTransition } from "@react-spring/web"
-import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import "reactflow/dist/style.css"
 import { v4 } from "uuid"
@@ -30,6 +29,7 @@ import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
+import { notificationsContext } from "../contexts/notificationsContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
@@ -74,6 +74,7 @@ export default function Flow() {
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
   const isEdgeUpdateSuccess = useRef(false)
+  const { notification: n } = useContext(notificationsContext)
 
   // const {
   //   isOpen: isLinkModalOpen,
@@ -129,7 +130,7 @@ export default function Flow() {
       }
       onNodesChange(nds)
     },
-    [onNodesChange, selectedNode, setSelectedNode]
+    [onNodesChange, setSelectedNode]
   )
 
   const onEdgeUpdateStart = useCallback(() => {
@@ -247,7 +248,7 @@ export default function Flow() {
       }
       setNodes((nds) => nds.concat(newNode))
     },
-    [takeSnapshot, reactFlowInstance, setNodes, flow]
+    [takeSnapshot, reactFlowInstance, flows, setNodes]
   )
 
   useEffect(() => {
@@ -256,14 +257,13 @@ export default function Flow() {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
           saveFlows(flows)
-          toast.success("Saved!")
+          n.add({ message: "", title: "Saved!", type: "success" })
         }
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key === "h") {
         e.preventDefault()
         toggleWorkspaceMode()
-        toast.success("Workspace mode: " + (workspaceMode ? "Fixed" : "Free"))
       }
 
       if (e.key === "Backspace" && mouseOnPane) {
@@ -334,6 +334,7 @@ export default function Flow() {
                 }
               }
             }}
+            panOnScroll={true}
             onSelectionChange={onSelectionChange}
             onDragOver={onDragOver}
             onDrop={onDrop}

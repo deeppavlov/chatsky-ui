@@ -1,6 +1,6 @@
 import { Accordion, AccordionItem, Button, Divider, useDisclosure } from "@nextui-org/react"
 import { Plus } from "lucide-react"
-import { useContext, useMemo } from "react"
+import { memo, useContext, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
@@ -13,8 +13,9 @@ import { DragList } from "./DragList"
 import DragListItem from "./DragListItem"
 import FlowItem from "./FlowItem"
 
-const SideBar = () => {
+const SideBar = memo(() => {
   const { flows } = useContext(flowContext)
+  const { flowId } = useParams()
   const {
     isOpen: isCreateFlowModalOpen,
     onOpen: onOpenCreateFlowModal,
@@ -25,10 +26,9 @@ const SideBar = () => {
     onOpen: onOpenManageFlowsModal,
     onClose: onCloseManageFlowsModal,
   } = useDisclosure()
-  const { flowId } = useParams()
-  const activeFlow = useMemo(() => flowId, [flowId])
 
-  const globalFlow = flows.find((flow) => flow.name === "Global")
+  const activeFlow = useMemo(() => flowId, [flowId])
+  const globalFlow = useMemo(() => flows.find((flow) => flow.name === "Global"), [flows])
 
   return (
     <div
@@ -38,11 +38,13 @@ const SideBar = () => {
       <div className='w-full h-full bg-background border-r border-border flex flex-col justify-between px-2 pb-14'>
         <div className='flex flex-col gap-3'>
           <div>
-            <div data-testid='flows-list' className='flex items-center justify-between'>
+            <div
+              data-testid='flows-list'
+              className='flex items-center justify-between'>
               <p className='font-semibold my-4'>Flows</p>
               <div className='flex items-center gap-1.5'>
                 <Button
-                  className="border-1"
+                  className='border-1'
                   onClick={onOpenManageFlowsModal}
                   size='sm'
                   variant='bordered'
@@ -50,7 +52,7 @@ const SideBar = () => {
                   <EditNodeIcon fillOpacity={"1"} />
                 </Button>
                 <Button
-                  className="border-1"
+                  className='border-1'
                   onClick={onOpenCreateFlowModal}
                   size='sm'
                   variant='bordered'
@@ -90,7 +92,7 @@ const SideBar = () => {
               isCompact
               selectionMode='multiple'>
               <AccordionItem
-                name="nodes"
+                name='nodes'
                 data-testid='nodes-collapse'
                 textValue='some'
                 title={
@@ -147,6 +149,6 @@ const SideBar = () => {
       />
     </div>
   )
-}
+})
 
 export default SideBar

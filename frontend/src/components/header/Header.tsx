@@ -1,10 +1,9 @@
-import { Button, Tooltip, useDisclosure } from "@nextui-org/react"
+import { Button, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { useContext } from "react"
+import { useContext, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
 import { MetaContext } from "../../contexts/metaContext"
-import { themeContext } from "../../contexts/themeContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
 import GrabModeIcon from "../../icons/header/GrabModeIcon"
@@ -15,7 +14,6 @@ import NodeInstruments from "./components/NodeInstruments"
 
 const Header = () => {
   const { version } = useContext(MetaContext)
-  const { toggleTheme, theme } = useContext(themeContext)
   const location = useLocation()
   const {
     toggleWorkspaceMode,
@@ -27,12 +25,7 @@ const Header = () => {
     toggleManagerMode,
   } = useContext(workspaceContext)
   const { flows, tab } = useContext(flowContext)
-  const flow = flows.find((flow) => flow.name === tab)
-  const {
-    isOpen: isSettingsModalOpen,
-    onOpen: onOpenSettingsModal,
-    onClose: onCloseSettingsModal,
-  } = useDisclosure()
+  const flow = useMemo(() => flows.find((flow) => flow.name === tab), [flows, tab])
 
   return (
     <div

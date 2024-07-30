@@ -1,16 +1,18 @@
-import { Button, Tab, Tabs, useDisclosure } from "@nextui-org/react"
+import { Button, Popover, PopoverTrigger, Tab, Tabs, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import { Key, useContext } from "react"
+import { Key, useContext, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { MetaContext } from "../../contexts/metaContext"
 import { buildContext } from "../../contexts/buildContext"
+import { MetaContext } from "../../contexts/metaContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import LocalStogareIcon from "../../icons/footbar/LocalStogareIcon"
 import LocalStorage from "../../modals/LocalStorage/LocalStorage"
 import { parseSearchParams } from "../../utils"
+import { NotificationsWindow } from "../notifications/NotificationsWindow"
 
 const FootBar = () => {
   const {
@@ -23,16 +25,20 @@ const FootBar = () => {
   const { settingsPage, setSettingsPage } = useContext(workspaceContext)
   const { logsPage, setLogsPage } = useContext(buildContext)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const { notifications } = useContext(notificationsContext)
 
   const onSelectionChange = (key: Key) => {
     if (key === "Inspect") {
       setLogsPage(true)
+      setSettingsPage(false)
       setSearchParams({
         ...parseSearchParams(searchParams),
         logs_page: "opened",
         settings: "closed",
       })
     } else if (key === "Settings") {
+      setLogsPage(false)
       setSettingsPage(true)
       setSearchParams({
         ...parseSearchParams(searchParams),
@@ -135,11 +141,28 @@ const FootBar = () => {
           <LocalStogareIcon className='local-storage-button-hover:stroke-0' />
           Local storage
         </Button>
-        <Button
-          isIconOnly
-          className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'>
-          <BellRing className='w-5 h-5' />
-        </Button>
+        <Popover
+          placement='top-end'
+          offset={30}
+          isOpen={isNotificationsOpen}
+          onOpenChange={setIsNotificationsOpen}>
+          <PopoverTrigger>
+            <Button
+              isIconOnly
+              className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'>
+              {notifications.length > 0 && (
+                <span className='absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full w-4 h-4 flex items-center justify-center'>
+                  {notifications.length}
+                </span>
+              )}
+              <BellRing className='w-5 h-5' />
+            </Button>
+          </PopoverTrigger>
+          <NotificationsWindow
+            isOpen={isNotificationsOpen}
+            setIsOpen={setIsNotificationsOpen}
+          />
+        </Popover>
       </div>
       <LocalStorage
         isOpen={isLocalStogareOpen}

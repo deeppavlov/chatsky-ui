@@ -14,27 +14,25 @@ const Index = () => {
     }
   }, [navigate, pathname])
 
-
   const toastOptions: ToastOptions = useMemo(
     () =>
       theme === "light"
         ? {
             style: {
               backgroundColor: "#fff",
-              color: "#333",
             },
             position: "bottom-right",
           }
         : {
             style: {
               backgroundColor: "#333",
-              color: "#fff",
             },
             position: "bottom-right",
           },
     [theme]
   )
 
+ 
   return (
     <div className={`${theme}`}>
       <Toaster toastOptions={toastOptions} />

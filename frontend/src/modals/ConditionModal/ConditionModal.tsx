@@ -12,12 +12,12 @@ import {
 import classNames from "classnames"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
-import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
 import { lint_service } from "../../api/services"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
 import { NodeDataType, NodeType } from "../../types/NodeTypes"
 import { generateNewConditionBase } from "../../utils"
@@ -62,6 +62,7 @@ const ConditionModal = ({
   }
 
   const { getNode, setNodes, getNodes } = useReactFlow()
+  const { notification: n } = useContext(notificationsContext)
   const { updateFlow, flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
 
@@ -284,7 +285,11 @@ const ConditionModal = ({
       )
     } else {
       if (!validate_name.status) {
-        toast.error(`Condition name is not valid: \n ${validate_name.reason}`)
+        n.add({
+          title: "Saving error!",
+          message: `Condition name is not valid: \n ${validate_name.reason}`,
+          type: "error",
+        })
       }
     }
   }

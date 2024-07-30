@@ -10,11 +10,11 @@ import {
   Tabs,
 } from "@nextui-org/react"
 import { useContext, useMemo, useState } from "react"
-import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import { useReactFlow } from "reactflow"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { NodeDataType } from "../../types/NodeTypes"
 import { responseType, responseTypeType } from "../../types/ResponseTypes"
 import PythonResponse from "./components/PythonResponse"
@@ -49,6 +49,7 @@ const ResponseModal = ({
     setCurrentResponse({ ...currentResponse, type: key })
     setSelected(key)
   }
+  const { notification: n } = useContext(notificationsContext)
 
   const tabItems: {
     title: ResponseModalTab
@@ -94,10 +95,18 @@ const ResponseModal = ({
 
   const saveResponse = () => {
     if (!currentResponse.name) {
-      return toast.error("Response name is required!")
+      return n.add({
+        title: "Saving error!",
+        message: "Response name is required!",
+        type: "error",
+      })
     }
     if (flows.some((flow) => flow.data.nodes.some((node) => (node.data.response.name === currentResponse.name && node.id !== data.id)))) {
-      return toast.error("Response name must be unique!")
+      return n.add({
+        title: "Saving error!",
+        message: "Response name must be unique!",
+        type: "error",
+      })
     } else {
       const nodes = getNodes()
       const node = getNode(data.id)

@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useCallback, useEffect, useState } from "react"
-import toast from "react-hot-toast"
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { Edge } from "reactflow"
 import { v4 } from "uuid"
@@ -8,6 +7,7 @@ import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
 import { FlowType } from "../types/FlowTypes"
 import { NodeType } from "../types/NodeTypes"
+import { notificationsContext } from "./notificationsContext"
 // import { v4 } from "uuid"
 
 const globalFlow: FlowType = {
@@ -87,6 +87,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const [tab, setTab] = useState(initialValue.tab)
   const { flowId } = useParams()
   const [flows, setFlows] = useState<FlowType[]>([])
+  const { notification: n } = useContext(notificationsContext)
 
   useEffect(() => {
     setTab(flowId || "")
@@ -105,7 +106,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  useEffect(() => { 
+  useEffect(() => {
     getFlows()
   }, [])
 
@@ -118,7 +119,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     setTimeout(async () => {
       console.log("quiet save flows")
       await saveFlows(flows)
-      toast.success("DEBUG: Flows saved")
+      n.add({ message: "Flows saved", title: "DEBUG", type: "debug" })
     }, 100)
   }
 
@@ -148,9 +149,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
     if (!flow) return -1
     const deleted_node: NodeType = flow.data.nodes.find((node) => node.id === id) as NodeType
-    if (deleted_node?.data.flags?.includes("start")) return toast.error("Can't delete start node")
-    if (deleted_node?.id?.includes("LOCAL")) return toast.error("Can't delete local node")
-    if (deleted_node?.id?.includes("GLOBAL")) return toast.error("Can't delete global node")
+    if (deleted_node?.data.flags?.includes("start"))
+      return n.add({ title: "Deletion error", message: "Can't delete start node", type: "error" })
+    if (deleted_node?.id?.includes("LOCAL")) return n.add({ title: "Deletion error", message: "Can't delete local node", type: "error" })
+    if (deleted_node?.id?.includes("GLOBAL")) return n.add({ title: "Deletion error", message: "Can't delete global node", type: "error" })
     if (deleted_node?.data.flags?.includes("fallback")) {
       console.log(
         flow.data.nodes
