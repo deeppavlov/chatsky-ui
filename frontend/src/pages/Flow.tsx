@@ -87,11 +87,11 @@ export default function Flow() {
 
   const handleUpdateFlowData = useCallback(() => {
     if (reactFlowInstance && flow && flow.name === flowId) {
-      const _node = reactFlowInstance.getNodes()[0]
-      if (_node && _node.id === flow.data.nodes[0].id) {
+      // const _node = reactFlowInstance.getNodes()[0]
+      // if (_node && _node.id === flow.data.nodes[0].id) {
         flow.data = reactFlowInstance.toObject()
         updateFlow(flow)
-      }
+      // }
     }
   }, [flow, flowId, reactFlowInstance, updateFlow])
 
@@ -106,7 +106,7 @@ export default function Flow() {
   useEffect(() => {
     handleUpdateFlowData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [edges])
+  }, [edges, nodes.length])
 
   useEffect(() => {
     if (reactFlowInstance && flow?.name === flowId) {
