@@ -5,7 +5,7 @@ JSON Converter
 Converts a user project's frontend graph to a script understandable by DFF json-importer.
 """
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List, Optional
 
 from dflowd.api.deps import get_index
 from dflowd.core.logger_config import get_logger
@@ -56,7 +56,7 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
     return nodes
 
 
-def _get_condition(nodes: dict, edge: DictConfig) -> DictConfig | None:
+def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
     """Get node's condition from `nodes` according to `edge` info."""
     return next(
         (condition for condition in nodes[edge.source]["info"].data.conditions if condition["id"] == edge.sourceHandle),
@@ -179,7 +179,7 @@ async def _replace(service: DictConfig, services_lines: list, cnd_strt_lineno: i
     return all_lines
 
 
-async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> tuple[dict, list[str]]:
+async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> Tuple[dict, List[str]]:
     """Organizes the responses in nodes in a format that json-importer accepts.
 
     If the response type is "python", its function will be added to responses_lines to be written

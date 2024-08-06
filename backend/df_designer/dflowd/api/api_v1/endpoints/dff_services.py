@@ -1,6 +1,6 @@
 import re
 from io import StringIO
-from typing import Optional
+from typing import Optional, Dict, Union
 
 import aiofiles
 from fastapi import APIRouter, Depends
@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 
 
 @router.get("/search/{service_name}", status_code=200)
-async def search_service(service_name: str, index: Index = Depends(get_index)) -> dict[str, str | Optional[list]]:
+async def search_service(service_name: str, index: Index = Depends(get_index)) -> Dict[str, Optional[Union[str, list]]]:
     """Searches for a custom service by name and returns its code.
 
     A service could be a condition, reponse, or pre/postservice.
@@ -31,7 +31,7 @@ async def search_service(service_name: str, index: Index = Depends(get_index)) -
 
 
 @router.post("/lint_snippet", status_code=200)
-async def lint_snippet(snippet: CodeSnippet) -> dict[str, str]:
+async def lint_snippet(snippet: CodeSnippet) -> Dict[str, str]:
     """Lints a snippet with Pylint.
 
     This endpoint Joins the snippet with all imports existing in the conditions.py file and then runs Pylint on it.
@@ -58,6 +58,6 @@ async def lint_snippet(snippet: CodeSnippet) -> dict[str, str]:
 
 
 @router.get("/get_conditions", status_code=200)
-async def get_conditions() -> dict[str, str | list]:
+async def get_conditions() -> Dict[str, Union[str, list]]:
     """Gets the dff's out-of-the-box conditions."""
     return {"status": "ok", "data": get_dff_conditions()}

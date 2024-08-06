@@ -1,6 +1,6 @@
 from asyncio import Lock
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 import aiofiles
 from omegaconf import OmegaConf
@@ -10,7 +10,7 @@ from omegaconf.listconfig import ListConfig
 file_lock = Lock()
 
 
-async def read_conf(path: Path) -> DictConfig | ListConfig:
+async def read_conf(path: Path) -> Union[DictConfig, ListConfig]:
     async with file_lock:
         async with aiofiles.open(path, "r", encoding="UTF-8") as file:
             data = await file.read()
@@ -18,7 +18,7 @@ async def read_conf(path: Path) -> DictConfig | ListConfig:
     return omega_data
 
 
-async def write_conf(data: DictConfig | ListConfig | dict | list, path: Path) -> None:
+async def write_conf(data: Union[DictConfig, ListConfig, dict, list], path: Path) -> None:
     yaml_conf = OmegaConf.to_yaml(data)
     async with file_lock:
         async with aiofiles.open(path, "w", encoding="UTF-8") as file:  # TODO: change to "a" for append

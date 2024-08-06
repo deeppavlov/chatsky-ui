@@ -1,3 +1,5 @@
+from typing import List
+
 import dff.script.conditions as cnd
 from dff.pipeline.pipeline import script_parsing
 
@@ -9,7 +11,7 @@ AUTO_COMPLETION_MAP = {
 }
 
 
-def get_dff_conditions() -> list[dict]:
+def get_dff_conditions() -> List[dict]:
     """Gets the DFF's out-of-the-box conditions.
 
     Returns:

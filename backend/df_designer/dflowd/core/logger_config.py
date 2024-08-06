@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, Dict
 
 from dflowd.core.config import settings
 
-LOG_LEVELS: dict[str, int] = {
+LOG_LEVELS: Dict[str, int] = {
     "critical": logging.CRITICAL,
     "error": logging.ERROR,
     "warning": logging.WARNING,

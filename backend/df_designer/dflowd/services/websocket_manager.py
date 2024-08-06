@@ -3,7 +3,7 @@ Websocket class for controling websocket operations.
 """
 import asyncio
 from asyncio.tasks import Task
-from typing import Dict, Set
+from typing import Dict, Set, List
 
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -18,7 +18,7 @@ class WebSocketManager:
 
     def __init__(self):
         self.pending_tasks: Dict[WebSocket, Set[Task]] = dict()
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         """Accepts the websocket connection and marks it as active connection."""

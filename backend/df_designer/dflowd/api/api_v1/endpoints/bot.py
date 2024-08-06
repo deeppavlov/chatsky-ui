@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List, Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketException, status
 
@@ -16,7 +16,7 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
-async def _stop_process(id_: int, process_manager: ProcessManager, process="run") -> dict[str, str]:
+async def _stop_process(id_: int, process_manager: ProcessManager, process="run") -> Dict[str, str]:
     """Stops a `build` or `run` process with the given id."""
 
     try:
@@ -31,7 +31,7 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
     return {"status": "ok"}
 
 
-async def _check_process_status(id_: int, process_manager: ProcessManager) -> dict[str, str]:
+async def _check_process_status(id_: int, process_manager: ProcessManager) -> Dict[str, str]:
     """Checks the status of a `build` or `run` process with the given id."""
     if id_ not in process_manager.processes:
         raise HTTPException(
@@ -48,7 +48,7 @@ async def start_build(
     background_tasks: BackgroundTasks,
     build_manager: BuildManager = Depends(deps.get_build_manager),
     index: Index = Depends(deps.get_index),
-) -> dict[str, str | int]:
+) -> Dict[str, Union[str, int]]:
 
     """Starts a `build` process with the given preset.
 
@@ -69,7 +69,7 @@ async def start_build(
 
 
 @router.get("/build/stop/{build_id}", status_code=200)
-async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)) -> dict[str, str]:
+async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, str]:
     """Stops a `build` process with the given id.
 
     Args:
@@ -88,7 +88,7 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
 @router.get("/build/status/{build_id}", status_code=200)
 async def check_build_status(
     *, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)
-) -> dict[str, str]:
+) -> Dict[str, str]:
     """Checks the status of a `build` process with the given id.
 
     Args:
@@ -107,13 +107,13 @@ async def check_build_status(
     return await _check_process_status(build_id, build_manager)
 
 
-@router.get("/builds", response_model=Optional[list | dict], status_code=200)
+@router.get("/builds", response_model=Optional[Union[list, dict]], status_code=200)
 async def check_build_processes(
     build_id: Optional[int] = None,
     build_manager: BuildManager = Depends(deps.get_build_manager),
     run_manager: RunManager = Depends(deps.get_run_manager),
     pagination: Pagination = Depends(),
-) -> Optional[dict[str, Any]] | list[dict[str, Any]]:
+) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
     """Checks the status of all `build` processes and returns them along with their runs info.
 
     The offset and limit parameters can be used to paginate the results.
@@ -132,7 +132,7 @@ async def check_build_processes(
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
 async def get_build_logs(
     build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager), pagination: Pagination = Depends()
-) -> Optional[list[str]]:
+) -> Optional[List[str]]:
     """Gets the logs of a specific `build` process.
 
     The offset and limit parameters can be used to paginate the results.
@@ -148,7 +148,7 @@ async def start_run(
     preset: Preset,
     background_tasks: BackgroundTasks,
     run_manager: RunManager = Depends(deps.get_run_manager)
-) -> dict[str, str | int]:
+) -> Dict[str, Union[str, int]]:
     """Starts a `run` process with the given preset.
 
     This runs a background task to check the status of the process every 2 seconds.
@@ -169,7 +169,7 @@ async def start_run(
 
 
 @router.get("/run/stop/{run_id}", status_code=200)
-async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)) -> dict[str, str]:
+async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, str]:
     """Stops a `run` process with the given id.
 
     Args:
@@ -187,7 +187,7 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
 
 
 @router.get("/run/status/{run_id}", status_code=200)
-async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)) -> dict[str, Any]:
+async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, Any]:
     """Checks the status of a `run` process with the given id.
 
     Args:
@@ -206,12 +206,12 @@ async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(dep
     return await _check_process_status(run_id, run_manager)
 
 
-@router.get("/runs", response_model=Optional[list | dict], status_code=200)
+@router.get("/runs", response_model=Optional[Union[list, dict]], status_code=200)
 async def check_run_processes(
     run_id: Optional[int] = None,
     run_manager: RunManager = Depends(deps.get_run_manager),
     pagination: Pagination = Depends(),
-) -> Optional[dict[str, Any]] | list[dict[str, Any]]:
+) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
     """Checks the status of all `run` processes and returns them.
 
     The offset and limit parameters can be used to paginate the results.
@@ -229,7 +229,7 @@ async def check_run_processes(
 @router.get("/runs/logs/{run_id}", response_model=Optional[list], status_code=200)
 async def get_run_logs(
     run_id: int, run_manager: RunManager = Depends(deps.get_run_manager), pagination: Pagination = Depends()
-) -> Optional[list[str]]:
+) -> Optional[List[str]]:
     """Gets the logs of a specific `run` process.
 
     The offset and limit parameters can be used to paginate the results.

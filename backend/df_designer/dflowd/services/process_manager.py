@@ -7,7 +7,7 @@ starting, stopping, updating, and checking status of processes. Processes themse
 are stored in the `processes` dictionary of process managers.
 """
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from omegaconf import OmegaConf
 
@@ -25,7 +25,7 @@ class ProcessManager:
     """Base for build and run process managers."""
 
     def __init__(self):
-        self.processes: Dict[int, BuildProcess | RunProcess] = {}
+        self.processes: Dict[int, Union[BuildProcess, RunProcess]] = {}
         self.last_id: int
 
     def get_last_id(self):
