@@ -1,10 +1,10 @@
-app.tests.integration package
+dflowd.tests.integration package
 =============================
 
-app.tests.integration.test\_api\_integration module
+dflowd.tests.integration.test\_api\_integration module
 ---------------------------------------------------
 
-.. automodule:: app.tests.integration.test_api_integration
+.. automodule:: dflowd.tests.integration.test_api_integration
    :members:
    :undoc-members:
    :show-inheritance:

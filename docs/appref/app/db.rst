@@ -1,10 +1,10 @@
-app.db package
+dflowd.db package
 ==============
 
-app.db.base module
+dflowd.db.base module
 ------------------
 
-.. automodule:: app.db.base
+.. automodule:: dflowd.db.base
    :members:
    :undoc-members:
    :show-inheritance:

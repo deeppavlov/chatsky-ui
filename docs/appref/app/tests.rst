@@ -1,4 +1,4 @@
-app.tests package
+dflowd.tests package
 =================
 
 Subpackages
@@ -11,10 +11,10 @@ Subpackages
    tests/*
 
 
-app.tests.conftest module
+dflowd.tests.conftest module
 -------------------------
 
-.. automodule:: app.tests.conftest
+.. automodule:: dflowd.tests.conftest
    :members:
    :undoc-members:
    :show-inheritance:

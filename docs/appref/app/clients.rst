@@ -1,10 +1,10 @@
-app.clients package
+dflowd.clients package
 ===================
 
-app.clients.dff module
+dflowd.clients.dff module
 ----------------------
 
-.. automodule:: app.clients.dff
+.. automodule:: dflowd.clients.dff
    :members:
    :undoc-members:
    :show-inheritance:

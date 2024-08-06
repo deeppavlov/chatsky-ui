@@ -11,6 +11,7 @@ from httpx_ws.transport import ASGIWebSocketTransport
 
 from dflowd.api.deps import get_build_manager, get_run_manager
 from dflowd.core.logger_config import get_logger
+from dflowd.core.config import settings
 from dflowd.main import app
 from dflowd.schemas.process_status import Status
 from dflowd.tests.conftest import override_dependency, start_process
@@ -186,7 +187,7 @@ async def test_connect_to_ws(mocker):
             # Start a process
             start_response = await start_process(
                 client,
-                endpoint=f"http://localhost:8000/api/v1/bot/run/start/{build_id}",
+                endpoint=f"http://localhost:8007/api/v1/bot/run/start/{build_id}",
                 preset_end_status="success",
             )
             assert start_response.status_code == 201

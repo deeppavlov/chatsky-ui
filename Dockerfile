@@ -35,7 +35,7 @@ RUN python3 -m venv $POETRY_VENV \
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
 COPY ./backend/df_designer /temp/backend/df_designer
-COPY --from=frontend-builder /temp/frontend/dist /temp/backend/df_designer/app/static
+COPY --from=frontend-builder /temp/frontend/dist /temp/backend/df_designer/dflowd/static
 
 COPY ./${PROJECT_DIR} /temp/${PROJECT_DIR}
 

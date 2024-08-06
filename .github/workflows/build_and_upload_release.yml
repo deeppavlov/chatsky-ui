@@ -27,7 +27,7 @@ jobs:
         run: |
           bun install
           bun run build
-          cp -r ./dist/* ../backend/df_designer/app/static
+          cp -r ./dist/* ../backend/df_designer/dflowd/static
         working-directory: frontend
 
       - name: build wheels and test uploading to pypi

@@ -1,18 +1,18 @@
-app.core package
+dflowd.core package
 ================
 
-app.core.config module
+dflowd.core.config module
 ----------------------
 
-.. automodule:: app.core.config
+.. automodule:: dflowd.core.config
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.core.logger\_config module
+dflowd.core.logger\_config module
 ------------------------------
 
-.. automodule:: app.core.logger_config
+.. automodule:: dflowd.core.logger_config
    :members:
    :undoc-members:
    :show-inheritance:

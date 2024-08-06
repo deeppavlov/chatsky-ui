@@ -79,7 +79,7 @@ def run_scenario(build_id: int, project_dir: str = "."):
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     if not script_path.exists():
         raise FileNotFoundError(f"File {script_path} doesn't exist")
-    command_to_run = f"python {project_dir}/dflowd.py --script-path {script_path}"
+    command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
     asyncio.run(_execute_command(command_to_run))
 
 

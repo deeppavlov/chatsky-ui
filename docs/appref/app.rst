@@ -1,4 +1,4 @@
-app package
+dflowd package
 ===========
 
 Subpackages
@@ -8,13 +8,13 @@ Subpackages
    :glob:
    :maxdepth: 4
 
-   app/*
+   dflowd/*
 
 
 cli module
 --------------
 
-.. automodule:: app.cli
+.. automodule:: dflowd.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,7 +22,7 @@ cli module
 main module
 ---------------
 
-.. automodule:: app.main
+.. automodule:: dflowd.main
    :members:
    :undoc-members:
    :show-inheritance:

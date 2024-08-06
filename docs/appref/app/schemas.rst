@@ -1,26 +1,26 @@
-app.schemas package
+dflowd.schemas package
 ===================
 
-app.schemas.pagination module
+dflowd.schemas.pagination module
 -----------------------------
 
-.. automodule:: app.schemas.pagination
+.. automodule:: dflowd.schemas.pagination
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.schemas.preset module
+dflowd.schemas.preset module
 -------------------------
 
-.. automodule:: app.schemas.preset
+.. automodule:: dflowd.schemas.preset
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.schemas.process\_status module
+dflowd.schemas.process\_status module
 ----------------------------------
 
-.. automodule:: app.schemas.process_status
+.. automodule:: dflowd.schemas.process_status
    :members:
    :undoc-members:
    :show-inheritance:

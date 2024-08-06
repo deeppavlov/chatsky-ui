@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export APP_MODULE=${APP_MODULE-app.main:app}
+export APP_MODULE=${APP_MODULE-dflowd.main:app}
 export HOST=${HOST:-0.0.0.0}
 export PORT=${PORT:-8001}
 

@@ -15,7 +15,7 @@ class TestRunManager:
     async def test_start(self, mocker, preset, run_manager):  # noqa: F811
         # Mock the RunProcess constructor whereever it's called in
         # the process_manager file within the scope of this test function
-        run_process = mocker.patch("app.services.process_manager.RunProcess")
+        run_process = mocker.patch("dflowd.services.process_manager.RunProcess")
         run_process_instance = run_process.return_value
         run_process_instance.start = mocker.AsyncMock()
         run_manager.get_full_info = mocker.AsyncMock(return_value=[{"id": RUN_ID}])
@@ -56,7 +56,7 @@ class TestRunManager:
             "status": "stopped",
         }
 
-        read_conf = mocker.patch("app.services.process_manager.read_conf")
+        read_conf = mocker.patch("dflowd.services.process_manager.read_conf")
         read_conf.return_value = df_conf
 
         run_info = await run_manager.get_run_info(RUN_ID)
@@ -77,7 +77,7 @@ class TestRunManager:
             "status": "stopped",
         }
 
-        read_conf = mocker.patch("app.services.process_manager.read_conf")
+        read_conf = mocker.patch("dflowd.services.process_manager.read_conf")
         read_conf.return_value = df_conf
 
         run_info = await run_manager.get_full_info(0, 1)
@@ -88,7 +88,7 @@ class TestRunManager:
         LOG_PATH = Path("df_designer/logs/runs/20240425/42_211545.log")
         run_manager.get_process_info = mocker.AsyncMock(return_value={"id": RUN_ID, "log_path": LOG_PATH})
 
-        read_logs = mocker.patch("app.services.process_manager.read_logs", return_value=["log1", "log2"])
+        read_logs = mocker.patch("dflowd.services.process_manager.read_logs", return_value=["log1", "log2"])
 
         logs = await run_manager.fetch_run_logs(RUN_ID, 0, 1)
 

@@ -11,10 +11,10 @@ Subpackages
    api/*
 
 
-app.api.deps module
+dflowd.api.deps module
 ------------------
 
-.. automodule:: app.api.deps
+.. automodule:: dflowd.api.deps
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,42 +1,42 @@
-app.services package
+dflowd.services package
 ====================
 
-app.services.index module
+dflowd.services.index module
 -------------------------
 
-.. automodule:: app.services.index
+.. automodule:: dflowd.services.index
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.json\_converter module
+dflowd.services.json\_converter module
 -----------------------------------
 
-.. automodule:: app.services.json_converter
+.. automodule:: dflowd.services.json_converter
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.process module
+dflowd.services.process module
 ---------------------------
 
-.. automodule:: app.services.process
+.. automodule:: dflowd.services.process
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.process\_manager module
+dflowd.services.process\_manager module
 ------------------------------------
 
-.. automodule:: app.services.process_manager
+.. automodule:: dflowd.services.process_manager
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.websocket\_manager module
+dflowd.services.websocket\_manager module
 --------------------------------------
 
-.. automodule:: app.services.websocket_manager
+.. automodule:: dflowd.services.websocket_manager
    :members:
    :undoc-members:
    :show-inheritance:
