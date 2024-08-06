@@ -54,8 +54,15 @@ async def _test_start_process(mocker_obj, get_manager_func, endpoint, preset_end
             current_status = await _assert_process_status(response, process_manager, expected_end_status, timeout)
 
             if current_status == Status.RUNNING:
-                process_manager.processes[process_manager.last_id].process.terminate()
-                await process_manager.processes[process_manager.last_id].process.wait()
+                process = process_manager.processes[process_manager.last_id].process
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=timeout)
+                    logger.debug("The test process was gracefully terminated.")
+                except asyncio.TimeoutError:
+                    process.kill()
+                    await process.wait()
+                    logger.debug("The test process was forcefully killed.")
 
 
 async def _test_stop_process(mocker, get_manager_func, start_endpoint, stop_endpoint):
