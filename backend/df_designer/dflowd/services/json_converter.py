@@ -5,13 +5,14 @@ JSON Converter
 Converts a user project's frontend graph to a script understandable by DFF json-importer.
 """
 from pathlib import Path
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
+
+from omegaconf.dictconfig import DictConfig
 
 from dflowd.api.deps import get_index
 from dflowd.core.logger_config import get_logger
 from dflowd.db.base import read_conf, write_conf
 from dflowd.services.index import Index
-from omegaconf.dictconfig import DictConfig
 
 logger = get_logger(__name__)
 

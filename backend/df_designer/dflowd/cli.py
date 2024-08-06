@@ -11,7 +11,7 @@ from cookiecutter.main import cookiecutter
 # Patch nest_asyncio before importing DFF
 nest_asyncio.apply = lambda: None
 
-from dflowd import __version__
+from dflowd import __version__  # noqa: E402
 from dflowd.core.config import app_runner, settings  # noqa: E402
 from dflowd.core.logger_config import get_logger  # noqa: E402
 

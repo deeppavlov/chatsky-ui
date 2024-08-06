@@ -1,6 +1,7 @@
+from typing import Dict, Union
+
 from fastapi import APIRouter
 from omegaconf import OmegaConf
-from typing import Dict, Union
 
 from dflowd.core.config import settings
 from dflowd.core.logger_config import get_logger

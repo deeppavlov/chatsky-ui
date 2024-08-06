@@ -2,7 +2,6 @@ from fastapi import APIRouter
 
 from dflowd import __version__
 
-
 router = APIRouter()
 
 

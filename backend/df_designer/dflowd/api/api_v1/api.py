@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from dflowd.api.api_v1.endpoints import bot, dff_services, flows, config
+from dflowd.api.api_v1.endpoints import bot, config, dff_services, flows
 from dflowd.core.config import settings
 
 api_router = APIRouter()

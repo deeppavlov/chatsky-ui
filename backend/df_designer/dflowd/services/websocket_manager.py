@@ -3,7 +3,7 @@ Websocket class for controling websocket operations.
 """
 import asyncio
 from asyncio.tasks import Task
-from typing import Dict, Set, List
+from typing import Dict, List, Set
 
 from fastapi import WebSocket, WebSocketDisconnect
 

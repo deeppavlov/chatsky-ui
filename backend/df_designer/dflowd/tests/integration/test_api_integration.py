@@ -11,7 +11,6 @@ from httpx_ws.transport import ASGIWebSocketTransport
 
 from dflowd.api.deps import get_build_manager, get_run_manager
 from dflowd.core.logger_config import get_logger
-from dflowd.core.config import settings
 from dflowd.main import app
 from dflowd.schemas.process_status import Status
 from dflowd.tests.conftest import override_dependency, start_process

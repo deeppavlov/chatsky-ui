@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 from omegaconf import OmegaConf
 
 from dflowd.core.logger_config import get_logger

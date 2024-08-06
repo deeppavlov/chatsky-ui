@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Optional, Dict
+from typing import Dict, Literal, Optional
 
 from dflowd.core.config import settings
 
