@@ -9,7 +9,7 @@ authors = [
     "Rami Mashkouk <rami.n.mashkouk@gmail.com>",
 ]
 readme = "README.md"
-packages = [{include = "app"}]
+packages = [{include = "dflowd"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -32,7 +32,7 @@ sphinx = "^7.3.7"
 sphinx-rtd-theme = "^2.0.0"
 
 [tool.poetry.scripts]
-dflowd = "app.cli:cli"
+dflowd = "dflowd.cli:cli"
 
 [tool.poetry.group.lint]
 optional = true

@@ -128,8 +128,8 @@ build: install_env ## Builds both frontend & backend
 	make build_backend
 
 .PHONY: run_app
-run_app: check_project_arg install_env build_frontend ## Builds frontend and backend then runs the app. NEEDS arg: PROJECT_NAME
-	cp ${FRONTEND_DIR}/dist/* ${BACKEND_DIR}/app/static/ && \
+run_app: check_project_arg build_frontend ## Builds frontend and backend then runs the app. NEEDS arg: PROJECT_NAME
+	cp ${FRONTEND_DIR}/dist/* ${BACKEND_DIR}/dflowd/static/ && \
 	make build_backend && \
 	make run_backend PROJECT_NAME=${PROJECT_NAME}
 
