@@ -6,6 +6,7 @@ from pathlib import Path
 
 import nest_asyncio
 import typer
+from typing_extensions import Annotated
 from cookiecutter.main import cookiecutter
 
 # Patch nest_asyncio before importing DFF
@@ -58,24 +59,42 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
 
 
 @cli.command("build_bot")
-def build_bot(build_id: int, project_dir: str = settings.work_directory, preset: str = "success"):
+def build_bot(
+    build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
+    project_dir: str = settings.work_directory,
+    preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
+):
+    """Builds the bot with one of three various presets."""
     _execute_command_file(build_id, project_dir, "build.json", preset)
 
 
 @cli.command("build_scenario")
-def build_scenario(build_id: int, project_dir: str = "."):
+def build_scenario(
+    build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
+    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+):
+    """Builds the bot with preset `success`"""
     from dflowd.services.json_converter import converter  # pylint: disable=C0415
 
     asyncio.run(converter(build_id=build_id, project_dir=project_dir))
 
 
 @cli.command("run_bot")
-def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: str = "success"):
+def run_bot(
+    build_id: Annotated[int, typer.Argument(help="Id of the build to run")],
+    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
+    preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
+):
+    """Runs the bot with one of three various presets."""
     _execute_command_file(build_id, project_dir, "run.json", preset)
 
 
 @cli.command("run_scenario")
-def run_scenario(build_id: int, project_dir: str = "."):
+def run_scenario(
+    build_id: Annotated[int, typer.Argument(help="Id of the build to run")],
+    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+):
+    """Runs the bot with preset `success`"""
     script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
     if not script_path.exists():
         raise FileNotFoundError(f"File {script_path} doesn't exist")
@@ -85,13 +104,13 @@ def run_scenario(build_id: int, project_dir: str = "."):
 
 @cli.command("run_app")
 def run_app(
-    ip_address: str = settings.host,
+    host: str = settings.host,
     port: int = settings.port,
-    conf_reload: str = str(settings.conf_reload),
-    project_dir: str = settings.work_directory,
+    conf_reload: Annotated[str, typer.Option(help="True for dev-mode, False otherwise")] = str(settings.conf_reload),
+    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
 ) -> None:
-    """Run the backend."""
-    settings.host = ip_address
+    """Runs the UI for your `project_dir` on `host:port`."""
+    settings.host = host
     settings.port = port
     settings.conf_reload = conf_reload.lower() in ["true", "yes", "t", "y", "1"]
     settings.work_directory = project_dir
@@ -100,7 +119,17 @@ def run_app(
 
 
 @cli.command("init")
-def init(destination: str = settings.work_directory, no_input: bool = False, overwrite_if_exists: bool = True):
+def init(
+    destination: Annotated[
+        str, typer.Option(help="Path where you want to create your project")
+    ] = settings.work_directory,
+    no_input: Annotated[bool, typer.Option(help="True for quick and easy initialization using default values")] = False,
+    overwrite_if_exists: Annotated[
+        bool,
+        typer.Option(help="True for replacing any project named as `df_designer_project`)"),
+    ] = True,
+):
+    """Initializes a new Chatsky-UI project using an off-the-shelf template."""
     original_dir = os.getcwd()
     try:
         os.chdir(destination)

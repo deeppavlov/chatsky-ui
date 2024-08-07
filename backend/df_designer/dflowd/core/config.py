@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     host: str = os.getenv("HOST", "0.0.0.0")
     port: int = int(os.getenv("PORT", 8000))
     log_level: str = os.getenv("LOG_LEVEL", "info")
-    conf_reload: bool = os.getenv("CONF_RELOAD", "true").lower() in ["true", "1", "t", "y", "yes"]
+    conf_reload: bool = os.getenv("CONF_RELOAD", "false").lower() in ["true", "1", "t", "y", "yes"]
 
     builds_path: Path = Path(f"{work_directory}/df_designer/builds.yaml")
     runs_path: Path = Path(f"{work_directory}/df_designer/runs.yaml")
