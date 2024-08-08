@@ -22,7 +22,7 @@ const PythonResponse = ({
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
 
-  const firstString = `def ${response.name}(ctx: Context, pipeline: Pipeline) -> bool:`
+  const firstString = `def ${response.name}(ctx: Context, pipeline: Pipeline) -> Message(""):`
 
   useEffect(() => {
     if (!response.data[0].python) {
@@ -33,7 +33,7 @@ const PythonResponse = ({
           {
             priority: 1,
             python: {
-              action: `def ${response.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python response:\n    return True`,
+              action: `def ${response.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python response:\n    return Message('Hello')`,
             },
           },
         ],
