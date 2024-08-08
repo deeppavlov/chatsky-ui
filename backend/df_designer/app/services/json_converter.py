@@ -250,8 +250,9 @@ async def converter(build_id: int, project_dir: str, custom_dir: str = "custom")
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
-    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(Path(project_dir), custom_dir)
-
+    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(
+        Path(project_dir), custom_dir
+    )
 
     script = {
         "CONFIG": {"custom_dir": "/".join(["..", custom_dir])},
