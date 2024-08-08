@@ -4,14 +4,16 @@ import os
 import sys
 from pathlib import Path
 
+import nest_asyncio
 import typer
-import uvicorn
 from cookiecutter.main import cookiecutter
 from git import Repo
 
-from app.core.config import settings
-from app.core.logger_config import get_logger
-from app.services.json_translator import translator
+# Patch nest_asyncio before importing DFF
+nest_asyncio.apply = lambda: None
+
+from app.core.config import app_runner, settings  # noqa: E402
+from app.core.logger_config import get_logger  # noqa: E402
 from app.utils.git_cmd import commit_changes
 
 cli = typer.Typer()
@@ -55,7 +57,7 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
     if preset in presets_build_file:
         command_to_run = presets_build_file[preset]["cmd"]
         if preset == "success":
-            command_to_run += f" {build_id} --call_from_open_event_loop True"
+            command_to_run += f" {build_id}"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
         asyncio.run(_execute_command(command_to_run))
@@ -69,13 +71,10 @@ def build_bot(build_id: int, project_dir: str = settings.work_directory, preset:
 
 
 @cli.command("build_scenario")
-def build_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
-    if call_from_open_event_loop:
-        loop = asyncio.get_event_loop()
-        loop.create_task(translator(build_id=build_id, project_dir=project_dir))
-        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
-    else:
-        asyncio.run(translator(build_id=build_id, project_dir=project_dir))
+def build_scenario(build_id: int, project_dir: str = "."):
+    from app.services.json_converter import converter  # pylint: disable=C0415
+
+    asyncio.run(converter(build_id=build_id, project_dir=project_dir))
 
 
 @cli.command("run_bot")
@@ -84,7 +83,7 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 
 
 @cli.command("run_scenario")
-def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loop: bool = False):
+def run_scenario(build_id: int, project_dir: str = "."):
     # checkout the commit and then run the build
     bot_repo = Repo.init(Path(project_dir) / "bot")
     bot_repo.git.checkout(build_id, "scripts/build.yaml")
@@ -93,40 +92,23 @@ def run_scenario(build_id: int, project_dir: str = ".", call_from_open_event_loo
     if not script_path.exists():
         raise FileNotFoundError(f"File {script_path} doesn't exist")
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
-    if call_from_open_event_loop:
-        loop = asyncio.get_event_loop()
-        loop.create_task(_execute_command(command_to_run))
-        loop.run_until_complete(asyncio.wait([], return_when=asyncio.FIRST_COMPLETED))
-    else:
-        asyncio.run(_execute_command(command_to_run))
+    asyncio.run(_execute_command(command_to_run))
 
 
-async def _run_server() -> None:
-    """Run the server."""
-    await settings.server.run()
-
-
-@cli.command("run_backend")
-def run_backend(
+@cli.command("run_app")
+def run_app(
     ip_address: str = settings.host,
-    port: int = settings.backend_port,
+    port: int = settings.port,
     conf_reload: str = str(settings.conf_reload),
     project_dir: str = settings.work_directory,
 ) -> None:
     """Run the backend."""
     settings.host = ip_address
-    settings.backend_port = port
+    settings.port = port
     settings.conf_reload = conf_reload.lower() in ["true", "yes", "t", "y", "1"]
     settings.work_directory = project_dir
-    settings.uvicorn_config = uvicorn.Config(
-        settings.APP,
-        settings.host,
-        settings.backend_port,
-        reload=settings.conf_reload,
-        reload_dirs=str(settings.work_directory),
-    )
-    settings.server = uvicorn.Server(settings.uvicorn_config)
-    settings.server.run()
+
+    app_runner.run()
 
 
 @cli.command("init")
@@ -139,6 +121,7 @@ def init(destination: str = settings.work_directory, no_input: bool = False, ove
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
             checkout="feat/versioning",
+            extra_context={"dflowd_version": "0.1.0b4"},
         )
     finally:
         os.chdir(original_dir)

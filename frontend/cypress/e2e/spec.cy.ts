@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 describe("check run and edit flow", () => {
   it("add run edit flow", () => {
-    cy.visit("http://localhost:5173/app/home")
+    cy.visit("http://localhost:8000/app/home")
     cy.location("pathname").should("eq", "/app/home")
     cy.get("[data-testid=create-flow-btn]").should("exist")
     cy.get("[data-testid=create-flow-btn]").click({ force: true })
@@ -68,7 +68,7 @@ describe("check run and edit flow", () => {
           currNodes = response.body.data.flows.find((flow) => flow.name === "flow1").data.nodes
           expect(currNodes.length).to.eq(nodes.length)
         })
-        cy.visit("http://localhost:5173/app/home")
+        cy.visit("http://localhost:8000/app/home")
         cy.get("[data-testid=flow1-delete-btn]").should("exist")
         cy.get("[data-testid=flow1-delete-btn]").click({ force: true })
         cy.get("[data-testid=flow1-edit-btn]").should("not.exist")

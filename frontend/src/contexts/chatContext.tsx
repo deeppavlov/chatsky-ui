@@ -22,7 +22,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [chat, setChat] = useState(searchParams.get('chat') === 'opened')
   const [messages, setMessages] = useState<messageType[]>([])
-  console.log(chat)
 
   return (
     <chatContext.Provider

@@ -1,10 +1,16 @@
+# pylint: disable=C0413
+# flake8: noqa: E402
+
 from contextlib import asynccontextmanager
 from typing import Generator
 
 import httpx
+import nest_asyncio
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
+
+nest_asyncio.apply = lambda: None
 
 from app.main import app
 from app.schemas.pagination import Pagination
@@ -12,6 +18,8 @@ from app.schemas.preset import Preset
 from app.services.process import RunProcess
 from app.services.process_manager import BuildManager, RunManager
 from app.services.websocket_manager import WebSocketManager
+
+DUMMY_BUILD_ID = -1
 
 
 async def start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:
@@ -57,7 +65,7 @@ def pagination() -> Pagination:
 @pytest.fixture()
 def run_process():
     async def _run_process(cmd_to_run):
-        process = RunProcess(id_=0)
+        process = RunProcess(id_=0, build_id=DUMMY_BUILD_ID)
         await process.start(cmd_to_run)
         return process
 

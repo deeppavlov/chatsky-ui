@@ -61,20 +61,27 @@ check_project_arg:
 
 .PHONY: run_backend
 run_backend: check_project_arg ## Runs backend using the built dist. NEEDS arg: PROJECT_NAME
-	cd ${PROJECT_NAME} && poetry install && poetry run dflowd run_backend --conf-reload="False"
+	cd ${PROJECT_NAME} && poetry install && poetry run dflowd run_app --conf-reload="False"
 
 .PHONY: run_dev_backend
 run_dev_backend: check_project_arg install_backend_env ## Runs backend in dev mode. NEEDS arg: PROJECT_NAME
-	cd ${BACKEND_DIR} && poetry run dflowd run_backend --project-dir ../../${PROJECT_NAME}
+	cd ${BACKEND_DIR} && poetry run dflowd run_app --project-dir ../../${PROJECT_NAME}
 
 # backend tests
 .PHONY: unit_tests
-unit_tests: install_backend_env ## Runs all backend unit tests
-	cd ${BACKEND_DIR} && poetry run pytest ./app/tests/api
-	cd ${BACKEND_DIR} && poetry run pytest ./app/tests/services
+unit_tests: ## Runs all backend unit tests
+	if [ ! -d "./df_designer_project" ]; then \
+		cd "${BACKEND_DIR}" && \
+		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
+	fi
+
+	cd df_designer_project && \
+	poetry install && \
+	poetry run pytest ../${BACKEND_DIR}/app/tests/api ../${BACKEND_DIR}/app/tests/services
+
 
 .PHONY: integration_tests
-integration_tests: build_backend ## Runs all backend integration tests
+integration_tests: ## Runs all backend integration tests
 	if [ ! -d "./df_designer_project" ]; then \
 		cd "${BACKEND_DIR}" && \
 		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
@@ -86,7 +93,7 @@ integration_tests: build_backend ## Runs all backend integration tests
 
 
 .PHONY: backend_e2e_test
-backend_e2e_test: build_backend ## Runs e2e backend test
+backend_e2e_test: ## Runs e2e backend test
 	if [ ! -d "./df_designer_project" ]; then \
 		cd "${BACKEND_DIR}" && \
 		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
@@ -136,3 +143,8 @@ run_dev: check_project_arg install_env ## Runs both backend and frontend in dev 
 .PHONY: init_proj
 init_proj: install_backend_env ## Initiates a new project using dflowd
 	cd ${BACKEND_DIR} && poetry run dflowd init --destination ../../
+
+
+.PHONY: build_docs
+build_docs: install_backend_env ## Builds the docs
+	cd docs && make html && cd ../

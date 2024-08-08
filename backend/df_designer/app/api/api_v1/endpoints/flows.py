@@ -13,7 +13,8 @@ logger = get_logger(__name__)
 
 
 @router.get("/{build_id}")
-async def flows_get(build_id: str):
+async def flows_get(build_id: str) -> dict[str, str | dict[str, list]]:
+    """Get the flows by reading the frontend_flows.yaml file."""
     repo = Repo.init(settings.frontend_flows_path.parent)
     for tag in repo.tags:
         if tag.name == str(build_id):
@@ -28,11 +29,12 @@ async def flows_get(build_id: str):
 
     omega_flows = await read_conf(settings.frontend_flows_path)
     dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
-    return {"status": "ok", "data": dict_flows}
+    return {"status": "ok", "data": dict_flows}  # type: ignore
 
 
 @router.post("/{build_id}")
-async def flows_post(flows: dict, build_id: str) -> dict[str, str]:
+async def flows_post(flows: dict[str, list], build_id: str) -> dict[str, str]:
+    """Write the flows to the frontend_flows.yaml file."""
     repo = get_repo(settings.frontend_flows_path.parent)
     for tag in repo.tags:
         if tag.name == str(build_id):

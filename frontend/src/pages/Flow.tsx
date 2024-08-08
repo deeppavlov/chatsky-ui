@@ -5,12 +5,15 @@ import ReactFlow, {
   Connection,
   Controls,
   Edge,
+  HandleType,
+  Node,
   NodeChange,
+  OnSelectionChangeParams,
   ReactFlowInstance,
   addEdge,
   updateEdge,
   useEdgesState,
-  useNodesState
+  useNodesState,
 } from "reactflow"
 
 import { a, useTransition } from "@react-spring/web"
@@ -25,13 +28,14 @@ import FallbackNode from "../components/nodes/FallbackNode"
 import LinkNode from "../components/nodes/LinkNode"
 import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
-import { NODES, START_FALLBACK_NODE_FLAGS } from "../consts"
+import { NODES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
-import { NodeType, NodesTypes } from "../types/NodeTypes"
+import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
+import { responseType } from "../types/ResponseTypes"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
 import Settings from "./Settings"
@@ -40,20 +44,25 @@ const nodeTypes = {
   default_node: DefaultNode,
   start_node: StartNode,
   fallback_node: FallbackNode,
-  link: LinkNode,
+  link_node: LinkNode,
 }
 
-export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {
-
-}
+// export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
   const reactFlowWrapper = useRef(null)
 
-  const { flows, updateFlow, saveFlows } = useContext(flowContext)
-  const { toggleWorkspaceMode, workspaceMode, nodesLayoutMode, setSelectedNode, selectedNode } =
-    useContext(workspaceContext)
-  const { takeSnapshot } = useContext(undoRedoContext)
+  const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
+  const {
+    toggleWorkspaceMode,
+    workspaceMode,
+    nodesLayoutMode,
+    setSelectedNode,
+    selectedNode,
+    mouseOnPane,
+    managerMode,
+  } = useContext(workspaceContext)
+  const { takeSnapshot, undo } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -62,6 +71,9 @@ export default function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
+  const [selection, setSelection] = useState<OnSelectionChangeParams>()
+  const [selected, setSelected] = useState<string>()
+  const isEdgeUpdateSuccess = useRef(false)
 
   // const {
   //   isOpen: isLinkModalOpen,
@@ -75,7 +87,7 @@ export default function Flow() {
       updateFlow(flow)
       console.log("update flow")
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges])
 
   useEffect(() => {
@@ -83,7 +95,7 @@ export default function Flow() {
       setNodes(flow?.data?.nodes ?? [])
       setEdges(flow?.data?.edges ?? [])
       if (flow?.data?.viewport) {
-        reactFlowInstance.fitView({ padding: 0.5 })
+        // reactFlowInstance.fitView({ padding: 0.5 })
       } else {
         reactFlowInstance.fitView({ padding: 0.5 })
       }
@@ -99,7 +111,7 @@ export default function Flow() {
       if (nds) {
         nds
           .sort((nd1: NodeChange, nd2: NodeChange) => {
-            if (nd1.type === 'select' && nd2.type === 'select') {
+            if (nd1.type === "select" && nd2.type === "select") {
               return nd1.selected === nd2.selected ? 0 : nd2.selected ? -1 : 1
             } else {
               return 0
@@ -113,22 +125,51 @@ export default function Flow() {
                 setSelectedNode("")
               }
             }
-            console.log(selectedNode)
           })
       }
-      console.log("nds change", nds)
       onNodesChange(nds)
     },
     [onNodesChange, selectedNode, setSelectedNode]
   )
 
+  const onEdgeUpdateStart = useCallback(() => {
+    isEdgeUpdateSuccess.current = false
+  }, [])
+
   const onEdgeUpdate = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
       takeSnapshot()
       setEdges((els) => updateEdge(oldEdge, newConnection, els))
+      isEdgeUpdateSuccess.current = true
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
+  )
+
+  const onEdgeUpdateEnd = useCallback(
+    (event: MouseEvent | TouchEvent, edge: Edge, handleType: HandleType) => {
+      takeSnapshot()
+      if (!isEdgeUpdateSuccess.current) {
+        deleteObject(edge.id)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onEdgeUpdate, deleteObject]
+  )
+
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      const node_ = node as NodeType
+      setSelected(node_.id)
+    },
+    [setSelected]
+  )
+
+  const onEdgeClick = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      setSelected(edge.id)
+    },
+    [setSelected]
   )
 
   const onConnect = useCallback(
@@ -139,6 +180,10 @@ export default function Flow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
+
+  const onSelectionChange = useCallback((params: OnSelectionChangeParams) => {
+    setSelection(params)
+  }, [])
 
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
@@ -165,6 +210,23 @@ export default function Flow() {
         y: event.clientY,
       })
       const newId = v4()
+
+      const START_FALLBACK_FLAGS = []
+      if (
+        !flows.some((flow) =>
+          flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("start"))
+        )
+      ) {
+        START_FALLBACK_FLAGS.push("start")
+      }
+      if (
+        !flows.some((flow) =>
+          flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("fallback"))
+        )
+      ) {
+        START_FALLBACK_FLAGS.push("fallback")
+      }
+
       const newNode: NodeType = {
         id: newId,
         type,
@@ -172,12 +234,15 @@ export default function Flow() {
         data: {
           id: newId,
           name: NODES[type].name,
-          flags: flow?.data.nodes.length ? [] : START_FALLBACK_NODE_FLAGS,
+          flags: START_FALLBACK_FLAGS,
           conditions: NODES[type].conditions,
           global_conditions: [],
           local_conditions: [],
-          response: NODES[type].response,
-          to: "",
+          response: NODES[type].response as responseType,
+          transition: {
+            target_flow: "",
+            target_node: "",
+          },
         },
       }
       setNodes((nds) => nds.concat(newNode))
@@ -187,7 +252,6 @@ export default function Flow() {
 
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
-      console.log(e)
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
@@ -201,6 +265,14 @@ export default function Flow() {
         toggleWorkspaceMode()
         toast.success("Workspace mode: " + (workspaceMode ? "Fixed" : "Free"))
       }
+
+      if (e.key === "Backspace" && mouseOnPane) {
+        e.preventDefault()
+        if (selected) {
+          takeSnapshot()
+          deleteObject(selected)
+        }
+      }
     }
 
     document.addEventListener("keydown", kbdHandler)
@@ -208,7 +280,20 @@ export default function Flow() {
     return () => {
       document.removeEventListener("keydown", kbdHandler)
     }
-  }, [flow, flowId, flows, reactFlowInstance, saveFlows, toggleWorkspaceMode, workspaceMode])
+  }, [
+    deleteObject,
+    flow,
+    flowId,
+    flows,
+    mouseOnPane,
+    reactFlowInstance,
+    saveFlows,
+    selected,
+    selectedNode,
+    takeSnapshot,
+    toggleWorkspaceMode,
+    workspaceMode,
+  ])
 
   const transitions = useTransition(location.pathname, {
     config: { duration: 300 },
@@ -219,7 +304,9 @@ export default function Flow() {
   })
 
   return (
-    <div data-testid="flow-page" className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
+    <div
+      data-testid='flow-page'
+      className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
       <SideBar />
       {transitions((style) => (
         <a.div
@@ -227,6 +314,7 @@ export default function Flow() {
           style={{ width: "100%", height: "100vh", ...style }}
           className='col-span-6 opacity-0 pb-10'>
           <ReactFlow
+            deleteKeyCode={""}
             style={{
               background: "var(--background)",
             }}
@@ -246,18 +334,28 @@ export default function Flow() {
                 }
               }
             }}
+            onSelectionChange={onSelectionChange}
             onDragOver={onDragOver}
             onDrop={onDrop}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
             onNodesChange={onNodesChangeMod}
             onEdgesChange={onEdgesChange}
             onEdgeUpdate={onEdgeUpdate}
+            onEdgeUpdateStart={onEdgeUpdateStart}
+            onEdgeUpdateEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
             onConnect={onConnect}
+            nodesConnectable={!managerMode}
+            nodesDraggable={!managerMode}
+            nodesFocusable={!managerMode}
+            edgesUpdatable={!managerMode}
+            edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
             snapToGrid={!workspaceMode}>
             <Controls
               fitViewOptions={{ padding: 0.25 }}
-              className='fill-foreground stroke-foreground text-foreground [&>button]:my-1 [&>button]:rounded [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
+              className='rounded-lg [&>button]:fill-foreground [&>button]:rounded-lg shadow-none [&>button]:my-1  [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
             />
             {/* <MiniMap style={{
               background: "var(--background)",

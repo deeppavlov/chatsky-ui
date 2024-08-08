@@ -25,10 +25,8 @@ const Logs = () => {
         builds.find((build) => build.id === Number(searchParams.get("build_id"))) ?? null
       )
     }
-    console.log(1)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [builds, runs])
-
 
   return (
     <div
@@ -45,7 +43,11 @@ const Logs = () => {
               currentItem
                 ? currentItem.type === "build"
                   ? [currentItem.id.toString()]
-                  : [currentItem.build_id.toString()]
+                  : [
+                      builds
+                        .find((build) => build.runs.some((run) => run.id === currentItem.id))!
+                        .id.toString(),
+                    ]
                 : []
             }
             className='w-full flex flex-col gap-2'
@@ -108,7 +110,6 @@ const Logs = () => {
                                     build_id: build.id.toString(),
                                     type: "run",
                                   })
-                                  console.log(r)
                                   setCurrentItem({ ...r, type: "run" })
                                 }}
                                 className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'>
@@ -127,7 +128,12 @@ const Logs = () => {
                                     />
                                   )}
                                   {r.status === "failed" && <X color='red' />}
-                                  {r.status === "stopped" && <Slash className="scale-50" strokeWidth={4} />}
+                                  {r.status === "stopped" && (
+                                    <Slash
+                                      className='scale-50'
+                                      strokeWidth={4}
+                                    />
+                                  )}
                                 </span>
                               </div>
                             )
@@ -187,10 +193,15 @@ const Logs = () => {
                       <span className='font-medium text-neutral-500 mr-1'>Preset name:</span>
                       {currentItem.preset_end_status}
                     </p>
-                    {/* <p>
+                    <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
-                      {currentItem}
-                    </p> */}
+                      <a
+                        download
+                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        className='text-blue-500 underline'>
+                        {currentItem.log_path}
+                      </a>
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -222,7 +233,9 @@ const Logs = () => {
                           color:
                             currentItem.status === "completed"
                               ? "var(--status-green)"
-                              : currentItem.status === "stopped" ? "var(--foreground)" : "var(--status-red)",
+                              : currentItem.status === "stopped"
+                                ? "var(--foreground)"
+                                : "var(--status-red)",
                         }}>
                         {currentItem.status}
                       </span>
@@ -233,7 +246,12 @@ const Logs = () => {
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
-                      <span className='text-blue-500 underline'>{currentItem.log_path}</span>
+                      <a
+                        download
+                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        className='text-blue-500 underline'>
+                        {currentItem.log_path}
+                      </a>
                     </p>
                   </div>
                 </div>

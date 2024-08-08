@@ -5,7 +5,23 @@ Ensure you have Python version 3.10 or higher installed.
 ## Installation
 To install the necessary package, run the following command:
 ```bash
-pip install dflowd==0.1.0b0
+pip install dflowd --pre
+```
+
+## Configuring the dflowd app
+You may add a `.env` file in the root directory and configure any of following environment variables. The values shown below are the default ones.
+```.env
+HOST=0.0.0.0
+PORT=8000
+CONF_RELOAD=True
+LOG_LEVEL=info
+
+GRACEFUL_TERMINATION_TIMEOUT=2  # Waiting for process to stop
+PING_PONG_TIMEOUT=0.5  # Waiting the process to response before it mark it as still `running`
+
+# For tests:
+BUILD_COMPLETION_TIMEOUT=10
+RUN_RUNNING_TIMEOUT=5
 ```
 
 ## Project Initiation
@@ -21,4 +37,3 @@ To run your project, use the following command:
 ```bash
 dflowd run_backend
 ```
-Note: Currently, the project runs exclusively on port 8000.

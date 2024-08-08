@@ -25,6 +25,7 @@ export type buildMinifyApiType = {
   status: buildApiStatusType
   preset_end_status: string
   timestamp: number
+  log_path: string
   runs: runMinifyApiType[]
 }
 

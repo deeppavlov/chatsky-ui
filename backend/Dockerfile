@@ -43,4 +43,4 @@ WORKDIR /${PROJECT_DIR}
 RUN poetry lock --no-update \
     && poetry install
 
-CMD ["poetry", "run", "dflowd", "run_backend"]
+CMD ["poetry", "run", "dflowd", "run_app"]
