@@ -1,10 +1,10 @@
-dflowd.tests.integration package
+chatsky_ui.tests.integration package
 =============================
 
-dflowd.tests.integration.test\_api\_integration module
+chatsky_ui.tests.integration.test\_api\_integration module
 ---------------------------------------------------
 
-.. automodule:: dflowd.tests.integration.test_api_integration
+.. automodule:: chatsky_ui.tests.integration.test_api_integration
    :members:
    :undoc-members:
    :show-inheritance:

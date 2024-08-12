@@ -1,18 +1,18 @@
-dflowd.core package
+chatsky_ui.core package
 ================
 
-dflowd.core.config module
+chatsky_ui.core.config module
 ----------------------
 
-.. automodule:: dflowd.core.config
+.. automodule:: chatsky_ui.core.config
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.core.logger\_config module
+chatsky_ui.core.logger\_config module
 ------------------------------
 
-.. automodule:: dflowd.core.logger_config
+.. automodule:: chatsky_ui.core.logger_config
    :members:
    :undoc-members:
    :show-inheritance:

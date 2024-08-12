@@ -1,10 +1,10 @@
-dflowd.db package
+chatsky_ui.db package
 ==============
 
-dflowd.db.base module
+chatsky_ui.db.base module
 ------------------
 
-.. automodule:: dflowd.db.base
+.. automodule:: chatsky_ui.db.base
    :members:
    :undoc-members:
    :show-inheritance:

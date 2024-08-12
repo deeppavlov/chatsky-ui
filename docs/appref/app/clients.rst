@@ -1,10 +1,10 @@
-dflowd.clients package
+chatsky_ui.clients package
 ===================
 
-dflowd.clients.dff module
+chatsky_ui.clients.dff module
 ----------------------
 
-.. automodule:: dflowd.clients.dff
+.. automodule:: chatsky_ui.clients.dff
    :members:
    :undoc-members:
    :show-inheritance:

@@ -34,13 +34,13 @@ RUN python3 -m venv $POETRY_VENV \
 
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
-COPY ./backend/df_designer /temp/backend/df_designer
-COPY --from=frontend-builder /temp/frontend/dist /temp/backend/df_designer/dflowd/static
+COPY ./backend /temp/backend
+COPY --from=frontend-builder /temp/frontend/dist /temp/backend/chatsky_ui/static
 
 COPY ./${PROJECT_DIR} /temp/${PROJECT_DIR}
 
 # Build the wheel
-WORKDIR /temp/backend/df_designer
+WORKDIR /temp/backend
 RUN poetry build
 
 #---------------------------------------------------------
@@ -57,7 +57,7 @@ COPY --from=backend-builder /poetry-venv /poetry-venv
 ENV PATH="/poetry-venv/bin:$PATH"
 
 # Copy only the necessary files
-COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
+COPY --from=backend-builder /temp/backend /src2/backend
 COPY ./${PROJECT_DIR} /src2/project_dir
 
 # Install the wheel
@@ -65,7 +65,7 @@ WORKDIR /src2/project_dir
 RUN poetry lock --no-update \
     && poetry install
 
-CMD ["poetry", "run", "dflowd", "run_app"]
+CMD ["poetry", "run", "chatsky.ui", "run_app"]
 
 
 # #TODO: change scr to app (maybe)

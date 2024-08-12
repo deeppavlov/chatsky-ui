@@ -1,4 +1,4 @@
-dflowd package
+chatsky_ui package
 ===========
 
 Subpackages
@@ -8,13 +8,13 @@ Subpackages
    :glob:
    :maxdepth: 4
 
-   dflowd/*
+   chatsky_ui/*
 
 
 cli module
 --------------
 
-.. automodule:: dflowd.cli
+.. automodule:: chatsky_ui.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,7 +22,7 @@ cli module
 main module
 ---------------
 
-.. automodule:: dflowd.main
+.. automodule:: chatsky_ui.main
    :members:
    :undoc-members:
    :show-inheritance:

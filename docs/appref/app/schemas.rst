@@ -1,26 +1,26 @@
-dflowd.schemas package
+chatsky_ui.schemas package
 ===================
 
-dflowd.schemas.pagination module
+chatsky_ui.schemas.pagination module
 -----------------------------
 
-.. automodule:: dflowd.schemas.pagination
+.. automodule:: chatsky_ui.schemas.pagination
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.schemas.preset module
+chatsky_ui.schemas.preset module
 -------------------------
 
-.. automodule:: dflowd.schemas.preset
+.. automodule:: chatsky_ui.schemas.preset
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.schemas.process\_status module
+chatsky_ui.schemas.process\_status module
 ----------------------------------
 
-.. automodule:: dflowd.schemas.process_status
+.. automodule:: chatsky_ui.schemas.process_status
    :members:
    :undoc-members:
    :show-inheritance:

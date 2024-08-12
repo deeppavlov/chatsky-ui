@@ -1,26 +1,26 @@
-dflowd.api.api\_v1.endpoints package
+chatsky_ui.api.api\_v1.endpoints package
 =========================
 
-dflowd.api.api\_v1.endpoints.bot module
+chatsky_ui.api.api\_v1.endpoints.bot module
 ----------------------------
 
-.. automodule:: dflowd.api.api_v1.endpoints.bot
+.. automodule:: chatsky_ui.api.api_v1.endpoints.bot
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.api.api\_v1.endpoints.dff\_services module
+chatsky_ui.api.api\_v1.endpoints.dff\_services module
 --------------------------------------
 
-.. automodule:: dflowd.api.api_v1.endpoints.dff_services
+.. automodule:: chatsky_ui.api.api_v1.endpoints.dff_services
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.api.api\_v1.endpoints.flows module
+chatsky_ui.api.api\_v1.endpoints.flows module
 ------------------------------
 
-.. automodule:: dflowd.api.api_v1.endpoints.flows
+.. automodule:: chatsky_ui.api.api_v1.endpoints.flows
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,42 +1,42 @@
-dflowd.services package
+chatsky_ui.services package
 ====================
 
-dflowd.services.index module
+chatsky_ui.services.index module
 -------------------------
 
-.. automodule:: dflowd.services.index
+.. automodule:: chatsky_ui.services.index
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.services.json\_converter module
+chatsky_ui.services.json\_converter module
 -----------------------------------
 
-.. automodule:: dflowd.services.json_converter
+.. automodule:: chatsky_ui.services.json_converter
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.services.process module
+chatsky_ui.services.process module
 ---------------------------
 
-.. automodule:: dflowd.services.process
+.. automodule:: chatsky_ui.services.process
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.services.process\_manager module
+chatsky_ui.services.process\_manager module
 ------------------------------------
 
-.. automodule:: dflowd.services.process_manager
+.. automodule:: chatsky_ui.services.process_manager
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.services.websocket\_manager module
+chatsky_ui.services.websocket\_manager module
 --------------------------------------
 
-.. automodule:: dflowd.services.websocket_manager
+.. automodule:: chatsky_ui.services.websocket_manager
    :members:
    :undoc-members:
    :show-inheritance:

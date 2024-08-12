@@ -1,18 +1,18 @@
-dflowd.tests.api package
+chatsky_ui.tests.api package
 =====================
 
-dflowd.tests.api.test\_bot module
+chatsky_ui.tests.api.test\_bot module
 ------------------------------
 
-.. automodule:: dflowd.tests.api.test_bot
+.. automodule:: chatsky_ui.tests.api.test_bot
    :members:
    :undoc-members:
    :show-inheritance:
 
-dflowd.tests.api.test\_flows module
+chatsky_ui.tests.api.test\_flows module
 --------------------------------
 
-.. automodule:: dflowd.tests.api.test_flows
+.. automodule:: chatsky_ui.tests.api.test_flows
    :members:
    :undoc-members:
    :show-inheritance:

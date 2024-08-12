@@ -53,7 +53,7 @@
 
 #       - name: copy static files
 #         run: |
-#           cp -r frontend/dist/. backend/df_designer/dflowd/static/
+#           cp -r frontend/dist/. backend/chatsky_ui/static/
   
 #       - name: set up python 3.10
 #         uses: actions/setup-python@v5
@@ -65,17 +65,17 @@
 #           python -m pip install --upgrade pip poetry
 #           python -m poetry lock --no-update
 #           python -m poetry install --with lint --no-interaction
-#         working-directory: backend/df_designer
+#         working-directory: backend
 
 #       - name: build wheel
 #         run: python -m poetry build
-#         working-directory: backend/df_designer
+#         working-directory: backend
 
 #       - name: Archive backend dist
 #         uses: actions/upload-artifact@v4
 #         with:
 #           name: backend-dist
-#           path: backend/df_designer/dist
+#           path: backend/dist
 
 
 #   run_app:
@@ -89,26 +89,26 @@
 #         with:
 #           python-version: '3.10'
 
-#       - name: setup dflowd poetry and install dependencies
+#       - name: setup chatsky-ui poetry and install dependencies
 #         run: |
 #           python -m pip install --upgrade pip poetry
 #           python -m poetry lock --no-update
 #           python -m poetry install --with lint --no-interaction
-#         working-directory: backend/df_designer
+#         working-directory: backend
 
 #       - name: Create new project
 #         run: |
-#           python -m poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists
-#         working-directory: backend/df_designer
+#           python -m poetry run chatsky.ui init --destination ../../ --no-input --overwrite-if-exists
+#         working-directory: backend
 
 #       - name: Create dist directory
-#         run: mkdir -p backend/df_designer/dist
+#         run: mkdir -p backend/dist
 
 #       - name: Download backend dist
 #         uses: actions/download-artifact@v4
 #         with:
 #           name: backend-dist
-#           path: backend/df_designer/dist
+#           path: backend/dist
 
 #       - name: setup project poetry and install dependencies
 #         run: |
@@ -119,7 +119,7 @@
 
 #       - name: Run back & front
 #         run: |
-#           python -m poetry run dflowd run_app &
+#           python -m poetry run chatsky.ui run_app &
 #           sleep 10
 #         working-directory: df_designer_project
 

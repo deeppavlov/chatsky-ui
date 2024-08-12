@@ -1,4 +1,4 @@
-dflowd.api.api\_v1 package
+chatsky_ui.api.api\_v1 package
 =========================
 
 Subpackages
@@ -11,10 +11,10 @@ Subpackages
    api_v1/*
 
 
-dflowd.api.api\_v1.api module
+chatsky_ui.api.api\_v1.api module
 ----------------------------
 
-.. automodule:: dflowd.api.api_v1.api
+.. automodule:: chatsky_ui.api.api_v1.api
    :members:
    :undoc-members:
    :show-inheritance:
