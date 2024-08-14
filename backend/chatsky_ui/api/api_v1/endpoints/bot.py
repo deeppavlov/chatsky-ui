@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Union
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketException, status
 
 from chatsky_ui.api import deps
-from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.index import Index
@@ -12,8 +11,6 @@ from chatsky_ui.services.process_manager import BuildManager, ProcessManager, Ru
 from chatsky_ui.services.websocket_manager import WebSocketManager
 
 router = APIRouter()
-
-logger = get_logger(__name__)
 
 
 async def _stop_process(id_: int, process_manager: ProcessManager, process="run") -> Dict[str, str]:
@@ -27,7 +24,7 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
             detail="Process not found. It may have already exited or not started yet. Please check logs.",
         ) from e
 
-    logger.info("%s process '%s' has stopped", process.capitalize(), id_)
+    process_manager.logger.info("%s process '%s' has stopped", process.capitalize(), id_)
     return {"status": "ok"}
 
 
@@ -64,7 +61,7 @@ async def start_build(
     await asyncio.sleep(preset.wait_time)
     build_id = await build_manager.start(preset)
     background_tasks.add_task(build_manager.check_status, build_id, index)
-    logger.info("Build process '%s' has started", build_id)
+    build_manager.logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
 
 
@@ -164,7 +161,7 @@ async def start_run(
     await asyncio.sleep(preset.wait_time)
     run_id = await run_manager.start(build_id, preset)
     background_tasks.add_task(run_manager.check_status, run_id)
-    logger.info("Run process '%s' has started", run_id)
+    run_manager.logger.info("Run process '%s' has started", run_id)
     return {"status": "ok", "run_id": run_id}
 
 
@@ -249,23 +246,23 @@ async def connect(
     The WebSocket URL should adhere to the format: /bot/run/connect?run_id=<run_id>.
     """
 
-    logger.debug("Connecting to websocket")
+    run_manager.logger.debug("Connecting to websocket")
     run_id = websocket.query_params.get("run_id")
 
     # Validate run_id
     if run_id is None:
-        logger.error("No run_id provided")
+        run_manager.logger.error("No run_id provided")
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
     if not run_id.isdigit():
-        logger.error("A non-digit run run_id provided")
+        run_manager.logger.error("A non-digit run run_id provided")
         raise WebSocketException(code=status.WS_1003_UNSUPPORTED_DATA)
     run_id = int(run_id)
     if run_id not in run_manager.processes:
-        logger.error("process with run_id '%s' exited or never existed", run_id)
+        run_manager.logger.error("process with run_id '%s' exited or never existed", run_id)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
 
     await websocket_manager.connect(websocket)
-    logger.info("Websocket for run process '%s' has been opened", run_id)
+    run_manager.logger.info("Websocket for run process '%s' has been opened", run_id)
 
     await websocket.send_text("Start chatting")
 

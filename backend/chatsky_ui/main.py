@@ -13,6 +13,9 @@ index_dict = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.conf_reload:
+        settings.refresh_work_dir()
+
     index_dict["instance"] = get_index()
     await index_dict["instance"].load()
     yield
@@ -20,6 +23,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="DF Designer", lifespan=lifespan)
+
 
 app.add_middleware(
     CORSMiddleware,

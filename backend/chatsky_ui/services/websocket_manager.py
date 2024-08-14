@@ -10,8 +10,6 @@ from fastapi import WebSocket, WebSocketDisconnect
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.services.process_manager import ProcessManager
 
-logger = get_logger(__name__)
-
 
 class WebSocketManager:
     """Controls websocket operations connect, disconnect, check status, and communicate."""
@@ -19,6 +17,16 @@ class WebSocketManager:
     def __init__(self):
         self.pending_tasks: Dict[WebSocket, Set[Task]] = dict()
         self.active_connections: List[WebSocket] = []
+        self._logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            raise ValueError("Logger has not been configured. Call set_logger() first.")
+        return self._logger
+
+    def set_logger(self):
+        self._logger = get_logger(__name__)
 
     async def connect(self, websocket: WebSocket):
         """Accepts the websocket connection and marks it as active connection."""
@@ -29,7 +37,7 @@ class WebSocketManager:
         """Cancels pending tasks of the open websocket process and removes it from active connections."""
         # TODO: await websocket.close()
         if websocket in self.pending_tasks:
-            logger.info("Cancelling pending tasks")
+            self.logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:
                 task.cancel()
             del self.pending_tasks[websocket]
@@ -50,7 +58,7 @@ class WebSocketManager:
                     break
                 await websocket.send_text(response.decode().strip())
         except WebSocketDisconnect:
-            logger.info("Websocket connection is closed by client")
+            self.logger.info("Websocket connection is closed by client")
         except RuntimeError:
             raise
 
@@ -65,8 +73,8 @@ class WebSocketManager:
                     break
                 await process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
         except asyncio.CancelledError:
-            logger.info("Websocket connection is closed")
+            self.logger.info("Websocket connection is closed")
         except WebSocketDisconnect:
-            logger.info("Websocket connection is closed by client")
+            self.logger.info("Websocket connection is closed by client")
         except RuntimeError:
             raise
