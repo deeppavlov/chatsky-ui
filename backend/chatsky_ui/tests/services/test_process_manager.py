@@ -3,9 +3,6 @@ from pathlib import Path
 import pytest
 from omegaconf import OmegaConf
 
-from chatsky_ui.core.logger_config import get_logger
-
-logger = get_logger(__name__)
 
 RUN_ID = 42
 BUILD_ID = 43
@@ -25,7 +22,7 @@ class TestRunManager:
 
         run_process.assert_called_once_with(run_manager.last_id, BUILD_ID, preset.end_status)
         run_process_instance.start.assert_awaited_once_with(
-            f"chatsky_ui run_bot {BUILD_ID} --preset {preset.end_status}"
+            f"chatsky.ui run_bot {BUILD_ID} --preset {preset.end_status}"
         )
 
         assert run_manager.processes[run_manager.last_id] is run_process_instance

@@ -72,11 +72,11 @@ jobs:
 
       - name: Create new project
         run: |
-          python -m poetry run chatsky.ui init --destination ../../ --no-input --overwrite-if-exists
+          python -m poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists
         working-directory: backend
 
       - name: run tests
         run: |
           python -m poetry install
           python -m poetry run pytest ../backend/chatsky_ui/tests/ --verbose
-        working-directory: df_designer_project
+        working-directory: my_project
