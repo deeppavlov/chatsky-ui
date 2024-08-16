@@ -28,13 +28,12 @@ class Settings:
         self.work_directory = Path(config.work_directory)
         self._set_user_proj_paths()
 
-    def set_config(self, host: str, port: int, log_level: str, conf_reload: bool, work_directory: Path):
-        self.host = host
-        self.port = port
-        self.log_level = log_level
-        self.conf_reload = conf_reload
-        self.work_directory = work_directory
-        self._set_user_proj_paths()
+    def set_config(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        if "work_directory" in kwargs:
+            self._set_user_proj_paths()
 
     def _set_user_proj_paths(self):
         self.builds_path = self.work_directory / "df_designer/builds.yaml"
@@ -43,6 +42,8 @@ class Settings:
         self.frontend_flows_path = self.work_directory / "df_designer/frontend_flows.yaml"
         self.index_path = self.work_directory / "bot/custom/.services_index.yaml"
         self.snippet2lint_path = self.work_directory / "bot/custom/.snippet2lint.py"
+        self.scripts_dir = self.work_directory / "bot/scripts"
+        self.presets = self.work_directory / "df_designer/presets"
 
     def save_config(self):
         OmegaConf.save(

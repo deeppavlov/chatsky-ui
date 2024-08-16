@@ -16,7 +16,12 @@ nest_asyncio.apply = lambda: None
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
 
-cli = typer.Typer()
+cli = typer.Typer(
+    help="🚀 Welcome to Chatsky-UI!\n\n"
+    "To get started, use the following commands:\n\n"
+    "1. `init` - Initializes a new Chatsky-UI project.\n\n"
+    "2. `run_app` - Runs the UI for your project.\n"
+)
 
 
 async def _execute_command(command_to_run):
@@ -44,7 +49,7 @@ async def _execute_command(command_to_run):
 def _execute_command_file(build_id: int, project_dir: Path, command_file: str, preset: str):
     logger = get_logger(__name__)
 
-    presets_build_path = project_dir / "df_designer" / "presets" / command_file
+    presets_build_path = settings.presets / command_file
     with open(presets_build_path, encoding="UTF-8") as file:
         file_content = file.read()
 
@@ -63,20 +68,28 @@ def _execute_command_file(build_id: int, project_dir: Path, command_file: str, p
 
 @cli.command("build_bot")
 def build_bot(
-    build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
+    build_id: Annotated[int, typer.Option(help="Id to save the build with")] = None,
     project_dir: Path = settings.work_directory,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Builds the bot with one of three various presets."""
+    if not project_dir.is_dir():
+        raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
+    settings.set_config(work_directory=project_dir)
+
     _execute_command_file(build_id, project_dir, "build.json", preset)
 
 
 @cli.command("build_scenario")
 def build_scenario(
     build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
-    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
 ):
     """Builds the bot with preset `success`"""
+    if not project_dir.is_dir():
+        raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
+    settings.set_config(work_directory=project_dir)
+
     from chatsky_ui.services.json_converter import converter  # pylint: disable=C0415
 
     asyncio.run(converter(build_id=build_id, project_dir=project_dir))
@@ -84,23 +97,29 @@ def build_scenario(
 
 @cli.command("run_bot")
 def run_bot(
-    build_id: Annotated[int, typer.Argument(help="Id of the build to run")],
+    build_id: Annotated[int, typer.Option(help="Id of the build to run")] = None,
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Runs the bot with one of three various presets."""
+    if not project_dir.is_dir():
+        raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
+    settings.set_config(work_directory=project_dir)
+
     _execute_command_file(build_id, project_dir, "run.json", preset)
 
 
 @cli.command("run_scenario")
 def run_scenario(
     build_id: Annotated[int, typer.Argument(help="Id of the build to run")],
-    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
 ):
     """Runs the bot with preset `success`"""
-    script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
-    if not script_path.exists():
-        raise FileNotFoundError(f"File {script_path} doesn't exist")
+    if not project_dir.is_dir():
+        raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
+    settings.set_config(work_directory=project_dir)
+    script_path = settings.scripts_dir / f"build_{build_id}.yaml"
+
     command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
     asyncio.run(_execute_command(command_to_run))
 
@@ -110,14 +129,19 @@ def run_app(
     host: str = settings.host,
     port: int = settings.port,
     log_level: str = settings.log_level,
-    conf_reload: Annotated[str, typer.Option(help="True for dev-mode, False otherwise")] = str(settings.conf_reload),
+    conf_reload: Annotated[bool, typer.Option(help="True for dev-mode, False otherwise")] = settings.conf_reload,
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = Path("."),
 ) -> None:
     """Runs the UI for your `project_dir` on `host:port`."""
-    if not project_dir.exists():
-        raise FileNotFoundError(f"File {project_dir} doesn't exist")
-    settings.set_config(host, port, log_level, conf_reload.lower() in ["true", "yes", "t", "y", "1"], project_dir)
-
+    if not project_dir.is_dir():
+        raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
+    settings.set_config(
+        host=host,
+        port=port,
+        log_level=log_level,
+        conf_reload=str(conf_reload).lower() in ["true", "yes", "t", "y", "1"],
+        work_directory=project_dir,
+    )
     if conf_reload:
         settings.save_config()  # this is for the sake of maintaining the state of the settings
 
