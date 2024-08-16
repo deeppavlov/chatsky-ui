@@ -227,9 +227,7 @@ async def converter(build_id: int) -> None:
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
-    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(
-        build_id
-    )
+    frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id)
 
     script = {
         "CONFIG": {"custom_dir": str("/" / settings.custom_dir)},

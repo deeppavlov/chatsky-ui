@@ -84,7 +84,7 @@ def build_bot(
 def build_scenario(
     build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
-    #TODO: add custom_dir - maybe the same way like project_dir
+    # TODO: add custom_dir - maybe the same way like project_dir
 ):
     """Builds the bot with preset `success`"""
     if not project_dir.is_dir():
