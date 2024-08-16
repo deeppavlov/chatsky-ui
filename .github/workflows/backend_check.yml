@@ -78,6 +78,7 @@ jobs:
       - name: Install chatsky-ui into new project poetry environment
         run: |
           ../bin/add_ui_to_toml.sh
+        working-directory: my_project
 
       - name: run tests
         run: |
