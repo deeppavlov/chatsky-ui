@@ -165,8 +165,11 @@ class BuildManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = BuildProcess(id_, preset.end_status)
-        cmd_to_run = f"chatsky.ui build_bot --build-id {id_}"
-        "--preset {preset.end_status} --project-dir {settings.work_directory}"
+        cmd_to_run = (
+            f"chatsky.ui build_bot --build-id {id_} "
+            f"--preset {preset.end_status} "
+            f"--project-dir {settings.work_directory}"
+        )
         await process.start(cmd_to_run)
         self.processes[id_] = process
 
