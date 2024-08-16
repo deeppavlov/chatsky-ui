@@ -10,14 +10,11 @@ from pylint.reporters.text import TextReporter
 from chatsky_ui.api.deps import get_index
 from chatsky_ui.clients.dff_client import get_dff_conditions
 from chatsky_ui.core.config import settings
-from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.schemas.code_snippet import CodeSnippet
 from chatsky_ui.services.index import Index
 from chatsky_ui.utils.ast_utils import get_imports_from_file
 
 router = APIRouter()
-
-logger = get_logger(__name__)
 
 
 @router.get("/search/{service_name}", status_code=200)

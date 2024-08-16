@@ -1,18 +1,18 @@
 import asyncio
 import json
 import os
+import string
 import sys
 from pathlib import Path
 
 import nest_asyncio
 import typer
-from typing_extensions import Annotated
 from cookiecutter.main import cookiecutter
+from typing_extensions import Annotated
 
 # Patch nest_asyncio before importing DFF
 nest_asyncio.apply = lambda: None
 
-from chatsky_ui import __version__  # noqa: E402
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
 
@@ -41,16 +41,19 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(build_id: int, project_dir: str, command_file: str, preset: str):
+def _execute_command_file(build_id: int, project_dir: Path, command_file: str, preset: str):
     logger = get_logger(__name__)
-    presets_build_path = Path(project_dir) / "df_designer" / "presets" / command_file
-    with open(presets_build_path) as file:
-        presets_build_file = json.load(file)
 
+    presets_build_path = project_dir / "df_designer" / "presets" / command_file
+    with open(presets_build_path, encoding="UTF-8") as file:
+        file_content = file.read()
+
+    template = string.Template(file_content)
+    substituted_content = template.substitute(work_directory=project_dir, build_id=build_id)
+
+    presets_build_file = json.loads(substituted_content)
     if preset in presets_build_file:
         command_to_run = presets_build_file[preset]["cmd"]
-        if preset == "success":
-            command_to_run += f" {build_id}"
         logger.debug("Executing command for preset '%s': %s", preset, command_to_run)
 
         asyncio.run(_execute_command(command_to_run))
@@ -61,7 +64,7 @@ def _execute_command_file(build_id: int, project_dir: str, command_file: str, pr
 @cli.command("build_bot")
 def build_bot(
     build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
-    project_dir: str = settings.work_directory,
+    project_dir: Path = settings.work_directory,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Builds the bot with one of three various presets."""
@@ -82,7 +85,7 @@ def build_scenario(
 @cli.command("run_bot")
 def run_bot(
     build_id: Annotated[int, typer.Argument(help="Id of the build to run")],
-    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Runs the bot with one of three various presets."""
@@ -106,22 +109,26 @@ def run_scenario(
 def run_app(
     host: str = settings.host,
     port: int = settings.port,
+    log_level: str = settings.log_level,
     conf_reload: Annotated[str, typer.Option(help="True for dev-mode, False otherwise")] = str(settings.conf_reload),
-    project_dir: Annotated[str, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = Path("."),
 ) -> None:
     """Runs the UI for your `project_dir` on `host:port`."""
-    settings.host = host
-    settings.port = port
-    settings.conf_reload = conf_reload.lower() in ["true", "yes", "t", "y", "1"]
-    settings.work_directory = project_dir
+    if not project_dir.exists():
+        raise FileNotFoundError(f"File {project_dir} doesn't exist")
+    settings.set_config(host, port, log_level, conf_reload.lower() in ["true", "yes", "t", "y", "1"], project_dir)
 
+    if conf_reload:
+        settings.save_config()  # this is for the sake of maintaining the state of the settings
+
+    app_runner.set_settings(settings)
     app_runner.run()
 
 
 @cli.command("init")
 def init(
     destination: Annotated[
-        str, typer.Option(help="Path where you want to create your project")
+        Path, typer.Option(help="Path where you want to create your project")
     ] = settings.work_directory,
     no_input: Annotated[bool, typer.Option(help="True for quick and easy initialization using default values")] = False,
     overwrite_if_exists: Annotated[

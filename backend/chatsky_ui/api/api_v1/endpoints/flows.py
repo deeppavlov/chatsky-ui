@@ -4,12 +4,9 @@ from fastapi import APIRouter
 from omegaconf import OmegaConf
 
 from chatsky_ui.core.config import settings
-from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, write_conf
 
 router = APIRouter()
-
-logger = get_logger(__name__)
 
 
 @router.get("/")

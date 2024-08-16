@@ -74,7 +74,9 @@ def run_process():
 
 @pytest.fixture()
 def run_manager():
-    return RunManager()
+    manager = RunManager()
+    manager.set_logger()
+    return manager
 
 
 @pytest.fixture()
@@ -84,4 +86,6 @@ def build_manager():
 
 @pytest.fixture
 def websocket_manager():
-    return WebSocketManager()
+    manager = WebSocketManager()
+    manager.set_logger()
+    return manager

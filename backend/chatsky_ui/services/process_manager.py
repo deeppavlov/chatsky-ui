@@ -18,8 +18,6 @@ from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
 
-logger = get_logger(__name__)
-
 
 class ProcessManager:
     """Base for build and run process managers."""
@@ -27,6 +25,16 @@ class ProcessManager:
     def __init__(self):
         self.processes: Dict[int, Union[BuildProcess, RunProcess]] = {}
         self.last_id: int
+        self._logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            raise ValueError("Logger has not been configured. Call set_logger() first.")
+        return self._logger
+
+    def set_logger(self):
+        self._logger = get_logger(__name__)
 
     def get_last_id(self):
         """Gets the maximum id among processes of type BuildProcess or RunProcess."""
@@ -40,7 +48,7 @@ class ProcessManager:
             RuntimeError: If the process has not started yet.
         """
         if id_ not in self.processes:
-            logger.error("Process with id '%s' not found in recent running processes", id_)
+            self.logger.error("Process with id '%s' not found in recent running processes", id_)
             raise ProcessLookupError
         try:
             await self.processes[id_].stop()
@@ -76,7 +84,7 @@ class ProcessManager:
         """Returns the logs of one process according to its id. If the process is not found, returns None."""
         process_info = await self.get_process_info(id_, path)
         if process_info is None:
-            logger.error("Id '%s' not found", id_)
+            self.logger.error("Id '%s' not found", id_)
             return None
 
         log_file = Path(process_info["log_path"])
@@ -84,14 +92,14 @@ class ProcessManager:
             logs = await read_logs(log_file)
             logs = [log for log in logs if log.strip()]
         except FileNotFoundError:
-            logger.error("Log file '%s' not found", log_file)
+            self.logger.error("Log file '%s' not found", log_file)
             return None
 
         if offset > len(logs):
-            logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
+            self.logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
             return None  # TODO: raise error!
 
-        logger.info("Returning %s logs", len(logs))
+        self.logger.info("Returning %s logs", len(logs))
         return logs[offset : offset + limit]
 
 
@@ -157,7 +165,7 @@ class BuildManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = BuildProcess(id_, preset.end_status)
-        cmd_to_run = f"chatsky.ui build_bot {id_} --preset {preset.end_status}"
+        cmd_to_run = f"chatsky.ui build_bot {id_} --preset {preset.end_status} --project-dir {settings.work_directory}"
         await process.start(cmd_to_run)
         self.processes[id_] = process
 

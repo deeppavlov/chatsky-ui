@@ -3,47 +3,88 @@ from pathlib import Path
 
 import uvicorn
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+from omegaconf import DictConfig, OmegaConf
 
 load_dotenv()
 
 
-class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1"
-    APP: str = "chatsky_ui.main:app"
+class Settings:
+    def __init__(self):
+        self.API_V1_STR = "/api/v1"
+        self.APP = "chatsky_ui.main:app"
 
-    work_directory: str = "."
-    config_file_path: Path = Path(__file__).absolute()
-    static_files: Path = config_file_path.parent.with_name("static")
-    start_page: Path = static_files.joinpath("index.html")
-    package_dir: Path = config_file_path.parents[3]
+        self.config_file_path = Path(__file__).absolute()
+        self.static_files = self.config_file_path.parent.with_name("static")
+        self.start_page = self.static_files / "index.html"
+        self.package_dir = self.config_file_path.parents[2]
 
-    host: str = os.getenv("HOST", "0.0.0.0")
-    port: int = int(os.getenv("PORT", 8000))
-    log_level: str = os.getenv("LOG_LEVEL", "info")
-    conf_reload: bool = os.getenv("CONF_RELOAD", "false").lower() in ["true", "1", "t", "y", "yes"]
+        self.host = os.getenv("HOST", "0.0.0.0")
+        self.port = int(os.getenv("PORT", "8000"))
+        self.log_level = os.getenv("LOG_LEVEL", "info")
 
-    builds_path: Path = Path(f"{work_directory}/df_designer/builds.yaml")
-    runs_path: Path = Path(f"{work_directory}/df_designer/runs.yaml")
-    dir_logs: Path = Path(f"{work_directory}/df_designer/logs")
-    frontend_flows_path: Path = Path(f"{work_directory}/df_designer/frontend_flows.yaml")
-    index_path: Path = Path(f"{work_directory}/bot/custom/.services_index.yaml")
-    snippet2lint_path: Path = Path(f"{work_directory}/bot/custom/.snippet2lint.py")
+        self.conf_reload = os.getenv("CONF_RELOAD", "false").lower() in ["true", "1", "t", "y", "yes"]
+
+        config = self._load_temp_config()
+        self.work_directory = Path(config.work_directory)
+        self._set_user_proj_paths()
+
+    def set_config(self, host: str, port: int, log_level: str, conf_reload: bool, work_directory: Path):
+        self.host = host
+        self.port = port
+        self.log_level = log_level
+        self.conf_reload = conf_reload
+        self.work_directory = work_directory
+        self._set_user_proj_paths()
+
+    def _set_user_proj_paths(self):
+        self.builds_path = self.work_directory / "df_designer/builds.yaml"
+        self.runs_path = self.work_directory / "df_designer/runs.yaml"
+        self.dir_logs = self.work_directory / "df_designer/logs"
+        self.frontend_flows_path = self.work_directory / "df_designer/frontend_flows.yaml"
+        self.index_path = self.work_directory / "bot/custom/.services_index.yaml"
+        self.snippet2lint_path = self.work_directory / "bot/custom/.snippet2lint.py"
+
+    def save_config(self):
+        OmegaConf.save(
+            OmegaConf.create({"work_directory": str(self.work_directory)}),  # type: ignore
+            self.config_file_path.with_name("temp_conf.yaml"),
+        )
+
+    def _load_temp_config(self) -> DictConfig:
+        return OmegaConf.load(self.config_file_path.with_name("temp_conf.yaml"))  # type: ignore
+
+    def refresh_work_dir(self):
+        config = self._load_temp_config()
+        self.work_directory = Path(config.work_directory)
+        self._set_user_proj_paths()
 
 
 class AppRunner:
-    def __init__(self, settings: Settings):
-        self.settings = settings
+    def __init__(self):
+        self._settings = None
+
+    @property
+    def settings(self):
+        if self._settings is None:
+            raise ValueError("Settings has not been configured. Call set_logger() first.")
+        return self._settings
+
+    def set_settings(self, app_settings: Settings):
+        self._settings = app_settings
 
     def run(self):
         if reload := self.settings.conf_reload:
             reload_conf = {
                 "reload": reload,
-                "reload_dirs": [self.settings.work_directory, str(self.settings.package_dir)],
+                "reload_dirs": [str(self.settings.package_dir)],
+                "reload_excludes": [
+                    f"./{self.settings.work_directory}/*",
+                    f"./{self.settings.work_directory}/*/*",
+                    f"./{self.settings.work_directory}/*/*/*",
+                ],
             }
         else:
             reload_conf = {"reload": reload}
-
         uvicorn.run(
             self.settings.APP,
             host=self.settings.host,
@@ -54,4 +95,4 @@ class AppRunner:
 
 
 settings = Settings()
-app_runner = AppRunner(settings)
+app_runner = AppRunner()

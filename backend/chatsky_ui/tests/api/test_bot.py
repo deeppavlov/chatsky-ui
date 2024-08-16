@@ -13,24 +13,23 @@ from chatsky_ui.api.api_v1.endpoints.bot import (
     start_run,
 )
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.services.process_manager import BuildManager, RunManager
+from chatsky_ui.services.process_manager import RunManager
 
 PROCESS_ID = 0
 RUN_ID = 42
 BUILD_ID = 43
 
 
-@pytest.mark.parametrize("process_type, process_manager", [("build", BuildManager), ("run", RunManager)])
 @pytest.mark.asyncio
-async def test_stop_process_success(mocker, process_type, process_manager):
-    mock_stop = mocker.AsyncMock()
-    mocker.patch.object(process_manager, "stop", mock_stop)
+async def test_stop_process_success(mocker):
+    process_manager = mocker.MagicMock()
+    process_manager.stop = mocker.AsyncMock()
 
     # Call the function under test
-    await _stop_process(PROCESS_ID, process_manager(), process_type)
+    await _stop_process(PROCESS_ID, process_manager)
 
     # Assert the stop method was called once with the correct id
-    mock_stop.assert_awaited_once_with(PROCESS_ID)
+    process_manager.stop.assert_awaited_once_with(PROCESS_ID)
 
 
 # TODO: take into consideration the errors when process type is build
@@ -79,8 +78,8 @@ async def test_start_build(mocker):
 
 @pytest.mark.asyncio
 async def test_check_build_processes_some_info(mocker, pagination):
-    build_manager = mocker.MagicMock(spec=BuildManager())
-    run_manager = mocker.MagicMock(spec=RunManager())
+    build_manager = mocker.AsyncMock()
+    run_manager = mocker.AsyncMock()
 
     await check_build_processes(BUILD_ID, build_manager, run_manager, pagination)
 
@@ -90,8 +89,8 @@ async def test_check_build_processes_some_info(mocker, pagination):
 @pytest.mark.asyncio
 async def test_check_build_processes_all_info(mocker, pagination):
     build_id = None
-    build_manager = mocker.MagicMock(spec=BuildManager())
-    run_manager = mocker.MagicMock(spec=RunManager())
+    build_manager = mocker.AsyncMock()
+    run_manager = mocker.AsyncMock()
 
     await check_build_processes(build_id, build_manager, run_manager, pagination)
 
@@ -102,7 +101,7 @@ async def test_check_build_processes_all_info(mocker, pagination):
 
 @pytest.mark.asyncio
 async def test_get_build_logs(mocker, pagination):
-    build_manager = mocker.MagicMock(spec=BuildManager())
+    build_manager = mocker.AsyncMock()
 
     await get_build_logs(BUILD_ID, build_manager, pagination)
 
@@ -127,7 +126,7 @@ async def test_start_run(mocker):
 
 @pytest.mark.asyncio
 async def test_check_run_processes_some_info(mocker, pagination):
-    run_manager = mocker.MagicMock(spec=RunManager())
+    run_manager = mocker.AsyncMock()
 
     await check_run_processes(RUN_ID, run_manager, pagination)
 
@@ -137,7 +136,7 @@ async def test_check_run_processes_some_info(mocker, pagination):
 @pytest.mark.asyncio
 async def test_check_run_processes_all_info(mocker, pagination):
     run_id = None
-    run_manager = mocker.MagicMock(spec=RunManager())
+    run_manager = mocker.AsyncMock()
 
     await check_run_processes(run_id, run_manager, pagination)
 
@@ -146,7 +145,7 @@ async def test_check_run_processes_all_info(mocker, pagination):
 
 @pytest.mark.asyncio
 async def test_get_run_logs(mocker, pagination):
-    run_manager = mocker.MagicMock(spec=RunManager())
+    run_manager = mocker.AsyncMock()
 
     await get_run_logs(RUN_ID, run_manager, pagination)
 

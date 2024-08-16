@@ -6,12 +6,9 @@ from httpx_ws import aconnect_ws
 from httpx_ws.transport import ASGIWebSocketTransport
 
 from chatsky_ui.api.deps import get_build_manager, get_run_manager
-from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.main import app
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.tests.conftest import override_dependency, start_process
-
-logger = get_logger(__name__)
 
 
 async def _assert_process_status(response, process_manager):

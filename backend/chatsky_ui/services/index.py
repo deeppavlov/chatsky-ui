@@ -13,19 +13,36 @@ from typing import Dict, List, Optional
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 
-from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, read_logs, write_conf
 
 
 class Index:
     def __init__(self):
-        self.path: Path = settings.index_path
         self.index: dict = {}
         self.conditions: List[str] = []
         self.responses: List[str] = []
         self.services: List[str] = []
-        self.logger = get_logger(__name__)
+        self._logger = None
+        self._path = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            raise ValueError("Logger has not been configured. Call set_logger() first.")
+        return self._logger
+
+    def set_logger(self):
+        self._logger = get_logger(__name__)
+
+    @property
+    def path(self):
+        if self._path is None:
+            raise ValueError("Path has not been configured. Call set_path() first.")
+        return self._path
+
+    def set_path(self, path: Path):
+        self._path = path
 
     async def _load_index(self) -> None:
         """Load indexed conditions, responses and services from disk."""

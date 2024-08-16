@@ -2,10 +2,7 @@ import asyncio
 
 import pytest
 
-from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.schemas.process_status import Status
-
-logger = get_logger(__name__)
 
 
 class TestRunProcess:
