@@ -75,8 +75,12 @@ jobs:
           python -m poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists
         working-directory: backend
 
+      - name: Install chatsky-ui into new project poetry environment
+        run: |
+          ../bin/add_ui_to_toml.sh
+
       - name: run tests
         run: |
-          python -m poetry install
+          python -m poetry install --no-root
           python -m poetry run pytest ../backend/chatsky_ui/tests/ --verbose
         working-directory: my_project
