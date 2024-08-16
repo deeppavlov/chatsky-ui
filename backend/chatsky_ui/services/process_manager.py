@@ -119,7 +119,7 @@ class RunManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
-        cmd_to_run = f"chatsky.ui run_bot {build_id} --preset {preset.end_status}"
+        cmd_to_run = f"chatsky.ui run_bot --build-id {build_id} --preset {preset.end_status}"
         self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
@@ -165,7 +165,7 @@ class BuildManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = BuildProcess(id_, preset.end_status)
-        cmd_to_run = f"chatsky.ui build_bot {id_} --preset {preset.end_status} --project-dir {settings.work_directory}"
+        cmd_to_run = f"chatsky.ui build_bot --build-id {id_} --preset {preset.end_status} --project-dir {settings.work_directory}"
         await process.start(cmd_to_run)
         self.processes[id_] = process
 
