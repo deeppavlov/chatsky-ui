@@ -1,3 +1,4 @@
+#TODO: work with pip to install the package as the end-user would
 # name: test app
 
 # on:
@@ -98,7 +99,7 @@
 
 #       - name: Create new project
 #         run: |
-#           python -m poetry run chatsky.ui init --destination ../../ --no-input --overwrite-if-exists
+#           python -m poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists
 #         working-directory: backend
 
 #       - name: Create dist directory
@@ -115,13 +116,13 @@
 #           python -m pip install --upgrade pip poetry
 #           python -m poetry lock --no-update
 #           python -m poetry install --no-interaction
-#         working-directory: df_designer_project
+#         working-directory: my_project
 
 #       - name: Run back & front
 #         run: |
 #           python -m poetry run chatsky.ui run_app &
 #           sleep 10
-#         working-directory: df_designer_project
+#         working-directory: my_project
 
 #       - name: Install bun
 #         run: npm install -g bun

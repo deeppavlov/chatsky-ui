@@ -133,7 +133,7 @@ const SideBar = () => {
             href='https://deeppavlov.ai'
             target='_blank'>
             <Logo className='w-4 h-4' />
-            df_designer v0.1.0-beta.1
+            chatsky_ui v0.1.0-beta.1
           </a> */}
         </div>
       </div>

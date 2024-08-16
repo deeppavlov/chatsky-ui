@@ -126,7 +126,7 @@ def init(
     no_input: Annotated[bool, typer.Option(help="True for quick and easy initialization using default values")] = False,
     overwrite_if_exists: Annotated[
         bool,
-        typer.Option(help="True for replacing any project named as `df_designer_project`)"),
+        typer.Option(help="True for replacing any project named as `my_project`)"),
     ] = True,
 ):
     """Initializes a new Chatsky-UI project using an off-the-shelf template."""
@@ -137,6 +137,7 @@ def init(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="1eca02238980ce2dd5c940f2323cddef9882a6f5",
         )
     finally:
         os.chdir(original_dir)
