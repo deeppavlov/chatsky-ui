@@ -84,6 +84,7 @@ def build_bot(
 def build_scenario(
     build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    #TODO: add custom_dir - maybe the same way like project_dir
 ):
     """Builds the bot with preset `success`"""
     if not project_dir.is_dir():
@@ -92,7 +93,7 @@ def build_scenario(
 
     from chatsky_ui.services.json_converter import converter  # pylint: disable=C0415
 
-    asyncio.run(converter(build_id=build_id, project_dir=project_dir))
+    asyncio.run(converter(build_id=build_id))
 
 
 @cli.command("run_bot")
@@ -168,7 +169,7 @@ def init(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="1eca02238980ce2dd5c940f2323cddef9882a6f5",
+            checkout="chore/include-py-versions",
         )
     finally:
         os.chdir(original_dir)

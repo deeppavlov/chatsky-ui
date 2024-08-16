@@ -84,7 +84,7 @@ class TestRunManager:
 
     @pytest.mark.asyncio
     async def test_fetch_run_logs(self, mocker, run_manager):
-        LOG_PATH = Path("df_designer/logs/runs/20240425/42_211545.log")
+        LOG_PATH = Path("path/to/log")
         run_manager.get_process_info = mocker.AsyncMock(return_value={"id": RUN_ID, "log_path": LOG_PATH})
 
         read_logs = mocker.patch("chatsky_ui.services.process_manager.read_logs", return_value=["log1", "log2"])

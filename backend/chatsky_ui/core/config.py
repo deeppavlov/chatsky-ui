@@ -36,14 +36,19 @@ class Settings:
             self._set_user_proj_paths()
 
     def _set_user_proj_paths(self):
-        self.builds_path = self.work_directory / "df_designer/builds.yaml"
-        self.runs_path = self.work_directory / "df_designer/runs.yaml"
-        self.dir_logs = self.work_directory / "df_designer/logs"
-        self.frontend_flows_path = self.work_directory / "df_designer/frontend_flows.yaml"
-        self.index_path = self.work_directory / "bot/custom/.services_index.yaml"
-        self.snippet2lint_path = self.work_directory / "bot/custom/.snippet2lint.py"
+        self.builds_path = self.work_directory / "chatsky_ui/app_data/builds.yaml"
+        self.runs_path = self.work_directory / "chatsky_ui/app_data/runs.yaml"
+        self.frontend_flows_path = self.work_directory / "chatsky_ui/app_data/frontend_flows.yaml"
+        self.dir_logs = self.work_directory / "chatsky_ui/logs"
+        self.presets = self.work_directory / "chatsky_ui/presets"
+        self.snippet2lint_path = self.work_directory / "chatsky_ui/.snippet2lint.py"
+
+        self.custom_dir = self.work_directory / "bot/custom"
+        self.index_path = self.custom_dir / ".services_index.yaml"
+        self.conditions_path = self.custom_dir / "conditions.py"
+        self.responses_path = self.custom_dir / "responses.py"
         self.scripts_dir = self.work_directory / "bot/scripts"
-        self.presets = self.work_directory / "df_designer/presets"
+        
 
     def save_config(self):
         OmegaConf.save(

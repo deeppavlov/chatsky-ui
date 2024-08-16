@@ -11,19 +11,19 @@ from omegaconf.dictconfig import DictConfig
 
 from chatsky_ui.api.deps import get_index
 from chatsky_ui.core.logger_config import get_logger
+from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.services.index import Index
 
 logger = get_logger(__name__)
 
 
-def _get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
+def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
     """Get paths to frontend graph, dff script, and dff custom conditions files."""
-
-    frontend_graph_path = project_dir / "df_designer" / "frontend_flows.yaml"
-    custom_conditions_file = project_dir / "bot" / custom_dir / "conditions.py"
-    custom_responses_file = project_dir / "bot" / custom_dir / "responses.py"
-    script_path = project_dir / "bot" / "scripts" / f"build_{build_id}.yaml"
+    frontend_graph_path = settings.frontend_flows_path
+    custom_conditions_file = settings.conditions_path
+    custom_responses_file = settings.responses_path
+    script_path = settings.scripts_dir / f"build_{build_id}.yaml"
 
     if not frontend_graph_path.exists():
         raise FileNotFoundError(f"File {frontend_graph_path} doesn't exist")
@@ -221,18 +221,18 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
     return nodes, responses_lines
 
 
-async def converter(build_id: int, project_dir: str, custom_dir: str = "custom") -> None:
+async def converter(build_id: int) -> None:
     """Translate frontend flow script into dff script."""
     index = get_index()
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
     frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(
-        build_id, Path(project_dir), custom_dir
+        build_id
     )
 
     script = {
-        "CONFIG": {"custom_dir": "/".join(["..", custom_dir])},
+        "CONFIG": {"custom_dir": str("/" / settings.custom_dir)},
     }
     flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
 
