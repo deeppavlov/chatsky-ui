@@ -7,7 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem
+  SelectItem,
 } from "@nextui-org/react"
 import { HelpCircle } from "lucide-react"
 import { useContext, useState } from "react"
@@ -46,7 +46,14 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
   }
 
   const onFlowSave = () => {
-    if (validateFlowName(flow.name, flows) && flow.color && flow.subflow) {
+    if (!validateFlowName(flow.name, flows)) {
+      return n.add({
+        title: "Warning!",
+        message: "Flow name is not valid.",
+        type: "warning",
+      })
+    }
+    if (flow.color && flow.subflow) {
       const newFlow = generateNewFlow(flow)
       setFlows([...flows, newFlow])
       saveFlows([...flows, newFlow])
@@ -86,6 +93,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
               name='name'
               onChange={onFlowChange}
               value={flow.name}
+              min={2}
             />
             <Input
               label='Description'

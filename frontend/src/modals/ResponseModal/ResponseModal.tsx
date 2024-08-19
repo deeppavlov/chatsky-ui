@@ -121,7 +121,10 @@ const ResponseModal = ({
         }
         const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
         setNodes(() => new_nodes)
-        setData(new_node.data)
+        setData({
+          ...data,
+          response: new_node.data.response
+        })
         // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
         // updateFlow(currentFlow)
         quietSaveFlows()

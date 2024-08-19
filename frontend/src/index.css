@@ -34,13 +34,13 @@
 
     --background: #fff;
     --foreground: #191919;
-    --bg-secondary: #f8fafc;
+    --bg-secondary: #F9FAFC;
     --fg-secondary: #333;
 
     --chat-background: #ebf5fa;
 
     --node: #fff;
-    --node-header: #f8fafc;
+    --node-header: #F9FAFC;
 
     --border: #e4e8ee;
     --border-node-selected: #94a3b8;
@@ -85,6 +85,9 @@
     --status-yellow: #eab308;
     --status-green: #00cc9a;
     --status-blue: #2563eb;
+
+    --condition-test-success: #00cc9933;
+    --condition-test-error: #ff333333;
 
     --node-start-label-bg: #e5faf5;
     --node-start-label-fg: #00cc99;
@@ -139,6 +142,9 @@
 
       --node-fallback-label-bg: #ff3333;
       --node-fallback-label-fg: #fde9e9;
+
+      /* --condition-test-success: #00cc99;
+      --condition-test-error: #ff3333; */
     }
   }
 }
@@ -197,6 +203,16 @@ body {
 
 .selected .default_node {
   @apply border-node-selected;
+}
+
+.border-error {
+  /* --tw-border-opacity: 1;
+  border-color: rgb(239 68 68 / var(--tw-border-opacity)) !important; */
+  @apply border-red-500
+}
+
+.selected .border-error {
+  @apply border-red-800;
 }
 
 .header-service-btn {

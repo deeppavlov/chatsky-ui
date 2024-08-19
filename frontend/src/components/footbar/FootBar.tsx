@@ -151,9 +151,9 @@ const FootBar = memo(() => {
             <Button
               isIconOnly
               className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'>
-              {notifications.length > 0 && (
+              {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length > 0 && (
                 <span className='absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full w-4 h-4 flex items-center justify-center'>
-                  {notifications.length}
+                  {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length}
                 </span>
               )}
               <BellRing className='w-5 h-5' />

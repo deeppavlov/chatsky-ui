@@ -4,7 +4,6 @@ import axios from "axios"
 import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
 import { memo, useContext, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
 import { notificationsContext } from "../../contexts/notificationsContext"
 import { runContext } from "../../contexts/runContext"
@@ -15,7 +14,6 @@ import { parseSearchParams } from "../../utils"
 import EmojiPicker, { EmojiType } from "./EmojiPicker"
 
 const Chat = memo(() => {
-  const { logsPage, setLogsPage } = useContext(buildContext)
   const { chat, setChat, messages, setMessages } = useContext(chatContext)
   const { run, runStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -128,7 +126,8 @@ const Chat = memo(() => {
         n.add({ message: "Chat was successfully connected!", title: "Success", type: "success" })
       }
       socket.onmessage = (event: MessageEvent) => {
-        if (event.data) {
+        console.log(event)
+        if (event.data && event.data.includes("response")) {
           const data = event.data.split(":")[2].split("attachments")[0].slice(0, -2)
           setTimeout(() => {
             setMessages((prev) => [...prev, { message: data, type: "bot" }])

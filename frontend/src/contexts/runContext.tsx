@@ -71,7 +71,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         return { ...run, type: "run" }
       })
       setRuns(_runs)
-      if (_runs[_runs.length - 1].status === "running") {
+      if (_runs[_runs.length - 1].status === "alive") {
         setRun(_runs[_runs.length - 1])
         setRunStatus("alive")
       }

@@ -19,11 +19,13 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react"
+import classNames from "classnames"
 import { AlertTriangle, Link2, Trash2 } from "lucide-react"
 import { memo, useContext, useEffect, useMemo, useState } from "react"
 import { Handle, Node, Position } from "reactflow"
 import "reactflow/dist/style.css"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import "../../index.css"
 import { FlowType } from "../../types/FlowTypes"
 import { NodeDataType } from "../../types/NodeTypes"
@@ -33,6 +35,8 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
   const { flows, deleteNode } = useContext(flowContext)
   const [toFlow, setToFlow] = useState<FlowType>()
   const [toNode, setToNode] = useState<Node<NodeDataType>>()
+  const [error, setError] = useState(false)
+  const { notification: n } = useContext(notificationsContext)
   // const { openPopUp } = useContext(PopUpContext)
 
   useEffect(() => {
@@ -70,6 +74,19 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
     [TO_FLOW?.data.nodes, data.transition.target_node]
   )
 
+  useEffect(() => {
+    if (!TO_FLOW || !TO_NODE) {
+      setError(true)
+      n.add({
+        message: `Link ${data.id} is broken! Please configure it again.`,
+        title: "Link error",
+        type: "error",
+      })
+    } else {
+      setError(false)
+    }
+  }, [TO_FLOW, TO_NODE])
+
   const onDismiss = () => {
     setToFlow(TO_FLOW)
     setToNode(TO_NODE)
@@ -93,7 +110,10 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
     <>
       <div
         onDoubleClick={onOpen}
-        className='default_node px-6 py-4'>
+        className={classNames(
+          'default_node px-6 py-4',
+          error && "border-error"
+        )}>
         <div className=' w-full h-1/3 flex justify-between items-center bg-node rounded-node'>
           <Handle
             isConnectableEnd
@@ -218,7 +238,6 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
                       selectedKeys={toNode ? [toNode.data.name] : []}
                       items={
                         toFlow?.data.nodes.filter((node) => {
-                          console.log(node)
                           return (
                             !["link_node", "global", "local"].includes(node.type!) &&
                             !["LOCAL NODE", "GLOBAL NODE"].includes(node.data.name!)

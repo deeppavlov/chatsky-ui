@@ -20,13 +20,14 @@ import { useParams } from "react-router-dom"
 import "reactflow/dist/style.css"
 import { v4 } from "uuid"
 import Chat from "../components/chat/Chat"
+import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
 import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
 import FallbackNode from "../components/nodes/FallbackNode"
 import LinkNode from "../components/nodes/LinkNode"
 import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
-import { NODES } from "../consts"
+import { NODES, NODE_NAMES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
 import { notificationsContext } from "../contexts/notificationsContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
@@ -46,7 +47,11 @@ const nodeTypes = {
   link_node: LinkNode,
 }
 
-const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sourcePosition"];
+const edgeTypes = {
+  default: CustomEdge,
+}
+
+const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sourcePosition"]
 
 // export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
@@ -71,6 +76,7 @@ export default function Flow() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
+
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
@@ -82,26 +88,51 @@ export default function Flow() {
   //   onOpen: onLinkModalOpen,
   //   onClose: onLinkModalClose,
   // } = useDisclosure()
- 
-
 
   const handleUpdateFlowData = useCallback(() => {
     if (reactFlowInstance && flow && flow.name === flowId) {
       // const _node = reactFlowInstance.getNodes()[0]
       // if (_node && _node.id === flow.data.nodes[0].id) {
-        flow.data = reactFlowInstance.toObject()
-        updateFlow(flow)
+      flow.data = reactFlowInstance.toObject()
+      updateFlow(flow)
       // }
     }
   }, [flow, flowId, reactFlowInstance, updateFlow])
 
+  const handleFullUpdateFlowData = useCallback(() => {
+    if (reactFlowInstance && flow && flow.name === flowId) {
+      const _node = reactFlowInstance.getNodes()[0]
+      if (_node && _node.id === flow.data.nodes[0].id) {
+        flow.data = reactFlowInstance.toObject()
+        updateFlow(flow)
+        // const links: Node<NodeDataType>[] = flow.data.nodes.filter(
+        //   (node) => node.type === "link_node"
+        // )
+        // links.forEach((link) => {
+        //   if (
+        //     !flows.find((fl) => link.data.transition.target_flow === fl.name) ||
+        //     !flows.find((fl) =>
+        //       fl.data.nodes.some((node) => node.id === link.data.transition.target_node)
+        //     )
+        //   ) {
+        //     n.add({
+        //       message: `Link ${link.data.id} is broken! Please configure it again.`,
+        //       title: "Link error",
+        //       type: "error",
+        //     })
+        //   }
+        // })
+      }
+    }
+  }, [flow, flowId, flows, reactFlowInstance, updateFlow])
+
   const filteredNodes = useMemo(() => {
-    return nodes.map(obj => {
+    return nodes.map((obj) => {
       return Object.fromEntries(
         Object.entries(obj).filter(([key]) => !untrackedFields.includes(key))
-      );
-    });
-  }, [nodes]);
+      )
+    })
+  }, [nodes])
 
   useEffect(() => {
     handleUpdateFlowData()
@@ -139,8 +170,10 @@ export default function Flow() {
             if (nd.type === "select") {
               if (nd.selected) {
                 setSelectedNode(nd.id)
+                setSelected(nd.id)
               } else {
                 setSelectedNode("")
+                setSelected("")
               }
             }
           })
@@ -179,8 +212,9 @@ export default function Flow() {
     (event: React.MouseEvent, node: Node) => {
       const node_ = node as NodeType
       setSelected(node_.id)
+      setSelectedNode(node_.id)
     },
-    [setSelected]
+    [setSelected, setSelectedNode]
   )
 
   const onEdgeClick = useCallback(
@@ -193,7 +227,7 @@ export default function Flow() {
   const onConnect = useCallback(
     (params: Edge | Connection) => {
       takeSnapshot()
-      setEdges((eds) => addEdge(params, eds))
+      setEdges((eds) => addEdge({ ...params, type: "default" }, eds))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
@@ -249,9 +283,10 @@ export default function Flow() {
         id: newId,
         type,
         position,
+        dragHandle: NODES[type].dragHandle,
         data: {
           id: newId,
-          name: NODES[type].name,
+          name: type === 'default_node' ? (NODE_NAMES.find(name => !nodes.some(node => node.data.name === name)) ?? 'Empty names array') : NODES[type].name,
           flags: START_FALLBACK_FLAGS,
           conditions: NODES[type].conditions,
           global_conditions: [],
@@ -341,27 +376,13 @@ export default function Flow() {
             maxZoom={2}
             defaultViewport={flow?.data.viewport}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             nodes={nodes}
             edges={edges}
-            onMoveStart={() => {
-              if (reactFlowInstance && flow && flow.name === flowId) {
-                const _node = reactFlowInstance.getNodes()[0]
-                if (_node && _node.id === flow.data.nodes[0].id) {
-                  flow.data = reactFlowInstance.toObject()
-                  updateFlow(flow)
-                }
-              }
-            }}
-            onMoveEnd={() => {
-              if (reactFlowInstance && flow && flow.name === flowId) {
-                const _node = reactFlowInstance.getNodes()[0]
-                if (_node && _node.id === flow.data.nodes[0].id) {
-                  flow.data = reactFlowInstance.toObject()
-                  updateFlow(flow)
-                }
-              }
-            }}
+            onMoveStart={handleFullUpdateFlowData}
+            onMoveEnd={handleFullUpdateFlowData}
             panOnScroll={true}
+            panOnScrollSpeed={1.5}
             onSelectionChange={onSelectionChange}
             onDragOver={onDragOver}
             onDrop={onDrop}
@@ -373,15 +394,7 @@ export default function Flow() {
             onEdgeUpdateStart={onEdgeUpdateStart}
             onEdgeUpdateEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
-            onNodeDragStop={() => {
-              if (reactFlowInstance && flow && flow.name === flowId) {
-                const _node = reactFlowInstance.getNodes()[0]
-                if (_node && _node.id === flow.data.nodes[0].id) {
-                  flow.data = reactFlowInstance.toObject()
-                  updateFlow(flow)
-                }
-              }
-            }}
+            onNodeDragStop={handleFullUpdateFlowData}
             onConnect={onConnect}
             nodesConnectable={!managerMode}
             nodesDraggable={!managerMode}
@@ -390,10 +403,6 @@ export default function Flow() {
             edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
             snapToGrid={!workspaceMode}>
-            {/* <Controls
-              fitViewOptions={{ padding: 0.25 }}
-              className='rounded-lg [&>button]:fill-foreground [&>button]:rounded-lg shadow-none [&>button]:my-1  [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
-            /> */}
             <Background
               className='bg-background'
               variant={BackgroundVariant.Dots}

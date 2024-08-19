@@ -107,10 +107,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    console.log('flows changed')
-  }, [flows])
-
-  useEffect(() => {
     getFlows()
   }, [])
 
@@ -154,9 +150,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     if (!flow) return -1
     const deleted_node: NodeType = flow.data.nodes.find((node) => node.id === id) as NodeType
     if (deleted_node?.data.flags?.includes("start"))
-      return n.add({ title: "Deletion error", message: "Can't delete start node", type: "error" })
-    if (deleted_node?.id?.includes("LOCAL")) return n.add({ title: "Deletion error", message: "Can't delete local node", type: "error" })
-    if (deleted_node?.id?.includes("GLOBAL")) return n.add({ title: "Deletion error", message: "Can't delete global node", type: "error" })
+      return n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
+    if (deleted_node?.id?.includes("LOCAL")) return n.add({ title: "Warning!", message: "Can't delete local node", type: "warning" })
+    if (deleted_node?.id?.includes("GLOBAL")) return n.add({ title: "Warning!", message: "Can't delete global node", type: "warning" })
     if (deleted_node?.data.flags?.includes("fallback")) {
       console.log(
         flow.data.nodes

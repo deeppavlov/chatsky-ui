@@ -1,6 +1,7 @@
 import { Button, useDisclosure } from "@nextui-org/react"
+import classNames from "classnames"
 import { PlusIcon } from "lucide-react"
-import { memo, useContext } from "react"
+import { memo, useContext, useMemo, useState } from "react"
 import { Handle, Position } from "reactflow"
 import "reactflow/dist/style.css"
 import { workspaceContext } from "../../contexts/workspaceContext"
@@ -12,6 +13,7 @@ import StartNodeIcon from "../../icons/nodes/StartNodeIcon"
 import "../../index.css"
 import ConditionModal from "../../modals/ConditionModal/ConditionModal"
 import NodeModal from "../../modals/NodeModal/NodeModal"
+import ResponseModal from "../../modals/ResponseModal/ResponseModal"
 import { NodeDataType } from "../../types/NodeTypes"
 import Condition from "./conditions/Condition"
 import Response from "./responses/Response"
@@ -25,7 +27,16 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
 
   const { selectedNode } = useContext(workspaceContext)
 
+  const [nodeDataState, setNodeDataState] = useState<NodeDataType>(data)
+
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
+  const {
+    onOpen: onResponseOpen,
+    onClose: onResponseClose,
+    isOpen: isResponseOpen,
+  } = useDisclosure()
+
+  const validate_node = useMemo(() => data.response?.data.length && data.conditions?.length, [])
 
   return (
     <>
@@ -49,7 +60,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
             />
           </span>
         )}
-        <div className=' w-full flex justify-between items-center bg-node-header border-b border-border rounded-t-node pl-6 pr-2 py-2'>
+        <div className='custom-drag-handle w-full flex justify-between items-center bg-node-header border-b border-border rounded-t-node pl-6 pr-4 py-2'>
           <div className='flex items-center'>
             {!data.id.includes("LOCAL_NODE") && !data.id.includes("GLOBAL_NODE") && (
               <Handle
@@ -75,17 +86,26 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
               {data.name}
             </p>
           </div>
-          <Button
-            className='min-h-0 min-w-0'
-            variant='light'
-            isIconOnly
-            onClick={onNodeOpen}
-          >
-            <EditNodeIcon />
-          </Button>
+          <div className='flex items-center justify-end gap-1'>
+            <Button
+              className='min-h-0 min-w-0 p-0 w-10 h-10'
+              variant='light'
+              isIconOnly
+              onClick={onNodeOpen}>
+              <EditNodeIcon />
+            </Button>
+            <span
+              className={classNames(
+                "flex w-5 h-5 rounded-full",
+                validate_node ? "bg-success" : "bg-warning"
+              )}
+            />
+          </div>
         </div>
         <div className=' w-full flex flex-col items-center justify-center gap-2 p-2.5 '>
-          <Response data={data} />
+          <div className="w-full flex items-center justify-start border border-border rounded-lg py-2 px-2 mb-1" onClick={onResponseOpen}>
+            <Response data={data} />
+          </div>
           <div className='w-full flex flex-col gap-2'>
             {data.conditions?.map((condition) => (
               <Condition
@@ -113,6 +133,16 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
         data={data}
         isOpen={isNodeOpen}
         onClose={onNodeClose}
+        onResponseModalOpen={onResponseOpen}
+        nodeDataState={nodeDataState}
+        setNodeDataState={setNodeDataState}
+      />
+      <ResponseModal
+        data={nodeDataState}
+        setData={setNodeDataState}
+        isOpen={isResponseOpen}
+        onClose={onResponseClose}
+        response={nodeDataState.response!}
       />
     </>
   )

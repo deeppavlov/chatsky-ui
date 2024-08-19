@@ -21,8 +21,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const _theme = localStorage.getItem("theme") as themeType
-    setTheme(_theme)
-    document.body.classList.add(_theme)
+    setTheme(_theme ?? "dark")
+    document.body.classList.add(_theme ?? "dark")
   }, [])
 
   const toggleTheme = useCallback(() => {

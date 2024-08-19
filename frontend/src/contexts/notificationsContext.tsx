@@ -1,15 +1,18 @@
 import classNames from "classnames"
-import { AlertCircle, AlertOctagon, Bug, CheckCircle2, Info } from "lucide-react"
+import { AlertOctagon, AlertTriangle, Bug, CheckCircle2, Info } from "lucide-react"
 import { createContext } from "react"
 import toast from "react-hot-toast"
 import useLocalStorage from "../hooks/useLocalStorage"
 
+export type notificationTypeType = "success" | "warning" | "error" | "info" | "debug"
+
 export type notificationType = {
   title: string
   message: string
-  type: "success" | "warning" | "error" | "info" | "debug"
+  type: notificationTypeType
   duration: number
   timestamp: number
+  stack: number
 }
 
 export type createNotificationType = {
@@ -18,6 +21,7 @@ export type createNotificationType = {
   type?: "success" | "warning" | "error" | "info" | "debug"
   duration?: number
   timestamp?: number
+  stack?: number
 }
 
 type notificationsContextType = {
@@ -77,13 +81,13 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       case "success":
         return <CheckCircle2 className='stroke-green-500' />
       case "warning":
-        return <AlertCircle className='stroke-yellow-500' />
+        return <AlertTriangle className='stroke-yellow-500' />
       case "error":
         return <AlertOctagon className='stroke-[#B20000]' />
       case "info":
         return <Info className='stroke-blue-500' />
       case "debug":
-        return <Bug className="stroke-neutral-500" />
+        return <Bug className='stroke-neutral-500' />
     }
   }
 
@@ -93,36 +97,45 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     type = "info",
     duration = 5000,
     timestamp = Date.now(),
+    stack = 1,
   }: createNotificationType) => {
-    const notification: notificationType = { message, title, type, duration, timestamp }
+    const color = notificationTypeColor(type)
+    const notification = { title, message, type, timestamp, stack, duration }
     setNotifications((prevNotifications) => [...prevNotifications, notification])
-    const color = notificationTypeColor(notification.type)
-    toast.custom((t) => (
-      <div
-        className={classNames(
-          t.visible ? "animate-appearance-in" : "animate-appearance-out",
-          "p-2 rounded-lg",
-          color,
-          `z-50 max-w-sm w-max rounded-lg pointer-events-auto flex border`
-        )}>
-        <div className='grid gap-1'>
-          <div className='flex items-center justify-start gap-2'>
-            {notificationTypeIcon(notification.type)}
-            <h3
-              className={classNames(
-                "text-base font-medium",
-                notificationHeaderColor(notification.type)
-              )}>
-              {notification.title}
-            </h3>
+    toast.custom(
+      (t) => (
+        <div
+          className={classNames(
+            t.visible ? "animate-appearance-in" : "animate-appearance-out",
+            "p-2 rounded-lg",
+            color,
+            `z-50 max-w-sm w-max rounded-lg pointer-events-auto flex border`
+          )}>
+          <div className='grid gap-1'>
+            <div className='flex items-center justify-start gap-2'>
+              {notificationTypeIcon(notification.type)}
+              <h3
+                className={classNames(
+                  "text-base font-medium",
+                  notificationHeaderColor(notification.type)
+                )}>
+                {notification.title}
+              </h3>
+            </div>
+            {notification.message && (
+              <p className='text-sm text-neutral-500'>{notification.message}</p>
+            )}
           </div>
-          {notification.message && <p className='text-sm text-neutral-500'>{notification.message}</p>}
         </div>
-      </div>
-    ))
+      ),
+      {
+        id: message,
+      }
+    )
   }
 
   const deleteNotification = (timestamp: number) => {
+    
     setNotifications((prevNotifications) =>
       prevNotifications.filter((notification) => notification.timestamp !== timestamp)
     )

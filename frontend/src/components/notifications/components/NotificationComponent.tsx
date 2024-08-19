@@ -1,30 +1,61 @@
 import { Button } from "@nextui-org/react"
 import classNames from "classnames"
-import { AlertCircle, AlertOctagon, Bug, CheckCircle2, Info, X } from "lucide-react"
+import { AlertOctagon, AlertTriangle, Bug, CheckCircle2, Info, X } from "lucide-react"
 import { useContext, useMemo, useState } from "react"
 import { notificationType, notificationsContext } from "../../../contexts/notificationsContext"
 
-const NotificationComponent = ({ notification }: { notification: notificationType }) => {
-  const { notification: nt } = useContext(notificationsContext)
+type NotificationComponentType = {
+  notification: notificationType & {
+    stack: number
+  }
+}
+
+const NotificationComponent = ({ notification }: NotificationComponentType) => {
+  const { notification: nt, notifications } = useContext(notificationsContext)
   const [isDelete, setIsDelete] = useState(false)
 
   const notificationTypeColor = (type: string) => {
     switch (type) {
       case "success":
-        return "bg-[#00CC991a]"
+        return {
+          body: "bg-[#00CC991a]",
+          stack: "bg-[#00CC99]",
+          stroke: "bg-[#00CC99]",
+        }
       case "warning":
-        return "bg-[#FF95001A]"
+        return {
+          body: "bg-[#FF95001A]",
+          stack: "bg-[#FF9500]",
+          stroke: "bg-[#FF9500]",
+        }
       case "error":
-        return "bg-[#FF33331A]"
+        return {
+          body: "bg-[#FF33331A]",
+          stack: "bg-[#FF3333]",
+          stroke: "bg-[#FF3333]",
+        }
       case "info":
-        return "bg-[#3399CC1A]"
+        return {
+          body: "bg-[#3399CC1A]",
+          stack: "bg-[#3399CC]",
+          stroke: "bg-[#3399CC]",
+        }
       case "debug":
-        return "bg-[#9999991A]"
+        return {
+          body: "bg-[#9999991A]",
+          stack: "bg-[#999999]",
+          stroke: "bg-[#999999]",
+        }
     }
   }
 
   const notificationColor = useMemo(
-    () => notificationTypeColor(notification.type),
+    () => notificationTypeColor(notification.type)?.body,
+    [notification.type]
+  )
+
+  const notificationStackColor = useMemo(
+    () => notificationTypeColor(notification.type)?.stack,
     [notification.type]
   )
 
@@ -33,7 +64,7 @@ const NotificationComponent = ({ notification }: { notification: notificationTyp
       case "success":
         return <CheckCircle2 className='stroke-green-500' />
       case "warning":
-        return <AlertCircle className='stroke-yellow-500' />
+        return <AlertTriangle className='stroke-yellow-500' />
       case "error":
         return <AlertOctagon className='stroke-red-500' />
       case "info":
@@ -46,34 +77,60 @@ const NotificationComponent = ({ notification }: { notification: notificationTyp
   const deleteCurrentNotification = () => {
     setIsDelete(true)
     setTimeout(() => {
-      nt.delete(notification.timestamp)
+      if (notification.stack == 1) {
+        nt.delete(notification.timestamp)
+      }
+      if (notification.stack > 1) {
+        const index = notifications.findIndex((n) => n.timestamp == notification.timestamp)
+        for (let i = 0; i <= index; i++) {
+          console.log(notifications[i])
+          if (notifications[i].stack === 0 && notifications[i].message === notification.message) {
+            console.log("deletion")
+            nt.delete(notifications[i].timestamp)
+          }
+        }
+        nt.delete(notification.timestamp)
+      }
     }, 300)
   }
 
   return (
     <div
-      key={notification.timestamp}
-      className={classNames(
-        "w-full flex items-center justify-between p-2 rounded-lg transition-all",
-        notificationColor,
-        isDelete && "opacity-0 -translate-x-full"
-      )}>
-      <div className='w-full'>
-        <div className='flex items-center justify-between'>
-          <div className="flex items-center justify-start gap-2">
-            {notificationTypeIcon(notification.type)}
-            <h1 className='text-sm font-medium'>{notification.title}</h1>
+      className='w-full relative'
+      key={notification.timestamp}>
+      <div
+        className={classNames(
+          "w-full flex items-center justify-between p-2 rounded-lg transition-all",
+          notificationColor,
+          isDelete && "opacity-0 -translate-x-full"
+        )}>
+        <div className='w-full relative'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center justify-start gap-2'>
+              {notification.stack <= 1 ? (
+                notificationTypeIcon(notification.type)
+              ) : (
+                <span
+                  className={classNames(
+                    notificationStackColor,
+                    "w-6 h-6 text-center rounded-full text-foreground"
+                  )}>
+                  {notification.stack}
+                </span>
+              )}
+              <h1 className='text-sm font-medium'>{notification.title}</h1>
+            </div>
+            <Button
+              onClick={deleteCurrentNotification}
+              size='sm'
+              isIconOnly
+              variant='light'
+              className='p-0.5 min-h-0 min-w-0 w-5 h-5'>
+              <X className='w-4 h-4' />
+            </Button>
           </div>
-          <Button
-            onClick={deleteCurrentNotification}
-            size='sm'
-            isIconOnly
-            variant='light'
-            className='p-0.5 min-h-0 min-w-0 w-5 h-5'>
-            <X className='w-4 h-4' />
-          </Button>
+          {notification.message ? <p className='text-xs text-neutral-400 mt-1'>{notification.message}</p> : <p className="text-xs text-neutral-400 mt-1">{new Date(notification.timestamp).toLocaleString()}</p>}
         </div>
-        {notification.message && <p className='text-xs'>{notification.message}</p>}
       </div>
     </div>
   )

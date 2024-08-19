@@ -54,7 +54,7 @@ const Header = memo(() => {
                 onClick={toggleManagerMode}
                 className={classNames(
                   " bg-overlay hover:bg-background border border-border rounded-small",
-                  !managerMode ? "bg-background border-border-darker" : ""
+                  managerMode ? "bg-background border-border-darker" : ""
                 )}>
                 <GrabModeIcon />
               </Button>
@@ -67,7 +67,7 @@ const Header = memo(() => {
                 isIconOnly
                 className={classNames(
                   " bg-overlay hover:bg-background border border-border rounded-small",
-                  !workspaceMode ? "bg-background border-border-darker" : ""
+                  workspaceMode ? "bg-background border-border-darker" : ""
                 )}>
                 <GridModeIcon />
               </Button>
@@ -80,7 +80,7 @@ const Header = memo(() => {
                 isIconOnly
                 className={classNames(
                   " bg-overlay hover:bg-background border border-border rounded-small",
-                  !nodesLayoutMode ? "bg-background border-border-darker" : ""
+                  nodesLayoutMode ? "bg-background border-border-darker" : ""
                 )}>
                 {/* {nodesLayoutMode ? "Canvas Mode" : "List mode"} */}
                 <ListViewIcon />

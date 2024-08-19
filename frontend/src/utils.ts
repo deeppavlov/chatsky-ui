@@ -32,7 +32,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 }
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
-  return !flows.some((flow) => flow.name === name) && name.length > 2
+  return !flows.some((flow) => flow.name === name) && name.length >= 2
 }
 
 export const parseSearchParams = (

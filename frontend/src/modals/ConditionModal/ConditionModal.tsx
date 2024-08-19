@@ -349,14 +349,27 @@ const ConditionModal = ({
               )}
             </Tabs>
           </label>
-          <div>
+          <div className="grid grid-cols-4 items-center gap-4 mt-4">
             <Input
+              className="col-span-3"
               label='Name'
               variant="bordered"
               labelPlacement='outside'
               placeholder="Enter condition's name here"
               value={currentCondition.name}
               onChange={(e) => setCurrentCondition({ ...currentCondition, name: e.target.value })}
+            />
+            <Input
+              label='Priority'
+              variant="bordered"
+              labelPlacement='outside'
+              placeholder="Enter condition's priority here"
+              type="number"
+              value={currentCondition.data.priority.toString()}
+              onChange={(e) => setCurrentCondition({ ...currentCondition, data: {
+                ...currentCondition.data,
+                priority: parseInt(e.target.value)
+              } })}
             />
           </div>
           <div>
@@ -371,7 +384,7 @@ const ConditionModal = ({
                   <p
                     className={classNames(
                       "text-xs p-2 mt-2 rounded-lg font-mono",
-                      lintStatus?.status == "error" ? "bg-red-200" : "bg-green-200"
+                      lintStatus?.status == "error" ? "bg-[var(--condition-test-error)]" : "bg-[var(--condition-test-success)]",
                     )}>
                     {lintStatus?.status == "ok" ? "Condition test passed!" : lintStatus?.message}
                   </p>
