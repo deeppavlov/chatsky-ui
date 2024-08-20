@@ -3,7 +3,7 @@ SHELL = /bin/bash
 PYTHON = python3
 FRONTEND_DIR = frontend
 BACKEND_DIR = backend
-PROJECT_NAME = my_project4
+PROJECT_NAME = my_project
 
 
 .PHONY: help
