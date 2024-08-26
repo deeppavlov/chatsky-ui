@@ -86,7 +86,7 @@ unit_tests: ## Runs all backend unit tests
 integration_tests: ## Runs all backend integration tests
 	if [ ! -d "${PROJECT_NAME}" ]; then \
 		cd "${BACKEND_DIR}" && \
-		poetry run chatsky.ui init --destination ../../ --no-input --overwrite-if-exists; \
+		poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists; \
 	fi
 
 	cd ${BACKEND_DIR} && \
@@ -99,7 +99,7 @@ integration_tests: ## Runs all backend integration tests
 backend_e2e_test: ## Runs e2e backend test
 	if [ ! -d "${PROJECT_NAME}" ]; then \
 		cd "${BACKEND_DIR}" && \
-		poetry run chatsky.ui init --destination ../../ --no-input --overwrite-if-exists; \
+		poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists; \
 	fi
 
 	cd ${BACKEND_DIR} && \
@@ -146,7 +146,7 @@ run_dev: check_project_arg install_env ## Runs both backend and frontend in dev 
 
 .PHONY: init_proj
 init_proj: install_backend_env ## Initiates a new project using chatsky-ui
-	cd ${BACKEND_DIR} && poetry run chatsky.ui init --destination ../../
+	cd ${BACKEND_DIR} && poetry run chatsky.ui init --destination ../
 
 
 .PHONY: build_docs
