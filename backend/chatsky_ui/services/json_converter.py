@@ -41,6 +41,7 @@ def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
 def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> dict:
     nodes = {}
     for flow in flow_graph["flows"]:
+        node_names_in_one_flow = []
         for node in flow.data.nodes:
             if "flags" in node.data:
                 if "start" in node.data.flags:
@@ -51,6 +52,10 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
                     if "fallback_label" in script["CONFIG"]:
                         raise ValueError("There are more than one fallback node in the script")
                     script["CONFIG"]["fallback_label"] = [flow.name, node.data.name]
+
+            if node.data.name in node_names_in_one_flow:
+                raise ValueError(f"There is more than one node with the name '{node.data.name}' in the same flow.")
+            node_names_in_one_flow.append(node.data.name)
             nodes[node.id] = {"info": node}
             nodes[node.id]["flow"] = flow.name
             nodes[node.id]["TRANSITIONS"] = []
