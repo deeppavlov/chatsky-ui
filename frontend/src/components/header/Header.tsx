@@ -1,10 +1,9 @@
-import { Button, Tooltip, useDisclosure } from "@nextui-org/react"
+import { Button, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { useContext } from "react"
+import { memo, useContext, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
 import { MetaContext } from "../../contexts/metaContext"
-import { themeContext } from "../../contexts/themeContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
 import GrabModeIcon from "../../icons/header/GrabModeIcon"
@@ -13,9 +12,8 @@ import ListViewIcon from "../../icons/header/ListViewIcon"
 import BuildMenu from "./BuildMenu"
 import NodeInstruments from "./components/NodeInstruments"
 
-const Header = () => {
+const Header = memo(() => {
   const { version } = useContext(MetaContext)
-  const { toggleTheme, theme } = useContext(themeContext)
   const location = useLocation()
   const {
     toggleWorkspaceMode,
@@ -27,26 +25,24 @@ const Header = () => {
     toggleManagerMode,
   } = useContext(workspaceContext)
   const { flows, tab } = useContext(flowContext)
-  const flow = flows.find((flow) => flow.name === tab)
-  const {
-    isOpen: isSettingsModalOpen,
-    onOpen: onOpenSettingsModal,
-    onClose: onCloseSettingsModal,
-  } = useDisclosure()
+  const flow = useMemo(() => flows.find((flow) => flow.name === tab), [flows, tab])
 
   return (
     <div
       data-testid='header'
       className='min-h-14 flex items-center justify-between w-screen z-10 bg-bg-secondary border-b border-border px-2 pr-4'>
-        {location.pathname.includes("app/home") && (
-          <Link data-testid='logo-header' to={"/app/home"} className='flex items-center gap-1 z-10 cursor-pointer'>
+      {location.pathname.includes("app/home") && (
+        <Link
+          data-testid='logo-header'
+          to={"/app/home"}
+          className='flex items-center gap-1 z-10 cursor-pointer'>
           <Logo />
-          <div className="flex items-end justify-start gap-1">
-            <span className='flex font-bold text-lg'>DF Designer</span>
+          <div className='flex items-end justify-start gap-1'>
+            <span className='flex font-bold text-lg'>Chatsky UI</span>
             <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
           </div>
         </Link>
-        )}
+      )}
       {location.pathname.includes("flow") && (
         <div className='flex items-center gap-4 w-52'>
           <div className='flex items-center gap-1.5'>
@@ -58,7 +54,7 @@ const Header = () => {
                 onClick={toggleManagerMode}
                 className={classNames(
                   " bg-overlay hover:bg-background border border-border rounded-small",
-                  !managerMode ? "bg-background border-border-darker" : ""
+                  managerMode ? "bg-background border-border-darker" : ""
                 )}>
                 <GrabModeIcon />
               </Button>
@@ -71,7 +67,7 @@ const Header = () => {
                 isIconOnly
                 className={classNames(
                   " bg-overlay hover:bg-background border border-border rounded-small",
-                  !workspaceMode ? "bg-background border-border-darker" : ""
+                  workspaceMode ? "bg-background border-border-darker" : ""
                 )}>
                 <GridModeIcon />
               </Button>
@@ -84,7 +80,7 @@ const Header = () => {
                 isIconOnly
                 className={classNames(
                   " bg-overlay hover:bg-background border border-border rounded-small",
-                  !nodesLayoutMode ? "bg-background border-border-darker" : ""
+                  nodesLayoutMode ? "bg-background border-border-darker" : ""
                 )}>
                 {/* {nodesLayoutMode ? "Canvas Mode" : "List mode"} */}
                 <ListViewIcon />
@@ -109,6 +105,6 @@ const Header = () => {
       </div>
     </div>
   )
-}
+})
 
 export default Header

@@ -7,14 +7,14 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem
+  SelectItem,
 } from "@nextui-org/react"
 import { HelpCircle } from "lucide-react"
 import { useContext, useState } from "react"
-import toast from "react-hot-toast"
 import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { ModalType } from "../../types/ModalTypes"
 import { generateNewFlow, validateFlowName } from "../../utils"
 
@@ -29,6 +29,7 @@ export type CreateFlowType = {
 
 const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
+  const { notification: n } = useContext(notificationsContext)
   const [flow, setFlow] = useState<CreateFlowType>({
     name: "",
     description: "",
@@ -45,7 +46,14 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
   }
 
   const onFlowSave = () => {
-    if (validateFlowName(flow.name, flows) && flow.color && flow.subflow) {
+    if (!validateFlowName(flow.name, flows)) {
+      return n.add({
+        title: "Warning!",
+        message: "Flow name is not valid.",
+        type: "warning",
+      })
+    }
+    if (flow.color && flow.subflow) {
       const newFlow = generateNewFlow(flow)
       setFlows([...flows, newFlow])
       saveFlows([...flows, newFlow])
@@ -58,7 +66,11 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
       setIsSubFlow(false)
       onClose()
     } else {
-      toast.error("Please fill all the fields correctly!")
+      n.add({
+        title: "Creating error!",
+        message: "Please fill all the fields correctly.",
+        type: "error",
+      })
     }
   }
 
@@ -81,6 +93,7 @@ const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps
               name='name'
               onChange={onFlowChange}
               value={flow.name}
+              min={2}
             />
             <Input
               label='Description'
