@@ -113,7 +113,7 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
                 <span
                   className={classNames(
                     notificationStackColor,
-                    "w-6 h-6 text-center rounded-full text-foreground"
+                    "w-6 h-6 text-center rounded-full text-white"
                   )}>
                   {notification.stack}
                 </span>
