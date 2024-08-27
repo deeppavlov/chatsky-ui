@@ -38,7 +38,7 @@ const Header = memo(() => {
           className='flex items-center gap-1 z-10 cursor-pointer'>
           <Logo />
           <div className='flex items-end justify-start gap-1'>
-            <span className='flex font-bold text-lg'>DF Designer</span>
+            <span className='flex font-bold text-lg'>Chatsky UI</span>
             <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
           </div>
         </Link>

@@ -95,6 +95,10 @@
     --node-fallback-label-bg: #fde9e9;
     --node-fallback-label-fg: #ff3333;
 
+    --logo-red: #E86C4A;
+    --logo-yellow: #FFC247;
+    --logo-blue: #00A3FF;
+
     .dark {
       color: #ebebeb;
 
@@ -145,6 +149,11 @@
 
       /* --condition-test-success: #00cc99;
       --condition-test-error: #ff3333; */
+
+    --logo-red: #E55934;
+    --logo-yellow: #FFBB33;
+    --logo-blue: #018BD9;
+
     }
   }
 }
