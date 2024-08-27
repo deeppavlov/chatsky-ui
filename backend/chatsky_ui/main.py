@@ -13,7 +13,7 @@ index_dict = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.conf_reload:
+    if settings.temp_conf.exists():
         settings.refresh_work_dir()
 
     index_dict["instance"] = get_index()
