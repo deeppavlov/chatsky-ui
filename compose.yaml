@@ -1,17 +1,15 @@
 volumes:
-  ui_data:
-  bot_data:
+  project_data:
 
 services:
   backend:
     build:
       args:
-        PROJECT_DIR: my_project
+       PROJECT_DIR: df_designer_project
       context: ./
       dockerfile: Dockerfile
     ports:
       - 8000:8000
     volumes:
-      - ui_data:/src/project_dir/chatsky_ui/app_data
-      - bot_data:/src/project_dir/bot
+      - project_data:/src2/df_designer_project
 version: '3.8'

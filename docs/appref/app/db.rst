@@ -1,10 +1,10 @@
-chatsky_ui.db package
+app.db package
 ==============
 
-chatsky_ui.db.base module
+app.db.base module
 ------------------
 
-.. automodule:: chatsky_ui.db.base
+.. automodule:: app.db.base
    :members:
    :undoc-members:
    :show-inheritance:

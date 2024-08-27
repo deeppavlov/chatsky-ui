@@ -1,26 +1,26 @@
-chatsky_ui.schemas package
+app.schemas package
 ===================
 
-chatsky_ui.schemas.pagination module
+app.schemas.pagination module
 -----------------------------
 
-.. automodule:: chatsky_ui.schemas.pagination
+.. automodule:: app.schemas.pagination
    :members:
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.schemas.preset module
+app.schemas.preset module
 -------------------------
 
-.. automodule:: chatsky_ui.schemas.preset
+.. automodule:: app.schemas.preset
    :members:
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.schemas.process\_status module
+app.schemas.process\_status module
 ----------------------------------
 
-.. automodule:: chatsky_ui.schemas.process_status
+.. automodule:: app.schemas.process_status
    :members:
    :undoc-members:
    :show-inheritance:

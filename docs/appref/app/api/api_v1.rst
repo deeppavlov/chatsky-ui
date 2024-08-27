@@ -1,4 +1,4 @@
-chatsky_ui.api.api\_v1 package
+app.api.api\_v1 package
 =========================
 
 Subpackages
@@ -11,10 +11,10 @@ Subpackages
    api_v1/*
 
 
-chatsky_ui.api.api\_v1.api module
+app.api.api\_v1.api module
 ----------------------------
 
-.. automodule:: chatsky_ui.api.api_v1.api
+.. automodule:: app.api.api_v1.api
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,18 +1,18 @@
-chatsky_ui.core package
+app.core package
 ================
 
-chatsky_ui.core.config module
+app.core.config module
 ----------------------
 
-.. automodule:: chatsky_ui.core.config
+.. automodule:: app.core.config
    :members:
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.core.logger\_config module
+app.core.logger\_config module
 ------------------------------
 
-.. automodule:: chatsky_ui.core.logger_config
+.. automodule:: app.core.logger_config
    :members:
    :undoc-members:
    :show-inheritance:

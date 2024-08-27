@@ -1,9 +1,8 @@
 SHELL = /bin/bash
 
 PYTHON = python3
-FRONTEND_DIR = frontend
-BACKEND_DIR = backend
-PROJECT_NAME = my_project
+FRONTEND_DIR = ./frontend
+BACKEND_DIR = ./backend/df_designer
 
 
 .PHONY: help
@@ -47,7 +46,7 @@ install_backend_env: ## Installs backend dependencies using poetry
 
 .PHONY: clean_backend_env
 clean_backend_env: ## Removes backend dependencies using poetry
-	cd ${BACKEND_DIR} && poetry env remove --all
+	cd ${BACKEND_DIR} && poetry install_env remove --all
 
 .PHONY: build_backend
 build_backend: install_backend_env ## Builds the backend wheel
@@ -62,50 +61,47 @@ check_project_arg:
 
 .PHONY: run_backend
 run_backend: check_project_arg ## Runs backend using the built dist. NEEDS arg: PROJECT_NAME
-	cd ${PROJECT_NAME} && \
-	python3 -m venv venv && source venv/bin/activate && \
-	pip install ../${BACKEND_DIR}/dist/*.whl && \
-	chatsky.ui run_app
+	cd ${PROJECT_NAME} && poetry install && poetry run dflowd run_app --conf-reload="False"
 
-# This environment activation method was used to avoid the issue of not being able to run the app in the same shell
 .PHONY: run_dev_backend
 run_dev_backend: check_project_arg install_backend_env ## Runs backend in dev mode. NEEDS arg: PROJECT_NAME
-	cd ${BACKEND_DIR} && \
-	. `poetry env info --path`/bin/activate && \
-	chatsky.ui run_app --project-dir ../${PROJECT_NAME} --conf-reload
+	cd ${BACKEND_DIR} && poetry run dflowd run_app --project-dir ../../${PROJECT_NAME}
 
 # backend tests
 .PHONY: unit_tests
 unit_tests: ## Runs all backend unit tests
-	cd ${BACKEND_DIR} && \
-	. `poetry env info --path`/bin/activate && \
-	pytest ../${BACKEND_DIR}/chatsky_ui/tests/api ../${BACKEND_DIR}/chatsky_ui/tests/services
+	if [ ! -d "./df_designer_project" ]; then \
+		cd "${BACKEND_DIR}" && \
+		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
+	fi
+
+	cd df_designer_project && \
+	poetry install && \
+	poetry run pytest ../${BACKEND_DIR}/app/tests/api ../${BACKEND_DIR}/app/tests/services
 
 
 .PHONY: integration_tests
 integration_tests: ## Runs all backend integration tests
-	if [ ! -d "${PROJECT_NAME}" ]; then \
+	if [ ! -d "./df_designer_project" ]; then \
 		cd "${BACKEND_DIR}" && \
-		poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists; \
+		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
 	fi
 
-	cd ${BACKEND_DIR} && \
-	. `poetry env info --path`/bin/activate && \
-	cd ../${PROJECT_NAME} && \
-	pytest ../${BACKEND_DIR}/chatsky_ui/tests/integration
+	cd df_designer_project && \
+	poetry install && \
+	poetry run pytest ../${BACKEND_DIR}/app/tests/integration
 
 
 .PHONY: backend_e2e_test
 backend_e2e_test: ## Runs e2e backend test
-	if [ ! -d "${PROJECT_NAME}" ]; then \
+	if [ ! -d "./df_designer_project" ]; then \
 		cd "${BACKEND_DIR}" && \
-		poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists; \
+		poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists; \
 	fi
 
-	cd ${BACKEND_DIR} && \
-	. `poetry env info --path`/bin/activate && \
-	cd ../${PROJECT_NAME} && \
-	pytest ../${BACKEND_DIR}/chatsky_ui/tests/e2e
+	cd df_designer_project && \
+	poetry install && \
+	poetry run pytest ../${BACKEND_DIR}/app/tests/e2e
 	
 
 .PHONY: backend_tests
@@ -132,8 +128,8 @@ build: install_env ## Builds both frontend & backend
 	make build_backend
 
 .PHONY: run_app
-run_app: check_project_arg build_frontend ## Builds frontend and backend then runs the app. NEEDS arg: PROJECT_NAME
-	cp ${FRONTEND_DIR}/dist/* ${BACKEND_DIR}/chatsky_ui/static/ && \
+run_app: check_project_arg install_env build_frontend ## Builds frontend and backend then runs the app. NEEDS arg: PROJECT_NAME
+	cp ${FRONTEND_DIR}/dist/* ${BACKEND_DIR}/app/static/ && \
 	make build_backend && \
 	make run_backend PROJECT_NAME=${PROJECT_NAME}
 
@@ -145,12 +141,10 @@ run_dev: check_project_arg install_env ## Runs both backend and frontend in dev 
 
 
 .PHONY: init_proj
-init_proj: install_backend_env ## Initiates a new project using chatsky-ui
-	cd ${BACKEND_DIR} && poetry run chatsky.ui init --destination ../
+init_proj: install_backend_env ## Initiates a new project using dflowd
+	cd ${BACKEND_DIR} && poetry run dflowd init --destination ../../
 
 
 .PHONY: build_docs
 build_docs: install_backend_env ## Builds the docs
-	cd ${BACKEND_DIR} && \
-	. `poetry env info --path`/bin/activate && \
-	cd ../docs && make html && cd ../
+	cd docs && make html && cd ../

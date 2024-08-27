@@ -1,4 +1,4 @@
-chatsky_ui package
+app package
 ===========
 
 Subpackages
@@ -8,13 +8,13 @@ Subpackages
    :glob:
    :maxdepth: 4
 
-   chatsky_ui/*
+   app/*
 
 
 cli module
 --------------
 
-.. automodule:: chatsky_ui.cli
+.. automodule:: app.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -22,7 +22,7 @@ cli module
 main module
 ---------------
 
-.. automodule:: chatsky_ui.main
+.. automodule:: app.main
    :members:
    :undoc-members:
    :show-inheritance:

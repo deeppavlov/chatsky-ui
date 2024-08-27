@@ -27,14 +27,14 @@ jobs:
         run: |
           bun install
           bun run build
-          cp -r ./dist/* ../backend/chatsky_ui/static
+          cp -r ./dist/* ../backend/df_designer/app/static
         working-directory: frontend
 
       - name: build wheels and test uploading to pypi
         if: startsWith(github.ref, 'refs/tags/v') != true
         run: |
           python -m poetry --build publish --dry-run
-        working-directory: backend
+        working-directory: backend/df_designer
 
       - name: build wheels and upload to pypi
         if: startsWith(github.ref, 'refs/tags/v')
@@ -42,14 +42,14 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
         run: |
           python -m poetry --build publish
-        working-directory: backend
+        working-directory: backend/df_designer
 
       - name: upload binaries into release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: backend/dist/*
+          file: backend/df_designer/dist/*
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true

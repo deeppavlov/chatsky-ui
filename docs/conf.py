@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Chatsky-UI'
+project = 'DflowD'
 copyright = '2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk'
 author = 'Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk'
 release = '0.1.0-beta.1'
