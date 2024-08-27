@@ -36,6 +36,7 @@ import "../index.css"
 import { FlowType } from "../types/FlowTypes"
 import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
+import Fallback from "./Fallback"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
 import Settings from "./Settings"
@@ -286,7 +287,11 @@ export default function Flow() {
         dragHandle: NODES[type].dragHandle,
         data: {
           id: newId,
-          name: type === 'default_node' ? (NODE_NAMES.find(name => !nodes.some(node => node.data.name === name)) ?? 'Empty names array') : NODES[type].name,
+          name:
+            type === "default_node"
+              ? NODE_NAMES.find((name) => !nodes.some((node) => node.data.name === name)) ??
+                "Empty names array"
+              : NODES[type].name,
           flags: START_FALLBACK_FLAGS,
           conditions: NODES[type].conditions,
           global_conditions: [],
@@ -355,6 +360,8 @@ export default function Flow() {
     enter: { opacity: 1 },
     exitBeforeEnter: true,
   })
+
+  if (!flow) return <Fallback />;
 
   return (
     <div
