@@ -1,4 +1,4 @@
-app.tests package
+chatsky_ui.tests package
 =================
 
 Subpackages
@@ -11,10 +11,10 @@ Subpackages
    tests/*
 
 
-app.tests.conftest module
+chatsky_ui.tests.conftest module
 -------------------------
 
-.. automodule:: app.tests.conftest
+.. automodule:: chatsky_ui.tests.conftest
    :members:
    :undoc-members:
    :show-inheritance:

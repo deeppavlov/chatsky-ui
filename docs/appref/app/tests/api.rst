@@ -1,18 +1,18 @@
-app.tests.api package
+chatsky_ui.tests.api package
 =====================
 
-app.tests.api.test\_bot module
+chatsky_ui.tests.api.test\_bot module
 ------------------------------
 
-.. automodule:: app.tests.api.test_bot
+.. automodule:: chatsky_ui.tests.api.test_bot
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.tests.api.test\_flows module
+chatsky_ui.tests.api.test\_flows module
 --------------------------------
 
-.. automodule:: app.tests.api.test_flows
+.. automodule:: chatsky_ui.tests.api.test_flows
    :members:
    :undoc-members:
    :show-inheritance:

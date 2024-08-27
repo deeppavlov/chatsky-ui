@@ -1,10 +1,10 @@
-app.tests.integration package
+chatsky_ui.tests.integration package
 =============================
 
-app.tests.integration.test\_api\_integration module
+chatsky_ui.tests.integration.test\_api\_integration module
 ---------------------------------------------------
 
-.. automodule:: app.tests.integration.test_api_integration
+.. automodule:: chatsky_ui.tests.integration.test_api_integration
    :members:
    :undoc-members:
    :show-inheritance:

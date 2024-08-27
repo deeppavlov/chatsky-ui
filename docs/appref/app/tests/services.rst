@@ -1,26 +1,26 @@
-app.tests.services package
+chatsky_ui.tests.services package
 ==========================
 
-app.tests.services.test\_process module
+chatsky_ui.tests.services.test\_process module
 ---------------------------------------
 
-.. automodule:: app.tests.services.test_process
+.. automodule:: chatsky_ui.tests.services.test_process
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.tests.services.test\_process\_manager module
+chatsky_ui.tests.services.test\_process\_manager module
 ------------------------------------------------
 
-.. automodule:: app.tests.services.test_process_manager
+.. automodule:: chatsky_ui.tests.services.test_process_manager
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.tests.services.test\_websocket\_manager module
+chatsky_ui.tests.services.test\_websocket\_manager module
 --------------------------------------------------
 
-.. automodule:: app.tests.services.test_websocket_manager
+.. automodule:: chatsky_ui.tests.services.test_websocket_manager
    :members:
    :undoc-members:
    :show-inheritance:

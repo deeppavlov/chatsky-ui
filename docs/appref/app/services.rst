@@ -1,42 +1,42 @@
-app.services package
+chatsky_ui.services package
 ====================
 
-app.services.index module
+chatsky_ui.services.index module
 -------------------------
 
-.. automodule:: app.services.index
+.. automodule:: chatsky_ui.services.index
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.json\_converter module
+chatsky_ui.services.json\_converter module
 -----------------------------------
 
-.. automodule:: app.services.json_converter
+.. automodule:: chatsky_ui.services.json_converter
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.process module
+chatsky_ui.services.process module
 ---------------------------
 
-.. automodule:: app.services.process
+.. automodule:: chatsky_ui.services.process
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.process\_manager module
+chatsky_ui.services.process\_manager module
 ------------------------------------
 
-.. automodule:: app.services.process_manager
+.. automodule:: chatsky_ui.services.process_manager
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.services.websocket\_manager module
+chatsky_ui.services.websocket\_manager module
 --------------------------------------
 
-.. automodule:: app.services.websocket_manager
+.. automodule:: chatsky_ui.services.websocket_manager
    :members:
    :undoc-members:
    :show-inheritance:

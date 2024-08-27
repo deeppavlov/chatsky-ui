@@ -11,10 +11,10 @@ Subpackages
    api/*
 
 
-app.api.deps module
+chatsky_ui.api.deps module
 ------------------
 
-.. automodule:: app.api.deps
+.. automodule:: chatsky_ui.api.deps
    :members:
    :undoc-members:
    :show-inheritance:
