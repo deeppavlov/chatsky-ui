@@ -148,7 +148,7 @@ const Chat = memo(() => {
 
   return (
     <div
-      className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-full max-h-screen bg-background border-l border-border overflow-hidden'
+      className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-screen max-h-screen bg-background border-l border-border overflow-hidden'
       style={{
         transform: chat ? "translateX(0%)" : "translateX(100%)",
       }}>

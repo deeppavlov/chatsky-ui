@@ -9,16 +9,16 @@ import { notificationsContext } from "../../contexts/notificationsContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
-import LocalStogareIcon from "../../icons/footbar/LocalStogareIcon"
+import LocalStorageIcon from "../../icons/footbar/LocalStorageIcon"
 import LocalStorage from "../../modals/LocalStorage/LocalStorage"
 import { parseSearchParams } from "../../utils"
 import { NotificationsWindow } from "../notifications/NotificationsWindow"
 
 const FootBar = memo(() => {
   const {
-    isOpen: isLocalStogareOpen,
-    onOpen: onLocalStogareOpen,
-    onClose: onLocalStogareClose,
+    isOpen: isLocalStorageOpen,
+    onOpen: onLocalStorageOpen,
+    onClose: onLocalStorageClose,
   } = useDisclosure()
 
   const { version } = useContext(MetaContext)
@@ -73,7 +73,7 @@ const FootBar = memo(() => {
     <div
       data-testid='footbar'
       className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
-      <div className='absolute w-full h-12 flex items-center justify-center'>
+      <div className='absolute w-full flex items-center justify-center'>
         <Tabs
           onSelectionChange={onSelectionChange}
           defaultSelectedKey={findDefaultSelectedKey()}
@@ -134,12 +134,12 @@ const FootBar = memo(() => {
       <div className='flex items-end gap-0.5'>
         <Button
           isDisabled
-          onClick={onLocalStogareOpen}
+          onClick={onLocalStorageOpen}
           className={classNames(
             "local-storage-button px-2 cursor-pointer rounded-small h-9 flex items-center bg-transparent justify-center gap-2 border border-transparent hover:bg-background hover:border-foreground hover:text-foreground",
-            isLocalStogareOpen && "bg-background border-foreground"
+            isLocalStorageOpen && "bg-background border-foreground"
           )}>
-          <LocalStogareIcon className='local-storage-button-hover:stroke-0' />
+          <LocalStorageIcon className='local-storage-button-hover:stroke-0' />
           Local storage
         </Button>
         <Popover
@@ -166,8 +166,8 @@ const FootBar = memo(() => {
         </Popover>
       </div>
       <LocalStorage
-        isOpen={isLocalStogareOpen}
-        onClose={onLocalStogareClose}
+        isOpen={isLocalStorageOpen}
+        onClose={onLocalStorageClose}
       />
     </div>
   )
