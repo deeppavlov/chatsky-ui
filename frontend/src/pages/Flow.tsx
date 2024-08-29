@@ -27,6 +27,7 @@ import LinkNode from "../components/nodes/LinkNode"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
+import { MetaContext } from "../contexts/metaContext"
 import { notificationsContext } from "../contexts/notificationsContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
@@ -34,6 +35,7 @@ import "../index.css"
 import { FlowType } from "../types/FlowTypes"
 import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
+import { Preloader } from "../UI/Preloader/Preloader"
 import Fallback from "./Fallback"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
@@ -65,6 +67,7 @@ export default function Flow() {
     mouseOnPane,
     managerMode,
   } = useContext(workspaceContext)
+  const { screenLoading } = useContext(MetaContext)
   const { takeSnapshot, undo } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
@@ -357,7 +360,10 @@ export default function Flow() {
     exitBeforeEnter: true,
   })
 
-  if (!flow) return <Fallback />
+  if (screenLoading.value) return <Preloader />
+  else if (flows.length && !flow && !screenLoading.value) {
+    return <Fallback />
+  }
 
   return (
     <div

@@ -7,6 +7,7 @@ import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
 import { FlowType } from "../types/FlowTypes"
 import { NodeType } from "../types/NodeTypes"
+import { MetaContext } from "./metaContext"
 import { notificationsContext } from "./notificationsContext"
 // import { v4 } from "uuid"
 
@@ -88,21 +89,29 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const { flowId } = useParams()
   const [flows, setFlows] = useState<FlowType[]>([])
   const { notification: n } = useContext(notificationsContext)
+  const { screenLoading } = useContext(MetaContext)
 
   useEffect(() => {
     setTab(flowId || "")
   }, [flowId])
 
   const getFlows = async () => {
-    const { data } = await get_flows()
-    if (data.flows) {
-      if (data.flows.some((flow) => flow.name === "Global")) {
-        setFlows(data.flows)
+    screenLoading.addScreenLoading()
+    try {
+      const { data } = await get_flows()
+      if (data.flows) {
+        if (data.flows.some((flow) => flow.name === "Global")) {
+          setFlows(data.flows)
+        } else {
+          setFlows([globalFlow, ...data.flows])
+        }
       } else {
-        setFlows([globalFlow, ...data.flows])
+        setFlows([globalFlow])
       }
-    } else {
-      setFlows([globalFlow])
+    } catch (error) {
+      console.error(error)
+    } finally {
+      screenLoading.removeScreenLoading()
     }
   }
 
@@ -145,54 +154,67 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     [flows]
   )
 
-  const deleteNode = useCallback((id: string) => {
-    const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
-    if (!flow) return -1
-    const deleted_node: NodeType = flow.data.nodes.find((node) => node.id === id) as NodeType
-    if (deleted_node?.data.flags?.includes("start"))
-      return n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
-    if (deleted_node?.id?.includes("LOCAL")) return n.add({ title: "Warning!", message: "Can't delete local node", type: "warning" })
-    if (deleted_node?.id?.includes("GLOBAL")) return n.add({ title: "Warning!", message: "Can't delete global node", type: "warning" })
-    if (deleted_node?.data.flags?.includes("fallback")) {
-      console.log(
-        flow.data.nodes
-          .find((node) => node.id !== id && !node.data.id.includes("LOCAL"))
-          ?.data.flags.push("fallback")
+  const deleteNode = useCallback(
+    (id: string) => {
+      const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
+      if (!flow) return -1
+      const deleted_node: NodeType = flow.data.nodes.find((node) => node.id === id) as NodeType
+      if (deleted_node?.data.flags?.includes("start"))
+        return n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
+      if (deleted_node?.id?.includes("LOCAL"))
+        return n.add({ title: "Warning!", message: "Can't delete local node", type: "warning" })
+      if (deleted_node?.id?.includes("GLOBAL"))
+        return n.add({ title: "Warning!", message: "Can't delete global node", type: "warning" })
+      if (deleted_node?.data.flags?.includes("fallback")) {
+        console.log(
+          flow.data.nodes
+            .find((node) => node.id !== id && !node.data.id.includes("LOCAL"))
+            ?.data.flags.push("fallback")
+        )
+        // any_node.data.flags?.push("fallback")
+      }
+      const newNodes = flow.data.nodes.filter((node) => node.id !== id)
+      const newEdges = flow.data.edges.filter(
+        (edge: Edge) => edge.source !== id && edge.target !== id
       )
-      // any_node.data.flags?.push("fallback")
-    }
-    const newNodes = flow.data.nodes.filter((node) => node.id !== id)
-    const newEdges = flow.data.edges.filter(
-      (edge: Edge) => edge.source !== id && edge.target !== id
-    )
-    const newFlows = flows.map((flow) =>
-      flow.name === flowId
-        ? { ...flow, data: { ...flow.data, nodes: newNodes, edges: newEdges } }
-        : flow
-    )
-    saveFlows(newFlows)
-    setFlows(newFlows)
-  }, [flowId, flows, n])
-
-  const deleteEdge = useCallback((id: string) => {
-    const flow = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
-    if (!flow) return -1
-    const newEdges = flow.data.edges.filter((edge) => edge.id !== id)
-    saveFlows(
-      flows.map((flow) =>
-        flow.name === flowId ? { ...flow, data: { ...flow.data, edges: newEdges } } : flow
+      const newFlows = flows.map((flow) =>
+        flow.name === flowId
+          ? { ...flow, data: { ...flow.data, nodes: newNodes, edges: newEdges } }
+          : flow
       )
-    )
-    setFlows((flows) => flows.map((flow) => ({ ...flow, data: { ...flow.data, edges: newEdges } })))
-  }, [flowId, flows])
+      saveFlows(newFlows)
+      setFlows(newFlows)
+    },
+    [flowId, flows, n]
+  )
 
-  const deleteObject = useCallback((id: string) => {
-    const flow_node = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
-    const flow_edge = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
-    if (!flow_node && !flow_edge) return -1
-    if (flow_node) deleteNode(id)
-    if (flow_edge) deleteEdge(id)
-  }, [deleteEdge, deleteNode, flows])
+  const deleteEdge = useCallback(
+    (id: string) => {
+      const flow = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
+      if (!flow) return -1
+      const newEdges = flow.data.edges.filter((edge) => edge.id !== id)
+      saveFlows(
+        flows.map((flow) =>
+          flow.name === flowId ? { ...flow, data: { ...flow.data, edges: newEdges } } : flow
+        )
+      )
+      setFlows((flows) =>
+        flows.map((flow) => ({ ...flow, data: { ...flow.data, edges: newEdges } }))
+      )
+    },
+    [flowId, flows]
+  )
+
+  const deleteObject = useCallback(
+    (id: string) => {
+      const flow_node = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
+      const flow_edge = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
+      if (!flow_node && !flow_edge) return -1
+      if (flow_node) deleteNode(id)
+      if (flow_edge) deleteEdge(id)
+    },
+    [deleteEdge, deleteNode, flows]
+  )
 
   return (
     <flowContext.Provider
