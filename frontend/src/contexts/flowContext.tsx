@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { Edge } from "reactflow"
+import { Edge, ReactFlowInstance } from "reactflow"
 import { v4 } from "uuid"
 import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
@@ -49,6 +49,8 @@ const globalFlow: FlowType = {
 }
 
 type TabContextType = {
+  reactFlowInstance: ReactFlowInstance | null
+  setReactFlowInstance: React.Dispatch<React.SetStateAction<ReactFlowInstance | null>>
   tab: string
   setTab: React.Dispatch<React.SetStateAction<string>>
   flows: FlowType[]
@@ -65,6 +67,8 @@ type TabContextType = {
 }
 
 const initialValue: TabContextType = {
+  reactFlowInstance: null,
+  setReactFlowInstance: () => {},
   tab: "",
   setTab: () => {},
   flows: [],
@@ -85,6 +89,8 @@ const initialValue: TabContextType = {
 export const flowContext = createContext(initialValue)
 
 export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
+
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
   const [tab, setTab] = useState(initialValue.tab)
   const { flowId } = useParams()
   const [flows, setFlows] = useState<FlowType[]>([])
@@ -219,6 +225,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <flowContext.Provider
       value={{
+        reactFlowInstance,
+        setReactFlowInstance,
         tab,
         setTab,
         flows,

@@ -10,6 +10,7 @@ import ReactFlow, {
   NodeChange,
   OnSelectionChangeParams,
   ReactFlowInstance,
+  ReactFlowRefType,
   addEdge,
   updateEdge,
   useEdgesState,
@@ -56,9 +57,10 @@ const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sour
 // export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
-  const reactFlowWrapper = useRef(null)
+  const reactFlowWrapper = useRef<ReactFlowRefType>(null)
 
-  const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
+  const { flows, updateFlow, saveFlows, deleteObject, reactFlowInstance, setReactFlowInstance } =
+    useContext(flowContext)
   const {
     toggleWorkspaceMode,
     workspaceMode,
@@ -69,7 +71,7 @@ export default function Flow() {
     managerMode,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
-  const { takeSnapshot, undo } = useContext(undoRedoContext)
+  const { takeSnapshot, undo, copy, paste, copiedSelection } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -78,7 +80,7 @@ export default function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
 
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
+  // const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
   const isEdgeUpdateSuccess = useRef(false)
@@ -308,8 +310,29 @@ export default function Flow() {
     [takeSnapshot, reactFlowInstance, flows, setNodes]
   )
 
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+        e.preventDefault()
+        if (selection) {
+          copy(selection)
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+        e.preventDefault()
+        if (
+          reactFlowInstance &&
+          flow &&
+          flow.name === flowId &&
+          copiedSelection &&
+          reactFlowWrapper.current
+        ) {
+          const bounds = reactFlowWrapper.current.getBoundingClientRect()
+          paste(copiedSelection, { x: mousePos.x - bounds.left, y: mousePos.y - bounds.top })
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
@@ -332,22 +355,34 @@ export default function Flow() {
       }
     }
 
+    const mouseMoveHandler = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY })
+    }
+
     document.addEventListener("keydown", kbdHandler)
+    document.addEventListener("mousemove", mouseMoveHandler)
 
     return () => {
       document.removeEventListener("keydown", kbdHandler)
+      document.removeEventListener("mousemove", mouseMoveHandler)
     }
   }, [
+    copiedSelection,
+    copy,
     deleteObject,
     flow,
     flowId,
     flows,
     mouseOnPane,
+    mousePos.x,
+    mousePos.y,
     n,
+    paste,
     reactFlowInstance,
     saveFlows,
     selected,
     selectedNode,
+    selection,
     takeSnapshot,
     toggleWorkspaceMode,
     workspaceMode,
