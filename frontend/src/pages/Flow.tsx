@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Connection,
+  Controls,
   Edge,
   HandleType,
   Node,
@@ -418,6 +419,10 @@ export default function Flow() {
               color='var(--foreground)'
               gap={workspaceMode ? 24 : 96}
               size={workspaceMode ? 1 : 2}
+            />
+            <Controls
+              fitViewOptions={{ padding: 0.25 }}
+              className='bg-transparent shadow-none fill-foreground stroke-foreground text-foreground [&>button]:my-1 [&>button]:rounded [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
             />
           </ReactFlow>
         </a.div>
