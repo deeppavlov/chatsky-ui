@@ -62,15 +62,12 @@ check_project_arg:
 
 .PHONY: run_backend
 run_backend: check_project_arg ## Runs backend using the built dist. NEEDS arg: PROJECT_NAME
-	@if [ -d "${PROJECT_NAME}/venv" ]; then \
-		cd ${PROJECT_NAME} && \
-		rm -rf venv && \
-		echo "Removed existing venv"; \
-	fi
+	@set -a && . $(CURDIR)/.env && \
 	cd ${PROJECT_NAME} && \
-	python3 -m venv venv && source venv/bin/activate
-	pip install ${BACKEND_DIR}/dist/*.whl && \
-	chatsky.ui run_app --project-dir ${PROJECT_NAME}
+    poetry add $(CURDIR)/${BACKEND_DIR}/dist/*.whl && \
+    poetry install && \
+    . `poetry env info --path`/bin/activate && \
+    chatsky.ui run_app
 
 # This environment activation method was used to avoid the issue of not being able to run the app in the same shell
 .PHONY: run_dev_backend
