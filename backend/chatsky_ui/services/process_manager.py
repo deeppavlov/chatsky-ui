@@ -119,7 +119,11 @@ class RunManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
-        cmd_to_run = f"chatsky.ui run_bot --build-id {build_id} --preset {preset.end_status}"
+        cmd_to_run = (
+            f"chatsky.ui run_bot --build-id {build_id} "
+            f"--preset {preset.end_status} "
+            f"--project-dir {settings.work_directory}"
+        )
         self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
@@ -134,8 +138,9 @@ class RunManager(ProcessManager):
         """Returns metadata of  a specific run process identified by its unique ID."""
         return await super().get_process_info(id_, settings.runs_path)
 
-    async def get_full_info(self, offset: int, limit: int, path: Path = settings.runs_path) -> List[Dict[str, Any]]:
+    async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
         """Returns metadata of ``limit`` number of run processes, starting from the ``offset``th process."""
+        path = path or settings.runs_path
         return await super().get_full_info(offset, limit, path)
 
     async def fetch_run_logs(self, run_id: int, offset: int, limit: int) -> Optional[List[str]]:
@@ -195,8 +200,9 @@ class BuildManager(ProcessManager):
         builds_info = await self.get_full_info_with_runs_info(run_manager, offset=0, limit=10**5)
         return next((build for build in builds_info if build["id"] == id_), None)
 
-    async def get_full_info(self, offset: int, limit: int, path: Path = settings.builds_path) -> List[Dict[str, Any]]:
+    async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
         """Returns metadata of ``limit`` number of processes, starting from the ``offset`` process."""
+        path = path or settings.builds_path
         return await super().get_full_info(offset, limit, path)
 
     async def get_full_info_with_runs_info(

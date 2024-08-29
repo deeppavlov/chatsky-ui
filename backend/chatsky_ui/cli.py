@@ -69,10 +69,12 @@ def _execute_command_file(build_id: int, project_dir: Path, command_file: str, p
 @cli.command("build_bot")
 def build_bot(
     build_id: Annotated[int, typer.Option(help="Id to save the build with")] = None,
-    project_dir: Path = settings.work_directory,
+    project_dir: Path = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Builds the bot with one of three various presets."""
+    project_dir = project_dir or settings.work_directory
+
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
@@ -99,10 +101,12 @@ def build_scenario(
 @cli.command("run_bot")
 def run_bot(
     build_id: Annotated[int, typer.Option(help="Id of the build to run")] = None,
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = settings.work_directory,
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Runs the bot with one of three various presets."""
+    project_dir = project_dir or settings.work_directory
+
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
@@ -127,15 +131,21 @@ def run_scenario(
 
 @cli.command("run_app")
 def run_app(
-    host: str = settings.host,
-    port: int = settings.port,
-    log_level: str = settings.log_level,
-    conf_reload: Annotated[bool, typer.Option(help="True for dev-mode, False otherwise")] = settings.conf_reload,
+    host: str = None,
+    port: int = None,
+    log_level: str = None,
+    conf_reload: Annotated[bool, typer.Option(help="True for dev-mode, False otherwise")] = None,
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = Path("."),
 ) -> None:
     """Runs the UI for your `project_dir` on `host:port`."""
+    host = host or settings.host
+    port = port or settings.port
+    log_level = log_level or settings.log_level
+    conf_reload = conf_reload or settings.conf_reload
+
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
+
     settings.set_config(
         host=host,
         port=port,
@@ -154,7 +164,7 @@ def run_app(
 def init(
     destination: Annotated[
         Path, typer.Option(help="Path where you want to create your project")
-    ] = settings.work_directory,
+    ] = None,
     no_input: Annotated[bool, typer.Option(help="True for quick and easy initialization using default values")] = False,
     overwrite_if_exists: Annotated[
         bool,
@@ -162,6 +172,8 @@ def init(
     ] = True,
 ):
     """Initializes a new Chatsky-UI project using an off-the-shelf template."""
+    destination = destination or settings.work_directory
+
     original_dir = os.getcwd()
     try:
         os.chdir(destination)

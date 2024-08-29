@@ -20,7 +20,7 @@ class Settings:
         self.temp_conf = self.config_file_path.with_name("temp_conf.yaml")
 
         self.set_config(
-            host=os.getenv("PORT", "0.0.0.0"),
+            host=os.getenv("HOST", "0.0.0.0"),
             port=os.getenv("PORT", "8000"),
             log_level=os.getenv("LOG_LEVEL", "info"),
             conf_reload=os.getenv("CONF_RELOAD", "false"),
@@ -79,7 +79,6 @@ class Settings:
     def refresh_work_dir(self):
         config = self._load_temp_config()
         self.set_config(**config)
-        self._set_user_proj_paths()
 
 
 class AppRunner:
