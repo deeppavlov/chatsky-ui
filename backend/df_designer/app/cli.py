@@ -7,14 +7,23 @@ from pathlib import Path
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
+from git import Repo
 
 # Patch nest_asyncio before importing DFF
 nest_asyncio.apply = lambda: None
 
 from app.core.config import app_runner, settings  # noqa: E402
 from app.core.logger_config import get_logger  # noqa: E402
+from app.utils.git_cmd import commit_changes
 
 cli = typer.Typer()
+
+
+def init_new_repo(git_path: Path, tag_name: str):
+    repo = Repo.init(git_path)
+    repo.git.checkout(b="dev")
+    commit_changes(repo, "Init frontend flows")
+    repo.create_tag(tag_name)
 
 
 async def _execute_command(command_to_run):
@@ -75,7 +84,11 @@ def run_bot(build_id: int, project_dir: str = settings.work_directory, preset: s
 
 @cli.command("run_scenario")
 def run_scenario(build_id: int, project_dir: str = "."):
-    script_path = Path(project_dir) / "bot" / "scripts" / f"build_{build_id}.yaml"
+    # checkout the commit and then run the build
+    bot_repo = Repo.init(Path(project_dir) / "bot")
+    bot_repo.git.checkout(build_id, "scripts/build.yaml")
+
+    script_path = Path(project_dir) / "bot" / "scripts" / "build.yaml"
     if not script_path.exists():
         raise FileNotFoundError(f"File {script_path} doesn't exist")
     command_to_run = f"poetry run python {project_dir}/app.py --script-path {script_path}"
@@ -103,11 +116,15 @@ def init(destination: str = settings.work_directory, no_input: bool = False, ove
     original_dir = os.getcwd()
     try:
         os.chdir(destination)
-        cookiecutter(
+        proj_path = cookiecutter(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="feat/versioning",
             extra_context={"dflowd_version": "0.1.0b4"},
         )
     finally:
         os.chdir(original_dir)
+
+    init_new_repo(Path(proj_path) / "bot", tag_name="43")
+    init_new_repo(Path(proj_path) / "df_designer", tag_name="43")

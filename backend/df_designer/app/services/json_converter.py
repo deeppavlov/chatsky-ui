@@ -7,22 +7,27 @@ Converts a user project's frontend graph to a script understandable by DFF json-
 from pathlib import Path
 from typing import Tuple
 
+from git import Repo
+
 from app.api.deps import get_index
+from app.core.config import settings
 from app.core.logger_config import get_logger
 from app.db.base import read_conf, write_conf
 from app.services.index import Index
+from app.utils.git_cmd import commit_changes, get_repo
+
 from omegaconf.dictconfig import DictConfig
 
 logger = get_logger(__name__)
 
 
-def _get_db_paths(build_id: int, project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
+def _get_db_paths(project_dir: Path, custom_dir: str) -> Tuple[Path, Path, Path, Path]:
     """Get paths to frontend graph, dff script, and dff custom conditions files."""
 
     frontend_graph_path = project_dir / "df_designer" / "frontend_flows.yaml"
     custom_conditions_file = project_dir / "bot" / custom_dir / "conditions.py"
     custom_responses_file = project_dir / "bot" / custom_dir / "responses.py"
-    script_path = project_dir / "bot" / "scripts" / f"build_{build_id}.yaml"
+    script_path = project_dir / "bot" / "scripts" / "build.yaml"
 
     if not frontend_graph_path.exists():
         raise FileNotFoundError(f"File {frontend_graph_path} doesn't exist")
@@ -220,14 +225,33 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
     return nodes, responses_lines
 
 
+def save_version_to_git(build_id: int, bot_repo: Repo):
+    # Save current version of frontend script
+    df_designer_repo = get_repo(settings.frontend_flows_path.parent)
+    commit_changes(df_designer_repo, f"Save script: {build_id}")
+    df_designer_repo.create_tag(build_id)
+    logger.info("Flows saved to git with tag %s", build_id)
+
+    # Save built version of dff bot
+    commit_changes(bot_repo, f"create build: {build_id}")
+    bot_repo.create_tag(build_id)
+    logger.info("Bot saved to git with tag %s", build_id)
+
+
 async def converter(build_id: int, project_dir: str, custom_dir: str = "custom") -> None:
     """Translate frontend flow script into dff script."""
+    bot_repo = get_repo(Path(project_dir) / "bot")
+    # check that there's no already existing tag {build_id}
+    for tag in bot_repo.tags:
+        if tag.name == str(build_id):
+            raise ValueError(f"Tag {build_id} already exists")
+
     index = get_index()
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)
 
     frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(
-        build_id, Path(project_dir), custom_dir
+        Path(project_dir), custom_dir
     )
 
     script = {
@@ -278,3 +302,5 @@ async def converter(build_id: int, project_dir: str, custom_dir: str = "custom")
     _write_list_to_file(conditions_lines, custom_conditions_file)
     _write_list_to_file(responses_lines, custom_responses_file)
     await write_conf(script, script_path)
+
+    save_version_to_git(build_id, bot_repo)

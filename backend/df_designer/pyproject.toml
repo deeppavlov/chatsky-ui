@@ -31,6 +31,7 @@ pylint = "^3.2.3"
 sphinx = "^7.3.7"
 sphinx-rtd-theme = "^2.0.0"
 toml = "^0.10.2"
+gitpython = "^3.1.43"
 
 [tool.poetry.scripts]
 dflowd = "app.cli:cli"
