@@ -38,7 +38,6 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   )
   const [newFlow, setNewFlow] = useState<FlowType>(flow)
 
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSubFlow, setIsSubFlow] = useState(false)
   const [isGlobal, setIsGlobal] = useState(false)
@@ -61,7 +60,6 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
     // @ts-ignore
     setFlow(() => newFlows.find((_flow) => _flow.name === e.target.name) ?? [][0])
   }
-  
 
   useEffect(() => {
     if (flow) {
@@ -82,17 +80,14 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   }
 
   const onFlowSave = () => {
-    if (!validateFlowName(newFlow.name, newFlows) || newFlow.name === flow.name) {
+    if (!validateFlowName(newFlow.name, newFlows) && newFlow.name !== flow.name) {
       return n.add({
         title: "Warning!",
         message: "Flow name is not valid.",
         type: "warning",
       })
     }
-    if (
-      newFlow.color &&
-      newFlow.subflow
-    ) {
+    if (newFlow.color && newFlow.subflow) {
       setFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow))])
       saveFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow))])
       setIsSubFlow(false)
