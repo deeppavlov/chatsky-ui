@@ -32,7 +32,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 }
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
-  return !flows.some((flow) => flow.name === name) && name.length > 2
+  return !flows.some((flow) => flow.name === name) && name.length >= 2
 }
 
 export const parseSearchParams = (
@@ -64,4 +64,10 @@ export const isNodeDeletionValid = (nodes: NodeType[], id: string) => {
   const node = nodes.find((n) => n.id === id)
   if (!node) return false
   return !node.data.flags?.includes("start")
+}
+
+export function delay(ms: number) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, ms);
+  });
 }

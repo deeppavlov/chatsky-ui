@@ -6,6 +6,7 @@ export type NodesTypes = 'default_node' | 'link_node'
 export type NodeType = {
   id: string
   type: string
+  dragHandle?: string
   data: NodeDataType
   position: {
     x: number

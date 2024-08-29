@@ -6,15 +6,15 @@ import {
   ModalFooter,
   ModalHeader,
   Select,
-  SelectItem
+  SelectItem,
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useState } from "react"
-import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
 import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { FlowType } from "../../types/FlowTypes"
 import { ModalType } from "../../types/ModalTypes"
 import { validateFlowName } from "../../utils"
@@ -30,11 +30,14 @@ export type CreateFlowType = {
 
 const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
+  const { notification: n } = useContext(notificationsContext)
   const [newFlows, setNewFlows] = useState<FlowType[]>([...flows] ?? [])
   const { flowId } = useParams()
   const [flow, setFlow] = useState<FlowType>(
     newFlows.find((_flow) => _flow.name === flowId) ?? [][0]
   )
+  const [newFlow, setNewFlow] = useState<FlowType>(flow)
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSubFlow, setIsSubFlow] = useState(false)
   const [isGlobal, setIsGlobal] = useState(false)
@@ -45,17 +48,22 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
 
   useEffect(() => {
     setFlow(() => newFlows.find((_flow) => _flow.name === flowId) ?? [][0])
+    setNewFlow(() => newFlows.find((_flow) => _flow.name === flowId) ?? [][0])
+
     if (flowId === "Global") {
       setIsGlobal(true)
     }
   }, [flowId, newFlows, isOpen])
 
   const onFlowSelect = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setFlow(newFlows.find((_flow) => _flow.name === e.currentTarget.name) ?? [][0])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    setFlow(() => newFlows.find((_flow) => _flow.name === e.target.name) ?? [][0])
   }
 
   useEffect(() => {
     if (flow) {
+      setNewFlow(flow)
       if (flow.name === "Global") {
         setIsGlobal(true)
       } else {
@@ -65,20 +73,31 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   }, [flow])
 
   const onFlowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFlow({
-      ...flow,
+    setNewFlow({
+      ...newFlow,
       [e.target.name]: e.target.value,
     })
   }
 
   const onFlowSave = () => {
-    if (validateFlowName(flow.name, newFlows) && flow.color && flow.subflow) {
-      setFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? flow : _flow))])
-      saveFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? flow : _flow))])
+    if (!validateFlowName(newFlow.name, newFlows) && newFlow.name !== flow.name) {
+      return n.add({
+        title: "Warning!",
+        message: "Flow name is not valid.",
+        type: "warning",
+      })
+    }
+    if (newFlow.color && newFlow.subflow) {
+      setFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow))])
+      saveFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow))])
       setIsSubFlow(false)
       onClose()
     } else {
-      toast.error("Please fill all the fields correct!")
+      n.add({
+        title: "Warning!",
+        message: "Please fill all the fields correctly.",
+        type: "warning",
+      })
     }
   }
 
@@ -118,7 +137,8 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                     placeholder="Enter flow's name here"
                     name='name'
                     onChange={onFlowChange}
-                    value={flow.name}
+                    value={newFlow.name}
+                    min={2}
                   />
                   <Input
                     disabled={isGlobal}
@@ -127,7 +147,7 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                     placeholder="Enter flow's description here"
                     name='description'
                     onChange={onFlowChange}
-                    value={flow.description}
+                    value={newFlow.description}
                   />
                 </div>
                 <div className='mt-4'>
@@ -137,11 +157,11 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                       <button
                         disabled={isGlobal}
                         key={color}
-                        onClick={() => setFlow({ ...flow, color })}
+                        onClick={() => setNewFlow({ ...newFlow, color })}
                         className='rounded-full w-8 h-8 transition-all'
                         style={{
                           backgroundColor: color,
-                          border: flow.color === color ? "4px solid var(--foreground)" : "none",
+                          border: newFlow.color === color ? "4px solid var(--foreground)" : "none",
                         }}></button>
                     ))}
                   </div>
@@ -174,12 +194,12 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                         name='subflow'
                         onChange={(e) => {
                           if (e.target.value !== "") {
-                            setFlow({ ...flow, subflow: e.target.value })
+                            setNewFlow({ ...newFlow, subflow: e.target.value })
                           } else {
-                            setFlow({ ...flow, subflow: "Global" })
+                            setNewFlow({ ...newFlow, subflow: "Global" })
                           }
                         }}
-                        selectedKeys={flow.subflow ? [flow.subflow] : []}>
+                        selectedKeys={newFlow.subflow ? [newFlow.subflow] : []}>
                         {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
                       </Select>
                     </div>
