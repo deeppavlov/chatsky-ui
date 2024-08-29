@@ -103,7 +103,9 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
           </div>
         </div>
         <div className=' w-full flex flex-col items-center justify-center gap-2 p-2.5 '>
-          <div className="w-full flex items-center justify-start border border-border rounded-lg py-2 px-2 mb-1" onClick={onResponseOpen}>
+          <div
+            className='w-full flex items-center justify-start border border-border rounded-lg py-2 px-2 mb-1'
+            onClick={onResponseOpen}>
             <Response data={data} />
           </div>
           <div className='w-full flex flex-col gap-2'>

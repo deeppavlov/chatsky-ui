@@ -23,9 +23,7 @@ import Chat from "../components/chat/Chat"
 import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
 import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
-import FallbackNode from "../components/nodes/FallbackNode"
 import LinkNode from "../components/nodes/LinkNode"
-import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
@@ -43,8 +41,6 @@ import Settings from "./Settings"
 
 const nodeTypes = {
   default_node: DefaultNode,
-  start_node: StartNode,
-  fallback_node: FallbackNode,
   link_node: LinkNode,
 }
 
@@ -361,7 +357,7 @@ export default function Flow() {
     exitBeforeEnter: true,
   })
 
-  if (!flow) return <Fallback />;
+  if (!flow) return <Fallback />
 
   return (
     <div
