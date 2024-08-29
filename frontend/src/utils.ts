@@ -65,3 +65,9 @@ export const isNodeDeletionValid = (nodes: NodeType[], id: string) => {
   if (!node) return false
   return !node.data.flags?.includes("start")
 }
+
+export function delay(ms: number) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, ms);
+  });
+}

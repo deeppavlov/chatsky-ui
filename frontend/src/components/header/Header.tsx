@@ -53,8 +53,8 @@ const Header = memo(() => {
                 isIconOnly
                 onClick={toggleManagerMode}
                 className={classNames(
-                  " bg-overlay hover:bg-background border border-border rounded-small",
-                  managerMode ? "bg-background border-border-darker" : ""
+                  " bg-background hover:bg-overlay border border-border rounded-small",
+                  managerMode ? "bg-overlay border-border-darker" : ""
                 )}>
                 <GrabModeIcon />
               </Button>
@@ -66,8 +66,8 @@ const Header = memo(() => {
                 onClick={toggleWorkspaceMode}
                 isIconOnly
                 className={classNames(
-                  " bg-overlay hover:bg-background border border-border rounded-small",
-                  workspaceMode ? "bg-background border-border-darker" : ""
+                  " bg-background hover:bg-overlay border border-border rounded-small",
+                  workspaceMode ? "bg-overlay border-border-darker" : ""
                 )}>
                 <GridModeIcon />
               </Button>
@@ -79,8 +79,8 @@ const Header = memo(() => {
                 onClick={toggleNodesLayoutMode}
                 isIconOnly
                 className={classNames(
-                  " bg-overlay hover:bg-background border border-border rounded-small",
-                  nodesLayoutMode ? "bg-background border-border-darker" : ""
+                  " bg-background hover:bg-overlay border border-border rounded-small",
+                  nodesLayoutMode ? "bg-overlay border-border-darker" : ""
                 )}>
                 {/* {nodesLayoutMode ? "Canvas Mode" : "List mode"} */}
                 <ListViewIcon />

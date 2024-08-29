@@ -3,12 +3,14 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Connection,
+  Controls,
   Edge,
   HandleType,
   Node,
   NodeChange,
   OnSelectionChangeParams,
   ReactFlowInstance,
+  ReactFlowRefType,
   addEdge,
   updateEdge,
   useEdgesState,
@@ -23,12 +25,11 @@ import Chat from "../components/chat/Chat"
 import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
 import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
-import FallbackNode from "../components/nodes/FallbackNode"
 import LinkNode from "../components/nodes/LinkNode"
-import StartNode from "../components/nodes/StartNode"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
 import { flowContext } from "../contexts/flowContext"
+import { MetaContext } from "../contexts/metaContext"
 import { notificationsContext } from "../contexts/notificationsContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
@@ -36,6 +37,7 @@ import "../index.css"
 import { FlowType } from "../types/FlowTypes"
 import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
+import { Preloader } from "../UI/Preloader/Preloader"
 import Fallback from "./Fallback"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
@@ -43,8 +45,6 @@ import Settings from "./Settings"
 
 const nodeTypes = {
   default_node: DefaultNode,
-  start_node: StartNode,
-  fallback_node: FallbackNode,
   link_node: LinkNode,
 }
 
@@ -57,9 +57,10 @@ const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sour
 // export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
-  const reactFlowWrapper = useRef(null)
+  const reactFlowWrapper = useRef<ReactFlowRefType>(null)
 
-  const { flows, updateFlow, saveFlows, deleteObject } = useContext(flowContext)
+  const { flows, updateFlow, saveFlows, deleteObject, reactFlowInstance, setReactFlowInstance } =
+    useContext(flowContext)
   const {
     toggleWorkspaceMode,
     workspaceMode,
@@ -69,7 +70,8 @@ export default function Flow() {
     mouseOnPane,
     managerMode,
   } = useContext(workspaceContext)
-  const { takeSnapshot, undo } = useContext(undoRedoContext)
+  const { screenLoading } = useContext(MetaContext)
+  const { takeSnapshot, undo, copy, paste, copiedSelection } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -78,7 +80,7 @@ export default function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
 
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
+  // const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
   const isEdgeUpdateSuccess = useRef(false)
@@ -308,8 +310,29 @@ export default function Flow() {
     [takeSnapshot, reactFlowInstance, flows, setNodes]
   )
 
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+        e.preventDefault()
+        if (selection) {
+          copy(selection)
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+        e.preventDefault()
+        if (
+          reactFlowInstance &&
+          flow &&
+          flow.name === flowId &&
+          copiedSelection &&
+          reactFlowWrapper.current
+        ) {
+          const bounds = reactFlowWrapper.current.getBoundingClientRect()
+          paste(copiedSelection, { x: mousePos.x - bounds.left, y: mousePos.y - bounds.top })
+        }
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
@@ -332,22 +355,34 @@ export default function Flow() {
       }
     }
 
+    const mouseMoveHandler = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY })
+    }
+
     document.addEventListener("keydown", kbdHandler)
+    document.addEventListener("mousemove", mouseMoveHandler)
 
     return () => {
       document.removeEventListener("keydown", kbdHandler)
+      document.removeEventListener("mousemove", mouseMoveHandler)
     }
   }, [
+    copiedSelection,
+    copy,
     deleteObject,
     flow,
     flowId,
     flows,
     mouseOnPane,
+    mousePos.x,
+    mousePos.y,
     n,
+    paste,
     reactFlowInstance,
     saveFlows,
     selected,
     selectedNode,
+    selection,
     takeSnapshot,
     toggleWorkspaceMode,
     workspaceMode,
@@ -361,7 +396,10 @@ export default function Flow() {
     exitBeforeEnter: true,
   })
 
-  if (!flow) return <Fallback />;
+  if (screenLoading.value) return <Preloader />
+  else if (flows.length && !flow && !screenLoading.value) {
+    return <Fallback />
+  }
 
   return (
     <div
@@ -416,6 +454,10 @@ export default function Flow() {
               color='var(--foreground)'
               gap={workspaceMode ? 24 : 96}
               size={workspaceMode ? 1 : 2}
+            />
+            <Controls
+              fitViewOptions={{ padding: 0.25 }}
+              className='bg-transparent shadow-none fill-foreground stroke-foreground text-foreground [&>button]:my-1 [&>button]:rounded [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
             />
           </ReactFlow>
         </a.div>

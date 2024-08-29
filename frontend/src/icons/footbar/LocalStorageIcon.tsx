@@ -1,6 +1,6 @@
 import React from "react"
 
-const LocalStogareIcon = ({ stroke='var(--foreground)' }: React.SVGAttributes<SVGSVGElement>) => {
+const LocalStorageIcon = ({ stroke='var(--foreground)' }: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       width='23'
@@ -19,4 +19,4 @@ const LocalStogareIcon = ({ stroke='var(--foreground)' }: React.SVGAttributes<SV
   )
 }
 
-export default LocalStogareIcon
+export default LocalStorageIcon
