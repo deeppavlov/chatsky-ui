@@ -51,7 +51,7 @@ const BuildMenu = () => {
             />
           }
           className={classNames(
-            "bg-overlay hover:bg-background border border-border rounded-small",
+            "bg-background hover:bg-overlay border border-border rounded-small",
             runStatus === "alive"
               ? "border-emerald-500"
               : runStatus === "stopped"
@@ -115,8 +115,8 @@ const BuildMenu = () => {
           isIconOnly
           style={{}}
           className={classNames(
-            "bg-overlay hover:bg-background border border-border rounded-small",
-            chat ? "bg-background border-border-darker" : ""
+            "bg-background hover:bg-overlay border border-border rounded-small",
+            chat ? "bg-overlay border-border-darker" : ""
           )}>
           <ChatIcon className='w-5 h-5' />
         </Button>
