@@ -21,7 +21,7 @@ class TestRunManager:
 
         run_process.assert_called_once_with(run_manager.last_id, BUILD_ID, preset.end_status)
         run_process_instance.start.assert_awaited_once_with(
-            f"chatsky.ui run_bot --build-id {BUILD_ID} --preset {preset.end_status}"
+            f"chatsky.ui run_bot --build-id {BUILD_ID} " f"--preset {preset.end_status} " f"--project-dir ."
         )
 
         assert run_manager.processes[run_manager.last_id] is run_process_instance
