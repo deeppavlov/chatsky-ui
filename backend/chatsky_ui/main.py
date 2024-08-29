@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     index_dict["instance"] = get_index()
     await index_dict["instance"].load()
     yield
-    
+
     settings.temp_conf.unlink(missing_ok=True)
 
 

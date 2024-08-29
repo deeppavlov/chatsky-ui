@@ -162,9 +162,7 @@ def run_app(
 
 @cli.command("init")
 def init(
-    destination: Annotated[
-        Path, typer.Option(help="Path where you want to create your project")
-    ] = None,
+    destination: Annotated[Path, typer.Option(help="Path where you want to create your project")] = None,
     no_input: Annotated[bool, typer.Option(help="True for quick and easy initialization using default values")] = False,
     overwrite_if_exists: Annotated[
         bool,
