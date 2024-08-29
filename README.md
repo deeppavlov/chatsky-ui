@@ -1,11 +1,11 @@
 # Quick Start
 ## System Requirements
-Ensure you have Python version 3.10 or higher installed.
+Ensure you have Python version 3.8 or higher installed.
 
 ## Installation
 To install the necessary package, run the following command:
 ```bash
-pip install chatsky-ui --pre
+pip install chatsky-ui
 ```
 
 ## Configuring the chatsky-ui app
@@ -28,12 +28,11 @@ RUN_RUNNING_TIMEOUT=5
 Initialize your project by running:
 ```bash
 chatsky.ui init
-cd <PROJECT-SLUG> # enter the slug you choose for your project with the help of the previous command
 ```
 The `chatsky.ui init` command will start an interactive `cookiecutter` process to create a project based on a predefined template. The resulting project will be a simple example template that you can customize to suit your needs.
 
 ## Running Your Project
 To run your project, use the following command:
 ```bash
-chatsky.ui run_app
+chatsky.ui run_app --project-dir <PROJECT-SLUG>  # enter the slug you choose for your project with the help of the previous command
 ```

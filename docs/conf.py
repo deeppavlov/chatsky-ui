@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = 'Chatsky-UI'
 copyright = '2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk'
 author = 'Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk'
-release = '0.1.0-beta.1'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/maste r/usage/configuration.html#general-configuration
