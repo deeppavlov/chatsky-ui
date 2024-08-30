@@ -208,16 +208,12 @@ const ConditionModal = ({
     [currentCondition]
   )
 
-  // useEffect(() => {
-  //   console.log(currentCondition)
-  // }, [currentCondition])
 
   const lintCondition = async () => {
     setLintStatus(null)
     if (currentCondition.type === "python") {
       try {
         const res = await lint_service(currentCondition.data.python?.action ?? "")
-        console.log(res)
         setLintStatus(res)
         return res
       } catch (error) {
@@ -233,7 +229,6 @@ const ConditionModal = ({
     if (currentCondition.type === "python") {
       const lint = await lintCondition()
       const validate_action = validateConditionAction()
-      console.log(lint)
       if (lint && validate_action.status) {
         setTestConditionPending(() => false)
         return true

@@ -103,7 +103,6 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   }
 
   const onFlowDelete = () => {
-    console.log("delete")
     if (newFlow.name === "Global") {
       return n.add({
         title: "Warning!",

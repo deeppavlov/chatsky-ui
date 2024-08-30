@@ -68,10 +68,6 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const { notification: n } = useContext(NotificationsContext)
 
   useEffect(() => {
-    console.log(modalsOpened)
-  }, [modalsOpened])
-
-  useEffect(() => {
     if (modalsOpened === 0) {
       setMouseOnPane(true)
     } else if (modalsOpened > 0) {
@@ -82,7 +78,6 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [modalsOpened])
 
-  useEffect(() => console.log(mouseOnPane), [mouseOnPane])
 
   const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
@@ -114,7 +109,6 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const handleNodeFlags = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       const nodes = flows.flatMap((flow) => flow.data.nodes)
-      console.log(nodes)
       const new_nds = nodes.map((nd: AppNode) => {
         if (nd.type === "default_node" && nd.data.flags?.includes(e.currentTarget.name)) {
           nd.data.flags = nd.data.flags.filter((flag) => flag !== e.currentTarget.name)

@@ -287,7 +287,6 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
     const newNodes = [...nodes.map((e: AppNode) => ({ ...e, selected: false })), ...resultNodes]
 
-    console.log(selectionInstance.edges)
 
     selectionInstance.edges.forEach((e) => {
       const source = idsMap[e.source]
@@ -312,120 +311,6 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     reactFlowInstance.setNodes(newNodes)
     reactFlowInstance.setEdges(edges)
   }
-
-  // function paste(
-  //   selectionInstance,
-  //   position: { x: number; y: number; paneX?: number; paneY?: number }
-  // ) {
-  //   let minimumX = Infinity;
-  //   let minimumY = Infinity;
-  //   let idsMap = {};
-  //   let nodes = reactFlowInstance.getNodes();
-  //   let edges = reactFlowInstance.getEdges();
-  //   selectionInstance.nodes.forEach((n) => {
-  //     if (n.position.y < minimumY) {
-  //       minimumY = n.position.y;
-  //     }
-  //     if (n.position.x < minimumX) {
-  //       minimumX = n.position.x;
-  //     }
-  //   });
-
-  //   const insidePosition = position.paneX
-  //     ? { x: position.paneX + position.x, y: position.paneY + position.y }
-  //     : reactFlowInstance.project({ x: position.x, y: position.y });
-
-  //   const resultNodes: any[] = []
-
-  //   selectionInstance.nodes.forEach((n: NodeType) => {
-  //     // Generate a unique node ID
-  //     let newId = getNodeId(n.data.type);
-  //     idsMap[n.id] = newId;
-
-  //     const positionX = insidePosition.x + n.position.x - minimumX
-  //     const positionY = insidePosition.y + n.position.y - minimumY
-
-  //     // Create a new node object
-  //     const newNode: NodeType = {
-  //       id: newId,
-  //       type: "genericNode",
-  //       position: {
-  //         x: insidePosition.x + n.position.x - minimumX,
-  //         y: insidePosition.y + n.position.y - minimumY,
-  //       },
-  //       data: {
-  //         ..._.cloneDeep(n.data),
-  //         id: newId,
-  //       },
-  //     };
-
-  //     // FIXME: CHECK WORK >>>>>>>
-  //     // check for intersections before paste
-  //     if (nodes.some(({ position, id, width, height }) => {
-  //       const xIntersect = ((positionX > position.x - width) && (positionX < (position.x + width)))
-  //       const yIntersect = ((positionY > position.y - height) && (positionY < (position.y + height)))
-  //       const result = xIntersect && yIntersect
-  //       // console.log({id: id, xIntersect: xIntersect, yIntersect: yIntersect, result: result})
-  //       return result
-  //     })) {
-  //       return setErrorData({ title: "Invalid place! Nodes can't intersect!" })
-  //     }
-  //     // FIXME: CHECK WORK >>>>>>>>
-
-  //     resultNodes.push({ ...newNode, selected: true })
-
-  //   });
-
-  //   if (resultNodes.length < selectionInstance.nodes.length) {
-  //     return
-  //   }
-
-  //   // Add the new node to the list of nodes in state
-  //   nodes = nodes
-  //     .map((e) => ({ ...e, selected: false }))
-  //     .concat(resultNodes);
-  //   reactFlowInstance.setNodes(nodes);
-
-  //   selectionInstance.edges.forEach((e) => {
-  //     let source = idsMap[e.source];
-  //     let target = idsMap[e.target];
-  //     let sourceHandleSplitted = e.sourceHandle.split("|");
-  //     let sourceHandle =
-  //       source +
-  //       "|" +
-  //       sourceHandleSplitted[1] +
-  //       "|" +
-  //       source
-  //     let targetHandleSplitted = e.targetHandle.split("|");
-  //     let targetHandle =
-  //       targetHandleSplitted.slice(0, -1).join("|") + target;
-  //     let id =
-  //       "reactflow__edge-" +
-  //       source +
-  //       sourceHandle +
-  //       "-" +
-  //       target +
-  //       targetHandle;
-  //     edges = addEdge(
-  //       {
-  //         source,
-  //         target,
-  //         sourceHandle,
-  //         targetHandle,
-  //         id,
-  //         style: { stroke: "inherit" },
-  //         className:
-  //           targetHandle.split("|")[0] === "Text"
-  //             ? "stroke-foreground "
-  //             : "stroke-foreground ",
-  //         animated: targetHandle.split("|")[0] === "Text",
-  //         selected: false,
-  //       },
-  //       edges.map((e) => ({ ...e, selected: false }))
-  //     );
-  //   });
-  //   reactFlowInstance.setEdges(edges);
-  // }
 
   return (
     <undoRedoContext.Provider

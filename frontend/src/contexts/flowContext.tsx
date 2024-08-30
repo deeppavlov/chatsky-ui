@@ -196,7 +196,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const validateNodeDeletion = (node: AppNode) => {
-    console.log(node)
     if (node.type === "default_node" && node.data.flags.includes("start")) {
       n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
       return false

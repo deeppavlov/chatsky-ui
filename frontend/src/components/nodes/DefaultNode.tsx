@@ -75,7 +75,7 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
                   width: "0.7rem",
                   height: "0.7rem",
                   top: "1.875rem",
-                  left: "-0.335rem",
+                  left: "0rem",
                   zIndex: 10,
                 }}
               />
@@ -102,9 +102,9 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             />
           </div>
         </div>
-        <div className=' w-full flex flex-col items-center justify-center gap-2 p-2.5 '>
+        <div className='cursor-default w-full flex flex-col items-center justify-center gap-2 p-2.5 '>
           <div
-            className='w-full flex items-center justify-start border border-border rounded-lg py-2 px-2 mb-1'
+            className='cursor-pointer w-full flex items-center justify-start border border-border shadow rounded-lg py-2 px-2 mb-1 transition-colors hover:border-node-selected'
             onClick={onResponseOpen}>
             <Response data={data} />
           </div>

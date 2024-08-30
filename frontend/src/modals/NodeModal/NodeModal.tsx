@@ -86,7 +86,6 @@ const NodeModal = ({
       position: { x: 0, y: 0 },
       type: "default_node",
     })
-    console.log(is_deletion_valid)
     if (!is_deletion_valid) return -1
     takeSnapshot()
     const nodes = getNodes()

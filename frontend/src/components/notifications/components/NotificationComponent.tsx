@@ -83,9 +83,7 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
       if (notification.stack > 1) {
         const index = notifications.findIndex((n) => n.timestamp == notification.timestamp)
         for (let i = 0; i <= index; i++) {
-          console.log(notifications[i])
           if (notifications[i].stack === 0 && notifications[i].message === notification.message) {
-            console.log("deletion")
             nt.delete(notifications[i].timestamp)
           }
         }
