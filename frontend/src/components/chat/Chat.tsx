@@ -5,7 +5,7 @@ import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
 import { memo, useContext, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { chatContext } from "../../contexts/chatContext"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import { runContext } from "../../contexts/runContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { DEV } from "../../env.consts"
@@ -19,7 +19,7 @@ const Chat = memo(() => {
   const [searchParams, setSearchParams] = useSearchParams()
   const ws = useRef<WebSocket | null>(null)
   const { setMouseOnPane } = useContext(workspaceContext)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   const [isEmoji, setIsEmoji] = useState(false)
 
@@ -122,7 +122,7 @@ const Chat = memo(() => {
       const socket = new WebSocket(
         `ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`
       )
-      socket.onopen = (e) => {
+      socket.onopen = () => {
         n.add({ message: "Chat was successfully connected!", title: "Success", type: "success" })
       }
       socket.onmessage = (event: MessageEvent) => {

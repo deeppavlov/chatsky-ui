@@ -8,7 +8,7 @@ import {
 } from "@nextui-org/react"
 import { AlertOctagon, AlertTriangle, BugIcon, CheckCircle2, InfoIcon, Trash } from "lucide-react"
 import { useContext, useState } from "react"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import NotificationComponent from "./components/NotificationComponent"
 
 type NotificationsWindowProps = {
@@ -30,7 +30,7 @@ type NotificationsWindowProps = {
 // }
 
 export const NotificationsWindow = ({ isOpen, setIsOpen }: NotificationsWindowProps) => {
-  const { notifications, notification } = useContext(notificationsContext)
+  const { notifications, notification } = useContext(NotificationsContext)
   const [notificationFilter, setNotificationFilter] = useState<string[]>([])
 
   const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

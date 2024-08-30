@@ -11,7 +11,7 @@ import {
   get_builds,
   localBuildType,
 } from "../api/bot"
-import { notificationsContext } from "./notificationsContext"
+import { NotificationsContext } from "./notificationsContext"
 
 type BuildContextType = {
   build: boolean
@@ -53,7 +53,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [logsPage, setLogsPage] = useState(searchParams.get("logs_page") === "opened")
   const [builds, setBuilds] = useState<localBuildType[]>([])
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   const setBuildsHandler = (builds: buildMinifyApiType[]) => {
     setBuilds(() =>

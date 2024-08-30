@@ -19,24 +19,24 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react"
+import { Handle, Position } from "@xyflow/react"
+import "@xyflow/react/dist/style.css"
 import classNames from "classnames"
 import { AlertTriangle, Link2, Trash2 } from "lucide-react"
 import { memo, useContext, useEffect, useMemo, useState } from "react"
-import { Handle, Node, Position } from "reactflow"
-import "reactflow/dist/style.css"
 import { flowContext } from "../../contexts/flowContext"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import "../../index.css"
 import { FlowType } from "../../types/FlowTypes"
-import { NodeDataType } from "../../types/NodeTypes"
+import { AppNode, LinkNodeDataType } from "../../types/NodeTypes"
 
-const LinkNode = memo(({ data }: { data: NodeDataType }) => {
+const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   const { onOpen, onClose, isOpen } = useDisclosure()
   const { flows, deleteNode } = useContext(flowContext)
   const [toFlow, setToFlow] = useState<FlowType>()
-  const [toNode, setToNode] = useState<Node<NodeDataType>>()
+  const [toNode, setToNode] = useState<AppNode>()
   const [error, setError] = useState(false)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
   // const { openPopUp } = useContext(PopUpContext)
 
   useEffect(() => {

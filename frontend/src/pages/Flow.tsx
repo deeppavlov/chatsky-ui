@@ -1,41 +1,40 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import ReactFlow, {
+import {
   Background,
   BackgroundVariant,
   Connection,
   Controls,
   Edge,
-  HandleType,
-  Node,
   NodeChange,
+  OnSelectionChangeFunc,
   OnSelectionChangeParams,
-  ReactFlowInstance,
-  ReactFlowRefType,
+  ReactFlowJsonObject,
   addEdge,
-  updateEdge,
+  reconnectEdge,
   useEdgesState,
-  useNodesState,
-} from "reactflow"
+  useNodesState
+} from "@xyflow/react"
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 
 import { a, useTransition } from "@react-spring/web"
+import "@xyflow/react/dist/style.css"
 import { useParams } from "react-router-dom"
-import "reactflow/dist/style.css"
 import { v4 } from "uuid"
 import Chat from "../components/chat/Chat"
 import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
 import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
 import LinkNode from "../components/nodes/LinkNode"
+import ReactFlowCustom from "../components/ReactFlowCustom"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
-import { flowContext } from "../contexts/flowContext"
+import { CustomReactFlowInstanceType, flowContext } from "../contexts/flowContext"
 import { MetaContext } from "../contexts/metaContext"
-import { notificationsContext } from "../contexts/notificationsContext"
+import { NotificationsContext } from "../contexts/notificationsContext"
 import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
-import { NodeDataType, NodeType, NodesTypes } from "../types/NodeTypes"
+import { AppNode, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
 import { Preloader } from "../UI/Preloader/Preloader"
 import Fallback from "./Fallback"
@@ -57,9 +56,8 @@ const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sour
 // export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
 
 export default function Flow() {
-  const reactFlowWrapper = useRef<ReactFlowRefType>(null)
 
-  const { flows, updateFlow, saveFlows, deleteObject, reactFlowInstance, setReactFlowInstance } =
+  const { flows, updateFlow, saveFlows, reactFlowInstance, setReactFlowInstance, validateDeletion } =
     useContext(flowContext)
   const {
     toggleWorkspaceMode,
@@ -84,7 +82,7 @@ export default function Flow() {
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
   const isEdgeUpdateSuccess = useRef(false)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   // const {
   //   isOpen: isLinkModalOpen,
@@ -96,7 +94,7 @@ export default function Flow() {
     if (reactFlowInstance && flow && flow.name === flowId) {
       // const _node = reactFlowInstance.getNodes()[0]
       // if (_node && _node.id === flow.data.nodes[0].id) {
-      flow.data = reactFlowInstance.toObject()
+      flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
       updateFlow(flow)
       // }
     }
@@ -106,7 +104,7 @@ export default function Flow() {
     if (reactFlowInstance && flow && flow.name === flowId) {
       const _node = reactFlowInstance.getNodes()[0]
       if (_node && _node.id === flow.data.nodes[0].id) {
-        flow.data = reactFlowInstance.toObject()
+        flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
         updateFlow(flow)
         // const links: Node<NodeDataType>[] = flow.data.nodes.filter(
         //   (node) => node.type === "link_node"
@@ -154,12 +152,12 @@ export default function Flow() {
     }
   }, [flow, flowId, reactFlowInstance, setEdges, setNodes])
 
-  const onInit = useCallback((e: ReactFlowInstance) => {
+  const onInit = useCallback((e: CustomReactFlowInstanceType) => {
     setReactFlowInstance(e)
   }, [])
 
   const onNodesChangeMod = useCallback(
-    (nds: NodeChange[]) => {
+    (nds: NodeChange<AppNode>[]) => {
       if (nds) {
         nds
           .sort((nd1: NodeChange, nd2: NodeChange) => {
@@ -187,33 +185,33 @@ export default function Flow() {
   )
 
   const onEdgeUpdateStart = useCallback(() => {
+    takeSnapshot()
     isEdgeUpdateSuccess.current = false
-  }, [])
+  }, [takeSnapshot])
 
   const onEdgeUpdate = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
-      takeSnapshot()
-      setEdges((els) => updateEdge(oldEdge, newConnection, els))
+      setEdges((els) => reconnectEdge(oldEdge, newConnection, els))
       isEdgeUpdateSuccess.current = true
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
 
-  const onEdgeUpdateEnd = useCallback(
-    (event: MouseEvent | TouchEvent, edge: Edge, handleType: HandleType) => {
-      takeSnapshot()
-      if (!isEdgeUpdateSuccess.current) {
-        deleteObject(edge.id)
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onEdgeUpdate, deleteObject]
-  )
+  // const onEdgeUpdateEnd = useCallback(
+  //   (event: MouseEvent | TouchEvent, edge: Edge) => {
+  //     // takeSnapshot()
+  //     // if (!isEdgeUpdateSuccess.current) {
+  //     //   setEdges((eds) => eds.filter((ed) => ed.id !== edge.id))
+  //     // }
+  //   },
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   [onEdgeUpdate]
+  // )
 
   const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: Node) => {
-      const node_ = node as NodeType
+    (event: React.MouseEvent, node: AppNode) => {
+      const node_ = node as AppNode
       setSelected(node_.id)
       setSelectedNode(node_.id)
     },
@@ -236,7 +234,7 @@ export default function Flow() {
     [setEdges]
   )
 
-  const onSelectionChange = useCallback((params: OnSelectionChangeParams) => {
+  const onSelectionChange: OnSelectionChangeFunc = useCallback((params) => {
     setSelection(params)
   }, [])
 
@@ -250,7 +248,7 @@ export default function Flow() {
       event.preventDefault()
       takeSnapshot()
 
-      const type: NodesTypes = event.dataTransfer.getData("application/reactflow") as NodesTypes
+      const type: NodesTypes = event.dataTransfer.getData("application/@xyflow/react") as NodesTypes
 
       // check if the dropped element is valid
       if (typeof type === "undefined" || !type || !reactFlowInstance) {
@@ -259,52 +257,53 @@ export default function Flow() {
 
       // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
       // and you don't need to subtract the reactFlowBounds.left/top anymore
-      // details: https://reactflow.dev/whats-new/2023-11-10
+      // details: https://@xyflow/react.dev/whats-new/2023-11-10
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       })
-      const newId = v4()
+      const newId = type + "_" + v4()
 
       const START_FALLBACK_FLAGS = []
       if (
         !flows.some((flow) =>
-          flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("start"))
+          flow.data.nodes.some(
+            (node: AppNode) => node.type === "default_node" && node.data.flags?.includes("start")
+          )
         )
       ) {
         START_FALLBACK_FLAGS.push("start")
       }
       if (
         !flows.some((flow) =>
-          flow.data.nodes.some((node: Node<NodeDataType>) => node.data.flags?.includes("fallback"))
+          flow.data.nodes.some(
+            (node: AppNode) => node.type === "default_node" && node.data.flags?.includes("fallback")
+          )
         )
       ) {
         START_FALLBACK_FLAGS.push("fallback")
       }
 
-      const newNode: NodeType = {
-        id: newId,
-        type,
-        position,
-        dragHandle: NODES[type].dragHandle,
-        data: {
+      let newNode = {} as AppNode
+      if (type === 'default_node') {
+        newNode = {
           id: newId,
-          name:
-            type === "default_node"
-              ? NODE_NAMES.find((name) => !nodes.some((node) => node.data.name === name)) ??
-                "Empty names array"
-              : NODES[type].name,
-          flags: START_FALLBACK_FLAGS,
-          conditions: NODES[type].conditions,
-          global_conditions: [],
-          local_conditions: [],
-          response: NODES[type].response as responseType,
-          transition: {
-            target_flow: "",
-            target_node: "",
+          type,
+          position,
+          dragHandle: NODES[type].dragHandle,
+          data: {
+            id: newId,
+            name:NODE_NAMES.find((name) => !nodes.some((node) => node.data.name === name)) ?? "Empty names array",
+            flags: START_FALLBACK_FLAGS,
+            conditions: NODES[type].conditions,
+            global_conditions: [],
+            local_conditions: [],
+            response: NODES[type].response as responseType,
           },
-        },
+        }
       }
+
+      
       setNodes((nds) => nds.concat(newNode))
     },
     [takeSnapshot, reactFlowInstance, flows, setNodes]
@@ -326,11 +325,9 @@ export default function Flow() {
           reactFlowInstance &&
           flow &&
           flow.name === flowId &&
-          copiedSelection &&
-          reactFlowWrapper.current
+          copiedSelection
         ) {
-          const bounds = reactFlowWrapper.current.getBoundingClientRect()
-          paste(copiedSelection, { x: mousePos.x - bounds.left, y: mousePos.y - bounds.top })
+          paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
         }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -344,14 +341,6 @@ export default function Flow() {
       if ((e.ctrlKey || e.metaKey) && e.key === "h") {
         e.preventDefault()
         toggleWorkspaceMode()
-      }
-
-      if ((e.key === "Backspace" || e.key === "Delete") && mouseOnPane) {
-        e.preventDefault()
-        if (selected) {
-          takeSnapshot()
-          deleteObject(selected)
-        }
       }
     }
 
@@ -369,7 +358,6 @@ export default function Flow() {
   }, [
     copiedSelection,
     copy,
-    deleteObject,
     flow,
     flowId,
     flows,
@@ -408,11 +396,10 @@ export default function Flow() {
       <SideBar />
       {transitions((style) => (
         <a.div
-          ref={reactFlowWrapper}
           style={{ width: "100%", height: "100vh", ...style }}
           className='col-span-6 opacity-0 pb-10'>
-          <ReactFlow
-            deleteKeyCode={""}
+          <ReactFlowCustom
+            deleteKeyCode={["Backspace", "Delete"]}
             style={{
               background: "var(--background)",
             }}
@@ -435,16 +422,19 @@ export default function Flow() {
             onEdgeClick={onEdgeClick}
             onNodesChange={onNodesChangeMod}
             onEdgesChange={onEdgesChange}
-            onEdgeUpdate={onEdgeUpdate}
-            onEdgeUpdateStart={onEdgeUpdateStart}
-            onEdgeUpdateEnd={onEdgeUpdateEnd}
+            onReconnect={onEdgeUpdate}
+            onReconnectStart={onEdgeUpdateStart}
+            // onReconnectEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
             onNodeDragStop={handleFullUpdateFlowData}
             onConnect={onConnect}
+            // onNodesDelete={onNodesDelete}
+            // onEdgesDelete={onEdgesDelete}
+            onBeforeDelete={validateDeletion}
+            edgesReconnectable={!managerMode}
             nodesConnectable={!managerMode}
             nodesDraggable={!managerMode}
             nodesFocusable={!managerMode}
-            edgesUpdatable={!managerMode}
             edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
             snapToGrid={!workspaceMode}>
@@ -459,7 +449,7 @@ export default function Flow() {
               fitViewOptions={{ padding: 0.25 }}
               className='bg-transparent shadow-none fill-foreground stroke-foreground text-foreground [&>button]:my-1 [&>button]:rounded [&>button]:bg-bg-secondary [&>button]:border-none hover:[&>button]:bg-border'
             />
-          </ReactFlow>
+          </ReactFlowCustom>
         </a.div>
       ))}
       {nodesLayoutMode && <NodesLayout />}

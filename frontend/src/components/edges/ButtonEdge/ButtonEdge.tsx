@@ -1,4 +1,3 @@
-import { X } from "lucide-react"
 import {
   BaseEdge,
   Edge,
@@ -6,7 +5,8 @@ import {
   EdgeProps,
   getBezierPath,
   useReactFlow,
-} from "reactflow"
+} from "@xyflow/react"
+import { X } from "lucide-react"
 import "./buttonedge.css"
 
 export default function CustomEdge({
@@ -53,9 +53,9 @@ export default function CustomEdge({
           }}
           className='nodrag nopan'>
           <button
-            className='p-0.5 rounded-full bg-neutral-300 text-foreground flex items-center justify-center border-2 border-transparent transition-colors hover:border-background'
+            className='p-0.5 rounded-full bg-neutral-300 text-black flex items-center justify-center border-2 border-transparent transition-colors hover:border-background'
             onClick={onEdgeClick}>
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 stroke-neutral-800" />
           </button>
         </div>
       </EdgeLabelRenderer>

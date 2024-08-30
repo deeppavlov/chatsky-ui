@@ -73,7 +73,7 @@ export const NODE_NAMES = [
   "Science discussion",
   "Experience story",
   "Political discussion",
- "Now plans",
+  "Now plans",
   "Sport talk",
   "Movie discussion",
   "Family story",
@@ -108,7 +108,7 @@ export const NODE_NAMES = [
   "Cooking discussion",
   "Technology story",
   "Music talk",
-  "Next year plans"
+  "Next year plans",
 ]
 
 export const START_FALLBACK_NODE_FLAGS = ["start", "fallback"]
@@ -119,7 +119,7 @@ export const NODES = {
   default_node: {
     name: "Default Node",
     type: "default_node",
-    dragHandle: '.custom-drag-handle',
+    dragHandle: ".custom-drag-handle",
     conditions: [],
     global_conditions: [],
     local_conditions: [],
@@ -148,15 +148,11 @@ export const NODES = {
   link_node: {
     name: "Link",
     type: "link_node",
-    dragHandle: '',
-    conditions: [],
-    global_conditions: [],
-    local_conditions: [],
-    response: {
-      name: "Link response",
-      type: "text",
-      data: [{ text: "Link response", priority: 1 }],
-    }
+    dragHandle: "",
+    transition: {
+      target_flow: "",
+      target_node: "",
+    },
   },
 }
 
@@ -194,6 +190,5 @@ export const conditionTypeIcons = {
 export const responseTypeIcons = {
   python: <Code2 />,
   text: <Text />,
-  llm: <LLMConditionIcon />
+  llm: <LLMConditionIcon />,
 }
-

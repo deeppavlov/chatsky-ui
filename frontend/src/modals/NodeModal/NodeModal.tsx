@@ -7,23 +7,24 @@ import {
   ModalHeader,
   ModalProps,
 } from "@nextui-org/react"
+import { Edge, useReactFlow } from "@xyflow/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import React, { useCallback, useContext, useEffect } from "react"
-import { useReactFlow } from "reactflow"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
+import { undoRedoContext } from "../../contexts/undoRedoContext"
 import EditPenIcon from "../../icons/EditPenIcon"
-import { NodeDataType } from "../../types/NodeTypes"
+import { DefaultNodeDataType, DefaultNodeType } from "../../types/NodeTypes"
 import ConditionRow from "./components/ConditionRow"
 
 type NodeModalProps = {
-  data: NodeDataType
+  data: DefaultNodeDataType
   size?: ModalProps["size"]
   isOpen: boolean
   onClose: () => void
   onResponseModalOpen: () => void
-  nodeDataState: NodeDataType
-  setNodeDataState: React.Dispatch<React.SetStateAction<NodeDataType>>
+  nodeDataState: DefaultNodeDataType
+  setNodeDataState: React.Dispatch<React.SetStateAction<DefaultNodeDataType>>
 }
 
 const NodeModal = ({
@@ -35,8 +36,9 @@ const NodeModal = ({
   nodeDataState,
   setNodeDataState,
 }: NodeModalProps) => {
-  const { getNodes, setNodes } = useReactFlow()
-  const { quietSaveFlows } = useContext(flowContext)
+  const { getNodes, setNodes } = useReactFlow<DefaultNodeType, Edge>()
+  const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext)
+  const { takeSnapshot } = useContext(undoRedoContext)
 
   useEffect(() => {
     setNodeDataState(getNodes().find((node) => node.data.id === data.id)?.data ?? data)
@@ -78,6 +80,15 @@ const NodeModal = ({
   }
 
   const onNodeDelete = () => {
+    const is_deletion_valid = validateNodeDeletion({
+      data,
+      id: data.id,
+      position: { x: 0, y: 0 },
+      type: "default_node",
+    })
+    console.log(is_deletion_valid)
+    if (!is_deletion_valid) return -1
+    takeSnapshot()
     const nodes = getNodes()
     const new_nodes = nodes.filter((node) => node.data.id !== data.id)
     setNodes(new_nodes)
@@ -164,6 +175,7 @@ const NodeModal = ({
                 <HelpCircle />
               </Button>
               <Button
+                onClick={onNodeDelete}
                 className='hover:bg-red-500'
                 isIconOnly>
                 <TrashIcon />

@@ -1,10 +1,12 @@
+import { addEdge, Edge, Node, OnSelectionChangeParams, useReactFlow } from "@xyflow/react"
 import { cloneDeep } from "lodash"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { addEdge, Edge, Node, OnSelectionChangeParams, useReactFlow } from "reactflow"
 import { v4 } from "uuid"
-import { NodeDataType } from "../types/NodeTypes"
+import { AppNode } from "../types/NodeTypes"
+import { OnSelectionChangeParamsCustom } from "../types/ReactFlowTypes"
+import { generateNewNode } from "../utils"
 import { flowContext } from "./flowContext"
-import { notificationsContext } from "./notificationsContext"
+import { NotificationsContext } from "./notificationsContext"
 
 type undoRedoContextType = {
   undo: () => void
@@ -55,7 +57,7 @@ export const undoRedoContext = createContext<undoRedoContextType>(initialValue)
 
 export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   const { tab, flows } = useContext(flowContext)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   const [past, setPast] = useState<HistoryItem[][]>(flows.map(() => []))
   const [future, setFuture] = useState<HistoryItem[][]>(flows.map(() => []))
@@ -204,8 +206,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
         type: "warning",
       })
     }
-    const nodes: Node<NodeDataType>[] = reactFlowInstance.getNodes()
-    let edges: Edge[] = reactFlowInstance.getEdges()
+    const _selectionInstance = selectionInstance as OnSelectionChangeParamsCustom
+    const nodes = reactFlowInstance.getNodes()
+    let edges = reactFlowInstance.getEdges()
     let minimumX = Infinity
     let minimumY = Infinity
     const idsMap: { [id: string]: string } = {}
@@ -223,30 +226,29 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     const insidePosition =
       position.paneX && position.paneY
         ? { x: position.paneX + position.x, y: position.paneY + position.y }
-        : reactFlowInstance.project({ x: position.x, y: position.y })
+        : reactFlowInstance.screenToFlowPosition({ x: position.x, y: position.y })
 
-    const resultNodes: Node<NodeDataType>[] = []
+    const resultNodes: AppNode[] = []
 
-    selectionInstance.nodes.forEach((n: Node<NodeDataType>) => {
-      // Generate a unique node ID
-      const newId = v4()
-      idsMap[n.id] = newId
-      const newConditions = n.data.conditions?.map((c) => {
-        const newCondId = v4()
-        sourceHandlesMap[c.id] = newCondId
-        return { ...c, id: newCondId }
-      })
-      const newResponse = n.data.response
-        ? {
-            ...n.data.response,
-            id: v4(),
-          }
-        : undefined
+    _selectionInstance.nodes.forEach((n: AppNode) => {
+      let newConditions
+      let newResponse
+      if (n.type === "default_node") {
+        newConditions = n.data.conditions.map((c) => {
+          const newCondId = "condition_" + v4()
+          sourceHandlesMap[c.id] = newCondId
+          return { ...c, id: newCondId }
+        })
+        newResponse = n.data.response
+          ? {
+              ...n.data.response,
+              id: "response_" + v4(),
+            }
+          : undefined
+      }
 
       // Create a new node object
-      const newNode: Node<NodeDataType> = {
-        id: newId,
-        type: n.type,
+      const newNode = generateNewNode(n.type, {
         position: {
           x: insidePosition.x + n.position.x - minimumX,
           y: insidePosition.y + n.position.y - minimumY,
@@ -256,9 +258,25 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
           conditions: newConditions,
           response: newResponse,
           flags: [],
-          id: newId,
         },
-      }
+      })
+      idsMap[n.id] = newNode.id
+
+      // const newNode: AppNode = {
+      //   id: newId,
+      //   type: n.type,
+      //   position: {
+      //     x: insidePosition.x + n.position.x - minimumX,
+      //     y: insidePosition.y + n.position.y - minimumY,
+      //   },
+      //   data: {
+      //     ...cloneDeep(n.data),
+      //     conditions: newConditions,
+      //     response: newResponse,
+      //     flags: [],
+      //     id: newId,
+      //   },
+      // }
 
       resultNodes.push({ ...newNode, selected: true })
     })
@@ -267,10 +285,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const newNodes = [
-      ...nodes.map((e: Node<NodeDataType>) => ({ ...e, selected: false })),
-      ...resultNodes,
-    ]
+    const newNodes = [...nodes.map((e: AppNode) => ({ ...e, selected: false })), ...resultNodes]
 
     console.log(selectionInstance.edges)
 
@@ -279,14 +294,14 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
       const target = idsMap[e.target]
       if (e.sourceHandle) {
         const sourceHandle = sourceHandlesMap[e.sourceHandle]
-        const id = v4()
+        const id = "reactflow__edge-" + v4()
         edges = addEdge(
           {
             source,
             target,
             sourceHandle,
             targetHandle: null,
-            id,
+            id: id,
             selected: false,
           },
           edges.map((e) => ({ ...e, selected: false }))

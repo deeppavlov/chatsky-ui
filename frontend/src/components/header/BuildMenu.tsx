@@ -1,6 +1,6 @@
 import { Button, Spinner, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { useContext, useState } from "react"
+import { useContext } from "react"
 import { useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
@@ -11,10 +11,9 @@ import StopIcon from "../../icons/buildmenu/StopIcon"
 import { parseSearchParams } from "../../utils"
 
 const BuildMenu = () => {
-  const { buildStart, buildPending, buildStatus, setLogsPage, logsPage } = useContext(buildContext)
+  const { buildStart, buildPending } = useContext(buildContext)
   const { chat, setChat } = useContext(chatContext)
   const { runStart, runPending, runStatus, runStop, run } = useContext(runContext)
-  const [showBuildMenu, setShowBuildMenu] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   return (
@@ -30,7 +29,9 @@ const BuildMenu = () => {
           className={classNames("transition-all duration-300", showBuildMenu && "rotate-180")}
         />
       </Button> */}
-      <Tooltip content='Start build and run script process' radius="sm">
+      <Tooltip
+        content='Start build and run script process'
+        radius='sm'>
         <Button
           data-testid='run-btn'
           isIconOnly
@@ -46,7 +47,9 @@ const BuildMenu = () => {
           isLoading={runPending || buildPending}
           spinner={
             <Spinner
-              color='danger'
+              color={
+                runStatus === "alive" ? "success" : runStatus === "running" ? "warning" : "danger"
+              }
               size='sm'
             />
           }
@@ -56,7 +59,9 @@ const BuildMenu = () => {
               ? "border-emerald-500"
               : runStatus === "stopped"
                 ? "border-border"
-                : "border-red-500"
+                : runStatus === "running"
+                  ? "border-amber-600"
+                  : "border-red-500"
           )}>
           {runStatus !== "alive" ? (
             <PlayIcon className='w-[18px] h-[18px]' />
@@ -102,7 +107,9 @@ const BuildMenu = () => {
           )}
         />
       </Button> */}
-      <Tooltip content="Open the chat window" radius="sm">
+      <Tooltip
+        content='Open the chat window'
+        radius='sm'>
         <Button
           data-testid='chat-btn'
           onClick={() => {

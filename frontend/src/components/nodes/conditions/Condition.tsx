@@ -1,7 +1,7 @@
 import { useDisclosure } from "@nextui-org/react"
 import * as ContextMenu from "@radix-ui/react-context-menu"
+import { Handle, Position, useReactFlow } from "@xyflow/react"
 import { useContext, useEffect, useState } from "react"
-import { Handle, Position, useReactFlow } from "reactflow"
 import { CONDITION_LABELS, conditionTypeIcons } from "../../../consts"
 import { workspaceContext } from "../../../contexts/workspaceContext"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"

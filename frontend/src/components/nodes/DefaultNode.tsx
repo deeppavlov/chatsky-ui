@@ -1,9 +1,9 @@
 import { Button, useDisclosure } from "@nextui-org/react"
+import { Handle, Position } from "@xyflow/react"
+import "@xyflow/react/dist/style.css"
 import classNames from "classnames"
 import { PlusIcon } from "lucide-react"
 import { memo, useContext, useMemo, useState } from "react"
-import { Handle, Position } from "reactflow"
-import "reactflow/dist/style.css"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
 import FallbackNodeIcon from "../../icons/nodes/FallbackNodeIcon"
@@ -14,11 +14,11 @@ import "../../index.css"
 import ConditionModal from "../../modals/ConditionModal/ConditionModal"
 import NodeModal from "../../modals/NodeModal/NodeModal"
 import ResponseModal from "../../modals/ResponseModal/ResponseModal"
-import { NodeDataType } from "../../types/NodeTypes"
+import { DefaultNodeDataType } from "../../types/NodeTypes"
 import Condition from "./conditions/Condition"
 import Response from "./responses/Response"
 
-const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
+const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
   const {
     onOpen: onConditionOpen,
     onClose: onConditionClose,
@@ -27,7 +27,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
 
   const { selectedNode } = useContext(workspaceContext)
 
-  const [nodeDataState, setNodeDataState] = useState<NodeDataType>(data)
+  const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)
 
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
   const {
