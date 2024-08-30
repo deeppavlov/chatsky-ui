@@ -111,6 +111,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const { screenLoading } = useContext(MetaContext)
 
   useEffect(() => {
+    setReactFlowInstance(null)
     setTab(flowId || "")
   }, [flowId])
 

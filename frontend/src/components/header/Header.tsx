@@ -1,6 +1,6 @@
 import { Button, Popover, PopoverContent, PopoverTrigger, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { InfoIcon } from "lucide-react"
+import { Github, InfoIcon } from "lucide-react"
 import { memo, useContext, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
@@ -116,12 +116,20 @@ const Header = memo(() => {
                 Chatsky UI
               </h4>
               <div className='w-full mt-2 [&>p]:text-[12px] flex flex-col items-start justify-start '>
-                <p>
+                <p className='mb-1'>
                   <strong className='text-[14px]'>Version:</strong> {version}
                 </p>
-                <p>
-                  <strong className='text-[14px]'>Date:</strong> 31.08.2024
-                </p>
+                <a
+                  className='w-full flex items-center justify-center gap-1 rounded-lg border p-1 border-border transition-colors hover:border-node-selected'
+                  href='https://github.com/deeppavlov/chatsky-ui'>
+                  <Github className='w-4 h-4' />
+                  <p className='text-[12px]'>GitHub</p>
+                </a>
+                <a
+                  className='w-full flex items-center justify-center gap-1 rounded-lg border p-1 border-border transition-colors hover:border-node-selected mt-1 mb-1'
+                  href='https://deeppavlov.ai'>
+                  <p className='text-[12px]'>DeepPavlov.ai</p>
+                </a>
               </div>
             </PopoverContent>
           </Popover>

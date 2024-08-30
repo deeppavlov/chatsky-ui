@@ -11,9 +11,9 @@ import {
   addEdge,
   reconnectEdge,
   useEdgesState,
-  useNodesState
+  useNodesState,
 } from "@xyflow/react"
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 
 import { a, useTransition } from "@react-spring/web"
 import "@xyflow/react/dist/style.css"
@@ -51,14 +51,15 @@ const edgeTypes = {
   default: CustomEdge,
 }
 
-const untrackedFields = ["position", "positionAbsolute", "targetPosition", "sourcePosition"]
-
-// export const addNodeToGraph = (node: NodeType, graph: FlowType[]) => {}
-
 export default function Flow() {
-
-  const { flows, updateFlow, saveFlows, reactFlowInstance, setReactFlowInstance, validateDeletion } =
-    useContext(flowContext)
+  const {
+    flows,
+    updateFlow,
+    saveFlows,
+    reactFlowInstance,
+    setReactFlowInstance,
+    validateDeletion,
+  } = useContext(flowContext)
   const {
     toggleWorkspaceMode,
     workspaceMode,
@@ -69,7 +70,7 @@ export default function Flow() {
     managerMode,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
-  const { takeSnapshot, undo, copy, paste, copiedSelection } = useContext(undoRedoContext)
+  const { takeSnapshot, copy, paste, copiedSelection } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -78,25 +79,15 @@ export default function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
   const [edges, setEdges, onEdgesChange] = useEdgesState(flow?.data.edges || [])
 
-  // const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>()
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
   const isEdgeUpdateSuccess = useRef(false)
   const { notification: n } = useContext(NotificationsContext)
 
-  // const {
-  //   isOpen: isLinkModalOpen,
-  //   onOpen: onLinkModalOpen,
-  //   onClose: onLinkModalClose,
-  // } = useDisclosure()
-
   const handleUpdateFlowData = useCallback(() => {
     if (reactFlowInstance && flow && flow.name === flowId) {
-      // const _node = reactFlowInstance.getNodes()[0]
-      // if (_node && _node.id === flow.data.nodes[0].id) {
       flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
       updateFlow(flow)
-      // }
     }
   }, [flow, flowId, reactFlowInstance, updateFlow])
 
@@ -106,34 +97,9 @@ export default function Flow() {
       if (_node && _node.id === flow.data.nodes[0].id) {
         flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
         updateFlow(flow)
-        // const links: Node<NodeDataType>[] = flow.data.nodes.filter(
-        //   (node) => node.type === "link_node"
-        // )
-        // links.forEach((link) => {
-        //   if (
-        //     !flows.find((fl) => link.data.transition.target_flow === fl.name) ||
-        //     !flows.find((fl) =>
-        //       fl.data.nodes.some((node) => node.id === link.data.transition.target_node)
-        //     )
-        //   ) {
-        //     n.add({
-        //       message: `Link ${link.data.id} is broken! Please configure it again.`,
-        //       title: "Link error",
-        //       type: "error",
-        //     })
-        //   }
-        // })
       }
     }
-  }, [flow, flowId, flows, reactFlowInstance, updateFlow])
-
-  const filteredNodes = useMemo(() => {
-    return nodes.map((obj) => {
-      return Object.fromEntries(
-        Object.entries(obj).filter(([key]) => !untrackedFields.includes(key))
-      )
-    })
-  }, [nodes])
+  }, [flow, flowId, reactFlowInstance, updateFlow])
 
   useEffect(() => {
     handleUpdateFlowData()
@@ -141,10 +107,10 @@ export default function Flow() {
   }, [edges, nodes.length])
 
   useEffect(() => {
-    if (reactFlowInstance && flow?.name === flowId) {
-      setNodes(flow?.data?.nodes ?? [])
-      setEdges(flow?.data?.edges ?? [])
-      if (flow?.data?.viewport) {
+    if (flow && reactFlowInstance && flow.name === flowId) {
+      setNodes(flow.data.nodes)
+      setEdges(flow.data.edges)
+      if (flow.data.viewport) {
         // reactFlowInstance.fitView({ padding: 0.5 })
       } else {
         reactFlowInstance.fitView({ padding: 0.5 })
@@ -152,9 +118,12 @@ export default function Flow() {
     }
   }, [flow, flowId, reactFlowInstance, setEdges, setNodes])
 
-  const onInit = useCallback((e: CustomReactFlowInstanceType) => {
-    setReactFlowInstance(e)
-  }, [])
+  const onInit = useCallback(
+    (e: CustomReactFlowInstanceType) => {
+      setReactFlowInstance(e)
+    },
+    [setReactFlowInstance]
+  )
 
   const onNodesChangeMod = useCallback(
     (nds: NodeChange<AppNode>[]) => {
@@ -198,17 +167,6 @@ export default function Flow() {
     [setEdges]
   )
 
-  // const onEdgeUpdateEnd = useCallback(
-  //   (event: MouseEvent | TouchEvent, edge: Edge) => {
-  //     // takeSnapshot()
-  //     // if (!isEdgeUpdateSuccess.current) {
-  //     //   setEdges((eds) => eds.filter((ed) => ed.id !== edge.id))
-  //     // }
-  //   },
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   [onEdgeUpdate]
-  // )
-
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: AppNode) => {
       const node_ = node as AppNode
@@ -247,23 +205,16 @@ export default function Flow() {
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault()
       takeSnapshot()
-
       const type: NodesTypes = event.dataTransfer.getData("application/@xyflow/react") as NodesTypes
-
       // check if the dropped element is valid
       if (typeof type === "undefined" || !type || !reactFlowInstance) {
         return
       }
-
-      // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
-      // and you don't need to subtract the reactFlowBounds.left/top anymore
-      // details: https://@xyflow/react.dev/whats-new/2023-11-10
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       })
       const newId = type + "_" + v4()
-
       const START_FALLBACK_FLAGS = []
       if (
         !flows.some((flow) =>
@@ -283,9 +234,8 @@ export default function Flow() {
       ) {
         START_FALLBACK_FLAGS.push("fallback")
       }
-
       let newNode = {} as AppNode
-      if (type === 'default_node') {
+      if (type === "default_node") {
         newNode = {
           id: newId,
           type,
@@ -293,7 +243,9 @@ export default function Flow() {
           dragHandle: NODES[type].dragHandle,
           data: {
             id: newId,
-            name:NODE_NAMES.find((name) => !nodes.some((node) => node.data.name === name)) ?? "Empty names array",
+            name:
+              NODE_NAMES.find((name) => !nodes.some((node) => node.data.name === name)) ??
+              "Empty names array",
             flags: START_FALLBACK_FLAGS,
             conditions: NODES[type].conditions,
             global_conditions: [],
@@ -302,11 +254,25 @@ export default function Flow() {
           },
         }
       }
+      if (type === "link_node") {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          data: {
+            id: newId,
+            name: "Link",
+            transition: {
+              target_flow: "",
+              target_node: "",
+            },
+          },
+        }
+      }
 
-      
       setNodes((nds) => nds.concat(newNode))
     },
-    [takeSnapshot, reactFlowInstance, flows, setNodes]
+    [takeSnapshot, reactFlowInstance, flows, setNodes, nodes]
   )
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
@@ -321,12 +287,7 @@ export default function Flow() {
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "v") {
         e.preventDefault()
-        if (
-          reactFlowInstance &&
-          flow &&
-          flow.name === flowId &&
-          copiedSelection
-        ) {
+        if (reactFlowInstance && flow && flow.name === flowId && copiedSelection) {
           paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
         }
       }

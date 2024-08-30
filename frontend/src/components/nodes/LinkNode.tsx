@@ -36,6 +36,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   const [toFlow, setToFlow] = useState<FlowType>()
   const [toNode, setToNode] = useState<AppNode>()
   const [error, setError] = useState(false)
+  const [r, setR] = useState(0)
   const { notification: n } = useContext(NotificationsContext)
   // const { openPopUp } = useContext(PopUpContext)
 
@@ -75,6 +76,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   )
 
   useEffect(() => {
+    if (r === 0) {
+      return setR((r) => r + 1)
+    }
     if (!TO_FLOW || !TO_NODE) {
       setError(true)
       n.add({
@@ -110,10 +114,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     <>
       <div
         onDoubleClick={onOpen}
-        className={classNames(
-          'default_node px-6 py-4',
-          error && "border-error"
-        )}>
+        className={classNames("default_node px-6 py-4", error && "border-error")}>
         <div className=' w-full h-1/3 flex justify-between items-center bg-node rounded-node'>
           <Handle
             isConnectableEnd
