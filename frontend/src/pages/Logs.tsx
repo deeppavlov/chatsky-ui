@@ -197,7 +197,7 @@ const Logs = memo(() => {
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
                       <a
                         download
-                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        href={`../../../backend/${currentItem.log_path}`}
                         className='text-blue-500 underline'>
                         {currentItem.log_path}
                       </a>
@@ -248,7 +248,7 @@ const Logs = memo(() => {
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
                       <a
                         download
-                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        href={`../../../backend/${currentItem.log_path}`}
                         className='text-blue-500 underline'>
                         {currentItem.log_path}
                       </a>
