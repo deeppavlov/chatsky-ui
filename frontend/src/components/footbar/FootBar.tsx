@@ -1,56 +1,65 @@
-import { Button, Tab, Tabs, useDisclosure } from "@nextui-org/react"
+import { Button, Popover, PopoverTrigger, Tab, Tabs, useDisclosure } from "@nextui-org/react"
 import classNames from "classnames"
 import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import { Key, useContext } from "react"
+import { Key, memo, useCallback, useContext, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
-import { MetaContext } from "../../contexts/metaContext"
 import { buildContext } from "../../contexts/buildContext"
+import { MetaContext } from "../../contexts/metaContext"
+import { notificationsContext } from "../../contexts/notificationsContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { Logo } from "../../icons/Logo"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
-import LocalStogareIcon from "../../icons/footbar/LocalStogareIcon"
+import LocalStorageIcon from "../../icons/footbar/LocalStorageIcon"
 import LocalStorage from "../../modals/LocalStorage/LocalStorage"
 import { parseSearchParams } from "../../utils"
+import { NotificationsWindow } from "../notifications/NotificationsWindow"
 
-const FootBar = () => {
+const FootBar = memo(() => {
   const {
-    isOpen: isLocalStogareOpen,
-    onOpen: onLocalStogareOpen,
-    onClose: onLocalStogareClose,
+    isOpen: isLocalStorageOpen,
+    onOpen: onLocalStorageOpen,
+    onClose: onLocalStorageClose,
   } = useDisclosure()
 
   const { version } = useContext(MetaContext)
   const { settingsPage, setSettingsPage } = useContext(workspaceContext)
   const { logsPage, setLogsPage } = useContext(buildContext)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const { notifications } = useContext(notificationsContext)
 
-  const onSelectionChange = (key: Key) => {
-    if (key === "Inspect") {
-      setLogsPage(true)
-      setSearchParams({
-        ...parseSearchParams(searchParams),
-        logs_page: "opened",
-        settings: "closed",
-      })
-    } else if (key === "Settings") {
-      setSettingsPage(true)
-      setSearchParams({
-        ...parseSearchParams(searchParams),
-        logs_page: "closed",
-        settings: "opened",
-      })
-    } else {
-      setSearchParams({
-        ...parseSearchParams(searchParams),
-        logs_page: "closed",
-        settings: "closed",
-      })
-      setSettingsPage(false)
-      setLogsPage(false)
-    }
-  }
+  const onSelectionChange = useCallback(
+    (key: Key) => {
+      if (key === "Inspect") {
+        setLogsPage(true)
+        setSettingsPage(false)
+        setSearchParams({
+          ...parseSearchParams(searchParams),
+          logs_page: "opened",
+          settings: "closed",
+        })
+      } else if (key === "Settings") {
+        setLogsPage(false)
+        setSettingsPage(true)
+        setSearchParams({
+          ...parseSearchParams(searchParams),
+          logs_page: "closed",
+          settings: "opened",
+        })
+      } else {
+        setSearchParams({
+          ...parseSearchParams(searchParams),
+          logs_page: "closed",
+          settings: "closed",
+        })
+        setSettingsPage(false)
+        setLogsPage(false)
+      }
+    },
+    [searchParams, setLogsPage, setSearchParams, setSettingsPage]
+  )
 
-  const findDefaultSelectedKey = () => {
+  const findDefaultSelectedKey = useCallback(() => {
     if (settingsPage) {
       return "Settings"
     } else if (logsPage) {
@@ -58,13 +67,13 @@ const FootBar = () => {
     } else {
       return "Edit"
     }
-  }
+  }, [logsPage, settingsPage])
 
   return (
     <div
       data-testid='footbar'
       className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
-      <div className='absolute w-full h-12 flex items-center justify-center'>
+      <div className='absolute w-full flex items-center justify-center'>
         <Tabs
           onSelectionChange={onSelectionChange}
           defaultSelectedKey={findDefaultSelectedKey()}
@@ -100,7 +109,6 @@ const FootBar = () => {
                 Inspect
               </span>
             }>
-            {/* <LogsPageOpener /> */}
           </Tab>
           <Tab
             key={"Settings"}
@@ -110,7 +118,6 @@ const FootBar = () => {
                 Settings
               </span>
             }>
-            {/* <SettingsPageOpener /> */}
           </Tab>
         </Tabs>
       </div>
@@ -120,33 +127,50 @@ const FootBar = () => {
         className='flex items-center gap-1 z-10 cursor-pointer'>
         <Logo />
         <div className='flex items-end justify-start gap-1'>
-          <span className='flex font-bold text-lg'>DF Designer</span>
+          <span className='flex font-bold text-lg'>Chatsky UI</span>
           <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>
         <Button
           isDisabled
-          onClick={onLocalStogareOpen}
+          onClick={onLocalStorageOpen}
           className={classNames(
             "local-storage-button px-2 cursor-pointer rounded-small h-9 flex items-center bg-transparent justify-center gap-2 border border-transparent hover:bg-background hover:border-foreground hover:text-foreground",
-            isLocalStogareOpen && "bg-background border-foreground"
+            isLocalStorageOpen && "bg-background border-foreground"
           )}>
-          <LocalStogareIcon className='local-storage-button-hover:stroke-0' />
+          <LocalStorageIcon className='local-storage-button-hover:stroke-0' />
           Local storage
         </Button>
-        <Button
-          isIconOnly
-          className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'>
-          <BellRing className='w-5 h-5' />
-        </Button>
+        <Popover
+          placement='top-end'
+          offset={30}
+          isOpen={isNotificationsOpen}
+          onOpenChange={setIsNotificationsOpen}>
+          <PopoverTrigger>
+            <Button
+              isIconOnly
+              className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'>
+              {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length > 0 && (
+                <span className='absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full w-4 h-4 flex items-center justify-center'>
+                  {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length}
+                </span>
+              )}
+              <BellRing className='w-5 h-5' />
+            </Button>
+          </PopoverTrigger>
+          <NotificationsWindow
+            isOpen={isNotificationsOpen}
+            setIsOpen={setIsNotificationsOpen}
+          />
+        </Popover>
       </div>
       <LocalStorage
-        isOpen={isLocalStogareOpen}
-        onClose={onLocalStogareClose}
+        isOpen={isLocalStorageOpen}
+        onClose={onLocalStorageClose}
       />
     </div>
   )
-}
+})
 
 export default FootBar

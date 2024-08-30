@@ -1,13 +1,13 @@
 import { Accordion, AccordionItem, Divider, Spinner } from "@nextui-org/react"
 import { CheckCircle2, CircleSlash, Slash, X } from "lucide-react"
-import { useContext, useEffect, useState } from "react"
+import { memo, useContext, useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { localBuildType, localRunType } from "../api/bot"
 import { buildContext } from "../contexts/buildContext"
 import { runContext } from "../contexts/runContext"
 import { parseSearchParams } from "../utils"
 
-const Logs = () => {
+const Logs = memo(() => {
   const { builds, logsPage } = useContext(buildContext)
   const { runs } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -197,7 +197,7 @@ const Logs = () => {
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
                       <a
                         download
-                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        href={`../../../backend/${currentItem.log_path}`}
                         className='text-blue-500 underline'>
                         {currentItem.log_path}
                       </a>
@@ -248,7 +248,7 @@ const Logs = () => {
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
                       <a
                         download
-                        href={`../../../backend/df_designer/${currentItem.log_path}`}
+                        href={`../../../backend/${currentItem.log_path}`}
                         className='text-blue-500 underline'>
                         {currentItem.log_path}
                       </a>
@@ -283,6 +283,6 @@ const Logs = () => {
       </div> */}
     </div>
   )
-}
+})
 
 export default Logs

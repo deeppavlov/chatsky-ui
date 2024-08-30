@@ -2,9 +2,8 @@ import { useDisclosure } from "@nextui-org/react"
 import * as ContextMenu from "@radix-ui/react-context-menu"
 import { useContext, useEffect, useState } from "react"
 import { Handle, Position, useReactFlow } from "reactflow"
-import { CONDITION_LABELS } from "../../../consts"
+import { CONDITION_LABELS, conditionTypeIcons } from "../../../consts"
 import { workspaceContext } from "../../../contexts/workspaceContext"
-import { UserConditionIcon } from "../../../icons/nodes/conditions/UserConditionIcon"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { conditionLabelType } from "../../../types/ConditionTypes"
 import { NodeComponentConditionType } from "../../../types/NodeTypes"
@@ -38,10 +37,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
       <div className='w-full relative flex items-center justify-start text-start'>
         <div onClick={conditionOpenHandler} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer'>
           <div className='flex items-center gap-2'>
-            <UserConditionIcon
-              className='w-5 h-5'
-              fill='var(--condition-default)'
-            />
+            {conditionTypeIcons[condition.type]}
             {condition.name}
           </div>
           <p className='mr-4 text-xs'>{condition.data.priority}</p>

@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import toast from "react-hot-toast"
 import {
   buildApiStatusType,
   buildPresetType,
@@ -12,6 +11,7 @@ import {
   run_stop,
 } from "../api/bot"
 import { buildContext } from "./buildContext"
+import { notificationsContext } from "./notificationsContext"
 
 export type runApiType = {
   id: number
@@ -58,6 +58,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
   const { setBuildsHandler, builds: context_builds } = useContext(buildContext)
+  const { notification: n } = useContext(notificationsContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
     setRuns(runs.map((run) => ({ ...run, type: "run" })))
@@ -70,7 +71,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         return { ...run, type: "run" }
       })
       setRuns(_runs)
-      if (_runs[_runs.length - 1].status === "running") {
+      if (_runs[_runs.length - 1].status === "alive") {
         setRun(_runs[_runs.length - 1])
         setRunStatus("alive")
       }
@@ -108,7 +109,11 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           if (timer > 9999) {
             setRunPending(() => false)
             setRunStatus("failed")
-            toast.error("Run timeout error!")
+            n.add({
+              title: "Run timeout error!",
+              message: "",
+              type: "error",
+            })
             return (flag = false)
           }
           const { status } = await run_status(started_run.id)
@@ -117,11 +122,15 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
             setRunPending(false)
             setRunStatus("alive")
           }
-          if (status === 'failed') {
+          if (status === "failed") {
             flag = false
             setRunPending(false)
             setRunStatus("failed")
-            toast.error("Run failed!")
+            n.add({
+              message: "Unknown run error. Please check your script.",
+              title: "Run failed!",
+              type: "error",
+            })
           }
           await new Promise((resolve) => setTimeout(resolve, 500))
         }
@@ -146,7 +155,11 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           setRunsHandler(runs)
           setRunStatus("stopped")
           setRunPending(() => false)
-          toast.success("Run stopped!")
+          n.add({
+            message: "",
+            title: "Run stopped!",
+            type: "info",
+          })
         }, 500)
       }
     } catch (error) {

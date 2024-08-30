@@ -6,16 +6,14 @@ import {
   ModalFooter,
   ModalHeader,
   ModalProps,
-  useDisclosure,
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
-import React, { useCallback, useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect } from "react"
 import { useReactFlow } from "reactflow"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
 import EditPenIcon from "../../icons/EditPenIcon"
 import { NodeDataType } from "../../types/NodeTypes"
-import ResponseModal from "../ResponseModal/ResponseModal"
 import ConditionRow from "./components/ConditionRow"
 
 type NodeModalProps = {
@@ -23,18 +21,22 @@ type NodeModalProps = {
   size?: ModalProps["size"]
   isOpen: boolean
   onClose: () => void
+  onResponseModalOpen: () => void
+  nodeDataState: NodeDataType
+  setNodeDataState: React.Dispatch<React.SetStateAction<NodeDataType>>
 }
 
-const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
+const NodeModal = ({
+  data,
+  isOpen,
+  onClose,
+  size = "3xl",
+  onResponseModalOpen,
+  nodeDataState,
+  setNodeDataState,
+}: NodeModalProps) => {
   const { getNodes, setNodes } = useReactFlow()
   const { quietSaveFlows } = useContext(flowContext)
-  const [nodeDataState, setNodeDataState] = useState<NodeDataType>(data)
-
-  const {
-    isOpen: isResponseModalOpen,
-    onOpen: onResponseModalOpen,
-    onClose: onResponseModalClose,
-  } = useDisclosure()
 
   useEffect(() => {
     setNodeDataState(getNodes().find((node) => node.data.id === data.id)?.data ?? data)
@@ -49,7 +51,14 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
   )
 
   const setTextResponseValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNodeDataState({ ...nodeDataState, response: { ...nodeDataState.response!, type: 'text', data: [{ text: e.target.value, priority: 1 }] } })
+    setNodeDataState({
+      ...nodeDataState,
+      response: {
+        ...nodeDataState.response!,
+        type: "text",
+        data: [{ text: e.target.value, priority: 1 }],
+      },
+    })
   }
 
   const onNodeSave = () => {
@@ -84,7 +93,6 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
       })
     }
   }
-
 
   return (
     <>
@@ -170,13 +178,6 @@ const NodeModal = ({ data, isOpen, onClose, size = "3xl" }: NodeModalProps) => {
             </div>
           </ModalFooter>
         </ModalContent>
-        <ResponseModal
-          data={nodeDataState}
-          setData={setNodeDataState}
-          isOpen={isResponseModalOpen}
-          onClose={onResponseModalClose}
-          response={nodeDataState.response!}
-        />
       </ModalComponent>
     </>
   )
