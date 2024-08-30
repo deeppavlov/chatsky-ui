@@ -73,6 +73,7 @@ const NodeModal = ({
       return node
     })
     if (node) {
+      takeSnapshot()
       setNodes(() => new_nodes)
     }
     quietSaveFlows()
