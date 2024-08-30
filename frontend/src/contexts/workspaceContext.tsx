@@ -78,7 +78,6 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [modalsOpened])
 
-
   const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
     n.add({

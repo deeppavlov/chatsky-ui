@@ -70,7 +70,7 @@ export default function Flow() {
     managerMode,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
-  const { takeSnapshot, copy, paste, copiedSelection } = useContext(undoRedoContext)
+  const { takeSnapshot, copy, paste, copiedSelection, setDisableCopyPaste, disableCopyPaste } = useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -278,14 +278,18 @@ export default function Flow() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
+    console.log({ disableCopyPaste })
+  }, [disableCopyPaste])
+
+  useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
         e.preventDefault()
         if (selection) {
           copy(selection)
         }
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "v" && !disableCopyPaste) {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId && copiedSelection) {
           paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
@@ -392,6 +396,8 @@ export default function Flow() {
             // onNodesDelete={onNodesDelete}
             // onEdgesDelete={onEdgesDelete}
             onBeforeDelete={validateDeletion}
+            // onPaneMouseEnter={() => setDisableCopyPaste(false)}
+            // onPaneMouseLeave={() => setDisableCopyPaste(true)}
             edgesReconnectable={!managerMode}
             nodesConnectable={!managerMode}
             nodesDraggable={!managerMode}

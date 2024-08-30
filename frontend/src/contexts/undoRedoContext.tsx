@@ -7,6 +7,7 @@ import { OnSelectionChangeParamsCustom } from "../types/ReactFlowTypes"
 import { generateNewNode } from "../utils"
 import { flowContext } from "./flowContext"
 import { NotificationsContext } from "./notificationsContext"
+import { workspaceContext } from "./workspaceContext"
 
 type undoRedoContextType = {
   undo: () => void
@@ -18,6 +19,8 @@ type undoRedoContextType = {
     position: { x: number; y: number; paneX?: number; paneY?: number }
   ) => void
   copiedSelection: OnSelectionChangeParams | null
+  disableCopyPaste: boolean
+  setDisableCopyPaste: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 type UseUndoRedoOptions = {
@@ -45,6 +48,8 @@ const initialValue = {
   copy: () => {},
   paste: () => {},
   copiedSelection: null,
+  disableCopyPaste: false,
+  setDisableCopyPaste: () => {},
 }
 
 const defaultOptions: UseUndoRedoOptions = {
@@ -58,6 +63,7 @@ export const undoRedoContext = createContext<undoRedoContextType>(initialValue)
 export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   const { tab, flows } = useContext(flowContext)
   const { notification: n } = useContext(NotificationsContext)
+  const { modalsOpened } = useContext(workspaceContext)
 
   const [past, setPast] = useState<HistoryItem[][]>(flows.map(() => []))
   const [future, setFuture] = useState<HistoryItem[][]>(flows.map(() => []))
@@ -167,6 +173,15 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
   const { reactFlowInstance } = useContext(flowContext)
   const [copiedSelection, setCopiedSelection] = useState<OnSelectionChangeParams | null>(null)
+  const [disableCopyPaste, setDisableCopyPaste] = useState(false)
+
+  useEffect(() => {
+    if (modalsOpened === 0) {
+      setDisableCopyPaste(false)
+    } else if (modalsOpened > 0) {
+      setDisableCopyPaste(true)
+    }
+  }, [modalsOpened])
 
   const copy = (selection: OnSelectionChangeParams) => {
     if (selection && (selection.nodes.length || selection.edges.length)) {
@@ -321,6 +336,8 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
         copy,
         paste,
         copiedSelection,
+        disableCopyPaste,
+        setDisableCopyPaste,
       }}>
       {children}
     </undoRedoContext.Provider>
