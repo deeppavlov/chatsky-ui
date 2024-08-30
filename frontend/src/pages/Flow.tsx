@@ -276,11 +276,7 @@ export default function Flow() {
   )
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    console.log({ disableCopyPaste })
-  }, [disableCopyPaste])
-
+ 
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
