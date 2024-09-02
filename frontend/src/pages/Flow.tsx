@@ -11,7 +11,7 @@ import {
   addEdge,
   reconnectEdge,
   useEdgesState,
-  useNodesState,
+  useNodesState
 } from "@xyflow/react"
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 
@@ -372,7 +372,6 @@ export default function Flow() {
             edgeTypes={edgeTypes}
             nodes={nodes}
             edges={edges}
-            onMoveStart={handleFullUpdateFlowData}
             onMoveEnd={handleFullUpdateFlowData}
             panOnScroll={true}
             panOnScrollSpeed={1.5}
@@ -385,15 +384,10 @@ export default function Flow() {
             onEdgesChange={onEdgesChange}
             onReconnect={onEdgeUpdate}
             onReconnectStart={onEdgeUpdateStart}
-            // onReconnectEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
             onNodeDragStop={handleFullUpdateFlowData}
             onConnect={onConnect}
-            // onNodesDelete={onNodesDelete}
-            // onEdgesDelete={onEdgesDelete}
             onBeforeDelete={validateDeletion}
-            // onPaneMouseEnter={() => setDisableCopyPaste(false)}
-            // onPaneMouseLeave={() => setDisableCopyPaste(true)}
             edgesReconnectable={!managerMode}
             nodesConnectable={!managerMode}
             nodesDraggable={!managerMode}
