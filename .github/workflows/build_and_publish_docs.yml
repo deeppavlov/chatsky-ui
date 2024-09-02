@@ -31,6 +31,7 @@ jobs:
   
       - name: install dependencies
         run: poetry install
+        working-directory: backend
 
       - name: build documentation
         run: make build_docs
