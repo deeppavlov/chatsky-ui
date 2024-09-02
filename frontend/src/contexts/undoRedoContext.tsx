@@ -28,14 +28,6 @@ type UseUndoRedoOptions = {
   enableShortcuts: boolean
 }
 
-// type UseUndoRedo = (options?: UseUndoRedoOptions) => {
-//   undo: () => void
-//   redo: () => void
-//   takeSnapshot: () => void
-//   canUndo: boolean
-//   canRedo: boolean
-// }
-
 type HistoryItem = {
   nodes: Node[]
   edges: Edge[]
@@ -78,6 +70,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
   const { setNodes, setEdges, getNodes, getEdges } = useReactFlow()
 
+  /**
+   * Take snapshot for undo/redo functions
+   */
   const takeSnapshot = useCallback(() => {
     // push the current graph to the past state
     if (tabIndex > -1) {
@@ -101,6 +96,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getNodes, getEdges, past, future, flows, tab, setPast, setFuture, tabIndex])
 
+  /**
+   * Undo function
+   */
   const undo = useCallback(() => {
     // get the last state that we want to go back to
     const pastState = past[tabIndex][past[tabIndex].length - 1]
@@ -126,6 +124,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setNodes, setEdges, getNodes, getEdges, future, past, setFuture, setPast, tabIndex])
 
+  /**
+   * Redo function
+   */
   const redo = useCallback(() => {
     const futureState = future[tabIndex][future[tabIndex].length - 1]
 
@@ -183,6 +184,10 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
   }, [modalsOpened])
 
+  /**
+   * Copy function
+   * @param selection last selection to copy
+   */
   const copy = (selection: OnSelectionChangeParams) => {
     if (selection && (selection.nodes.length || selection.edges.length)) {
       setCopiedSelection(cloneDeep(selection))
@@ -202,7 +207,11 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /**
+   * Paste function
+   * @param selectionInstance last selection of nodes&edges
+   * @param position position of pasting nodes&edges 
+   */
   const paste = (
     selectionInstance: OnSelectionChangeParams,
     position: { x: number; y: number; paneX?: number; paneY?: number }

@@ -72,9 +72,7 @@ export default function Flow() {
   const { screenLoading } = useContext(MetaContext)
   const { takeSnapshot, copy, paste, copiedSelection, disableCopyPaste } =
     useContext(undoRedoContext)
-
   const { flowId } = useParams()
-
   const flow = flows.find((flow: FlowType) => flow.name === flowId)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
@@ -85,6 +83,11 @@ export default function Flow() {
   const isEdgeUpdateSuccess = useRef(false)
   const { notification: n } = useContext(NotificationsContext)
 
+  /**
+   * Function update flow data function translates reactFlowInstanceJSON to flow.data
+   * @param {AppNode[]} nodes optional changed nodes
+   * @param {Edge[]} edges optional changed edges
+   */
   const handleUpdateFlowData = useCallback(
     (nodes?: AppNode[], edges?: Edge[]) => {
       if (reactFlowInstance && flow && flow.name === flowId) {
@@ -105,17 +108,23 @@ export default function Flow() {
     [flow, flowId, reactFlowInstance, updateFlow]
   )
 
+  /**
+   * Function update flow data function translates reactFlowInstanceJSON to flow.data
+   * With additional first node check
+   */
   const handleFullUpdateFlowData = useCallback(() => {
     if (reactFlowInstance && flow && flow.name === flowId) {
       const _node = reactFlowInstance.getNodes()[0]
       if (_node && _node.id === flow.data.nodes[0].id) {
-        console.log(reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>)
         flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
         updateFlow(flow)
       }
     }
   }, [flow, flowId, reactFlowInstance, updateFlow])
 
+  /**
+   *  update flow.data when edges or nodes.length changed (no check nodes array)
+   * */
   useEffect(() => {
     handleUpdateFlowData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,6 +142,10 @@ export default function Flow() {
     }
   }, [flow, flowId, reactFlowInstance, setEdges, setNodes])
 
+  /**
+   * Initiate new reactFlowInstance object
+   * @param {CustomReactFlowInstanceType} e new reactFlowInstance object value
+   */
   const onInit = useCallback(
     (e: CustomReactFlowInstanceType) => {
       setReactFlowInstance(e)
@@ -144,6 +157,7 @@ export default function Flow() {
     (nds: NodeChange<AppNode>[]) => {
       console.log("nds change")
       if (nds) {
+        // only calls update flow data function when node change type = "replace" (no call when move)
         if (nds.every((nd) => nd.type === "replace")) {
           handleUpdateFlowData(nds.map((nd) => nd.item))
         }
@@ -175,13 +189,11 @@ export default function Flow() {
 
   const onEdgeUpdateStart = useCallback(() => {
     takeSnapshot()
-    isEdgeUpdateSuccess.current = false
   }, [takeSnapshot])
 
   const onEdgeUpdate = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
       setEdges((els) => reconnectEdge(oldEdge, newConnection, els))
-      isEdgeUpdateSuccess.current = true
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
@@ -297,6 +309,10 @@ export default function Flow() {
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
+
+  /**
+   * Keyboard shortcuts handlers 
+   */
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {

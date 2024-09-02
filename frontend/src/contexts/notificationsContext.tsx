@@ -47,6 +47,11 @@ export const NotificationsContext = createContext<notificationsContextType>({
 const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   const [notifications, setNotifications] = useLocalStorage<notificationType[]>("notifications", [])
 
+  /**
+   * This function returns notification toast classNames by notification type
+   * @param type notification type
+   * @returns notification toast classNames
+   */
   const notificationTypeColor = (type: string) => {
     switch (type) {
       case "success":
@@ -62,6 +67,11 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  /**
+   * This function returns notification header text color by notification type
+   * @param type notification type
+   * @returns notification header text color
+   */
   const notificationHeaderColor = (type: string) => {
     switch (type) {
       case "success":
@@ -76,6 +86,12 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
         return "text-neutral-500"
     }
   }
+
+  /**
+   * This functions returns icon by notification type
+   * @param type notification type
+   * @returns icon by notification type
+   */
   const notificationTypeIcon = (type: string) => {
     switch (type) {
       case "success":
@@ -91,6 +107,11 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  /**
+   * Create new notification function
+   * @param {createNotificationType} notification_object message, title, type, duration, timestamp, stack of notifications 
+   * Calls new notification
+   */
   const addNotification = ({
     message,
     title,
@@ -134,8 +155,11 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     )
   }
 
-  const deleteNotification = (timestamp: number) => {
-    
+  /**
+   * Delete notification by timestamp (as id) function
+   * @param {number} timestamp as notification id
+   */
+  const deleteNotification = (timestamp: number) => {    
     setNotifications((prevNotifications) =>
       prevNotifications.filter((notification) => notification.timestamp !== timestamp)
     )

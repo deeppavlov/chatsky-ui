@@ -111,10 +111,15 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const { screenLoading } = useContext(MetaContext)
 
   useEffect(() => {
+    // set null reactFlowInstance before Init new flow
     setReactFlowInstance(null)
     setTab(flowId || "")
   }, [flowId])
 
+  /**
+   * API flows get function
+   * @returns {FlowType[]} flows array
+   */
   const getFlows = async () => {
     screenLoading.addScreenLoading()
     try {
@@ -135,16 +140,24 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // initial get flows
   useEffect(() => {
     getFlows()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /**
+   * 
+   * @param {FlowType[]} flows flows to save array
+   */
   const saveFlows = async (flows: FlowType[]) => {
     await save_flows(flows)
     setFlows(flows)
   }
 
+  /**
+   * quiet save flows function - saves flows automatically
+   */
   const quietSaveFlows = async () => {
     setTimeout(async () => {
       console.log("quiet save flows")
@@ -153,10 +166,18 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     }, 100)
   }
 
+  /**
+   * get updated flows function
+   */
   const getLocaleFlows = useCallback(() => {
     return flows
   }, [flows])
 
+
+  /**
+   * Delete flow function
+   * @param {FlowType} flow delete this flow
+   */
   const deleteFlow = useCallback(
     (flow: FlowType) => {
       const new_flows = flows.filter((f) => f.name !== flow.name)
@@ -166,6 +187,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     [flows]
   )
 
+  /**
+   * Update flow function
+   * @param {FlowType} flow updates this flow in local state
+   */
   const updateFlow = useCallback(
     (flow: FlowType) => {
       const new_flows = flows.map((f) => (f.name === flow.name ? flow : f))
@@ -175,6 +200,13 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     [flows]
   )
 
+  /**
+   * @async Validate object deletion function
+   * @param {AppNode[]} nodes nodes to check before deletion
+   * @param {Edge[]} edges edges to check before delete (unused)
+   * @returns {boolean} Promise(boolean is_deletion_valid value)
+   * ONLY FOR "OnBeforeDelete ReactFlow handler"
+   */
   const validateDeletion = ({ nodes, edges }: { nodes: AppNode[]; edges: Edge[] }) => {
     const is_nodes_valid = nodes.every((node) => {
       if (node.type === "default_node" && node?.data.flags?.includes("start")) {
@@ -196,6 +228,11 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     })
   }
 
+    /**
+   * Validate node deletion function
+   * @param {AppNode} node node to check before deletion
+   * @returns {boolean} boolean is_deletion_valid value
+   */
   const validateNodeDeletion = (node: AppNode) => {
     if (node.type === "default_node" && node.data.flags.includes("start")) {
       n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
@@ -212,6 +249,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     return true
   }
 
+  /**
+   * @deprecated
+   */
   const deleteNode = useCallback(
     (id: string) => {
       const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
@@ -241,6 +281,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     [flowId, flows, n]
   )
 
+  /**
+   * @deprecated
+   */
   const deleteEdge = useCallback(
     (id: string) => {
       const flow = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
@@ -258,6 +301,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     [flowId, flows]
   )
 
+  /**
+   * @deprecated
+   */
   const deleteObject = useCallback(
     (id: string) => {
       const flow_node = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
