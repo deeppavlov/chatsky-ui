@@ -1,5 +1,5 @@
 #preloader-wrapper {
-  background-color: hsl(var(--background));
+  background-color: var(--background);
   position: absolute;
   top: 0;
   left: 0;

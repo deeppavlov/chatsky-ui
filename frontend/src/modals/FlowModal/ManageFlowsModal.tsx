@@ -10,11 +10,11 @@ import {
 } from "@nextui-org/react"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import { FlowType } from "../../types/FlowTypes"
 import { ModalType } from "../../types/ModalTypes"
 import { validateFlowName } from "../../utils"
@@ -30,12 +30,13 @@ export type CreateFlowType = {
 
 const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
   const [newFlows, setNewFlows] = useState<FlowType[]>([...flows] ?? [])
   const { flowId } = useParams()
   const [flow, setFlow] = useState<FlowType>(
     newFlows.find((_flow) => _flow.name === flowId) ?? [][0]
   )
+  const navigate = useNavigate()
   const [newFlow, setNewFlow] = useState<FlowType>(flow)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -98,6 +99,22 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
         message: "Please fill all the fields correctly.",
         type: "warning",
       })
+    }
+  }
+
+  const onFlowDelete = () => {
+    if (newFlow.name === "Global") {
+      return n.add({
+        title: "Warning!",
+        message: "Global flow cannot be deleted.",
+        type: "warning",
+      })
+    } else {
+      if (flowId === newFlow.name) {
+        navigate('/app/home')
+      }
+      setFlows([...newFlows.filter((_flow) => _flow.name !== newFlow.name)])
+      saveFlows([...newFlows.filter((_flow) => _flow.name !== newFlow.name)])
     }
   }
 
@@ -216,6 +233,7 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                 <HelpCircle />
               </Button>
               <Button
+                onClick={onFlowDelete}
                 className='hover:bg-red-500'
                 isIconOnly>
                 <TrashIcon />

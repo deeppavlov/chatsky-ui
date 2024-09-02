@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { useEdges, useNodes } from "@xyflow/react"
 import {
   MouseEventHandler,
   useState
 } from "react"
 import Xarrow, { Xwrapper } from "react-xarrows"
-import { useEdges, useNodes } from "reactflow"
-import { NodeType } from "../types/NodeTypes"
+import { AppNode } from "../types/NodeTypes"
 
 const NodesLayout = () => {
   // const { flows } = useContext(flowContext)
@@ -13,7 +13,7 @@ const NodesLayout = () => {
   // const flow = flows.find((flow) => flow.id === flowId)
 
   // @ts-ignore
-  const nodes: NodeType[] = useNodes().filter(
+  const nodes: AppNode[] = useNodes().filter(
     (node) =>
       // @ts-ignore
       node.type !== "link" && node.data.name !== "LOCAL NODE" && node.data.name !== "GLOBAL NODE"
@@ -45,7 +45,7 @@ const NodesLayout = () => {
                 {node.data.name}
               </div>
               <div className="grid grid-cols-6 items-center gap-2">
-                {node.data.conditions &&
+                {node.type === 'default_node' && node.data.conditions &&
                   node.data.conditions.map((condition) => (
                     <>
                       {condition.data.transition_type !== "manual" && (

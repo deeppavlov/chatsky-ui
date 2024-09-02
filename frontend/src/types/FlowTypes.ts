@@ -1,4 +1,5 @@
-import {  ReactFlowJsonObject } from "reactflow"
+import { Edge, ReactFlowJsonObject } from "@xyflow/react"
+import { AppNode } from "./NodeTypes"
 
 export type FlowType = {
   id: string
@@ -6,5 +7,5 @@ export type FlowType = {
   description?: string
   color?: string
   subflow?: string
-  data: ReactFlowJsonObject
+  data: ReactFlowJsonObject<AppNode, Edge>
 }

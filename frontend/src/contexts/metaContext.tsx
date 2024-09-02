@@ -55,6 +55,7 @@ const MetaProvider = ({ children }: MetaProviderProps) => {
 
   useEffect(() => {
     getVersion()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

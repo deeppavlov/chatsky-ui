@@ -34,7 +34,7 @@ type notificationsContextType = {
   }
 }
 
-export const notificationsContext = createContext<notificationsContextType>({
+export const NotificationsContext = createContext<notificationsContextType>({
   notifications: [],
   notification: {
     add: () => {},
@@ -153,13 +153,13 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <notificationsContext.Provider
+    <NotificationsContext.Provider
       value={{
         notifications,
         notification,
       }}>
       {children}
-    </notificationsContext.Provider>
+    </NotificationsContext.Provider>
   )
 }
 

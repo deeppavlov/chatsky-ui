@@ -5,11 +5,11 @@ import { Key, memo, useCallback, useContext, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { MetaContext } from "../../contexts/metaContext"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
-import { Logo } from "../../icons/Logo"
 import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import LocalStorageIcon from "../../icons/footbar/LocalStorageIcon"
+import { Logo } from "../../icons/Logo"
 import LocalStorage from "../../modals/LocalStorage/LocalStorage"
 import { parseSearchParams } from "../../utils"
 import { NotificationsWindow } from "../notifications/NotificationsWindow"
@@ -26,7 +26,7 @@ const FootBar = memo(() => {
   const { logsPage, setLogsPage } = useContext(buildContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-  const { notifications } = useContext(notificationsContext)
+  const { notifications } = useContext(NotificationsContext)
 
   const onSelectionChange = useCallback(
     (key: Key) => {
