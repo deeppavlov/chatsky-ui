@@ -13,7 +13,7 @@ import { parseSearchParams } from "../../utils"
 const BuildMenu = () => {
   const { buildStart, buildPending } = useContext(buildContext)
   const { chat, setChat } = useContext(chatContext)
-  const { runStart, runPending, runStatus, runStop, run } = useContext(runContext)
+  const { runStart, runPending, runStatus, runStop, run, setRunStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
 
   return (
@@ -38,6 +38,7 @@ const BuildMenu = () => {
           style={{}}
           onClick={async () => {
             if (runStatus !== "alive") {
+              setRunStatus(() => 'running')
               await buildStart({ wait_time: 1, end_status: "success" })
               await runStart({ end_status: "success", wait_time: 0 })
             } else if (runStatus === "alive" && run) {
