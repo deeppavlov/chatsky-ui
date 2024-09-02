@@ -161,6 +161,7 @@ export const FLOW_COLORS = [
   "#FF9500",
   "#FFCC00",
   "#00CC99",
+  "#00AAAA",
   "#3300FF",
   "#7000FF",
   "#CC66CC",

@@ -14,7 +14,7 @@ import { NotificationsContext } from "./notificationsContext"
 const globalFlow: FlowType = {
   id: "GLOBAL",
   name: "Global",
-  description: "This is Global Flow",
+  description: "This is Global Flow. It will be able to use soon...",
   color: FLOW_COLORS[5],
   data: {
     nodes: [
