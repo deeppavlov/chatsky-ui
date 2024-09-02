@@ -25,6 +25,7 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
     isOpen: isConditionOpen,
   } = useDisclosure()
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { selectedNode } = useContext(workspaceContext)
 
   const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)

@@ -40,7 +40,7 @@ const ResponseModal = ({
   size = "3xl",
 }: ResponseModalProps) => {
   const { getNode, setNodes, getNodes } = useReactFlow()
-  const { flows, quietSaveFlows, updateFlow } = useContext(flowContext)
+  const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
   const [selected, setSelected] = useState<responseTypeType>(response.type ?? "python")
   // const [nodeDataState, setNodeDataState] = useState(data)
@@ -89,7 +89,6 @@ const ResponseModal = ({
         />
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentResponse]
   )
 

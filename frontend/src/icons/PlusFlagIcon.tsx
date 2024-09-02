@@ -1,8 +1,13 @@
 import React from "react"
 
-export const PlusFlagIcon = ({ fill="#00CC99", stroke="#00CC99", className }: React.SVGAttributes<SVGSVGElement>) => {
+export const PlusFlagIcon = ({
+  fill = "#00CC99",
+  stroke = "#00CC99",
+  className,
+}: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
+      className={className}
       width='24'
       height='24'
       viewBox='0 0 24 24'

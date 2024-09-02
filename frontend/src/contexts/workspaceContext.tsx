@@ -67,6 +67,10 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [modalsOpened, setModalsOpened] = useState(0)
   const { notification: n } = useContext(NotificationsContext)
 
+
+  /**
+   * Count opened modals for correct shortcuts work
+   */
   useEffect(() => {
     if (modalsOpened === 0) {
       setMouseOnPane(true)
@@ -78,6 +82,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [modalsOpened])
 
+  
   const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
     n.add({

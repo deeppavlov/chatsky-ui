@@ -49,7 +49,7 @@ const NodeModal = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setNodeDataState({ ...nodeDataState, [e.target.name]: e.target.value })
     },
-    [nodeDataState]
+    [nodeDataState, setNodeDataState]
   )
 
   const setTextResponseValue = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -58,6 +58,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     if (!data.transition.target_node) {
       onOpen()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.transition.target_node])
 
   const handleFlowSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -88,6 +89,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     } else {
       setError(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TO_FLOW, TO_NODE])
 
   const onDismiss = () => {

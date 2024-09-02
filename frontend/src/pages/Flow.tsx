@@ -13,7 +13,7 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react"
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 
 import { a, useTransition } from "@react-spring/web"
 import "@xyflow/react/dist/style.css"
@@ -80,7 +80,6 @@ export default function Flow() {
 
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
-  const isEdgeUpdateSuccess = useRef(false)
   const { notification: n } = useContext(NotificationsContext)
 
   /**
@@ -95,11 +94,13 @@ export default function Flow() {
         if (nodes) {
           flow.data.nodes = flow.data.nodes.map((node) => {
             const curr_node = nodes.find((nd) => nd.id === node.id)
-            if (curr_node) {
-              return curr_node
-            } else {
-              return node
-            }
+            return curr_node ?? node
+          })
+        } 
+        if (edges) {
+          flow.data.edges = flow.data.edges.map((edge) => {
+            const curr_edge = edges.find(ed => ed.id === edge.id)
+            return curr_edge ?? edge
           })
         }
         updateFlow(flow)
@@ -195,7 +196,6 @@ export default function Flow() {
     (oldEdge: Edge, newConnection: Connection) => {
       setEdges((els) => reconnectEdge(oldEdge, newConnection, els))
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
 

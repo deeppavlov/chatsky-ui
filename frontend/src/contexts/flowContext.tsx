@@ -204,10 +204,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    * @async Validate object deletion function
    * @param {AppNode[]} nodes nodes to check before deletion
    * @param {Edge[]} edges edges to check before delete (unused)
-   * @returns {boolean} Promise(boolean is_deletion_valid value)
+   * @returns {Promise<boolean>} Promise(boolean is_deletion_valid value)
    * ONLY FOR "OnBeforeDelete ReactFlow handler"
    */
-  const validateDeletion = ({ nodes, edges }: { nodes: AppNode[]; edges: Edge[] }) => {
+  const validateDeletion = ({ nodes }: { nodes: AppNode[]; edges: Edge[] }): Promise<boolean> => {
     const is_nodes_valid = nodes.every((node) => {
       if (node.type === "default_node" && node?.data.flags?.includes("start")) {
         n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })

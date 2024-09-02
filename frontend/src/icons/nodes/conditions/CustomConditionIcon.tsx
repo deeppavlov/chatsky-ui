@@ -1,6 +1,6 @@
 import React from "react"
 
-const CustomConditionIcon = ({ className, fill, stroke="var(--foreground)" }: React.SVGAttributes<SVGSVGElement>) => {
+const CustomConditionIcon = ({ className, stroke="var(--foreground)" }: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       className={className}
