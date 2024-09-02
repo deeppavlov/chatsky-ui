@@ -151,6 +151,11 @@ init_proj: install_backend_env ## Initiates a new project using chatsky-ui
 	cd ${BACKEND_DIR} && poetry run chatsky.ui init --destination ../
 
 
+.PHONY: init_with_cc
+init_with_cc: ## Initiates a new project using cookiecutter
+	cookiecutter https://github.com/Ramimashkouk/df_d_template.git
+
+
 .PHONY: build_docs
 build_docs: install_backend_env ## Builds the docs
 	cd ${BACKEND_DIR} && \
