@@ -11,7 +11,7 @@ import {
   addEdge,
   reconnectEdge,
   useEdgesState,
-  useNodesState
+  useNodesState,
 } from "@xyflow/react"
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
 
@@ -70,7 +70,8 @@ export default function Flow() {
     managerMode,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
-  const { takeSnapshot, copy, paste, copiedSelection, setDisableCopyPaste, disableCopyPaste } = useContext(undoRedoContext)
+  const { takeSnapshot, copy, paste, copiedSelection, disableCopyPaste } =
+    useContext(undoRedoContext)
 
   const { flowId } = useParams()
 
@@ -84,17 +85,31 @@ export default function Flow() {
   const isEdgeUpdateSuccess = useRef(false)
   const { notification: n } = useContext(NotificationsContext)
 
-  const handleUpdateFlowData = useCallback(() => {
-    if (reactFlowInstance && flow && flow.name === flowId) {
-      flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
-      updateFlow(flow)
-    }
-  }, [flow, flowId, reactFlowInstance, updateFlow])
+  const handleUpdateFlowData = useCallback(
+    (nodes?: AppNode[], edges?: Edge[]) => {
+      if (reactFlowInstance && flow && flow.name === flowId) {
+        flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
+        if (nodes) {
+          flow.data.nodes = flow.data.nodes.map((node) => {
+            const curr_node = nodes.find((nd) => nd.id === node.id)
+            if (curr_node) {
+              return curr_node
+            } else {
+              return node
+            }
+          })
+        }
+        updateFlow(flow)
+      }
+    },
+    [flow, flowId, reactFlowInstance, updateFlow]
+  )
 
   const handleFullUpdateFlowData = useCallback(() => {
     if (reactFlowInstance && flow && flow.name === flowId) {
       const _node = reactFlowInstance.getNodes()[0]
       if (_node && _node.id === flow.data.nodes[0].id) {
+        console.log(reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>)
         flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
         updateFlow(flow)
       }
@@ -127,7 +142,11 @@ export default function Flow() {
 
   const onNodesChangeMod = useCallback(
     (nds: NodeChange<AppNode>[]) => {
+      console.log("nds change")
       if (nds) {
+        if (nds.every((nd) => nd.type === "replace")) {
+          handleUpdateFlowData(nds.map((nd) => nd.item))
+        }
         nds
           .sort((nd1: NodeChange, nd2: NodeChange) => {
             if (nd1.type === "select" && nd2.type === "select") {
@@ -137,6 +156,7 @@ export default function Flow() {
             }
           })
           .forEach((nd) => {
+            console.log(nd)
             if (nd.type === "select") {
               if (nd.selected) {
                 setSelectedNode(nd.id)
@@ -150,7 +170,7 @@ export default function Flow() {
       }
       onNodesChange(nds)
     },
-    [onNodesChange, setSelectedNode]
+    [handleUpdateFlowData, onNodesChange, setSelectedNode]
   )
 
   const onEdgeUpdateStart = useCallback(() => {
@@ -168,7 +188,7 @@ export default function Flow() {
   )
 
   const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: AppNode) => {
+    (_event: React.MouseEvent, node: AppNode) => {
       const node_ = node as AppNode
       setSelected(node_.id)
       setSelectedNode(node_.id)
@@ -177,7 +197,7 @@ export default function Flow() {
   )
 
   const onEdgeClick = useCallback(
-    (event: React.MouseEvent, edge: Edge) => {
+    (_event: React.MouseEvent, edge: Edge) => {
       setSelected(edge.id)
     },
     [setSelected]
@@ -276,7 +296,7 @@ export default function Flow() {
   )
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
- 
+
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
@@ -319,6 +339,7 @@ export default function Flow() {
   }, [
     copiedSelection,
     copy,
+    disableCopyPaste,
     flow,
     flowId,
     flows,
