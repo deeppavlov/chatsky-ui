@@ -96,10 +96,10 @@ export default function Flow() {
             const curr_node = nodes.find((nd) => nd.id === node.id)
             return curr_node ?? node
           })
-        } 
+        }
         if (edges) {
           flow.data.edges = flow.data.edges.map((edge) => {
-            const curr_edge = edges.find(ed => ed.id === edge.id)
+            const curr_edge = edges.find((ed) => ed.id === edge.id)
             return curr_edge ?? edge
           })
         }
@@ -160,7 +160,16 @@ export default function Flow() {
       if (nds) {
         // only calls update flow data function when node change type = "replace" (no call when move)
         if (nds.every((nd) => nd.type === "replace")) {
-          handleUpdateFlowData(nds.map((nd) => nd.item))
+          const update_nodes = nds
+            .filter((nd) => nd.type === "replace")
+            .map((nd) => {
+              if (nd.type === "replace") {
+                return nd.item
+              }
+            })
+          if (update_nodes.every((nd) => nd !== undefined)) {
+            handleUpdateFlowData(update_nodes as AppNode[])
+          }
         }
         nds
           .sort((nd1: NodeChange, nd2: NodeChange) => {
@@ -309,9 +318,8 @@ export default function Flow() {
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
-
   /**
-   * Keyboard shortcuts handlers 
+   * Keyboard shortcuts handlers
    */
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
