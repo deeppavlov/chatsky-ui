@@ -36,7 +36,7 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
     isOpen: isResponseOpen,
   } = useDisclosure()
 
-  const validate_node = useMemo(() => data.response?.data.length && data.conditions?.length, [])
+  const validate_node = useMemo(() => data.response?.data.length && data.conditions?.length, [data.conditions?.length, data.response?.data.length])
 
   return (
     <>
