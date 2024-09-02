@@ -1,9 +1,5 @@
 name: build_and_publish_docs
 on:
-  push:
-    branches:
-      - fix/doc-workflow
-
   workflow_dispatch:
 
 permissions:
