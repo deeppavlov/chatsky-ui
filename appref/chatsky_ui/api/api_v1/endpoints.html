@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.api.api_v1.endpoints package &mdash; Chatsky-UI 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b1f64a84"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="chatsky_ui.clients package" href="../../clients.html" />
+    <link rel="prev" title="chatsky_ui.api.api_v1 package" href="../api_v1.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../chatsky_ui.html">chatsky_ui package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../chatsky_ui.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../api.html">api package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../../api.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api.html#chatsky-ui-api-deps-module">chatsky_ui.api.deps module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../clients.html">chatsky_ui.clients package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../core.html">chatsky_ui.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../db.html">chatsky_ui.db package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../schemas.html">chatsky_ui.schemas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../services.html">chatsky_ui.services package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tests.html">chatsky_ui.tests package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../chatsky_ui.html#module-chatsky_ui.cli">cli module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../chatsky_ui.html#module-chatsky_ui.main">main module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../chatsky_ui.html">chatsky_ui package</a></li>
+          <li class="breadcrumb-item"><a href="../../api.html">api package</a></li>
+          <li class="breadcrumb-item"><a href="../api_v1.html">chatsky_ui.api.api_v1 package</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.api.api_v1.endpoints package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/appref/chatsky_ui/api/api_v1/endpoints.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chatsky-ui-api-api-v1-endpoints-package">
+<h1>chatsky_ui.api.api_v1.endpoints package<a class="headerlink" href="#chatsky-ui-api-api-v1-endpoints-package" title="Permalink to this heading"></a></h1>
+<section id="chatsky-ui-api-api-v1-endpoints-bot-module">
+<h2>chatsky_ui.api.api_v1.endpoints.bot module<a class="headerlink" href="#chatsky-ui-api-api-v1-endpoints-bot-module" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-chatsky_ui.api.api_v1.endpoints.bot"></span><dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.check_build_processes">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">check_build_processes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.BuildManager" title="chatsky_ui.services.process_manager.BuildManager"><span class="pre">BuildManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_build_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../schemas.html#chatsky_ui.schemas.pagination.Pagination" title="chatsky_ui.schemas.pagination.Pagination"><span class="pre">Pagination</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(NoneType)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#check_build_processes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.check_build_processes" title="Permalink to this definition"></a></dt>
+<dd><p>Checks the status of all <cite>build</cite> processes and returns them along with their runs info.</p>
+<p>The offset and limit parameters can be used to paginate the results.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>build_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.check_build_status">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">check_build_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.BuildManager" title="chatsky_ui.services.process_manager.BuildManager"><span class="pre">BuildManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_build_manager)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#check_build_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.check_build_status" title="Permalink to this definition"></a></dt>
+<dd><p>Checks the status of a <cite>build</cite> process with the given id.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>build_id (int): The id of the process to check.
+build_manager (BuildManager): The process manager dependency to check the process with.</p>
+</dd>
+<dt>Raises:</dt><dd><p>HTTPException: With status code 404 if the process is not found.</p>
+</dd>
+<dt>Returns:</dt><dd><p>{“status”: “completed”}: in case of a successfully completed process.
+{“status”: “running”}: in case of a still running process.
+{“status”: “stopped”}: in case of a stopped process.
+{“status”: “failed”}: in case of a failed-to-run process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.check_run_processes">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">check_run_processes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../schemas.html#chatsky_ui.schemas.pagination.Pagination" title="chatsky_ui.schemas.pagination.Pagination"><span class="pre">Pagination</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(NoneType)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#check_run_processes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.check_run_processes" title="Permalink to this definition"></a></dt>
+<dd><p>Checks the status of all <cite>run</cite> processes and returns them.</p>
+<p>The offset and limit parameters can be used to paginate the results.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>run_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.check_run_status">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">check_run_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#check_run_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.check_run_status" title="Permalink to this definition"></a></dt>
+<dd><p>Checks the status of a <cite>run</cite> process with the given id.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>build_id (int): The id of the process to check.
+run_manager (RunManager): The process manager dependency to check the process with.</p>
+</dd>
+<dt>Raises:</dt><dd><p>HTTPException: With status code 404 if the process is not found.</p>
+</dd>
+<dt>Returns:</dt><dd><p>{“status”: “alive”}: in case of a successfully run process. Now it is able to communicate.
+{“status”: “running”}: in case of a still running process.
+{“status”: “stopped”}: in case of a stopped process.
+{“status”: “failed”}: in case of a failed-to-run process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.connect">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">WebSocket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">websocket_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.websocket_manager.WebSocketManager" title="chatsky_ui.services.websocket_manager.WebSocketManager"><span class="pre">WebSocketManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_websocket_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.connect" title="Permalink to this definition"></a></dt>
+<dd><p>Establishes a WebSocket connection to communicate with an alive run process identified by its ‘run_id’.</p>
+<p>The WebSocket URL should adhere to the format: /bot/run/connect?run_id=&lt;run_id&gt;.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.get_build_logs">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">get_build_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.BuildManager" title="chatsky_ui.services.process_manager.BuildManager"><span class="pre">BuildManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_build_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../schemas.html#chatsky_ui.schemas.pagination.Pagination" title="chatsky_ui.schemas.pagination.Pagination"><span class="pre">Pagination</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(NoneType)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#get_build_logs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.get_build_logs" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the logs of a specific <cite>build</cite> process.</p>
+<p>The offset and limit parameters can be used to paginate the results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.get_run_logs">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">get_run_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../schemas.html#chatsky_ui.schemas.pagination.Pagination" title="chatsky_ui.schemas.pagination.Pagination"><span class="pre">Pagination</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(NoneType)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#get_run_logs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.get_run_logs" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the logs of a specific <cite>run</cite> process.</p>
+<p>The offset and limit parameters can be used to paginate the results.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.start_build">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">start_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../schemas.html#chatsky_ui.schemas.preset.Preset" title="chatsky_ui.schemas.preset.Preset"><span class="pre">Preset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.BuildManager" title="chatsky_ui.services.process_manager.BuildManager"><span class="pre">BuildManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_build_manager)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.index.Index" title="chatsky_ui.services.index.Index"><span class="pre">Index</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_index)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#start_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.start_build" title="Permalink to this definition"></a></dt>
+<dd><p>Starts a <cite>build</cite> process with the given preset.</p>
+<p>This runs a background task to check the status of the process every 2 seconds.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>preset (Preset): The preset to set the build process for. Must be among (“success”, “failure”, “loop”)</p>
+</dd>
+<dt>Returns:</dt><dd><p>{“status”: “ok”, “build_id”: build_id}: in case of <strong>starting</strong> the build process successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.start_run">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">start_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../schemas.html#chatsky_ui.schemas.preset.Preset" title="chatsky_ui.schemas.preset.Preset"><span class="pre">Preset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BackgroundTasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#start_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.start_run" title="Permalink to this definition"></a></dt>
+<dd><p>Starts a <cite>run</cite> process with the given preset.</p>
+<p>This runs a background task to check the status of the process every 2 seconds.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>build_id (int): The id of the build process to start running.
+preset (Preset): The preset to set the build process for. Must be among (“success”, “failure”, “loop”)</p>
+</dd>
+<dt>Returns:</dt><dd><p>{“status”: “ok”, “build_id”: run_id}: in case of <strong>starting</strong> the run process successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.stop_build">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">stop_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.BuildManager" title="chatsky_ui.services.process_manager.BuildManager"><span class="pre">BuildManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_build_manager)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#stop_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.stop_build" title="Permalink to this definition"></a></dt>
+<dd><p>Stops a <cite>build</cite> process with the given id.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>build_id (int): The id of the process to stop.
+build_id (BuildManager): The process manager dependency to stop the process with.</p>
+</dd>
+<dt>Raises:</dt><dd><p>HTTPException: With status code 404 if the process is not found.</p>
+</dd>
+<dt>Returns:</dt><dd><p>{“status”: “ok”}: in case of stopping a process successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.bot.stop_run">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.bot.</span></span><span class="sig-name descname"><span class="pre">stop_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.process_manager.RunManager" title="chatsky_ui.services.process_manager.RunManager"><span class="pre">RunManager</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_run_manager)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/bot.html#stop_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.bot.stop_run" title="Permalink to this definition"></a></dt>
+<dd><p>Stops a <cite>run</cite> process with the given id.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>run_id (int): The id of the process to stop.
+run_manager (RunManager): The process manager dependency to stop the process with.</p>
+</dd>
+<dt>Raises:</dt><dd><p>HTTPException: With status code 404 if the process is not found.</p>
+</dd>
+<dt>Returns:</dt><dd><p>{“status”: “ok”}: in case of stopping a process successfully.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="chatsky-ui-api-api-v1-endpoints-dff-services-module">
+<h2>chatsky_ui.api.api_v1.endpoints.dff_services module<a class="headerlink" href="#chatsky-ui-api-api-v1-endpoints-dff-services-module" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-chatsky_ui.api.api_v1.endpoints.dff_services"></span><dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.dff_services.get_conditions">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.dff_services.</span></span><span class="sig-name descname"><span class="pre">get_conditions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/dff_services.html#get_conditions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.dff_services.get_conditions" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the dff’s out-of-the-box conditions.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.dff_services.lint_snippet">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.dff_services.</span></span><span class="sig-name descname"><span class="pre">lint_snippet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">snippet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CodeSnippet</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/dff_services.html#lint_snippet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.dff_services.lint_snippet" title="Permalink to this definition"></a></dt>
+<dd><p>Lints a snippet with Pylint.</p>
+<p>This endpoint Joins the snippet with all imports existing in the conditions.py file and then runs Pylint on it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.dff_services.search_service">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.dff_services.</span></span><span class="sig-name descname"><span class="pre">search_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../services.html#chatsky_ui.services.index.Index" title="chatsky_ui.services.index.Index"><span class="pre">Index</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Depends(get_index)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/dff_services.html#search_service"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.dff_services.search_service" title="Permalink to this definition"></a></dt>
+<dd><p>Searches for a custom service by name and returns its code.</p>
+<p>A service could be a condition, reponse, or pre/postservice.</p>
+</dd></dl>
+
+</section>
+<section id="chatsky-ui-api-api-v1-endpoints-flows-module">
+<h2>chatsky_ui.api.api_v1.endpoints.flows module<a class="headerlink" href="#chatsky-ui-api-api-v1-endpoints-flows-module" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-chatsky_ui.api.api_v1.endpoints.flows"></span><dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.flows.flows_get">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.flows.</span></span><span class="sig-name descname"><span class="pre">flows_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/flows.html#flows_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.flows.flows_get" title="Permalink to this definition"></a></dt>
+<dd><p>Get the flows by reading the frontend_flows.yaml file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.api.api_v1.endpoints.flows.flows_post">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.api.api_v1.endpoints.flows.</span></span><span class="sig-name descname"><span class="pre">flows_post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/chatsky_ui/api/api_v1/endpoints/flows.html#flows_post"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.api.api_v1.endpoints.flows.flows_post" title="Permalink to this definition"></a></dt>
+<dd><p>Write the flows to the frontend_flows.yaml file.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api_v1.html" class="btn btn-neutral float-left" title="chatsky_ui.api.api_v1 package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../clients.html" class="btn btn-neutral float-right" title="chatsky_ui.clients package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

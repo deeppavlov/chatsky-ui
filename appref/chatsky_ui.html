@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui package &mdash; Chatsky-UI 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b1f64a84"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="api package" href="chatsky_ui/api.html" />
+    <link rel="prev" title="Welcome to Chatsky-UI’s documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">chatsky_ui package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/api.html">api package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/clients.html">chatsky_ui.clients package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/core.html">chatsky_ui.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/db.html">chatsky_ui.db package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/schemas.html">chatsky_ui.schemas package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html">chatsky_ui.services package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html">chatsky_ui.tests package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-chatsky_ui.cli">cli module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.cli.build_bot"><code class="docutils literal notranslate"><span class="pre">build_bot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.cli.build_scenario"><code class="docutils literal notranslate"><span class="pre">build_scenario()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.cli.init"><code class="docutils literal notranslate"><span class="pre">init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.cli.run_app"><code class="docutils literal notranslate"><span class="pre">run_app()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.cli.run_bot"><code class="docutils literal notranslate"><span class="pre">run_bot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.cli.run_scenario"><code class="docutils literal notranslate"><span class="pre">run_scenario()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-chatsky_ui.main">main module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.main.lifespan"><code class="docutils literal notranslate"><span class="pre">lifespan()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.main.root"><code class="docutils literal notranslate"><span class="pre">root()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chatsky_ui.main.route_static_file"><code class="docutils literal notranslate"><span class="pre">route_static_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">chatsky_ui package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/appref/chatsky_ui.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chatsky-ui-package">
+<h1>chatsky_ui package<a class="headerlink" href="#chatsky-ui-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/api.html">api package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/api.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/api/api_v1.html">chatsky_ui.api.api_v1 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/api/api_v1.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/api/api_v1.html#chatsky-ui-api-api-v1-api-module">chatsky_ui.api.api_v1.api module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/api.html#chatsky-ui-api-deps-module">chatsky_ui.api.deps module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/api.html#chatsky_ui.api.deps.get_build_manager"><code class="docutils literal notranslate"><span class="pre">get_build_manager()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/api.html#chatsky_ui.api.deps.get_index"><code class="docutils literal notranslate"><span class="pre">get_index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/api.html#chatsky_ui.api.deps.get_run_manager"><code class="docutils literal notranslate"><span class="pre">get_run_manager()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/api.html#chatsky_ui.api.deps.get_websocket_manager"><code class="docutils literal notranslate"><span class="pre">get_websocket_manager()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/clients.html">chatsky_ui.clients package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/clients.html#chatsky-ui-clients-dff-module">chatsky_ui.clients.dff module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/core.html">chatsky_ui.core package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/core.html#chatsky-ui-core-config-module">chatsky_ui.core.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.AppRunner"><code class="docutils literal notranslate"><span class="pre">AppRunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.AppRunner.run"><code class="docutils literal notranslate"><span class="pre">AppRunner.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.AppRunner.set_settings"><code class="docutils literal notranslate"><span class="pre">AppRunner.set_settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.AppRunner.settings"><code class="docutils literal notranslate"><span class="pre">AppRunner.settings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.Settings.refresh_work_dir"><code class="docutils literal notranslate"><span class="pre">Settings.refresh_work_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.Settings.save_config"><code class="docutils literal notranslate"><span class="pre">Settings.save_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.config.Settings.set_config"><code class="docutils literal notranslate"><span class="pre">Settings.set_config()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/core.html#chatsky-ui-core-logger-config-module">chatsky_ui.core.logger_config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.logger_config.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/core.html#chatsky_ui.core.logger_config.setup_logging"><code class="docutils literal notranslate"><span class="pre">setup_logging()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/db.html">chatsky_ui.db package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/db.html#chatsky-ui-db-base-module">chatsky_ui.db.base module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/db.html#chatsky_ui.db.base.read_conf"><code class="docutils literal notranslate"><span class="pre">read_conf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/db.html#chatsky_ui.db.base.read_logs"><code class="docutils literal notranslate"><span class="pre">read_logs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/db.html#chatsky_ui.db.base.write_conf"><code class="docutils literal notranslate"><span class="pre">write_conf()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/schemas.html">chatsky_ui.schemas package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky-ui-schemas-pagination-module">chatsky_ui.schemas.pagination module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination"><code class="docutils literal notranslate"><span class="pre">Pagination</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination.limit"><code class="docutils literal notranslate"><span class="pre">Pagination.limit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">Pagination.model_computed_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination.model_config"><code class="docutils literal notranslate"><span class="pre">Pagination.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination.model_fields"><code class="docutils literal notranslate"><span class="pre">Pagination.model_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination.offset"><code class="docutils literal notranslate"><span class="pre">Pagination.offset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.pagination.Pagination.page"><code class="docutils literal notranslate"><span class="pre">Pagination.page</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky-ui-schemas-preset-module">chatsky_ui.schemas.preset module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.preset.Preset"><code class="docutils literal notranslate"><span class="pre">Preset</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.preset.Preset.end_status"><code class="docutils literal notranslate"><span class="pre">Preset.end_status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.preset.Preset.model_computed_fields"><code class="docutils literal notranslate"><span class="pre">Preset.model_computed_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.preset.Preset.model_config"><code class="docutils literal notranslate"><span class="pre">Preset.model_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.preset.Preset.model_fields"><code class="docutils literal notranslate"><span class="pre">Preset.model_fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.preset.Preset.wait_time"><code class="docutils literal notranslate"><span class="pre">Preset.wait_time</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky-ui-schemas-process-status-module">chatsky_ui.schemas.process_status module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status"><code class="docutils literal notranslate"><span class="pre">Status</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.ALIVE"><code class="docutils literal notranslate"><span class="pre">Status.ALIVE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.COMPLETED"><code class="docutils literal notranslate"><span class="pre">Status.COMPLETED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.FAILED"><code class="docutils literal notranslate"><span class="pre">Status.FAILED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.FAILED_WITH_UNEXPECTED_CODE"><code class="docutils literal notranslate"><span class="pre">Status.FAILED_WITH_UNEXPECTED_CODE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.NULL"><code class="docutils literal notranslate"><span class="pre">Status.NULL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.RUNNING"><code class="docutils literal notranslate"><span class="pre">Status.RUNNING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/schemas.html#chatsky_ui.schemas.process_status.Status.STOPPED"><code class="docutils literal notranslate"><span class="pre">Status.STOPPED</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/services.html">chatsky_ui.services package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/services.html#chatsky-ui-services-index-module">chatsky_ui.services.index module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#index-service">Index service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index"><code class="docutils literal notranslate"><span class="pre">Index</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.get_services"><code class="docutils literal notranslate"><span class="pre">Index.get_services()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.indexit"><code class="docutils literal notranslate"><span class="pre">Index.indexit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.indexit_all"><code class="docutils literal notranslate"><span class="pre">Index.indexit_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.load"><code class="docutils literal notranslate"><span class="pre">Index.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.logger"><code class="docutils literal notranslate"><span class="pre">Index.logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.path"><code class="docutils literal notranslate"><span class="pre">Index.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.search_service"><code class="docutils literal notranslate"><span class="pre">Index.search_service()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.set_logger"><code class="docutils literal notranslate"><span class="pre">Index.set_logger()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.index.Index.set_path"><code class="docutils literal notranslate"><span class="pre">Index.set_path()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/services.html#chatsky-ui-services-json-converter-module">chatsky_ui.services.json_converter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/services.html#chatsky-ui-services-process-module">chatsky_ui.services.process module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#process-classes">Process classes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.BuildProcess"><code class="docutils literal notranslate"><span class="pre">BuildProcess</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.BuildProcess.get_full_info"><code class="docutils literal notranslate"><span class="pre">BuildProcess.get_full_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.BuildProcess.update_db_info"><code class="docutils literal notranslate"><span class="pre">BuildProcess.update_db_info()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process"><code class="docutils literal notranslate"><span class="pre">Process</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.check_status"><code class="docutils literal notranslate"><span class="pre">Process.check_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.get_full_info"><code class="docutils literal notranslate"><span class="pre">Process.get_full_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.is_alive"><code class="docutils literal notranslate"><span class="pre">Process.is_alive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.periodically_check_status"><code class="docutils literal notranslate"><span class="pre">Process.periodically_check_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.read_stdout"><code class="docutils literal notranslate"><span class="pre">Process.read_stdout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.start"><code class="docutils literal notranslate"><span class="pre">Process.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.stop"><code class="docutils literal notranslate"><span class="pre">Process.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.update_db_info"><code class="docutils literal notranslate"><span class="pre">Process.update_db_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.Process.write_stdin"><code class="docutils literal notranslate"><span class="pre">Process.write_stdin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.RunProcess"><code class="docutils literal notranslate"><span class="pre">RunProcess</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.RunProcess.get_full_info"><code class="docutils literal notranslate"><span class="pre">RunProcess.get_full_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process.RunProcess.update_db_info"><code class="docutils literal notranslate"><span class="pre">RunProcess.update_db_info()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/services.html#chatsky-ui-services-process-manager-module">chatsky_ui.services.process_manager module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#process-manager">Process manager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager"><code class="docutils literal notranslate"><span class="pre">BuildManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager.check_status"><code class="docutils literal notranslate"><span class="pre">BuildManager.check_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager.fetch_build_logs"><code class="docutils literal notranslate"><span class="pre">BuildManager.fetch_build_logs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager.get_build_info"><code class="docutils literal notranslate"><span class="pre">BuildManager.get_build_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager.get_full_info"><code class="docutils literal notranslate"><span class="pre">BuildManager.get_full_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager.get_full_info_with_runs_info"><code class="docutils literal notranslate"><span class="pre">BuildManager.get_full_info_with_runs_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.BuildManager.start"><code class="docutils literal notranslate"><span class="pre">BuildManager.start()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager"><code class="docutils literal notranslate"><span class="pre">ProcessManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.check_status"><code class="docutils literal notranslate"><span class="pre">ProcessManager.check_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.fetch_process_logs"><code class="docutils literal notranslate"><span class="pre">ProcessManager.fetch_process_logs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.get_full_info"><code class="docutils literal notranslate"><span class="pre">ProcessManager.get_full_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.get_last_id"><code class="docutils literal notranslate"><span class="pre">ProcessManager.get_last_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.get_process_info"><code class="docutils literal notranslate"><span class="pre">ProcessManager.get_process_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.get_status"><code class="docutils literal notranslate"><span class="pre">ProcessManager.get_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.logger"><code class="docutils literal notranslate"><span class="pre">ProcessManager.logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.set_logger"><code class="docutils literal notranslate"><span class="pre">ProcessManager.set_logger()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.ProcessManager.stop"><code class="docutils literal notranslate"><span class="pre">ProcessManager.stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.RunManager"><code class="docutils literal notranslate"><span class="pre">RunManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.RunManager.fetch_run_logs"><code class="docutils literal notranslate"><span class="pre">RunManager.fetch_run_logs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.RunManager.get_full_info"><code class="docutils literal notranslate"><span class="pre">RunManager.get_full_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.RunManager.get_run_info"><code class="docutils literal notranslate"><span class="pre">RunManager.get_run_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.process_manager.RunManager.start"><code class="docutils literal notranslate"><span class="pre">RunManager.start()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/services.html#chatsky-ui-services-websocket-manager-module">chatsky_ui.services.websocket_manager module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager"><code class="docutils literal notranslate"><span class="pre">WebSocketManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.check_status"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.check_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.connect"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.disconnect"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.disconnect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.forward_websocket_messages_to_process"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.forward_websocket_messages_to_process()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.logger"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.send_process_output_to_websocket"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.send_process_output_to_websocket()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/services.html#chatsky_ui.services.websocket_manager.WebSocketManager.set_logger"><code class="docutils literal notranslate"><span class="pre">WebSocketManager.set_logger()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="chatsky_ui/tests.html">chatsky_ui.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/tests.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests/api.html">chatsky_ui.tests.api package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/api.html#chatsky-ui-tests-api-test-bot-module">chatsky_ui.tests.api.test_bot module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/api.html#chatsky-ui-tests-api-test-flows-module">chatsky_ui.tests.api.test_flows module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests/e2e.html">chatsky_ui.tests.e2e package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/e2e.html#chatsky-ui-tests-e2e-test-e2e-module">chatsky_ui.tests.e2e.test_e2e module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests/integration.html">chatsky_ui.tests.integration package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/integration.html#chatsky-ui-tests-integration-test-api-integration-module">chatsky_ui.tests.integration.test_api_integration module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests/services.html">chatsky_ui.tests.services package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/services.html#chatsky-ui-tests-services-test-process-module">chatsky_ui.tests.services.test_process module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/services.html#chatsky-ui-tests-services-test-process-manager-module">chatsky_ui.tests.services.test_process_manager module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="chatsky_ui/tests/services.html#chatsky-ui-tests-services-test-websocket-manager-module">chatsky_ui.tests.services.test_websocket_manager module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="chatsky_ui/tests.html#chatsky-ui-tests-conftest-module">chatsky_ui.tests.conftest module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.build_manager"><code class="docutils literal notranslate"><span class="pre">build_manager()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.client"><code class="docutils literal notranslate"><span class="pre">client()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.override_dependency"><code class="docutils literal notranslate"><span class="pre">override_dependency()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.pagination"><code class="docutils literal notranslate"><span class="pre">pagination()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.preset"><code class="docutils literal notranslate"><span class="pre">preset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.run_manager"><code class="docutils literal notranslate"><span class="pre">run_manager()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.run_process"><code class="docutils literal notranslate"><span class="pre">run_process()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.start_process"><code class="docutils literal notranslate"><span class="pre">start_process()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chatsky_ui/tests.html#chatsky_ui.tests.conftest.websocket_manager"><code class="docutils literal notranslate"><span class="pre">websocket_manager()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="module-chatsky_ui.cli">
+<span id="cli-module"></span><h2>cli module<a class="headerlink" href="#module-chatsky_ui.cli" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.cli.build_bot">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.cli.</span></span><span class="sig-name descname"><span class="pre">build_bot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'success'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/cli.html#build_bot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.cli.build_bot" title="Permalink to this definition"></a></dt>
+<dd><p>Builds the bot with one of three various presets.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.cli.build_scenario">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.cli.</span></span><span class="sig-name descname"><span class="pre">build_scenario</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/cli.html#build_scenario"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.cli.build_scenario" title="Permalink to this definition"></a></dt>
+<dd><p>Builds the bot with preset <cite>success</cite></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.cli.init">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.cli.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite_if_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/cli.html#init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.cli.init" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes a new Chatsky-UI project using an off-the-shelf template.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.cli.run_app">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.cli.</span></span><span class="sig-name descname"><span class="pre">run_app</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_reload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('.')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/chatsky_ui/cli.html#run_app"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.cli.run_app" title="Permalink to this definition"></a></dt>
+<dd><p>Runs the UI for your <cite>project_dir</cite> on <cite>host:port</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.cli.run_bot">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.cli.</span></span><span class="sig-name descname"><span class="pre">run_bot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'success'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/cli.html#run_bot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.cli.run_bot" title="Permalink to this definition"></a></dt>
+<dd><p>Runs the bot with one of three various presets.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.cli.run_scenario">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.cli.</span></span><span class="sig-name descname"><span class="pre">run_scenario</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">build_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/cli.html#run_scenario"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.cli.run_scenario" title="Permalink to this definition"></a></dt>
+<dd><p>Runs the bot with preset <cite>success</cite></p>
+</dd></dl>
+
+</section>
+<section id="module-chatsky_ui.main">
+<span id="main-module"></span><h2>main module<a class="headerlink" href="#module-chatsky_ui.main" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.main.lifespan">
+<span class="sig-prename descclassname"><span class="pre">chatsky_ui.main.</span></span><span class="sig-name descname"><span class="pre">lifespan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FastAPI</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/main.html#lifespan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.main.lifespan" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.main.root">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.main.</span></span><span class="sig-name descname"><span class="pre">root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/chatsky_ui/main.html#root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.main.root" title="Permalink to this definition"></a></dt>
+<dd><p>Redirect ‘/’ to index.html</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chatsky_ui.main.route_static_file">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.main.</span></span><span class="sig-name descname"><span class="pre">route_static_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/chatsky_ui/main.html#route_static_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.main.route_static_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to Chatsky-UI’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="chatsky_ui/api.html" class="btn btn-neutral float-right" title="api package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

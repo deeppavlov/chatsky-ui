@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.api.api_v1.endpoints.bot &mdash; Chatsky-UI 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=b1f64a84"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../appref/chatsky_ui.html">chatsky_ui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.api.api_v1.endpoints.bot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for chatsky_ui.api.api_v1.endpoints.bot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">fastapi</span> <span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">BackgroundTasks</span><span class="p">,</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">WebSocket</span><span class="p">,</span> <span class="n">WebSocketException</span><span class="p">,</span> <span class="n">status</span>
+
+<span class="kn">from</span> <span class="nn">chatsky_ui.api</span> <span class="kn">import</span> <span class="n">deps</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.schemas.pagination</span> <span class="kn">import</span> <span class="n">Pagination</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.schemas.preset</span> <span class="kn">import</span> <span class="n">Preset</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.services.index</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.services.process_manager</span> <span class="kn">import</span> <span class="n">BuildManager</span><span class="p">,</span> <span class="n">ProcessManager</span><span class="p">,</span> <span class="n">RunManager</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.services.websocket_manager</span> <span class="kn">import</span> <span class="n">WebSocketManager</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">()</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_stop_process</span><span class="p">(</span><span class="n">id_</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">process_manager</span><span class="p">:</span> <span class="n">ProcessManager</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="s2">&quot;run&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops a `build` or `run` process with the given id.&quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">process_manager</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Process not found. It may have already exited or not started yet. Please check logs.&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+    <span class="n">process_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> process &#39;</span><span class="si">%s</span><span class="s2">&#39; has stopped&quot;</span><span class="p">,</span> <span class="n">process</span><span class="o">.</span><span class="n">capitalize</span><span class="p">(),</span> <span class="n">id_</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">}</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_check_process_status</span><span class="p">(</span><span class="n">id_</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">process_manager</span><span class="p">:</span> <span class="n">ProcessManager</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks the status of a `build` or `run` process with the given id.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">id_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">process_manager</span><span class="o">.</span><span class="n">processes</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Process not found. It may have already exited.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">process_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">process_manager</span><span class="o">.</span><span class="n">get_status</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">process_status</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="start_build"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.start_build">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/build/start&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">201</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">start_build</span><span class="p">(</span>
+    <span class="n">preset</span><span class="p">:</span> <span class="n">Preset</span><span class="p">,</span>
+    <span class="n">background_tasks</span><span class="p">:</span> <span class="n">BackgroundTasks</span><span class="p">,</span>
+    <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_build_manager</span><span class="p">),</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n">Index</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_index</span><span class="p">),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts a `build` process with the given preset.</span>
+
+<span class="sd">    This runs a background task to check the status of the process every 2 seconds.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        preset (Preset): The preset to set the build process for. Must be among (&quot;success&quot;, &quot;failure&quot;, &quot;loop&quot;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;, &quot;build_id&quot;: build_id}: in case of **starting** the build process successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">preset</span><span class="o">.</span><span class="n">wait_time</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">build_manager</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">preset</span><span class="p">)</span>
+    <span class="n">background_tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">build_manager</span><span class="o">.</span><span class="n">check_status</span><span class="p">,</span> <span class="n">build_id</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="n">build_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Build process &#39;</span><span class="si">%s</span><span class="s2">&#39; has started&quot;</span><span class="p">,</span> <span class="n">build_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="s2">&quot;build_id&quot;</span><span class="p">:</span> <span class="n">build_id</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="stop_build"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.stop_build">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/build/stop/</span><span class="si">{build_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">stop_build</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">build_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_build_manager</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops a `build` process with the given id.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        build_id (int): The id of the process to stop.</span>
+<span class="sd">        build_id (BuildManager): The process manager dependency to stop the process with.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: With status code 404 if the process is not found.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;}: in case of stopping a process successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">_stop_process</span><span class="p">(</span><span class="n">build_id</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="s2">&quot;build&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_build_status"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.check_build_status">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/build/status/</span><span class="si">{build_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_build_status</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">build_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_build_manager</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks the status of a `build` process with the given id.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        build_id (int): The id of the process to check.</span>
+<span class="sd">        build_manager (BuildManager): The process manager dependency to check the process with.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: With status code 404 if the process is not found.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;completed&quot;}: in case of a successfully completed process.</span>
+<span class="sd">        {&quot;status&quot;: &quot;running&quot;}: in case of a still running process.</span>
+<span class="sd">        {&quot;status&quot;: &quot;stopped&quot;}: in case of a stopped process.</span>
+<span class="sd">        {&quot;status&quot;: &quot;failed&quot;}: in case of a failed-to-run process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">_check_process_status</span><span class="p">(</span><span class="n">build_id</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_build_processes"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.check_build_processes">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/builds&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]],</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_build_processes</span><span class="p">(</span>
+    <span class="n">build_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_build_manager</span><span class="p">),</span>
+    <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">),</span>
+    <span class="n">pagination</span><span class="p">:</span> <span class="n">Pagination</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks the status of all `build` processes and returns them along with their runs info.</span>
+
+<span class="sd">    The offset and limit parameters can be used to paginate the results.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        build_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">build_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">build_manager</span><span class="o">.</span><span class="n">get_build_info</span><span class="p">(</span><span class="n">build_id</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">build_manager</span><span class="o">.</span><span class="n">get_full_info_with_runs_info</span><span class="p">(</span>
+            <span class="n">run_manager</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">limit</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">limit</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_build_logs"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.get_build_logs">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/builds/logs/</span><span class="si">{build_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_build_logs</span><span class="p">(</span>
+    <span class="n">build_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_build_manager</span><span class="p">),</span> <span class="n">pagination</span><span class="p">:</span> <span class="n">Pagination</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">()</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the logs of a specific `build` process.</span>
+
+<span class="sd">    The offset and limit parameters can be used to paginate the results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">build_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">build_manager</span><span class="o">.</span><span class="n">fetch_build_logs</span><span class="p">(</span><span class="n">build_id</span><span class="p">,</span> <span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">pagination</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="start_run"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.start_run">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/run/start/</span><span class="si">{build_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">201</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">start_run</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">build_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">preset</span><span class="p">:</span> <span class="n">Preset</span><span class="p">,</span>
+    <span class="n">background_tasks</span><span class="p">:</span> <span class="n">BackgroundTasks</span><span class="p">,</span>
+    <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts a `run` process with the given preset.</span>
+
+<span class="sd">    This runs a background task to check the status of the process every 2 seconds.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        build_id (int): The id of the build process to start running.</span>
+<span class="sd">        preset (Preset): The preset to set the build process for. Must be among (&quot;success&quot;, &quot;failure&quot;, &quot;loop&quot;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;, &quot;build_id&quot;: run_id}: in case of **starting** the run process successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">preset</span><span class="o">.</span><span class="n">wait_time</span><span class="p">)</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">build_id</span><span class="p">,</span> <span class="n">preset</span><span class="p">)</span>
+    <span class="n">background_tasks</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">run_manager</span><span class="o">.</span><span class="n">check_status</span><span class="p">,</span> <span class="n">run_id</span><span class="p">)</span>
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run process &#39;</span><span class="si">%s</span><span class="s2">&#39; has started&quot;</span><span class="p">,</span> <span class="n">run_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="n">run_id</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="stop_run"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.stop_run">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/run/stop/</span><span class="si">{run_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">stop_run</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops a `run` process with the given id.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        run_id (int): The id of the process to stop.</span>
+<span class="sd">        run_manager (RunManager): The process manager dependency to stop the process with.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: With status code 404 if the process is not found.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;}: in case of stopping a process successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="k">await</span> <span class="n">_stop_process</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="s2">&quot;run&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_run_status"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.check_run_status">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/run/status/</span><span class="si">{run_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_run_status</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks the status of a `run` process with the given id.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        build_id (int): The id of the process to check.</span>
+<span class="sd">        run_manager (RunManager): The process manager dependency to check the process with.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPException: With status code 404 if the process is not found.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;alive&quot;}: in case of a successfully run process. Now it is able to communicate.</span>
+<span class="sd">        {&quot;status&quot;: &quot;running&quot;}: in case of a still running process.</span>
+<span class="sd">        {&quot;status&quot;: &quot;stopped&quot;}: in case of a stopped process.</span>
+<span class="sd">        {&quot;status&quot;: &quot;failed&quot;}: in case of a failed-to-run process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">_check_process_status</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_run_processes"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.check_run_processes">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/runs&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]],</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_run_processes</span><span class="p">(</span>
+    <span class="n">run_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">),</span>
+    <span class="n">pagination</span><span class="p">:</span> <span class="n">Pagination</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks the status of all `run` processes and returns them.</span>
+
+<span class="sd">    The offset and limit parameters can be used to paginate the results.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        run_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">run_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">get_run_info</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">get_full_info</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">limit</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_run_logs"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.get_run_logs">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/runs/logs/</span><span class="si">{run_id}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response_model</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">],</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_run_logs</span><span class="p">(</span>
+    <span class="n">run_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">),</span> <span class="n">pagination</span><span class="p">:</span> <span class="n">Pagination</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">()</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the logs of a specific `run` process.</span>
+
+<span class="sd">    The offset and limit parameters can be used to paginate the results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">run_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">fetch_run_logs</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">pagination</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="connect"><a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.bot.connect">[docs]</a><span class="nd">@router</span><span class="o">.</span><span class="n">websocket</span><span class="p">(</span><span class="s2">&quot;/run/connect&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span>
+    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocket</span><span class="p">,</span>
+    <span class="n">websocket_manager</span><span class="p">:</span> <span class="n">WebSocketManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_websocket_manager</span><span class="p">),</span>
+    <span class="n">run_manager</span><span class="p">:</span> <span class="n">RunManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">deps</span><span class="o">.</span><span class="n">get_run_manager</span><span class="p">),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Establishes a WebSocket connection to communicate with an alive run process identified by its &#39;run_id&#39;.</span>
+
+<span class="sd">    The WebSocket URL should adhere to the format: /bot/run/connect?run_id=&lt;run_id&gt;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Connecting to websocket&quot;</span><span class="p">)</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="n">websocket</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;run_id&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Validate run_id</span>
+    <span class="k">if</span> <span class="n">run_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">run_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No run_id provided&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">WebSocketException</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">WS_1008_POLICY_VIOLATION</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">run_id</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="n">run_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A non-digit run run_id provided&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">WebSocketException</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">WS_1003_UNSUPPORTED_DATA</span><span class="p">)</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">run_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">processes</span><span class="p">:</span>
+        <span class="n">run_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;process with run_id &#39;</span><span class="si">%s</span><span class="s2">&#39; exited or never existed&quot;</span><span class="p">,</span> <span class="n">run_id</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">WebSocketException</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">WS_1014_BAD_GATEWAY</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">websocket_manager</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">websocket</span><span class="p">)</span>
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Websocket for run process &#39;</span><span class="si">%s</span><span class="s2">&#39; has been opened&quot;</span><span class="p">,</span> <span class="n">run_id</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send_text</span><span class="p">(</span><span class="s2">&quot;Start chatting&quot;</span><span class="p">)</span>
+
+    <span class="n">output_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
+        <span class="n">websocket_manager</span><span class="o">.</span><span class="n">send_process_output_to_websocket</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">websocket</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">input_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
+        <span class="n">websocket_manager</span><span class="o">.</span><span class="n">forward_websocket_messages_to_process</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">websocket</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Wait for either task to finish</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">websocket_manager</span><span class="o">.</span><span class="n">pending_tasks</span><span class="p">[</span><span class="n">websocket</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">output_task</span><span class="p">,</span> <span class="n">input_task</span><span class="p">],</span>
+        <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">websocket_manager</span><span class="o">.</span><span class="n">disconnect</span><span class="p">(</span><span class="n">websocket</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
