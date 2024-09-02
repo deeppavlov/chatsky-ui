@@ -13,7 +13,7 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react"
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 
 import { a, useTransition } from "@react-spring/web"
 import "@xyflow/react/dist/style.css"
@@ -70,10 +70,9 @@ export default function Flow() {
     managerMode,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
-  const { takeSnapshot, copy, paste, copiedSelection, setDisableCopyPaste, disableCopyPaste } = useContext(undoRedoContext)
-
+  const { takeSnapshot, copy, paste, copiedSelection, disableCopyPaste } =
+    useContext(undoRedoContext)
   const { flowId } = useParams()
-
   const flow = flows.find((flow: FlowType) => flow.name === flowId)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(flow?.data.nodes || [])
@@ -81,16 +80,39 @@ export default function Flow() {
 
   const [selection, setSelection] = useState<OnSelectionChangeParams>()
   const [selected, setSelected] = useState<string>()
-  const isEdgeUpdateSuccess = useRef(false)
   const { notification: n } = useContext(NotificationsContext)
 
-  const handleUpdateFlowData = useCallback(() => {
-    if (reactFlowInstance && flow && flow.name === flowId) {
-      flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
-      updateFlow(flow)
-    }
-  }, [flow, flowId, reactFlowInstance, updateFlow])
+  /**
+   * Function update flow data function translates reactFlowInstanceJSON to flow.data
+   * @param {AppNode[]} nodes optional changed nodes
+   * @param {Edge[]} edges optional changed edges
+   */
+  const handleUpdateFlowData = useCallback(
+    (nodes?: AppNode[], edges?: Edge[]) => {
+      if (reactFlowInstance && flow && flow.name === flowId) {
+        flow.data = reactFlowInstance.toObject() as ReactFlowJsonObject<AppNode, Edge>
+        if (nodes) {
+          flow.data.nodes = flow.data.nodes.map((node) => {
+            const curr_node = nodes.find((nd) => nd.id === node.id)
+            return curr_node ?? node
+          })
+        }
+        if (edges) {
+          flow.data.edges = flow.data.edges.map((edge) => {
+            const curr_edge = edges.find((ed) => ed.id === edge.id)
+            return curr_edge ?? edge
+          })
+        }
+        updateFlow(flow)
+      }
+    },
+    [flow, flowId, reactFlowInstance, updateFlow]
+  )
 
+  /**
+   * Function update flow data function translates reactFlowInstanceJSON to flow.data
+   * With additional first node check
+   */
   const handleFullUpdateFlowData = useCallback(() => {
     if (reactFlowInstance && flow && flow.name === flowId) {
       const _node = reactFlowInstance.getNodes()[0]
@@ -101,6 +123,9 @@ export default function Flow() {
     }
   }, [flow, flowId, reactFlowInstance, updateFlow])
 
+  /**
+   *  update flow.data when edges or nodes.length changed (no check nodes array)
+   * */
   useEffect(() => {
     handleUpdateFlowData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,6 +143,10 @@ export default function Flow() {
     }
   }, [flow, flowId, reactFlowInstance, setEdges, setNodes])
 
+  /**
+   * Initiate new reactFlowInstance object
+   * @param {CustomReactFlowInstanceType} e new reactFlowInstance object value
+   */
   const onInit = useCallback(
     (e: CustomReactFlowInstanceType) => {
       setReactFlowInstance(e)
@@ -127,7 +156,21 @@ export default function Flow() {
 
   const onNodesChangeMod = useCallback(
     (nds: NodeChange<AppNode>[]) => {
+      console.log("nds change")
       if (nds) {
+        // only calls update flow data function when node change type = "replace" (no call when move)
+        if (nds.every((nd) => nd.type === "replace")) {
+          const update_nodes = nds
+            .filter((nd) => nd.type === "replace")
+            .map((nd) => {
+              if (nd.type === "replace") {
+                return nd.item
+              }
+            })
+          if (update_nodes.every((nd) => nd !== undefined)) {
+            handleUpdateFlowData(update_nodes as AppNode[])
+          }
+        }
         nds
           .sort((nd1: NodeChange, nd2: NodeChange) => {
             if (nd1.type === "select" && nd2.type === "select") {
@@ -137,6 +180,7 @@ export default function Flow() {
             }
           })
           .forEach((nd) => {
+            console.log(nd)
             if (nd.type === "select") {
               if (nd.selected) {
                 setSelectedNode(nd.id)
@@ -150,25 +194,22 @@ export default function Flow() {
       }
       onNodesChange(nds)
     },
-    [onNodesChange, setSelectedNode]
+    [handleUpdateFlowData, onNodesChange, setSelectedNode]
   )
 
   const onEdgeUpdateStart = useCallback(() => {
     takeSnapshot()
-    isEdgeUpdateSuccess.current = false
   }, [takeSnapshot])
 
   const onEdgeUpdate = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
       setEdges((els) => reconnectEdge(oldEdge, newConnection, els))
-      isEdgeUpdateSuccess.current = true
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setEdges]
   )
 
   const onNodeClick = useCallback(
-    (event: React.MouseEvent, node: AppNode) => {
+    (_event: React.MouseEvent, node: AppNode) => {
       const node_ = node as AppNode
       setSelected(node_.id)
       setSelectedNode(node_.id)
@@ -177,7 +218,7 @@ export default function Flow() {
   )
 
   const onEdgeClick = useCallback(
-    (event: React.MouseEvent, edge: Edge) => {
+    (_event: React.MouseEvent, edge: Edge) => {
       setSelected(edge.id)
     },
     [setSelected]
@@ -276,7 +317,10 @@ export default function Flow() {
   )
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
- 
+
+  /**
+   * Keyboard shortcuts handlers
+   */
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
@@ -319,6 +363,7 @@ export default function Flow() {
   }, [
     copiedSelection,
     copy,
+    disableCopyPaste,
     flow,
     flowId,
     flows,
@@ -372,7 +417,6 @@ export default function Flow() {
             edgeTypes={edgeTypes}
             nodes={nodes}
             edges={edges}
-            onMoveStart={handleFullUpdateFlowData}
             onMoveEnd={handleFullUpdateFlowData}
             panOnScroll={true}
             panOnScrollSpeed={1.5}
@@ -385,15 +429,10 @@ export default function Flow() {
             onEdgesChange={onEdgesChange}
             onReconnect={onEdgeUpdate}
             onReconnectStart={onEdgeUpdateStart}
-            // onReconnectEnd={onEdgeUpdateEnd}
             onNodeDragStart={() => takeSnapshot()}
             onNodeDragStop={handleFullUpdateFlowData}
             onConnect={onConnect}
-            // onNodesDelete={onNodesDelete}
-            // onEdgesDelete={onEdgesDelete}
             onBeforeDelete={validateDeletion}
-            // onPaneMouseEnter={() => setDisableCopyPaste(false)}
-            // onPaneMouseLeave={() => setDisableCopyPaste(true)}
             edgesReconnectable={!managerMode}
             nodesConnectable={!managerMode}
             nodesDraggable={!managerMode}

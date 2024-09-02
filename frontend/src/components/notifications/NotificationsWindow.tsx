@@ -16,20 +16,8 @@ type NotificationsWindowProps = {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-// const getNotificationsStack = (notifications: notificationType[], index: number) => {
-//   const notification_instance: notificationType = notifications[index]
-//   let counter = 1
-//   while (
-//     notifications[index + counter]?.title === notification_instance?.title &&
-//     notifications[index + counter]?.message === notification_instance?.message &&
-//     notifications[index + counter]?.type === notification_instance?.type
-//   ) {
-//     counter += 1
-//   }
-//   return counter
-// }
 
-export const NotificationsWindow = ({ isOpen, setIsOpen }: NotificationsWindowProps) => {
+export const NotificationsWindow = ({ setIsOpen }: NotificationsWindowProps) => {
   const { notifications, notification } = useContext(NotificationsContext)
   const [notificationFilter, setNotificationFilter] = useState<string[]>([])
 

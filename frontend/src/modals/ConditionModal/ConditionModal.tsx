@@ -63,7 +63,7 @@ const ConditionModal = ({
 
   const { getNode, setNodes, getNodes } = useReactFlow<AppNode, Edge>()
   const { notification: n } = useContext(NotificationsContext)
-  const { updateFlow, flows, quietSaveFlows } = useContext(flowContext)
+  const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
 
   const [currentCondition, setCurrentCondition] = useState(

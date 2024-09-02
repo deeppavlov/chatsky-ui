@@ -36,7 +36,7 @@ const NodeModal = ({
   nodeDataState,
   setNodeDataState,
 }: NodeModalProps) => {
-  const { getNodes, setNodes } = useReactFlow<DefaultNodeType, Edge>()
+  const { getNodes, setNodes, updateNodeData } = useReactFlow<DefaultNodeType, Edge>()
   const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext)
   const { takeSnapshot } = useContext(undoRedoContext)
 
@@ -49,7 +49,7 @@ const NodeModal = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setNodeDataState({ ...nodeDataState, [e.target.name]: e.target.value })
     },
-    [nodeDataState]
+    [nodeDataState, setNodeDataState]
   )
 
   const setTextResponseValue = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,18 +64,8 @@ const NodeModal = ({
   }
 
   const onNodeSave = () => {
-    const nodes = getNodes()
-    const node = nodes.find((node) => node.data.id === data.id)
-    const new_nodes = nodes.map((node) => {
-      if (node.data.id === data.id) {
-        return { ...node, data: { ...node.data, ...nodeDataState } }
-      }
-      return node
-    })
-    if (node) {
-      takeSnapshot()
-      setNodes(() => new_nodes)
-    }
+    takeSnapshot()
+    updateNodeData(data.id, { ...nodeDataState })
     quietSaveFlows()
     onClose()
   }

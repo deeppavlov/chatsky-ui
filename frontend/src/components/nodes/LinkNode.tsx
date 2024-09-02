@@ -19,7 +19,7 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react"
-import { Handle, Position } from "@xyflow/react"
+import { Edge, Handle, Position, useReactFlow } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import classNames from "classnames"
 import { AlertTriangle, Link2, Trash2 } from "lucide-react"
@@ -31,12 +31,14 @@ import { FlowType } from "../../types/FlowTypes"
 import { AppNode, LinkNodeDataType } from "../../types/NodeTypes"
 
 const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
+  const { updateNodeData } = useReactFlow<AppNode, Edge>()
   const { onOpen, onClose, isOpen } = useDisclosure()
   const { flows, deleteNode } = useContext(flowContext)
   const [toFlow, setToFlow] = useState<FlowType>()
   const [toNode, setToNode] = useState<AppNode>()
   const [error, setError] = useState(false)
-  const [r, setR] = useState(0)
+  const [isConfigured, setIsConfigured] = useState(data.transition.is_configured ?? false)
+  // const [r, setR] = useState(0)
   const { notification: n } = useContext(NotificationsContext)
   // const { openPopUp } = useContext(PopUpContext)
 
@@ -56,6 +58,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     if (!data.transition.target_node) {
       onOpen()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.transition.target_node])
 
   const handleFlowSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -76,10 +79,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   )
 
   useEffect(() => {
-    if (r === 0) {
-      return setR((r) => r + 1)
-    }
-    if (!TO_FLOW || !TO_NODE) {
+    if ((!TO_FLOW || !TO_NODE) && isConfigured) {
       setError(true)
       n.add({
         message: `Link ${data.id} is broken! Please configure it again.`,
@@ -89,6 +89,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     } else {
       setError(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TO_FLOW, TO_NODE])
 
   const onDismiss = () => {
@@ -104,8 +105,15 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
 
   const onSave = () => {
     if (toFlow && toNode) {
-      data.transition.target_flow = toFlow.name
-      data.transition.target_node = toNode.data.id
+      updateNodeData(data.id, {
+        ...data,
+        transition: {
+          target_flow: toFlow.name,
+          target_node: toNode.data.id,
+          is_configured: true
+        }
+      })
+      setIsConfigured(true)
       onClose()
     }
   }
@@ -114,7 +122,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     <>
       <div
         onDoubleClick={onOpen}
-        className={classNames("default_node px-6 py-4", error && "border-error")}>
+        className={classNames(`default_node px-6 py-4`, error && "border-error",)}>
         <div className=' w-full h-1/3 flex justify-between items-center bg-node rounded-node'>
           <Handle
             isConnectableEnd
@@ -138,7 +146,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
             </PopoverTrigger>
             <PopoverContent>ID: {data.id}</PopoverContent>
           </Popover>
-          {(!toFlow || !toNode) && (
+          {((!toFlow || !toNode) && isConfigured) && (
             <Tooltip
               content='It looks like this node/flow is not defined. Please, re-create it!'
               radius='sm'>
@@ -155,7 +163,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
         <div className='py-2.5 h-2/3 flex items-start justify-between'>
           <div className='flex items-center gap-2'>
             <Link2 strokeWidth={1.3} />
-            {TO_FLOW ? TO_FLOW.name : "ERROR"} / {TO_NODE ? TO_NODE.data.name : "ERROR"}
+            {TO_FLOW ? TO_FLOW.name : isConfigured ? "ERROR" : "<FLOW_NAME>"} / {TO_NODE ? TO_NODE.data.name : isConfigured ? "ERROR" : "<NODE_NAME>"}
           </div>
           <div></div>
         </div>
@@ -176,7 +184,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                   className='text-white'
                   color='warning'
                   radius='sm'
-                  content='Link options is required to add a link'>
+                  content='Link options is required for creating a link'>
                   <AlertTriangle
                     className='ml-1 fill-amber-400 cursor-pointer'
                     stroke='white'

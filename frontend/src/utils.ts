@@ -65,7 +65,7 @@ export const isNodeDeletionValid = (nodes: AppNode[], id: string) => {
 }
 
 export function delay(ms: number) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
 }
