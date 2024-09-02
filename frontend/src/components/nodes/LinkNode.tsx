@@ -1,5 +1,6 @@
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -34,16 +35,18 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   const { updateNodeData } = useReactFlow<AppNode, Edge>()
   const { onOpen, onClose, isOpen } = useDisclosure()
   const { flows, deleteNode } = useContext(flowContext)
+  const [name, setName] = useState(data.name ?? "")
   const [toFlow, setToFlow] = useState<FlowType>()
   const [toNode, setToNode] = useState<AppNode>()
   const [error, setError] = useState(false)
   const [isConfigured, setIsConfigured] = useState(data.transition.is_configured ?? false)
-  // const [r, setR] = useState(0)
   const { notification: n } = useContext(NotificationsContext)
-  // const { openPopUp } = useContext(PopUpContext)
 
+  /**
+   * This useEffect checks if link configured
+   */
   useEffect(() => {
-    if (data.transition.target_node) {
+    if (data.transition.is_configured) {
       const to_flow = flows.find((flow) =>
         flow.data.nodes.some((node) => node.data.id === data.transition.target_node)
       )
@@ -55,10 +58,10 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
         setToNode(to_node)
       }
     }
-    if (!data.transition.target_node) {
+    if (!data.transition.is_configured) {
       onOpen()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.transition.target_node])
 
   const handleFlowSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -78,6 +81,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     [TO_FLOW?.data.nodes, data.transition.target_node]
   )
 
+  /**
+   * This useEffect checks the TO_FLOW and TO_NODE values is correct, and calls error if not
+   */
   useEffect(() => {
     if ((!TO_FLOW || !TO_NODE) && isConfigured) {
       setError(true)
@@ -89,9 +95,12 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     } else {
       setError(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TO_FLOW, TO_NODE])
 
+  /**
+   * This function will delete current link if TO_FLOW and TO_NODE values wasn't defined
+   */
   const onDismiss = () => {
     setToFlow(TO_FLOW)
     setToNode(TO_NODE)
@@ -103,15 +112,19 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     }
   }
 
+  /**
+   * Link data save function
+   */
   const onSave = () => {
     if (toFlow && toNode) {
       updateNodeData(data.id, {
         ...data,
+        name: name,
         transition: {
           target_flow: toFlow.name,
           target_node: toNode.data.id,
-          is_configured: true
-        }
+          is_configured: true,
+        },
       })
       setIsConfigured(true)
       onClose()
@@ -122,7 +135,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     <>
       <div
         onDoubleClick={onOpen}
-        className={classNames(`default_node px-6 py-4`, error && "border-error",)}>
+        className={classNames(`default_node px-6 py-4`, error && "border-error")}>
         <div className=' w-full h-1/3 flex justify-between items-center bg-node rounded-node'>
           <Handle
             isConnectableEnd
@@ -146,7 +159,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
             </PopoverTrigger>
             <PopoverContent>ID: {data.id}</PopoverContent>
           </Popover>
-          {((!toFlow || !toNode) && isConfigured) && (
+          {(!toFlow || !toNode) && isConfigured && (
             <Tooltip
               content='It looks like this node/flow is not defined. Please, re-create it!'
               radius='sm'>
@@ -163,7 +176,8 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
         <div className='py-2.5 h-2/3 flex items-start justify-between'>
           <div className='flex items-center gap-2'>
             <Link2 strokeWidth={1.3} />
-            {TO_FLOW ? TO_FLOW.name : isConfigured ? "ERROR" : "<FLOW_NAME>"} / {TO_NODE ? TO_NODE.data.name : isConfigured ? "ERROR" : "<NODE_NAME>"}
+            {TO_FLOW ? TO_FLOW.name : isConfigured ? "ERROR" : "<FLOW_NAME>"} /{" "}
+            {TO_NODE ? TO_NODE.data.name : isConfigured ? "ERROR" : "<NODE_NAME>"}
           </div>
           <div></div>
         </div>
@@ -195,6 +209,16 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
             </div>
           </ModalHeader>
           <ModalBody>
+            <div>
+              <Input
+                label='Name'
+                value={name}
+                onValueChange={setName}
+                radius='sm'
+                variant='bordered'
+                labelPlacement='outside'
+              />
+            </div>
             <Table>
               <TableHeader>
                 <TableColumn>
