@@ -40,12 +40,13 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   const [toNode, setToNode] = useState<AppNode>()
   const [error, setError] = useState(false)
   const [isConfigured, setIsConfigured] = useState(data.transition.is_configured ?? false)
-  // const [r, setR] = useState(0)
   const { notification: n } = useContext(NotificationsContext)
-  // const { openPopUp } = useContext(PopUpContext)
 
+  /**
+   * This useEffect checks if link configured
+   */
   useEffect(() => {
-    if (data.transition.target_node) {
+    if (data.transition.is_configured) {
       const to_flow = flows.find((flow) =>
         flow.data.nodes.some((node) => node.data.id === data.transition.target_node)
       )
@@ -57,7 +58,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
         setToNode(to_node)
       }
     }
-    if (!data.transition.target_node) {
+    if (!data.transition.is_configured) {
       onOpen()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -80,6 +81,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     [TO_FLOW?.data.nodes, data.transition.target_node]
   )
 
+  /**
+   * This useEffect checks the TO_FLOW and TO_NODE values is correct, and calls error if not
+   */
   useEffect(() => {
     if ((!TO_FLOW || !TO_NODE) && isConfigured) {
       setError(true)
@@ -94,6 +98,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TO_FLOW, TO_NODE])
 
+  /**
+   * This function will delete current link if TO_FLOW and TO_NODE values wasn't defined
+   */
   const onDismiss = () => {
     setToFlow(TO_FLOW)
     setToNode(TO_NODE)
@@ -105,6 +112,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     }
   }
 
+  /**
+   * Link data save function
+   */
   const onSave = () => {
     if (toFlow && toNode) {
       updateNodeData(data.id, {
@@ -204,9 +214,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                 label='Name'
                 value={name}
                 onValueChange={setName}
-                radius="sm"
-                variant="bordered"
-                labelPlacement="outside"
+                radius='sm'
+                variant='bordered'
+                labelPlacement='outside'
               />
             </div>
             <Table>
