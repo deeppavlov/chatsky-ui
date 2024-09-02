@@ -1,7 +1,7 @@
 import { useDisclosure } from "@nextui-org/react"
 import * as ContextMenu from "@radix-ui/react-context-menu"
+import { Handle, Position, useReactFlow } from "@xyflow/react"
 import { useContext, useEffect, useState } from "react"
-import { Handle, Position, useReactFlow } from "reactflow"
 import { CONDITION_LABELS, conditionTypeIcons } from "../../../consts"
 import { workspaceContext } from "../../../contexts/workspaceContext"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
@@ -35,7 +35,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
   return (
     <ContextMenu.Root>
       <div className='w-full relative flex items-center justify-start text-start'>
-        <div onClick={conditionOpenHandler} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer'>
+        <div onClick={conditionOpenHandler} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer transition-colors hover:border-border-darker'>
           <div className='flex items-center gap-2'>
             {conditionTypeIcons[condition.type]}
             {condition.name}
@@ -59,7 +59,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
                 borderStyle: "solid",
                 width: "0.7rem",
                 height: "0.7rem",
-                right: "-0.95rem",
+                right: "-0.7rem",
                 zIndex: 10,
               }}
             />

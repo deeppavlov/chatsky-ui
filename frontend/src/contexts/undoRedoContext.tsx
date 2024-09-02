@@ -1,10 +1,13 @@
+import { addEdge, Edge, Node, OnSelectionChangeParams, useReactFlow } from "@xyflow/react"
 import { cloneDeep } from "lodash"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { addEdge, Edge, Node, OnSelectionChangeParams, useReactFlow } from "reactflow"
 import { v4 } from "uuid"
-import { NodeDataType } from "../types/NodeTypes"
+import { AppNode } from "../types/NodeTypes"
+import { OnSelectionChangeParamsCustom } from "../types/ReactFlowTypes"
+import { generateNewNode } from "../utils"
 import { flowContext } from "./flowContext"
-import { notificationsContext } from "./notificationsContext"
+import { NotificationsContext } from "./notificationsContext"
+import { workspaceContext } from "./workspaceContext"
 
 type undoRedoContextType = {
   undo: () => void
@@ -16,20 +19,14 @@ type undoRedoContextType = {
     position: { x: number; y: number; paneX?: number; paneY?: number }
   ) => void
   copiedSelection: OnSelectionChangeParams | null
+  disableCopyPaste: boolean
+  setDisableCopyPaste: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 type UseUndoRedoOptions = {
   maxHistorySize: number
   enableShortcuts: boolean
 }
-
-// type UseUndoRedo = (options?: UseUndoRedoOptions) => {
-//   undo: () => void
-//   redo: () => void
-//   takeSnapshot: () => void
-//   canUndo: boolean
-//   canRedo: boolean
-// }
 
 type HistoryItem = {
   nodes: Node[]
@@ -43,6 +40,8 @@ const initialValue = {
   copy: () => {},
   paste: () => {},
   copiedSelection: null,
+  disableCopyPaste: false,
+  setDisableCopyPaste: () => {},
 }
 
 const defaultOptions: UseUndoRedoOptions = {
@@ -55,7 +54,8 @@ export const undoRedoContext = createContext<undoRedoContextType>(initialValue)
 
 export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   const { tab, flows } = useContext(flowContext)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
+  const { modalsOpened } = useContext(workspaceContext)
 
   const [past, setPast] = useState<HistoryItem[][]>(flows.map(() => []))
   const [future, setFuture] = useState<HistoryItem[][]>(flows.map(() => []))
@@ -70,6 +70,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
   const { setNodes, setEdges, getNodes, getEdges } = useReactFlow()
 
+  /**
+   * Take snapshot for undo/redo functions
+   */
   const takeSnapshot = useCallback(() => {
     // push the current graph to the past state
     if (tabIndex > -1) {
@@ -93,6 +96,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getNodes, getEdges, past, future, flows, tab, setPast, setFuture, tabIndex])
 
+  /**
+   * Undo function
+   */
   const undo = useCallback(() => {
     // get the last state that we want to go back to
     const pastState = past[tabIndex][past[tabIndex].length - 1]
@@ -118,6 +124,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setNodes, setEdges, getNodes, getEdges, future, past, setFuture, setPast, tabIndex])
 
+  /**
+   * Redo function
+   */
   const redo = useCallback(() => {
     const futureState = future[tabIndex][future[tabIndex].length - 1]
 
@@ -165,7 +174,20 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
   const { reactFlowInstance } = useContext(flowContext)
   const [copiedSelection, setCopiedSelection] = useState<OnSelectionChangeParams | null>(null)
+  const [disableCopyPaste, setDisableCopyPaste] = useState(false)
 
+  useEffect(() => {
+    if (modalsOpened === 0) {
+      setDisableCopyPaste(false)
+    } else if (modalsOpened > 0) {
+      setDisableCopyPaste(true)
+    }
+  }, [modalsOpened])
+
+  /**
+   * Copy function
+   * @param selection last selection to copy
+   */
   const copy = (selection: OnSelectionChangeParams) => {
     if (selection && (selection.nodes.length || selection.edges.length)) {
       setCopiedSelection(cloneDeep(selection))
@@ -185,7 +207,11 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /**
+   * Paste function
+   * @param selectionInstance last selection of nodes&edges
+   * @param position position of pasting nodes&edges 
+   */
   const paste = (
     selectionInstance: OnSelectionChangeParams,
     position: { x: number; y: number; paneX?: number; paneY?: number }
@@ -204,8 +230,9 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
         type: "warning",
       })
     }
-    const nodes: Node<NodeDataType>[] = reactFlowInstance.getNodes()
-    let edges: Edge[] = reactFlowInstance.getEdges()
+    const _selectionInstance = selectionInstance as OnSelectionChangeParamsCustom
+    const nodes = reactFlowInstance.getNodes()
+    let edges = reactFlowInstance.getEdges()
     let minimumX = Infinity
     let minimumY = Infinity
     const idsMap: { [id: string]: string } = {}
@@ -223,30 +250,29 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     const insidePosition =
       position.paneX && position.paneY
         ? { x: position.paneX + position.x, y: position.paneY + position.y }
-        : reactFlowInstance.project({ x: position.x, y: position.y })
+        : reactFlowInstance.screenToFlowPosition({ x: position.x, y: position.y })
 
-    const resultNodes: Node<NodeDataType>[] = []
+    const resultNodes: AppNode[] = []
 
-    selectionInstance.nodes.forEach((n: Node<NodeDataType>) => {
-      // Generate a unique node ID
-      const newId = v4()
-      idsMap[n.id] = newId
-      const newConditions = n.data.conditions?.map((c) => {
-        const newCondId = v4()
-        sourceHandlesMap[c.id] = newCondId
-        return { ...c, id: newCondId }
-      })
-      const newResponse = n.data.response
-        ? {
-            ...n.data.response,
-            id: v4(),
-          }
-        : undefined
+    _selectionInstance.nodes.forEach((n: AppNode) => {
+      let newConditions
+      let newResponse
+      if (n.type === "default_node") {
+        newConditions = n.data.conditions.map((c) => {
+          const newCondId = "condition_" + v4()
+          sourceHandlesMap[c.id] = newCondId
+          return { ...c, id: newCondId }
+        })
+        newResponse = n.data.response
+          ? {
+              ...n.data.response,
+              id: "response_" + v4(),
+            }
+          : undefined
+      }
 
       // Create a new node object
-      const newNode: Node<NodeDataType> = {
-        id: newId,
-        type: n.type,
+      const newNode = generateNewNode(n.type, {
         position: {
           x: insidePosition.x + n.position.x - minimumX,
           y: insidePosition.y + n.position.y - minimumY,
@@ -256,9 +282,25 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
           conditions: newConditions,
           response: newResponse,
           flags: [],
-          id: newId,
         },
-      }
+      })
+      idsMap[n.id] = newNode.id
+
+      // const newNode: AppNode = {
+      //   id: newId,
+      //   type: n.type,
+      //   position: {
+      //     x: insidePosition.x + n.position.x - minimumX,
+      //     y: insidePosition.y + n.position.y - minimumY,
+      //   },
+      //   data: {
+      //     ...cloneDeep(n.data),
+      //     conditions: newConditions,
+      //     response: newResponse,
+      //     flags: [],
+      //     id: newId,
+      //   },
+      // }
 
       resultNodes.push({ ...newNode, selected: true })
     })
@@ -267,26 +309,22 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const newNodes = [
-      ...nodes.map((e: Node<NodeDataType>) => ({ ...e, selected: false })),
-      ...resultNodes,
-    ]
+    const newNodes = [...nodes.map((e: AppNode) => ({ ...e, selected: false })), ...resultNodes]
 
-    console.log(selectionInstance.edges)
 
     selectionInstance.edges.forEach((e) => {
       const source = idsMap[e.source]
       const target = idsMap[e.target]
       if (e.sourceHandle) {
         const sourceHandle = sourceHandlesMap[e.sourceHandle]
-        const id = v4()
+        const id = "reactflow__edge-" + v4()
         edges = addEdge(
           {
             source,
             target,
             sourceHandle,
             targetHandle: null,
-            id,
+            id: id,
             selected: false,
           },
           edges.map((e) => ({ ...e, selected: false }))
@@ -298,120 +336,6 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     reactFlowInstance.setEdges(edges)
   }
 
-  // function paste(
-  //   selectionInstance,
-  //   position: { x: number; y: number; paneX?: number; paneY?: number }
-  // ) {
-  //   let minimumX = Infinity;
-  //   let minimumY = Infinity;
-  //   let idsMap = {};
-  //   let nodes = reactFlowInstance.getNodes();
-  //   let edges = reactFlowInstance.getEdges();
-  //   selectionInstance.nodes.forEach((n) => {
-  //     if (n.position.y < minimumY) {
-  //       minimumY = n.position.y;
-  //     }
-  //     if (n.position.x < minimumX) {
-  //       minimumX = n.position.x;
-  //     }
-  //   });
-
-  //   const insidePosition = position.paneX
-  //     ? { x: position.paneX + position.x, y: position.paneY + position.y }
-  //     : reactFlowInstance.project({ x: position.x, y: position.y });
-
-  //   const resultNodes: any[] = []
-
-  //   selectionInstance.nodes.forEach((n: NodeType) => {
-  //     // Generate a unique node ID
-  //     let newId = getNodeId(n.data.type);
-  //     idsMap[n.id] = newId;
-
-  //     const positionX = insidePosition.x + n.position.x - minimumX
-  //     const positionY = insidePosition.y + n.position.y - minimumY
-
-  //     // Create a new node object
-  //     const newNode: NodeType = {
-  //       id: newId,
-  //       type: "genericNode",
-  //       position: {
-  //         x: insidePosition.x + n.position.x - minimumX,
-  //         y: insidePosition.y + n.position.y - minimumY,
-  //       },
-  //       data: {
-  //         ..._.cloneDeep(n.data),
-  //         id: newId,
-  //       },
-  //     };
-
-  //     // FIXME: CHECK WORK >>>>>>>
-  //     // check for intersections before paste
-  //     if (nodes.some(({ position, id, width, height }) => {
-  //       const xIntersect = ((positionX > position.x - width) && (positionX < (position.x + width)))
-  //       const yIntersect = ((positionY > position.y - height) && (positionY < (position.y + height)))
-  //       const result = xIntersect && yIntersect
-  //       // console.log({id: id, xIntersect: xIntersect, yIntersect: yIntersect, result: result})
-  //       return result
-  //     })) {
-  //       return setErrorData({ title: "Invalid place! Nodes can't intersect!" })
-  //     }
-  //     // FIXME: CHECK WORK >>>>>>>>
-
-  //     resultNodes.push({ ...newNode, selected: true })
-
-  //   });
-
-  //   if (resultNodes.length < selectionInstance.nodes.length) {
-  //     return
-  //   }
-
-  //   // Add the new node to the list of nodes in state
-  //   nodes = nodes
-  //     .map((e) => ({ ...e, selected: false }))
-  //     .concat(resultNodes);
-  //   reactFlowInstance.setNodes(nodes);
-
-  //   selectionInstance.edges.forEach((e) => {
-  //     let source = idsMap[e.source];
-  //     let target = idsMap[e.target];
-  //     let sourceHandleSplitted = e.sourceHandle.split("|");
-  //     let sourceHandle =
-  //       source +
-  //       "|" +
-  //       sourceHandleSplitted[1] +
-  //       "|" +
-  //       source
-  //     let targetHandleSplitted = e.targetHandle.split("|");
-  //     let targetHandle =
-  //       targetHandleSplitted.slice(0, -1).join("|") + target;
-  //     let id =
-  //       "reactflow__edge-" +
-  //       source +
-  //       sourceHandle +
-  //       "-" +
-  //       target +
-  //       targetHandle;
-  //     edges = addEdge(
-  //       {
-  //         source,
-  //         target,
-  //         sourceHandle,
-  //         targetHandle,
-  //         id,
-  //         style: { stroke: "inherit" },
-  //         className:
-  //           targetHandle.split("|")[0] === "Text"
-  //             ? "stroke-foreground "
-  //             : "stroke-foreground ",
-  //         animated: targetHandle.split("|")[0] === "Text",
-  //         selected: false,
-  //       },
-  //       edges.map((e) => ({ ...e, selected: false }))
-  //     );
-  //   });
-  //   reactFlowInstance.setEdges(edges);
-  // }
-
   return (
     <undoRedoContext.Provider
       value={{
@@ -421,6 +345,8 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
         copy,
         paste,
         copiedSelection,
+        disableCopyPaste,
+        setDisableCopyPaste,
       }}>
       {children}
     </undoRedoContext.Provider>

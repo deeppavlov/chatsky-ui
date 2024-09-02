@@ -1,9 +1,9 @@
 import { Button, useDisclosure } from "@nextui-org/react"
+import { Handle, Position } from "@xyflow/react"
+import "@xyflow/react/dist/style.css"
 import classNames from "classnames"
 import { PlusIcon } from "lucide-react"
 import { memo, useContext, useMemo, useState } from "react"
-import { Handle, Position } from "reactflow"
-import "reactflow/dist/style.css"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
 import FallbackNodeIcon from "../../icons/nodes/FallbackNodeIcon"
@@ -14,20 +14,21 @@ import "../../index.css"
 import ConditionModal from "../../modals/ConditionModal/ConditionModal"
 import NodeModal from "../../modals/NodeModal/NodeModal"
 import ResponseModal from "../../modals/ResponseModal/ResponseModal"
-import { NodeDataType } from "../../types/NodeTypes"
+import { DefaultNodeDataType } from "../../types/NodeTypes"
 import Condition from "./conditions/Condition"
 import Response from "./responses/Response"
 
-const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
+const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
   const {
     onOpen: onConditionOpen,
     onClose: onConditionClose,
     isOpen: isConditionOpen,
   } = useDisclosure()
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { selectedNode } = useContext(workspaceContext)
 
-  const [nodeDataState, setNodeDataState] = useState<NodeDataType>(data)
+  const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)
 
   const { onOpen: onNodeOpen, onClose: onNodeClose, isOpen: isNodeOpen } = useDisclosure()
   const {
@@ -36,7 +37,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
     isOpen: isResponseOpen,
   } = useDisclosure()
 
-  const validate_node = useMemo(() => data.response?.data.length && data.conditions?.length, [])
+  const validate_node = useMemo(() => data.response?.data.length && data.conditions?.length, [data.conditions?.length, data.response?.data.length])
 
   return (
     <>
@@ -75,7 +76,7 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
                   width: "0.7rem",
                   height: "0.7rem",
                   top: "1.875rem",
-                  left: "-0.335rem",
+                  left: "0rem",
                   zIndex: 10,
                 }}
               />
@@ -102,9 +103,9 @@ const DefaultNode = memo(({ data }: { data: NodeDataType }) => {
             />
           </div>
         </div>
-        <div className=' w-full flex flex-col items-center justify-center gap-2 p-2.5 '>
+        <div className='cursor-default w-full flex flex-col items-center justify-center gap-2 p-2.5 '>
           <div
-            className='w-full flex items-center justify-start border border-border rounded-lg py-2 px-2 mb-1'
+            className='cursor-pointer w-full flex items-center justify-start border border-border shadow rounded-lg py-2 px-2 mb-1 transition-colors hover:border-node-selected'
             onClick={onResponseOpen}>
             <Response data={data} />
           </div>

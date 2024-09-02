@@ -9,13 +9,13 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react"
+import { useReactFlow } from "@xyflow/react"
 import { useContext, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
-import { useReactFlow } from "reactflow"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
-import { notificationsContext } from "../../contexts/notificationsContext"
-import { NodeDataType } from "../../types/NodeTypes"
+import { NotificationsContext } from "../../contexts/notificationsContext"
+import { DefaultNodeDataType } from "../../types/NodeTypes"
 import { responseType, responseTypeType } from "../../types/ResponseTypes"
 import PythonResponse from "./components/PythonResponse"
 import TextResponse from "./components/TextResponse"
@@ -23,8 +23,8 @@ import TextResponse from "./components/TextResponse"
 type ResponseModalTab = "Using LLM" | "Python code" | "Custom" | "Text"
 
 type ResponseModalProps = {
-  data: NodeDataType
-  setData: React.Dispatch<React.SetStateAction<NodeDataType>>
+  data: DefaultNodeDataType
+  setData: React.Dispatch<React.SetStateAction<DefaultNodeDataType>>
   response: responseType
   size?: ModalProps["size"]
   isOpen: boolean
@@ -40,7 +40,7 @@ const ResponseModal = ({
   size = "3xl",
 }: ResponseModalProps) => {
   const { getNode, setNodes, getNodes } = useReactFlow()
-  const { flows, quietSaveFlows, updateFlow } = useContext(flowContext)
+  const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
   const [selected, setSelected] = useState<responseTypeType>(response.type ?? "python")
   // const [nodeDataState, setNodeDataState] = useState(data)
@@ -49,7 +49,7 @@ const ResponseModal = ({
     setCurrentResponse({ ...currentResponse, type: key })
     setSelected(key)
   }
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   const tabItems: {
     title: ResponseModalTab
@@ -89,7 +89,6 @@ const ResponseModal = ({
         />
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentResponse]
   )
 
@@ -101,7 +100,7 @@ const ResponseModal = ({
         type: "error",
       })
     }
-    if (flows.some((flow) => flow.data.nodes.some((node) => (node.data.response.name === currentResponse.name && node.id !== data.id)))) {
+    if (flows.some((flow) => flow.data.nodes.some((node) => (node.type === "default_node" && node.data.response.name === currentResponse.name && node.id !== data.id)))) {
       return n.add({
         title: "Saving error!",
         message: "Response name must be unique!",

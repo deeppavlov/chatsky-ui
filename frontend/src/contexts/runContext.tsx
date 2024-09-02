@@ -11,7 +11,7 @@ import {
   run_stop,
 } from "../api/bot"
 import { buildContext } from "./buildContext"
-import { notificationsContext } from "./notificationsContext"
+import { NotificationsContext } from "./notificationsContext"
 
 export type runApiType = {
   id: number
@@ -57,8 +57,8 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [runPending, setRunPending] = useState(false)
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuildsHandler, builds: context_builds } = useContext(buildContext)
-  const { notification: n } = useContext(notificationsContext)
+  const { setBuildsHandler } = useContext(buildContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
     setRuns(runs.map((run) => ({ ...run, type: "run" })))

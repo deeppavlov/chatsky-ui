@@ -1,30 +1,29 @@
 import { Button, Tooltip } from "@nextui-org/react"
+import { Edge, useReactFlow } from "@xyflow/react"
 import classNames from "classnames"
-import { useContext, useMemo } from "react"
-import { Node, useReactFlow } from "reactflow"
+import { useContext } from "react"
 import { flowContext } from "../../../contexts/flowContext"
 import { workspaceContext } from "../../../contexts/workspaceContext"
 import FallbackNodeIcon from "../../../icons/nodes/FallbackNodeIcon"
 import StartNodeIcon from "../../../icons/nodes/StartNodeIcon"
 import { FlowType } from "../../../types/FlowTypes"
-import { NodeDataType } from "../../../types/NodeTypes"
+import { AppNode } from "../../../types/NodeTypes"
 
 const NodeInstruments = ({ flow }: { flow: FlowType }) => {
-  const { setNodes } = useReactFlow()
+  const { setNodes } = useReactFlow<AppNode, Edge>()
   const { handleNodeFlags, selectedNode } = useContext(workspaceContext)
   const { deleteNode } = useContext(flowContext)
 
-  const selectedNodeData: Node<NodeDataType> | null =
+  const selectedNodeData: AppNode | null =
     flow?.data.nodes.find((node) => node.id === selectedNode) ?? null
 
-  const is_node_default = useMemo(() => selectedNodeData?.type === "default_node", [selectedNodeData])
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const deleteSelectedNodeHandler = () => {
     setNodes((nds) => nds.filter((node) => node.id !== selectedNode))
     deleteNode(selectedNode)
   }
 
-  if (!is_node_default) return <></>
+  if (selectedNodeData?.type !== 'default_node') return <></>
 
   return (
     <div className='flex items-center gap-1'>

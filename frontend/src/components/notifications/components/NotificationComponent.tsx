@@ -2,7 +2,7 @@ import { Button } from "@nextui-org/react"
 import classNames from "classnames"
 import { AlertOctagon, AlertTriangle, Bug, CheckCircle2, Info, X } from "lucide-react"
 import { useContext, useMemo, useState } from "react"
-import { notificationType, notificationsContext } from "../../../contexts/notificationsContext"
+import { NotificationsContext, notificationType } from "../../../contexts/notificationsContext"
 
 type NotificationComponentType = {
   notification: notificationType & {
@@ -11,7 +11,7 @@ type NotificationComponentType = {
 }
 
 const NotificationComponent = ({ notification }: NotificationComponentType) => {
-  const { notification: nt, notifications } = useContext(notificationsContext)
+  const { notification: nt, notifications } = useContext(NotificationsContext)
   const [isDelete, setIsDelete] = useState(false)
 
   const notificationTypeColor = (type: string) => {
@@ -83,9 +83,7 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
       if (notification.stack > 1) {
         const index = notifications.findIndex((n) => n.timestamp == notification.timestamp)
         for (let i = 0; i <= index; i++) {
-          console.log(notifications[i])
           if (notifications[i].stack === 0 && notifications[i].message === notification.message) {
-            console.log("deletion")
             nt.delete(notifications[i].timestamp)
           }
         }

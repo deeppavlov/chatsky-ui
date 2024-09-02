@@ -14,7 +14,7 @@ import { useContext, useState } from "react"
 import ModalComponent from "../../components/ModalComponent"
 import { FLOW_COLORS } from "../../consts"
 import { flowContext } from "../../contexts/flowContext"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import { ModalType } from "../../types/ModalTypes"
 import { generateNewFlow, validateFlowName } from "../../utils"
 
@@ -29,7 +29,7 @@ export type CreateFlowType = {
 
 const CreateFlowModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
   const [flow, setFlow] = useState<CreateFlowType>({
     name: "",
     description: "",

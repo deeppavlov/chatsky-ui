@@ -1,11 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Node } from "reactflow"
 import { FlowType } from "../types/FlowTypes"
-import { NodeDataType } from "../types/NodeTypes"
+import { AppNode } from "../types/NodeTypes"
 import { flowContext } from "./flowContext"
-import { notificationsContext } from "./notificationsContext"
+import { NotificationsContext } from "./notificationsContext"
 
 type WorkspaceContextType = {
   workspaceMode: boolean
@@ -20,7 +19,7 @@ type WorkspaceContextType = {
   setSelectedNode: React.Dispatch<React.SetStateAction<string>>
   handleNodeFlags: (
     e: React.MouseEvent<HTMLButtonElement>,
-    setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>
+    setNodes: React.Dispatch<React.SetStateAction<AppNode[]>>
   ) => void
   mouseOnPane: boolean
   setMouseOnPane: React.Dispatch<React.SetStateAction<boolean>>
@@ -60,18 +59,18 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [managerMode, setManagerMode] = useState(false)
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const [settingsPage, setSettingsPage] = useState(searchParams.get("settings") === "opened")
   const [selectedNode, setSelectedNode] = useState("")
-  const { updateFlow, flows, tab, quietSaveFlows, setFlows } = useContext(flowContext)
+  const { flows, quietSaveFlows, setFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
   const [modalsOpened, setModalsOpened] = useState(0)
-  const { notification: n } = useContext(notificationsContext)
+  const { notification: n } = useContext(NotificationsContext)
 
-  useEffect(() => {
-    console.log(modalsOpened)
-  }, [modalsOpened])
 
+  /**
+   * Count opened modals for correct shortcuts work
+   */
   useEffect(() => {
     if (modalsOpened === 0) {
       setMouseOnPane(true)
@@ -83,10 +82,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [modalsOpened])
 
-  useEffect(() => console.log(mouseOnPane), [mouseOnPane])
-
-  const flow = flows.find((flow) => flow.name === tab)
-
+  
   const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
     n.add({
@@ -114,42 +110,44 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     })
   }, [managerMode, n])
 
-  const handleNodeFlags = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const nodes = flows.flatMap((flow) => flow.data.nodes)
-    console.log(nodes)
-    const new_nds = nodes.map((nd: Node<NodeDataType>) => {
-      if (nd.data.flags?.includes(e.currentTarget.name)) {
-        nd.data.flags = nd.data.flags.filter((flag) => flag !== e.currentTarget.name)
-      }
-      if (nd.id === selectedNode) {
-        if (nd.data.flags?.includes(e.currentTarget.name)) {
+  const handleNodeFlags = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const nodes = flows.flatMap((flow) => flow.data.nodes)
+      const new_nds = nodes.map((nd: AppNode) => {
+        if (nd.type === "default_node" && nd.data.flags?.includes(e.currentTarget.name)) {
           nd.data.flags = nd.data.flags.filter((flag) => flag !== e.currentTarget.name)
-        } else {
-          if (!nd.data.flags) nd.data.flags = [e.currentTarget.name]
-          else nd.data.flags = [...nd.data.flags, e.currentTarget.name]
         }
-      }
-      return nd
-    })
-    const new_flows: FlowType[] = flows.map((flow) => {
-      return {
-        ...flow,
-        data: {
-          ...flow.data,
-          nodes: flow.data.nodes.map((nd: Node<NodeDataType>) => {
-            const new_nd = new_nds.find((n) => n.id === nd.id)
-            if (new_nd) return new_nd
-            else return nd
-          }),
-        },
-      }
-    })
-    setFlows(() => new_flows)
-    // if (flow) {
-    //   updateFlow(flow)
-    // }
-    quietSaveFlows()
-  }, [flows, quietSaveFlows, selectedNode, setFlows])
+        if (nd.type === "default_node" && nd.id === selectedNode) {
+          if (nd.data.flags?.includes(e.currentTarget.name)) {
+            nd.data.flags = nd.data.flags.filter((flag) => flag !== e.currentTarget.name)
+          } else {
+            if (!nd.data.flags) nd.data.flags = [e.currentTarget.name]
+            else nd.data.flags = [...nd.data.flags, e.currentTarget.name]
+          }
+        }
+        return nd
+      })
+      const new_flows: FlowType[] = flows.map((flow) => {
+        return {
+          ...flow,
+          data: {
+            ...flow.data,
+            nodes: flow.data.nodes.map((nd: AppNode) => {
+              const new_nd = new_nds.find((n) => n.id === nd.id)
+              if (new_nd) return new_nd
+              else return nd
+            }),
+          },
+        }
+      })
+      setFlows(() => new_flows)
+      // if (flow) {
+      //   updateFlow(flow)
+      // }
+      quietSaveFlows()
+    },
+    [flows, quietSaveFlows, selectedNode, setFlows]
+  )
 
   const onModalOpen = useCallback((onOpen: () => void) => {
     setMouseOnPane(false)

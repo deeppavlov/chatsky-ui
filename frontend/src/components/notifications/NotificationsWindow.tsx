@@ -8,7 +8,7 @@ import {
 } from "@nextui-org/react"
 import { AlertOctagon, AlertTriangle, BugIcon, CheckCircle2, InfoIcon, Trash } from "lucide-react"
 import { useContext, useState } from "react"
-import { notificationsContext } from "../../contexts/notificationsContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import NotificationComponent from "./components/NotificationComponent"
 
 type NotificationsWindowProps = {
@@ -16,21 +16,9 @@ type NotificationsWindowProps = {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-// const getNotificationsStack = (notifications: notificationType[], index: number) => {
-//   const notification_instance: notificationType = notifications[index]
-//   let counter = 1
-//   while (
-//     notifications[index + counter]?.title === notification_instance?.title &&
-//     notifications[index + counter]?.message === notification_instance?.message &&
-//     notifications[index + counter]?.type === notification_instance?.type
-//   ) {
-//     counter += 1
-//   }
-//   return counter
-// }
 
-export const NotificationsWindow = ({ isOpen, setIsOpen }: NotificationsWindowProps) => {
-  const { notifications, notification } = useContext(notificationsContext)
+export const NotificationsWindow = ({ setIsOpen }: NotificationsWindowProps) => {
+  const { notifications, notification } = useContext(NotificationsContext)
   const [notificationFilter, setNotificationFilter] = useState<string[]>([])
 
   const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -41,7 +29,6 @@ export const NotificationsWindow = ({ isOpen, setIsOpen }: NotificationsWindowPr
     }
   };
 
-  console.log(notificationFilter)
 
   const renderNotifications = () => {
     const filtered_notifications = notifications.filter(
@@ -54,13 +41,11 @@ export const NotificationsWindow = ({ isOpen, setIsOpen }: NotificationsWindowPr
       const stack = not.stack + 1
       const next_not = time_sorted_notifications[idx + 1]
       if (next_not && not && next_not.message === not.message && not.stack !== 0) {
-        console.log(not, next_not)
         next_not.stack = stack
         not.stack = 0
       }
       return not
     })
-    console.log(stack_checked_notifications)
     const stack_filtered_notifications = stack_checked_notifications.filter((not) => not.stack > 0)
     if (stack_filtered_notifications.length === 0) {
       return (
