@@ -28,8 +28,8 @@ pytest-mock = "^3.14.0"
 httpx = "^0.27.0"
 httpx-ws = "^0.6.0"
 pylint = "^3.2.3"
-sphinx = { version = "*", python = "^3.10"}
-sphinx-rtd-theme = { version = "*", python = "^3.10"}
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [tool.poetry.scripts]
 "chatsky.ui" = "chatsky_ui.cli:cli"
