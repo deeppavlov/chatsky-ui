@@ -62,7 +62,7 @@ check_project_arg:
 
 .PHONY: run_backend
 run_backend: check_project_arg ## Runs backend using the built dist. NEEDS arg: PROJECT_NAME
-	@set -a && . $(CURDIR)/.env && \
+	@if [ -f $(CURDIR)/.env ]; then set -a && . $(CURDIR)/.env; fi && \
 	cd ${PROJECT_NAME} && \
     poetry add $(CURDIR)/${BACKEND_DIR}/dist/*.whl && \
     poetry install && \

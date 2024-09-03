@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 
+from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, read_logs, write_conf
 
@@ -53,7 +54,7 @@ class Index:
 
     async def _load_conditions(self) -> None:
         """Load conditions from disk."""
-        path = self.path.parent / "conditions.py"
+        path = settings.conditions_path
         if path.exists():
             self.conditions = await read_logs(path)
             self.logger.debug("Conditions loaded")
@@ -62,7 +63,7 @@ class Index:
 
     async def _load_responses(self) -> None:
         """Load responses from disk."""
-        path = self.path.parent / "responses.py"
+        path = settings.responses_path
         if path.exists():
             self.responses = await read_logs(path)
             self.logger.debug("Responses loaded")
@@ -71,7 +72,7 @@ class Index:
 
     async def _load_services(self) -> None:
         """Load services from disk."""
-        path = self.path.parent / "services.py"
+        path = settings.responses_path.parent / "services.py"
         if path.exists():
             self.services = await read_logs(path)
             self.logger.debug("Services loaded")
