@@ -35,7 +35,7 @@ async def lint_snippet(snippet: CodeSnippet) -> Dict[str, str]:
     """
     code_snippet = snippet.code.replace(r"\n", "\n")
 
-    imports = get_imports_from_file(settings.snippet2lint_path.parent / "conditions.py")
+    imports = get_imports_from_file(settings.conditions_path)
     code_snippet = "\n\n".join([imports, code_snippet])
 
     async with aiofiles.open(settings.snippet2lint_path, "wt", encoding="UTF-8") as file:
