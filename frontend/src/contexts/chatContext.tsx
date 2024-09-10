@@ -1,5 +1,6 @@
 import { createContext, useState } from "react"
 import { useSearchParams } from "react-router-dom"
+import useLocalStorage from "../hooks/useLocalStorage"
 
 export type messageType = {
   message: string
@@ -21,8 +22,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams()
   const [chat, setChat] = useState(searchParams.get('chat') === 'opened')
-  const [messages, setMessages] = useState<messageType[]>([])
-  console.log(chat)
+  const [messages, setMessages] = useLocalStorage<messageType[]>("chat_messages", [])
 
   return (
     <chatContext.Provider

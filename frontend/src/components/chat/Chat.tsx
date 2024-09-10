@@ -2,11 +2,10 @@ import { Button, Textarea, Tooltip } from "@nextui-org/react"
 import { a, useTransition } from "@react-spring/web"
 import axios from "axios"
 import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
-import { useContext, useEffect, useRef, useState } from "react"
-import toast from "react-hot-toast"
+import { memo, useContext, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import { runContext } from "../../contexts/runContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
 import { DEV } from "../../env.consts"
@@ -14,13 +13,13 @@ import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import { parseSearchParams } from "../../utils"
 import EmojiPicker, { EmojiType } from "./EmojiPicker"
 
-const Chat = () => {
-  const { logsPage, setLogsPage } = useContext(buildContext)
+const Chat = memo(() => {
   const { chat, setChat, messages, setMessages } = useContext(chatContext)
   const { run, runStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const ws = useRef<WebSocket | null>(null)
   const { setMouseOnPane } = useContext(workspaceContext)
+  const { notification: n } = useContext(NotificationsContext)
 
   const [isEmoji, setIsEmoji] = useState(false)
 
@@ -50,7 +49,6 @@ const Chat = () => {
   const handleMessage = () => {
     if (messageValue) {
       if (ws.current && ws.current.readyState === 1) {
-        console.log(ws.current)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         ws.current.send(messageValue)
@@ -118,23 +116,19 @@ const Chat = () => {
     },
   })
 
-  console.log(window.location)
 
   useEffect(() => {
     if (runStatus === "alive" && run) {
       const socket = new WebSocket(
         `ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`
       )
-      socket.onopen = (e) => {
-        console.log(e)
-        toast.success("Chat was successfully connected!")
+      socket.onopen = () => {
+        n.add({ message: "Chat was successfully connected!", title: "Success", type: "success" })
       }
       socket.onmessage = (event: MessageEvent) => {
         console.log(event)
-        if (event.data) {
-          // console.log(event.data)
+        if (event.data && event.data.includes("response")) {
           const data = event.data.split(":")[2].split("attachments")[0].slice(0, -2)
-          // console.log(data)
           setTimeout(() => {
             setMessages((prev) => [...prev, { message: data, type: "bot" }])
           }, 500)
@@ -154,7 +148,7 @@ const Chat = () => {
 
   return (
     <div
-      className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-full max-h-screen bg-background border-l border-border overflow-hidden'
+      className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-screen max-h-screen bg-background border-l border-border overflow-hidden'
       style={{
         transform: chat ? "translateX(0%)" : "translateX(100%)",
       }}>
@@ -215,6 +209,7 @@ const Chat = () => {
         </div>
         <div className='flex items-center justify-between p-1 border-b border-border'>
           <Button
+            isDisabled
             variant='light'
             isIconOnly>
             <Paperclip />
@@ -278,6 +273,6 @@ const Chat = () => {
       </div>
     </div>
   )
-}
+})
 
 export default Chat

@@ -4,7 +4,7 @@ import React from "react";
 const DragListItem = ({ item }: { item: { name: string; color: string; type: string } }) => {
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     // if (event.dataTransfer) {
-    event.dataTransfer.setData("application/reactflow", nodeType)
+    event.dataTransfer.setData("application/@xyflow/react", nodeType)
     event.dataTransfer.effectAllowed = "move"
     // }
   }

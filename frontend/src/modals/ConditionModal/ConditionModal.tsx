@@ -9,23 +9,23 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react"
+import { Edge, useReactFlow } from "@xyflow/react"
 import classNames from "classnames"
 import { HelpCircle, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
-import toast from "react-hot-toast"
 import { useParams } from "react-router-dom"
-import { useReactFlow } from "reactflow"
 import { lint_service } from "../../api/services"
 import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
-import { NodeDataType, NodeType } from "../../types/NodeTypes"
+import { AppNode, DefaultNodeDataType, DefaultNodeType } from "../../types/NodeTypes"
 import { generateNewConditionBase } from "../../utils"
 import PythonCondition from "./components/PythonCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
 
 type ConditionModalProps = {
-  data: NodeDataType
+  data: DefaultNodeDataType
   condition?: conditionType
   is_create?: boolean
   size?: ModalProps["size"]
@@ -61,19 +61,21 @@ const ConditionModal = ({
     setSelected(key)
   }
 
-  const { getNode, setNodes, getNodes } = useReactFlow()
-  const { updateFlow, flows, quietSaveFlows } = useContext(flowContext)
+  const { getNode, setNodes, getNodes } = useReactFlow<AppNode, Edge>()
+  const { notification: n } = useContext(NotificationsContext)
+  const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
 
   const [currentCondition, setCurrentCondition] = useState(
-    is_create || !condition ? generateNewConditionBase(data.name) : condition
+    is_create || !condition ? generateNewConditionBase() : condition
   )
 
   const validateConditionName = (is_create: boolean) => {
-    const nodes = getNodes() as NodeType[]
+    const nodes = getNodes() as AppNode[]
     if (!is_create) {
-      const is_name_valid = !nodes.some((node: NodeType) =>
-        node.data.conditions?.some(
+      const is_name_valid = !nodes.some((node: AppNode) =>
+        node.type === "default_node" &&
+        node.data.conditions.some(
           (c) => c.name === currentCondition.name && c.id !== currentCondition.id
         )
       )
@@ -89,7 +91,8 @@ const ConditionModal = ({
         }
       }
     } else {
-      const is_name_valid = !nodes.some((node: NodeType) =>
+      const is_name_valid = !nodes.some((node: AppNode) =>
+        node.type === "default_node" && 
         node.data.conditions?.some((c) => c.name === currentCondition.name)
       )
       if (!is_name_valid) {
@@ -160,6 +163,10 @@ const ConditionModal = ({
   }[] = useMemo(
     () => [
       {
+        title: "Python code",
+        value: "python",
+      },
+      {
         title: "Using LLM",
         value: "llm",
       },
@@ -172,10 +179,6 @@ const ConditionModal = ({
         value: "button",
       },
       {
-        title: "Python code",
-        value: "python",
-      },
-      {
         title: "Custom",
         value: "custom",
       },
@@ -183,9 +186,6 @@ const ConditionModal = ({
     []
   )
 
-  useEffect(() => {
-    console.log(currentCondition)
-  }, [currentCondition])
 
   const bodyItems = useMemo(
     () => ({
@@ -208,16 +208,12 @@ const ConditionModal = ({
     [currentCondition]
   )
 
-  // useEffect(() => {
-  //   console.log(currentCondition)
-  // }, [currentCondition])
 
   const lintCondition = async () => {
     setLintStatus(null)
     if (currentCondition.type === "python") {
       try {
         const res = await lint_service(currentCondition.data.python?.action ?? "")
-        console.log(res)
         setLintStatus(res)
         return res
       } catch (error) {
@@ -233,7 +229,6 @@ const ConditionModal = ({
     if (currentCondition.type === "python") {
       const lint = await lintCondition()
       const validate_action = validateConditionAction()
-      console.log(lint)
       if (lint && validate_action.status) {
         setTestConditionPending(() => false)
         return true
@@ -263,14 +258,14 @@ const ConditionModal = ({
     const currentFlow = flows.find((flow) => flow.name === flowId)
     const validate_name: ValidateErrorType = validateConditionName(is_create)
     if (validate_name.status) {
-      if (node && currentFlow) {
-        const new_node = {
+      if (node && node.type === 'default_node' && currentFlow) {
+        const new_node: DefaultNodeType = {
           ...node,
           data: {
             ...node.data,
             conditions: is_create
               ? [...node.data.conditions, currentCondition]
-              : data.conditions?.map((condition) =>
+              : data.conditions.map((condition) =>
                   condition.id === currentCondition.id ? currentCondition : condition
                 ),
           },
@@ -283,11 +278,15 @@ const ConditionModal = ({
       }
       onClose()
       setCurrentCondition(
-        is_create || !condition ? generateNewConditionBase(data.name) : currentCondition
+        is_create || !condition ? generateNewConditionBase() : currentCondition
       )
     } else {
       if (!validate_name.status) {
-        toast.error(`Condition name is not valid: \n ${validate_name.reason}`)
+        n.add({
+          title: "Saving error!",
+          message: `Condition name is not valid: \n ${validate_name.reason}`,
+          type: "error",
+        })
       }
     }
   }
@@ -296,8 +295,8 @@ const ConditionModal = ({
     const nodes = getNodes()
     const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
-    if (node && currentFlow) {
-      const new_node = {
+    if (node && node.type === 'default_node' && currentFlow) {
+      const new_node: DefaultNodeType = {
         ...node,
         data: {
           ...node.data,
@@ -325,6 +324,7 @@ const ConditionModal = ({
         <ModalBody>
           <label>
             <Tabs
+              disabledKeys={["llm", "custom", "slot", "button"]}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
@@ -346,13 +346,27 @@ const ConditionModal = ({
               )}
             </Tabs>
           </label>
-          <div>
+          <div className="grid grid-cols-4 items-center gap-4 mt-4">
             <Input
+              className="col-span-3"
               label='Name'
+              variant="bordered"
               labelPlacement='outside'
               placeholder="Enter condition's name here"
               value={currentCondition.name}
               onChange={(e) => setCurrentCondition({ ...currentCondition, name: e.target.value })}
+            />
+            <Input
+              label='Priority'
+              variant="bordered"
+              labelPlacement='outside'
+              placeholder="Enter condition's priority here"
+              type="number"
+              value={currentCondition.data.priority.toString()}
+              onChange={(e) => setCurrentCondition({ ...currentCondition, data: {
+                ...currentCondition.data,
+                priority: parseInt(e.target.value)
+              } })}
             />
           </div>
           <div>
@@ -367,7 +381,7 @@ const ConditionModal = ({
                   <p
                     className={classNames(
                       "text-xs p-2 mt-2 rounded-lg font-mono",
-                      lintStatus?.status == "error" ? "bg-red-200" : "bg-green-200"
+                      lintStatus?.status == "error" ? "bg-[var(--condition-test-error)]" : "bg-[var(--condition-test-success)]",
                     )}>
                     {lintStatus?.status == "ok" ? "Condition test passed!" : lintStatus?.message}
                   </p>

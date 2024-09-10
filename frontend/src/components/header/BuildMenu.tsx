@@ -1,27 +1,24 @@
-import { Button, Spinner } from "@nextui-org/react"
+import { Button, Spinner, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { ChevronLeft } from "lucide-react"
-import { useContext, useState } from "react"
+import { useContext } from "react"
 import { useSearchParams } from "react-router-dom"
 import { buildContext } from "../../contexts/buildContext"
 import { chatContext } from "../../contexts/chatContext"
 import { runContext } from "../../contexts/runContext"
 import ChatIcon from "../../icons/buildmenu/ChatIcon"
-import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
 import PlayIcon from "../../icons/buildmenu/PlayIcon"
 import StopIcon from "../../icons/buildmenu/StopIcon"
 import { parseSearchParams } from "../../utils"
 
 const BuildMenu = () => {
-  const { buildStart, buildPending, buildStatus, setLogsPage, logsPage } = useContext(buildContext)
+  const { buildStart, buildPending } = useContext(buildContext)
   const { chat, setChat } = useContext(chatContext)
-  const { runStart, runPending, runStatus, runStop, run } = useContext(runContext)
-  const [showBuildMenu, setShowBuildMenu] = useState(false)
+  const { runStart, runPending, runStatus, runStop, run, setRunStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
 
   return (
-    <div className={classNames("build-menu", !showBuildMenu && "build-menu-closed")}>
-      <Button
+    <div className='flex items-center justify-start gap-1.5'>
+      {/* <Button
         data-testid='build-menu-open-btn'
         isIconOnly
         className={
@@ -31,35 +28,48 @@ const BuildMenu = () => {
         <ChevronLeft
           className={classNames("transition-all duration-300", showBuildMenu && "rotate-180")}
         />
-      </Button>
-      <Button
-        data-testid='run-btn'
-        isIconOnly
-        style={{}}
-        onClick={async () => {
-          if (runStatus !== "alive") {
-            await buildStart({ wait_time: 1, end_status: "success" })
-            await runStart({ end_status: "success", wait_time: 0 })
-          } else if (runStatus === "alive" && run) {
-            runStop(run?.id)
+      </Button> */}
+      <Tooltip
+        content='Start build and run script process'
+        radius='sm'>
+        <Button
+          data-testid='run-btn'
+          isIconOnly
+          style={{}}
+          onClick={async () => {
+            if (runStatus !== "alive") {
+              setRunStatus(() => 'running')
+              await buildStart({ wait_time: 1, end_status: "success" })
+              await runStart({ end_status: "success", wait_time: 0 })
+            } else if (runStatus === "alive" && run) {
+              runStop(run?.id)
+            }
+          }}
+          isLoading={runPending || buildPending}
+          spinner={
+            <Spinner
+              color={
+                runStatus === "alive" ? "success" : runStatus === "running" ? "warning" : "danger"
+              }
+              size='sm'
+            />
           }
-        }}
-        isLoading={runPending || buildPending}
-        spinner={
-          <Spinner
-            color='danger'
-            size='sm'
-          />
-        }
-        className={classNames(
-          "flex items-center justify-center build-menu-item"
-        )}>
-        {runStatus !== "alive" ? (
-          <PlayIcon className='w-[18px] h-[18px]' />
-        ) : (
-          <StopIcon className='w-4 h-4' />
-        )}
-        <span
+          className={classNames(
+            "bg-background hover:bg-overlay border border-border rounded-small",
+            runStatus === "alive"
+              ? "border-emerald-500"
+              : runStatus === "stopped"
+                ? "border-border"
+                : runStatus === "running"
+                  ? "border-amber-600"
+                  : "border-red-500"
+          )}>
+          {runStatus !== "alive" ? (
+            <PlayIcon className='w-[18px] h-[18px]' />
+          ) : (
+            <StopIcon className='w-4 h-4' />
+          )}
+          {/* <span
           className={classNames(
             "builded-check z-10 transition-all duration-300",
             runStatus === "alive"
@@ -69,8 +79,9 @@ const BuildMenu = () => {
                 : "bg-red-500",
             runPending && "bg-warning"
           )}
-        />
-      </Button>
+        /> */}
+        </Button>
+      </Tooltip>
       {/* <Button
         data-testid='build-btn'
         isIconOnly
@@ -97,25 +108,28 @@ const BuildMenu = () => {
           )}
         />
       </Button> */}
-      <Button
-        data-testid='chat-btn'
-        onClick={() => {
-          setSearchParams({
-            ...parseSearchParams(searchParams),
-            chat: !chat ? "opened" : "closed",
-          })
-          setChat(!chat)
-        }}
-        isIconOnly
-        style={{}}
-        className={classNames(
-          "flex items-center justify-center build-menu-item",
-          !showBuildMenu && "build-menu-item-disabled",
-          chat && "build-menu-item-active"
-        )}>
-        <ChatIcon className='w-5 h-5' />
-      </Button>
-      <Button
+      <Tooltip
+        content='Open the chat window'
+        radius='sm'>
+        <Button
+          data-testid='chat-btn'
+          onClick={() => {
+            setSearchParams({
+              ...parseSearchParams(searchParams),
+              chat: !chat ? "opened" : "closed",
+            })
+            setChat(!chat)
+          }}
+          isIconOnly
+          style={{}}
+          className={classNames(
+            "bg-background hover:bg-overlay border border-border rounded-small",
+            chat ? "bg-overlay border-border-darker" : ""
+          )}>
+          <ChatIcon className='w-5 h-5' />
+        </Button>
+      </Tooltip>
+      {/* <Button
         isIconOnly
         style={{}}
         onClick={() => {
@@ -131,7 +145,7 @@ const BuildMenu = () => {
           logsPage && "build-menu-item-active"
         )}>
         <MonitorIcon className='w-5 h-5' />
-      </Button>
+      </Button> */}
     </div>
   )
 }

@@ -13,7 +13,6 @@ function ConditionRow({
   const [priority, setPriority] = useState(cnd.data.priority)
 
   const changeConditionPriorityHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value)
     if (
       (RegExp(/^[0-9]+$/).test(e.target.value) || e.target.value === "") &&
       Number(e.target.value) < 100 &&

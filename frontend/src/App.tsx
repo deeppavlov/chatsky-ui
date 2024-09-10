@@ -1,6 +1,6 @@
 import { NextUIProvider } from "@nextui-org/react"
+import { ReactFlowProvider } from "@xyflow/react"
 import { RouterProvider, createBrowserRouter } from "react-router-dom"
-import { ReactFlowProvider } from "reactflow"
 import { Preloader } from "./UI/Preloader/Preloader"
 import ContextWrapper from "./contexts"
 import { UndoRedoProvider } from "./contexts/undoRedoContext"

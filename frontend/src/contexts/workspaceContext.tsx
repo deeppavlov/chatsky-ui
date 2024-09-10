@@ -1,8 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from "react"
-import { Node } from "reactflow"
-import { NodeDataType } from "../types/NodeTypes"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
+import { FlowType } from "../types/FlowTypes"
+import { AppNode } from "../types/NodeTypes"
 import { flowContext } from "./flowContext"
+import { NotificationsContext } from "./notificationsContext"
 
 type WorkspaceContextType = {
   workspaceMode: boolean
@@ -15,9 +17,14 @@ type WorkspaceContextType = {
   setSettingsPage: React.Dispatch<React.SetStateAction<boolean>>
   selectedNode: string
   setSelectedNode: React.Dispatch<React.SetStateAction<string>>
-  handleNodeFlags: (e: React.MouseEvent<HTMLButtonElement>, setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>) => void
+  handleNodeFlags: (
+    e: React.MouseEvent<HTMLButtonElement>,
+    setNodes: React.Dispatch<React.SetStateAction<AppNode[]>>
+  ) => void
   mouseOnPane: boolean
   setMouseOnPane: React.Dispatch<React.SetStateAction<boolean>>
+  modalsOpened: number
+  setModalsOpened: React.Dispatch<React.SetStateAction<number>>
   onModalClose: (onClose: () => void) => void
   onModalOpen: (onOpen: () => void) => void
   managerMode: boolean
@@ -26,6 +33,8 @@ type WorkspaceContextType = {
 }
 
 export const workspaceContext = createContext<WorkspaceContextType>({
+  modalsOpened: 0,
+  setModalsOpened: () => {},
   setWorkspaceMode: () => {},
   toggleWorkspaceMode: () => {},
   workspaceMode: false,
@@ -50,34 +59,65 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [managerMode, setManagerMode] = useState(false)
-  const [settingsPage, setSettingsPage] = useState(false)
+  const [searchParams] = useSearchParams()
+  const [settingsPage, setSettingsPage] = useState(searchParams.get("settings") === "opened")
   const [selectedNode, setSelectedNode] = useState("")
-  const { updateFlow, flows, tab, quietSaveFlows } = useContext(flowContext)
+  const { flows, quietSaveFlows, setFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
+  const [modalsOpened, setModalsOpened] = useState(0)
+  const { notification: n } = useContext(NotificationsContext)
+
+
+  /**
+   * Count opened modals for correct shortcuts work
+   */
+  useEffect(() => {
+    if (modalsOpened === 0) {
+      setMouseOnPane(true)
+    } else if (modalsOpened > 0) {
+      setMouseOnPane(false)
+    }
+    if (modalsOpened < 0) {
+      setModalsOpened(0)
+    }
+  }, [modalsOpened])
+
   
-  useEffect(() => console.log(mouseOnPane), [mouseOnPane])
-
-  const flow = flows.find((flow) => flow.name === tab)
-
-  const toggleWorkspaceMode = () => {
+  const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
-  }
+    n.add({
+      message: `Workspace mode is now ${workspaceMode ? "fixed" : "free"}.`,
+      title: "Workspace mode changed!",
+      type: "info",
+    })
+  }, [n, workspaceMode])
 
-  const toggleNodesLayoutMode = () => {
+  const toggleNodesLayoutMode = useCallback(() => {
     setNodesLayoutMode(() => !nodesLayoutMode)
-  }
+    n.add({
+      message: `Nodes layout mode is now ${!nodesLayoutMode ? "on" : "off"}.`,
+      title: "Layout mode changed!",
+      type: "info",
+    })
+  }, [n, nodesLayoutMode])
 
-  const toggleManagerMode = () => {
+  const toggleManagerMode = useCallback(() => {
     setManagerMode(() => !managerMode)
-  }
+    n.add({
+      message: `Manager mode is now ${!managerMode ? "on" : "off"}.`,
+      title: "Mode changed!",
+      type: "info",
+    })
+  }, [managerMode, n])
 
-  const handleNodeFlags = (e: React.MouseEvent<HTMLButtonElement>, setNodes: React.Dispatch<React.SetStateAction<Node<NodeDataType>[]>>) => {
-    setNodes((nds) => {
-      const new_nds = nds.map((nd: Node<NodeDataType>) => {
-        if (nd.data.flags?.includes(e.currentTarget.name)) {
+  const handleNodeFlags = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const nodes = flows.flatMap((flow) => flow.data.nodes)
+      const new_nds = nodes.map((nd: AppNode) => {
+        if (nd.type === "default_node" && nd.data.flags?.includes(e.currentTarget.name)) {
           nd.data.flags = nd.data.flags.filter((flag) => flag !== e.currentTarget.name)
         }
-        if (nd.id === selectedNode) {
+        if (nd.type === "default_node" && nd.id === selectedNode) {
           if (nd.data.flags?.includes(e.currentTarget.name)) {
             nd.data.flags = nd.data.flags.filter((flag) => flag !== e.currentTarget.name)
           } else {
@@ -87,27 +127,43 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         }
         return nd
       })
-      return new_nds
-    })
-    if (flow) {
-      updateFlow(flow)
-    }
-    quietSaveFlows()
-  }
+      const new_flows: FlowType[] = flows.map((flow) => {
+        return {
+          ...flow,
+          data: {
+            ...flow.data,
+            nodes: flow.data.nodes.map((nd: AppNode) => {
+              const new_nd = new_nds.find((n) => n.id === nd.id)
+              if (new_nd) return new_nd
+              else return nd
+            }),
+          },
+        }
+      })
+      setFlows(() => new_flows)
+      // if (flow) {
+      //   updateFlow(flow)
+      // }
+      quietSaveFlows()
+    },
+    [flows, quietSaveFlows, selectedNode, setFlows]
+  )
 
-  const onModalOpen = (onOpen: () => void) => {
+  const onModalOpen = useCallback((onOpen: () => void) => {
     setMouseOnPane(false)
     onOpen()
-  }
+  }, [])
 
-  const onModalClose = (onClose: () => void) => {
+  const onModalClose = useCallback((onClose: () => void) => {
     setMouseOnPane(true)
     onClose()
-  }
+  }, [])
 
   return (
     <workspaceContext.Provider
       value={{
+        modalsOpened,
+        setModalsOpened,
         workspaceMode,
         setWorkspaceMode,
         toggleWorkspaceMode,
@@ -125,7 +181,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         onModalOpen,
         managerMode,
         setManagerMode,
-        toggleManagerMode
+        toggleManagerMode,
       }}>
       {children}
     </workspaceContext.Provider>

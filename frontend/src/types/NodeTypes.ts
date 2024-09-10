@@ -1,30 +1,43 @@
+import { Node } from "@xyflow/react"
 import { conditionType } from "./ConditionTypes"
+import { responseType } from "./ResponseTypes"
 
-export type NodesTypes = 'default_node' | 'default_link'
+export type NodesTypes = 'default_node' | 'link_node'
 
-export type NodeType = {
+export type DefaultNodeType = Node<DefaultNodeDataType, "default_node">
+export type LinkNodeType = Node<LinkNodeDataType, "link_node">
+export type AppNode = DefaultNodeType | LinkNodeType
+export type AllowAppNode = DefaultNodeType & LinkNodeType
+
+
+export type DefaultNodeDataType = {
   id: string
-  type: string
-  data: NodeDataType
-  position: {
-    x: number
-    y: number
+  name: string
+  response: responseType
+  conditions: conditionType[]
+  global_conditions?: string[]
+  local_conditions?: string[]
+  flags: string[]
+}
+
+export type LinkNodeDataType = {
+  id: string
+  name: string
+  transition: {
+    target_flow: string
+    target_node: string
+    is_configured?: boolean | undefined
   }
 }
 
-export type NodeDataType = {
-  id: string
-  name: string
-  flags?: string[]
-  conditions?: conditionType[]
-  global_conditions?: string[]
-  local_conditions?: string[]
-  response?: string
-  to?: string
-}
+export type PartialDefaultNodeDataType = Partial<DefaultNodeDataType>
+export type PartialLinkNodeDataType = Partial<LinkNodeDataType>
+
+export type AppNodeDataType = DefaultNodeDataType | LinkNodeDataType
+
 
 export type NodeComponentType = {
-  data: NodeDataType
+  data: DefaultNodeDataType
 }
 
 export interface NodeComponentConditionType extends NodeComponentType {

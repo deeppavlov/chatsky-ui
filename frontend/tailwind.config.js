@@ -48,6 +48,13 @@ export default {
   darkMode: "class",
   plugins: [
     nextui({
+      layout: {
+        boxShadow: {
+          small: "0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)",
+          medium: "0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)",
+          large: "0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)",
+        },
+      },
       themes: {
         dark: {
           colors: {
