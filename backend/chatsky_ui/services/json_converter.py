@@ -4,16 +4,17 @@ JSON Converter
 
 Converts a user project's frontend graph to a script understandable by Chatsky json-importer.
 """
+import ast
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 from omegaconf.dictconfig import DictConfig
 
-from chatsky_ui.api.deps import get_index
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
-from chatsky_ui.services.index import Index
+from chatsky_ui.services.condition_finder import ServiceReplacer
+
 
 logger = get_logger(__name__)
 
@@ -70,16 +71,6 @@ def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
     )
 
 
-def _write_list_to_file(conditions_lines: list, custom_conditions_file: Path) -> None:
-    """Write chatsky custom conditions from list to file."""
-    # TODO: make reading and writing conditions async
-    with open(custom_conditions_file, "w", encoding="UTF-8") as file:
-        for line in conditions_lines:
-            if not line.endswith("\n"):
-                line = "".join([line, "\n"])
-            file.write(line)
-
-
 def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> None:
     """Add transitions to a node according to `edge` and `condition`."""
     # if the edge is a link_node, we add transition of its source and target
@@ -120,78 +111,14 @@ def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
         )
 
 
-def _append(service: DictConfig, services_lines: list) -> list:
-    """Append a condition to a list"""
-    if service.type == "python":
-        service_with_newline = "".join([service.data.python.action + "\n\n"])
-
-    logger.debug("Service to append: %s", service_with_newline)
-    logger.debug("services_lines before appending: %s", services_lines)
-
-    all_lines = services_lines + service_with_newline.split("\n")
-    return all_lines
-
-
-async def _shift_cnds_in_index(index: Index, cnd_strt_lineno: int, diff_in_lines: int) -> None:
-    """Update the start line number of conditions in index by shifting them by `diff_in_lines`."""
-    services = index.get_services()
-    for _, service in services.items():
-        if service["type"] == "condition":
-            if service["lineno"] - 1 > cnd_strt_lineno:  # -1 is here to convert from file numeration to list numeration
-                service["lineno"] += diff_in_lines
-
-    await index.indexit_all(
-        [service_name for service_name, _ in services.items()],
-        [service["type"] for _, service in services.items()],
-        [service["lineno"] for _, service in services.items()],
-    )
-
-
-async def _replace(service: DictConfig, services_lines: list, cnd_strt_lineno: int, index: Index) -> list:
-    """Replace a servuce in a services list with a new one.
-
-    Args:
-        service: service to replace. `condition.data.python.action` is a string with the new service(condition)
-        conditions_lines: list of conditions lines
-        cnd_strt_lineno: a pointer to the service start line in custom conditions file
-        index: index object to update
-
-    Returns:
-        list of all conditions as lines
-    """
-    cnd_strt_lineno = cnd_strt_lineno - 1  # conversion from file numeration to list numeration
-    all_lines = services_lines.copy()
-    if service.type == "python":
-        condition = "".join([service.data.python.action + "\n\n"])
-    new_cnd_lines = condition.split("\n")
-
-    old_cnd_lines_num = 0
-    for lineno, line in enumerate(all_lines[cnd_strt_lineno:]):
-        if line.startswith("def ") and lineno != 0:
-            break
-        old_cnd_lines_num += 1
-
-    next_func_location = cnd_strt_lineno + old_cnd_lines_num
-
-    logger.debug("new_cnd_lines\n")
-    logger.debug(new_cnd_lines)
-    all_lines = all_lines[:cnd_strt_lineno] + new_cnd_lines + all_lines[next_func_location:]
-
-    diff_in_lines = len(new_cnd_lines) - old_cnd_lines_num
-    logger.debug("diff_in_lines: %s", diff_in_lines)
-    logger.debug("cnd_strt_lineno: %s", cnd_strt_lineno)
-
-    await _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines)
-    return all_lines
-
-
-async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> Tuple[dict, List[str]]:
+async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
     """Organizes the responses in nodes in a format that json-importer accepts.
 
     If the response type is "python", its function will be added to responses_lines to be written
     to the custom_conditions_file later.
     * If the response already exists in the responses_lines, it will be replaced with the new one.
     """
+    responses_list = []
     for node in nodes.values():
         if node["info"].type == "link_node":
             continue
@@ -199,14 +126,9 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
         logger.debug("response type: %s", response.type)
         if response.type == "python":
             response.data = response.data[0]
-            if response.name not in (rsp_names := index.index):
-                logger.debug("Adding response: %s", response.name)
-                rsp_lineno = len(responses_lines)
-                responses_lines = _append(response, responses_lines)
-                await index.indexit(response.name, "response", rsp_lineno + 1)
-            else:
-                logger.debug("Replacing response: %s", response.name)
-                responses_lines = await _replace(response, responses_lines, rsp_names[response.name]["lineno"], index)
+            logger.info("Adding response: %s", response)
+
+            responses_list.append(response.data.python.action)
             node["info"].data.response = f"custom_dir.responses.{response.name}"
         elif response.type == "text":
             response.data = response.data[0]
@@ -223,15 +145,11 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
             node["info"].data.response = {"chatsky.rsp.choice": chatsky_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
-    return nodes, responses_lines
+    return nodes, responses_list
 
 
 async def converter(build_id: int) -> None:
     """Translate frontend flow script into chatsky script."""
-    index = get_index()
-    await index.load()
-    index.logger.debug("Loaded index '%s'", index.index)
-
     frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id)
 
     script = {
@@ -242,12 +160,21 @@ async def converter(build_id: int) -> None:
     nodes = _organize_graph_according_to_nodes(flow_graph, script)
 
     with open(custom_responses_file, "r", encoding="UTF-8") as file:
-        responses_lines = file.readlines()
+        responses_tree = ast.parse(file.read())
 
-    nodes, responses_lines = await update_responses_lines(nodes, responses_lines, index)
+    nodes, responses_list = await update_responses_lines(nodes)
+
+    logger.info("Responses list: %s", responses_list)
+    replacer = ServiceReplacer(responses_list)
+    replacer.visit(responses_tree)
+
+    with open(custom_responses_file, 'w') as file:
+        file.write(ast.unparse(responses_tree))
 
     with open(custom_conditions_file, "r", encoding="UTF-8") as file:
-        conditions_lines = file.readlines()
+        conditions_tree = ast.parse(file.read())
+
+    conditions_list = []
 
     for flow in flow_graph["flows"]:
         for edge in flow.data.edges:
@@ -261,24 +188,20 @@ async def converter(build_id: int) -> None:
                         edge.sourceHandle,
                     )
                     continue
-
-                if condition.name not in (cnd_names := index.index):
-                    logger.debug("Adding condition: %s", condition.name)
-                    cnd_lineno = len(conditions_lines)
-                    conditions_lines = _append(condition, conditions_lines)
-                    await index.indexit(condition.name, "condition", cnd_lineno + 1)
-                else:
-                    logger.debug("Replacing condition: %s", condition.name)
-                    conditions_lines = await _replace(
-                        condition, conditions_lines, cnd_names[condition.name]["lineno"], index
-                    )
+                if condition.type == "python":
+                    conditions_list.append(condition.data.python.action)
 
                 _add_transitions(nodes, edge, condition)
             else:
                 logger.error("A node of edge '%s-%s' is not found in nodes", edge.source, edge.target)
 
+    replacer = ServiceReplacer(conditions_list)
+    replacer.visit(conditions_tree)
+
+    with open(custom_conditions_file, 'w') as file:
+        file.write(ast.unparse(conditions_tree))
+
+
     _fill_nodes_into_script(nodes, script)
 
-    _write_list_to_file(conditions_lines, custom_conditions_file)
-    _write_list_to_file(responses_lines, custom_responses_file)
     await write_conf(script, script_path)

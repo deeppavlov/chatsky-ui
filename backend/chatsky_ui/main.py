@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     await index_dict["instance"].load()
     yield
 
-    settings.temp_conf.unlink(missing_ok=True)
+    # settings.temp_conf.unlink(missing_ok=True)
 
 
 app = FastAPI(title="DF Designer", lifespan=lifespan)
