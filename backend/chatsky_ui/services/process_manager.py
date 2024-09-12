@@ -104,7 +104,7 @@ class ProcessManager:
 
 
 class RunManager(ProcessManager):
-    """Process manager for running a DFF pipeline."""
+    """Process manager for running a Chatsky pipeline."""
 
     async def start(self, build_id: int, preset: Preset) -> int:
         """Starts a new run process.
@@ -152,7 +152,7 @@ class RunManager(ProcessManager):
 
 
 class BuildManager(ProcessManager):
-    """Process manager for converting a frontned graph to a DFF script."""
+    """Process manager for converting a frontned graph to a Chatsky script."""
 
     async def start(self, preset: Preset) -> int:
         """Starts a new build process.

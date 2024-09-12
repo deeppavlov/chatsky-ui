@@ -2,7 +2,7 @@
 JSON Converter
 ---------------
 
-Converts a user project's frontend graph to a script understandable by DFF json-importer.
+Converts a user project's frontend graph to a script understandable by Chatsky json-importer.
 """
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 
 def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
-    """Get paths to frontend graph, dff script, and dff custom conditions files."""
+    """Get paths to frontend graph, chatsky script, and chatsky custom conditions files."""
     frontend_graph_path = settings.frontend_flows_path
     custom_conditions_file = settings.conditions_path
     custom_responses_file = settings.responses_path
@@ -71,7 +71,7 @@ def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
 
 
 def _write_list_to_file(conditions_lines: list, custom_conditions_file: Path) -> None:
-    """Write dff custom conditions from list to file."""
+    """Write chatsky custom conditions from list to file."""
     # TODO: make reading and writing conditions async
     with open(custom_conditions_file, "w", encoding="UTF-8") as file:
         for line in conditions_lines:
@@ -104,7 +104,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> No
 
 
 def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
-    """Fill nodes into dff script dictunary."""
+    """Fill nodes into chatsky script dictunary."""
     for _, node in nodes.items():
         if node["info"].type == "link_node":
             continue
@@ -211,23 +211,23 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
         elif response.type == "text":
             response.data = response.data[0]
             logger.debug("Adding response: %s", response.data.text)
-            node["info"].data.response = {"dff.Message": {"text": response.data.text}}
+            node["info"].data.response = {"chatsky.Message": {"text": response.data.text}}
         elif response.type == "choice":
             # logger.debug("Adding response: %s", )
-            dff_responses = []
+            chatsky_responses = []
             for message in response.data:
                 if "text" in message:
-                    dff_responses.append({"dff.Message": {"text": message["text"]}})
+                    chatsky_responses.append({"chatsky.Message": {"text": message["text"]}})
                 else:
                     raise ValueError("Unknown response type. There must be a 'text' field in each message.")
-            node["info"].data.response = {"dff.rsp.choice": dff_responses.copy()}
+            node["info"].data.response = {"chatsky.rsp.choice": chatsky_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
     return nodes, responses_lines
 
 
 async def converter(build_id: int) -> None:
-    """Translate frontend flow script into dff script."""
+    """Translate frontend flow script into chatsky script."""
     index = get_index()
     await index.load()
     index.logger.debug("Loaded index '%s'", index.index)

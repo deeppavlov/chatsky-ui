@@ -289,6 +289,40 @@ files = [
 ]
 
 [[package]]
+name = "chatsky"
+version = "1.0.0rc1"
+description = "Chatsky is a free and open-source software stack for creating chatbots, released under the terms of Apache License 2.0."
+optional = false
+python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
+files = [
+    {file = "chatsky-1.0.0rc1-py3-none-any.whl", hash = "sha256:cd2ab29aa814d1719d68ad8e2245ced165fa3959143b50e4e4347a0cc9887339"},
+    {file = "chatsky-1.0.0rc1.tar.gz", hash = "sha256:e6f19886b5d33c2a3f7f96f06f1965ebec875179683fcdda5ca90e1323973a23"},
+]
+
+[package.dependencies]
+colorama = "*"
+eval_type_backport = "*"
+nest-asyncio = "*"
+pydantic = ">=2.0"
+pyyaml = {version = "*", optional = true, markers = "extra == \"yaml\""}
+typing-extensions = "*"
+wrapt = "*"
+
+[package.extras]
+benchmark = ["altair", "humanize", "pandas", "pympler", "tqdm"]
+json = ["aiofiles"]
+mongodb = ["motor"]
+mysql = ["asyncmy", "cryptography", "sqlalchemy[asyncio]"]
+pickle = ["aiofiles"]
+postgresql = ["asyncpg", "sqlalchemy[asyncio]"]
+redis = ["redis"]
+sqlite = ["aiosqlite", "sqlalchemy[asyncio]"]
+stats = ["omegaconf", "opentelemetry-exporter-otlp (>=1.20.0)", "opentelemetry-instrumentation", "requests", "tqdm"]
+telegram = ["python-telegram-bot[all] (>=21.3,<22.0)"]
+yaml = ["pyyaml"]
+ydb = ["six", "ydb"]
+
+[[package]]
 name = "click"
 version = "8.1.7"
 description = "Composable command line interface toolkit"
@@ -335,37 +369,6 @@ requests = ">=2.23.0"
 rich = "*"
 
 [[package]]
-name = "dff"
-version = "0.6.4.dev0"
-description = "Dialog Flow Framework is a free and open-source software stack for creating chatbots, released under the terms of Apache License 2.0."
-optional = false
-python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
-files = [
-    {file = "dff-0.6.4.dev0-py3-none-any.whl", hash = "sha256:2bf1375bdde25492f623995bb148773d5f99b0173d547f9f7a47aa351d2a6302"},
-    {file = "dff-0.6.4.dev0.tar.gz", hash = "sha256:06a44f7e43e137208bc02615e95492526afc20a9078688d5be34fdb01934bd64"},
-]
-
-[package.dependencies]
-colorama = "*"
-nest-asyncio = "*"
-pydantic = ">=2.0"
-typing-extensions = "*"
-wrapt = "*"
-
-[package.extras]
-benchmark = ["altair", "humanize", "pandas", "pympler", "tqdm"]
-json = ["aiofiles"]
-mongodb = ["motor"]
-mysql = ["asyncmy", "cryptography", "sqlalchemy[asyncio]"]
-pickle = ["aiofiles"]
-postgresql = ["asyncpg", "sqlalchemy[asyncio]"]
-redis = ["redis"]
-sqlite = ["aiosqlite", "sqlalchemy[asyncio]"]
-stats = ["omegaconf", "opentelemetry-exporter-otlp (>=1.20.0)", "opentelemetry-instrumentation", "requests", "tqdm"]
-telegram = ["pytelegrambotapi"]
-ydb = ["six", "ydb"]
-
-[[package]]
 name = "dill"
 version = "0.3.8"
 description = "serialize all of Python"
@@ -390,6 +393,20 @@ files = [
     {file = "docutils-0.20.1-py3-none-any.whl", hash = "sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6"},
     {file = "docutils-0.20.1.tar.gz", hash = "sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b"},
 ]
+
+[[package]]
+name = "eval-type-backport"
+version = "0.2.0"
+description = "Like `typing._eval_type`, but lets older Python versions use newer typing features."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "eval_type_backport-0.2.0-py3-none-any.whl", hash = "sha256:ac2f73d30d40c5a30a80b8739a789d6bb5e49fdffa66d7912667e2015d9c9933"},
+    {file = "eval_type_backport-0.2.0.tar.gz", hash = "sha256:68796cfbc7371ebf923f03bdf7bef415f3ec098aeced24e054b253a0e78f7b37"},
+]
+
+[package.extras]
+tests = ["pytest"]
 
 [[package]]
 name = "exceptiongroup"
@@ -1911,4 +1928,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "f80671aa36a35cf0f6a92e876da44666b09ff84dbe0fe8f022c74f420fc63ac9"
+content-hash = "7095f314c771bc5604cd35b3be6c42780f46c0be413d65296e4e0aed5a4aa771"
