@@ -4,10 +4,10 @@ import chatsky.conditions as cnd
 from chatsky.core import script_parsing
 
 AUTO_COMPLETION_MAP = {
-    "exact_match": 'cnd.ExactMatch(Message("hello"))(ctx, pipeline)', # TODO: delete Message as it's redundant in the new version
-    "regexp": 'cnd.Regexp(r"how are you", re.IGNORECASE)(ctx, pipeline)',
-    "any": 'cnd.Any([hi_lower_case_condition, cnd.ExactMatch(Message("hello"))])(ctx, pipeline)', # TODO: the same
-    "all": 'cnd.All([cnd.Regexp(r"talk"), cnd.Regexp(r"about.*music")])(ctx, pipeline)',
+    "ExactMatch": 'await cnd.ExactMatch("hello")(ctx)', # TODO: delete Message as it's redundant in the new version
+    "Regexp": 'await cnd.Regexp("how are you")(ctx)',
+    "Any": 'cnd.Any([hi_lower_case_condition, cnd.ExactMatch(hello)])(ctx)', # TODO: the same
+    "All": 'cnd.All([cnd.Regexp("talk"), cnd.Regexp("about.*music")])(ctx)',
 }
 
 

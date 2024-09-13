@@ -136,7 +136,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots
                 flow,
                 node,
             ],
-            "priority": str(condition.data.priority),
+            "priority": condition.data.priority,
             "cnd": converted_cnd,
         }
     )
