@@ -279,3 +279,4 @@ async def connect(
         return_when=asyncio.FIRST_COMPLETED,
     )
     websocket_manager.disconnect(websocket)
+    await run_manager.stop_all()
