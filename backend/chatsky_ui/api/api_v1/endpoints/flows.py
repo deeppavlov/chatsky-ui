@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/")
-async def flows_get() -> Dict[str, Union[str, Dict[str, list]]]:
+async def flows_get() -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
     """Get the flows by reading the frontend_flows.yaml file."""
     omega_flows = await read_conf(settings.frontend_flows_path)
     dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
