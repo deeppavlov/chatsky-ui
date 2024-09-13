@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 
 PRE_TRANSITION = "PRE_TRANSITION"
 
+
 def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
     """Get paths to frontend graph, chatsky script, and chatsky custom conditions files."""
     frontend_graph_path = settings.frontend_flows_path
@@ -74,13 +75,12 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
             if slot_type != "GroupSlot":
                 group_slot[slot_name].update({f"chatsky.slots.{slot_type}": {k: v for k, v in slot_values.items()}})
             else:
-                group_slot[slot_name] =  _convert_slots(slot_values)
+                group_slot[slot_name] = _convert_slots(slot_values)
         return dict(group_slot)
 
     script["slots"] = _convert_slots(flow_graph["slots"])
 
     return nodes, script
-
 
 
 def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
@@ -93,6 +93,7 @@ def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
 
 def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots: DictConfig) -> None:
     """Add transitions to a node according to `edge` and `condition`."""
+
     def _get_slot(slots, id_):
         if not slots:
             return ""
@@ -116,7 +117,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots
         slot = _get_slot(slots, id_=condition.data.slot)
         converted_cnd = {"chatsky.conditions.slots.SlotsExtracted": slot}
         nodes[edge.source][PRE_TRANSITION].update({slot: {"chatsky.processing.slots.Extract": slot}})
-    #TODO: elif condition["type"] == "chatsky":
+    # TODO: elif condition["type"] == "chatsky":
     else:
         raise ValueError(f"Unknown condition type: {condition['type']}")
 
@@ -189,7 +190,7 @@ async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
             for message in response.data:
                 if "text" in message:
                     chatsky_responses.append({"chatsky.Message": {"text": message["text"]}})
-                else: #TODO: check: are you sure that you can use only "text" type inside a choice?
+                else:  # TODO: check: are you sure that you can use only "text" type inside a choice?
                     raise ValueError("Unknown response type. There must be a 'text' field in each message.")
             node["info"].data.response = {"chatsky.rsp.choice": chatsky_responses.copy()}
         else:
@@ -215,7 +216,7 @@ async def converter(build_id: int) -> None:
     replacer = ServiceReplacer(responses_list)
     replacer.visit(responses_tree)
 
-    with open(custom_responses_file, 'w') as file:
+    with open(custom_responses_file, "w") as file:
         file.write(ast.unparse(responses_tree))
 
     with open(custom_conditions_file, "r", encoding="UTF-8") as file:
@@ -245,9 +246,8 @@ async def converter(build_id: int) -> None:
     replacer = ServiceReplacer(conditions_list)
     replacer.visit(conditions_tree)
 
-    with open(custom_conditions_file, 'w') as file:
+    with open(custom_conditions_file, "w") as file:
         file.write(ast.unparse(conditions_tree))
-
 
     _fill_nodes_into_script(nodes, script)
 

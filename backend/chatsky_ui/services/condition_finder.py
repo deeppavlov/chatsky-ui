@@ -6,6 +6,7 @@ from chatsky_ui.core.logger_config import get_logger
 
 logger = get_logger(__name__)
 
+
 class ServiceReplacer(NodeTransformer):
     def __init__(self, new_services: List[str]):
         self.new_services_classes = self._get_classes_def(new_services)
