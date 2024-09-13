@@ -7,6 +7,7 @@ Converts a user project's frontend graph to a script understandable by Chatsky j
 import ast
 from pathlib import Path
 from typing import List, Optional, Tuple
+from collections import defaultdict
 
 from omegaconf.dictconfig import DictConfig
 
@@ -18,6 +19,8 @@ from chatsky_ui.services.condition_finder import ServiceReplacer
 
 logger = get_logger(__name__)
 
+
+PRE_TRANSITIONS_PROCESSING = "PRE_TRANSITIONS_PROCESSING"
 
 def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
     """Get paths to frontend graph, chatsky script, and chatsky custom conditions files."""
@@ -39,7 +42,7 @@ def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
     return frontend_graph_path, script_path, custom_conditions_file, custom_responses_file
 
 
-def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> dict:
+def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> Tuple[dict, dict]:
     nodes = {}
     for flow in flow_graph["flows"]:
         node_names_in_one_flow = []
@@ -60,7 +63,24 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
             nodes[node.id] = {"info": node}
             nodes[node.id]["flow"] = flow.name
             nodes[node.id]["TRANSITIONS"] = []
-    return nodes
+            nodes[node.id][PRE_TRANSITIONS_PROCESSING] = dict()
+
+    def _convert_slots(slots: dict) -> dict:
+        group_slot = defaultdict(dict)
+        for slot_name, slot_values in slots.copy().items():
+            slot_type = slot_values["type"]
+            del slot_values["id"]
+            del slot_values["type"]
+            if slot_type != "GroupSlot":
+                group_slot[slot_name].update({f"chatsky.slots.{slot_type}": {k: f"\"{v}\"" for k, v in slot_values.items()}})
+            else:
+                group_slot[slot_name] =  _convert_slots(slot_values)
+        return dict(group_slot)
+
+    script["CONFIG"]["slots"] = _convert_slots(flow_graph["slots"])
+
+    return nodes, script
+
 
 
 def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
@@ -71,8 +91,34 @@ def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
     )
 
 
-def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> None:
+def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots: DictConfig) -> None:
     """Add transitions to a node according to `edge` and `condition`."""
+    def _get_slot(slots, id_):
+        if not slots:
+            return ""
+        for name, value in slots.copy().items():
+            slot_path = name
+            if value.get("id") == id_:
+                return name
+            elif value.get("type") != "GroupSlot":
+                continue
+            else:
+                del value["id"]
+                del value["type"]
+                slot_path = _get_slot(value, id_)
+                if slot_path:
+                    slot_path = ".".join([name, slot_path])
+        return slot_path
+
+    if condition["type"] == "python":
+        converted_cnd = f"custom_dir.conditions.{condition.name}"
+    elif condition["type"] == "slot":
+        slot = _get_slot(slots, condition.data.slot)
+        converted_cnd = {"chatsky.slots.conditions.slots_extracted": slot}
+        nodes[edge.source][PRE_TRANSITIONS_PROCESSING].update({slot: {"chatsky.slots.processing.extract": slot}})
+    else:
+        raise ValueError(f"Unknown condition type: {condition['type']}")
+
     # if the edge is a link_node, we add transition of its source and target
     if nodes[edge.target]["info"].type == "link_node":
         flow = nodes[edge.target]["info"].data.transition.target_flow
@@ -82,6 +128,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> No
     else:
         flow = nodes[edge.target]["flow"]
         node = nodes[edge.target]["info"].data.name
+
     nodes[edge.source]["TRANSITIONS"].append(
         {
             "lbl": [
@@ -89,7 +136,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> No
                 node,
                 condition.data.priority,
             ],
-            "cnd": f"custom_dir.conditions.{condition.name}",
+            "cnd": converted_cnd,
         }
     )
 
@@ -106,6 +153,7 @@ def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
                 node["info"].data.name: {
                     "RESPONSE": node["info"].data.response,
                     "TRANSITIONS": node["TRANSITIONS"],
+                    PRE_TRANSITIONS_PROCESSING: node[PRE_TRANSITIONS_PROCESSING],
                 }
             }
         )
@@ -157,7 +205,7 @@ async def converter(build_id: int) -> None:
     }
     flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
 
-    nodes = _organize_graph_according_to_nodes(flow_graph, script)
+    nodes, script = _organize_graph_according_to_nodes(flow_graph, script)
 
     with open(custom_responses_file, "r", encoding="UTF-8") as file:
         responses_tree = ast.parse(file.read())
@@ -191,7 +239,7 @@ async def converter(build_id: int) -> None:
                 if condition.type == "python":
                     conditions_list.append(condition.data.python.action)
 
-                _add_transitions(nodes, edge, condition)
+                _add_transitions(nodes, edge, condition, flow_graph["slots"])
             else:
                 logger.error("A node of edge '%s-%s' is not found in nodes", edge.source, edge.target)
 
