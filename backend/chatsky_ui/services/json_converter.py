@@ -20,7 +20,7 @@ from chatsky_ui.services.condition_finder import ServiceReplacer
 logger = get_logger(__name__)
 
 
-PRE_TRANSITIONS_PROCESSING = "PRE_TRANSITIONS_PROCESSING"
+PRE_TRANSITION = "PRE_TRANSITION"
 
 def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
     """Get paths to frontend graph, chatsky script, and chatsky custom conditions files."""
@@ -49,13 +49,13 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
         for node in flow.data.nodes:
             if "flags" in node.data:
                 if "start" in node.data.flags:
-                    if "start_label" in script["CONFIG"]:
+                    if "start_label" in script:
                         raise ValueError("There are more than one start node in the script")
-                    script["CONFIG"]["start_label"] = [flow.name, node.data.name]
+                    script["start_label"] = [flow.name, node.data.name]
                 if "fallback" in node.data.flags:
-                    if "fallback_label" in script["CONFIG"]:
+                    if "fallback_label" in script:
                         raise ValueError("There are more than one fallback node in the script")
-                    script["CONFIG"]["fallback_label"] = [flow.name, node.data.name]
+                    script["fallback_label"] = [flow.name, node.data.name]
 
             if node.data.name in node_names_in_one_flow:
                 raise ValueError(f"There is more than one node with the name '{node.data.name}' in the same flow.")
@@ -63,7 +63,7 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
             nodes[node.id] = {"info": node}
             nodes[node.id]["flow"] = flow.name
             nodes[node.id]["TRANSITIONS"] = []
-            nodes[node.id][PRE_TRANSITIONS_PROCESSING] = dict()
+            nodes[node.id][PRE_TRANSITION] = dict()
 
     def _convert_slots(slots: dict) -> dict:
         group_slot = defaultdict(dict)
@@ -72,12 +72,12 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
             del slot_values["id"]
             del slot_values["type"]
             if slot_type != "GroupSlot":
-                group_slot[slot_name].update({f"chatsky.slots.{slot_type}": {k: f"\"{v}\"" for k, v in slot_values.items()}})
+                group_slot[slot_name].update({f"chatsky.slots.{slot_type}": {k: v for k, v in slot_values.items()}})
             else:
                 group_slot[slot_name] =  _convert_slots(slot_values)
         return dict(group_slot)
 
-    script["CONFIG"]["slots"] = _convert_slots(flow_graph["slots"])
+    script["slots"] = _convert_slots(flow_graph["slots"])
 
     return nodes, script
 
@@ -111,11 +111,12 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots
         return slot_path
 
     if condition["type"] == "python":
-        converted_cnd = f"custom_dir.conditions.{condition.name}"
+        converted_cnd = {f"custom.conditions.{condition.name}": None}
     elif condition["type"] == "slot":
-        slot = _get_slot(slots, condition.data.slot)
-        converted_cnd = {"chatsky.slots.conditions.slots_extracted": slot}
-        nodes[edge.source][PRE_TRANSITIONS_PROCESSING].update({slot: {"chatsky.slots.processing.extract": slot}})
+        slot = _get_slot(slots, id_=condition.data.slot)
+        converted_cnd = {"chatsky.conditions.slots.SlotsExtracted": slot}
+        nodes[edge.source][PRE_TRANSITION].update({slot: {"chatsky.processing.slots.Extract": slot}})
+    #TODO: elif condition["type"] == "chatsky":
     else:
         raise ValueError(f"Unknown condition type: {condition['type']}")
 
@@ -131,11 +132,11 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots
 
     nodes[edge.source]["TRANSITIONS"].append(
         {
-            "lbl": [
+            "dst": [
                 flow,
                 node,
-                condition.data.priority,
             ],
+            "priority": str(condition.data.priority),
             "cnd": converted_cnd,
         }
     )
@@ -146,14 +147,14 @@ def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
     for _, node in nodes.items():
         if node["info"].type == "link_node":
             continue
-        if node["flow"] not in script:
-            script[node["flow"]] = {}
-        script[node["flow"]].update(
+        if node["flow"] not in script["script"]:
+            script["script"][node["flow"]] = {}
+        script["script"][node["flow"]].update(
             {
                 node["info"].data.name: {
                     "RESPONSE": node["info"].data.response,
                     "TRANSITIONS": node["TRANSITIONS"],
-                    PRE_TRANSITIONS_PROCESSING: node[PRE_TRANSITIONS_PROCESSING],
+                    PRE_TRANSITION: node[PRE_TRANSITION],
                 }
             }
         )
@@ -177,7 +178,7 @@ async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
             logger.info("Adding response: %s", response)
 
             responses_list.append(response.data.python.action)
-            node["info"].data.response = f"custom_dir.responses.{response.name}"
+            node["info"].data.response = {f"custom.responses.{response.name}": None}
         elif response.type == "text":
             response.data = response.data[0]
             logger.debug("Adding response: %s", response.data.text)
@@ -188,7 +189,7 @@ async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
             for message in response.data:
                 if "text" in message:
                     chatsky_responses.append({"chatsky.Message": {"text": message["text"]}})
-                else:
+                else: #TODO: check: are you sure that you can use only "text" type inside a choice?
                     raise ValueError("Unknown response type. There must be a 'text' field in each message.")
             node["info"].data.response = {"chatsky.rsp.choice": chatsky_responses.copy()}
         else:
@@ -200,9 +201,7 @@ async def converter(build_id: int) -> None:
     """Translate frontend flow script into chatsky script."""
     frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id)
 
-    script = {
-        "CONFIG": {"custom_dir": str("/" / settings.custom_dir)},
-    }
+    script = {"script": {}}
     flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
 
     nodes, script = _organize_graph_according_to_nodes(flow_graph, script)

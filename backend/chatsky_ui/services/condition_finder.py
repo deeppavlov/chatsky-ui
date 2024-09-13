@@ -39,38 +39,9 @@ class ServiceReplacer(NodeTransformer):
         super().generic_visit(node)
         if isinstance(node, ast.Module) and self.new_services_classes:
             self._append_new_services(node)
+        return node
 
     def _append_new_services(self, node: ast.Module):
         logger.info("Services not found, appending new services: %s", list(self.new_services_classes.keys()))
         for _, service in self.new_services_classes.items():
             node.body.append(service)
-
-def append_or_replace_service_in_file(file_path, new_services):
-    with open(file_path, 'r') as file:
-        tree = ast.parse(file.read(), filename=file_path)
-    
-    replacer = ServiceReplacer(new_services)
-    replacer.visit(tree)
-
-    with open(file_path, 'w') as file:
-        file.write(ast.unparse(tree))
-
-# Example usage
-file_path = 'output.py'
-
-new_services = ["""
-class ok:
-    def __init__(self):
-        print("shit")
-
-    def new_method(self):
-        print("This is a method in CondYo class")
-class ll:
-    def __init__(self):
-        print("what")
-
-    def new_method(self):
-        print("This is a method in CondYo class")
-"""]
-
-append_or_replace_service_in_file(file_path, new_services)
