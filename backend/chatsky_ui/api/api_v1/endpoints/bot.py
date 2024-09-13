@@ -264,8 +264,6 @@ async def connect(
     await websocket_manager.connect(websocket)
     run_manager.logger.info("Websocket for run process '%s' has been opened", run_id)
 
-    await websocket.send_text("Start chatting")
-
     output_task = asyncio.create_task(
         websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket)
     )

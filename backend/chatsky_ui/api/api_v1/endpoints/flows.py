@@ -18,7 +18,7 @@ async def flows_get() -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
 
 
 @router.post("/")
-async def flows_post(flows: Dict[str, list]) -> Dict[str, str]:
+async def flows_post(flows: Dict[str, Union[list, dict]]) -> Dict[str, str]:
     """Write the flows to the frontend_flows.yaml file."""
     await write_conf(flows, settings.frontend_flows_path)
     return {"status": "ok"}
