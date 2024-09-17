@@ -189,7 +189,7 @@ async def stop_run(
         {"status": "ok"}: in case of stopping a process successfully.
     """
     if websocket_manager.is_connected(run_id):
-        logger.info("Closing websocket connection")
+        run_manager.logger.info("Closing websocket connection")
         await websocket_manager.close(run_id)
     return await _stop_process(run_id, run_manager, process="run")
 
@@ -272,7 +272,7 @@ async def connect(
         run_manager.logger.error("process with run_id '%s' exited or never existed", run_id)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
     if await run_manager.get_status(run_id) != Status.ALIVE:
-        logger.error("process with run_id '%s' isn't Alive.", run_id)
+        run_manager.logger.error("process with run_id '%s' isn't Alive.", run_id)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
 
     await websocket_manager.connect(run_id, websocket)

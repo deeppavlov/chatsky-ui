@@ -58,7 +58,7 @@ class WebSocketManager:
         dict_chats = dict_chats or []
         dict_chats.append(self.active_connections[run_id]["chat"])  # type: ignore
         await write_conf(dict_chats, settings.chats_path)
-        logger.info("Chats info were written to DB")
+        self.logger.info("Chats info were written to DB")
 
         if websocket in self.pending_tasks:
             self.logger.info("Cancelling pending tasks")
@@ -84,13 +84,13 @@ class WebSocketManager:
                 await websocket.send_text(text)
                 self.active_connections[run_id]["chat"]["messages"].append(text)
         except WebSocketDisconnect:
-            logger.info("Websocket connection is closed")
+            self.logger.info("Websocket connection is closed")
             await self.disconnect(run_id, websocket)
         except RuntimeError as e:
             if "Unexpected ASGI message 'websocket.send'" in str(
                 e
             ) or "Cannot call 'send' once a close message has been sent" in str(e):
-                logger.info("Websocket connection was forced to close.")
+                self.logger.info("Websocket connection was forced to close.")
             else:
                 raise e
 
@@ -106,14 +106,14 @@ class WebSocketManager:
                 await process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
                 self.active_connections[run_id]["chat"]["messages"].append(user_message)
         except asyncio.CancelledError:
-            logger.info("Websocket connection is cancelled")
+            self.logger.info("Websocket connection is cancelled")
         except WebSocketDisconnect:
-            logger.info("Websocket connection is closed")
+            self.logger.info("Websocket connection is closed")
             await self.disconnect(run_id, websocket)
         except RuntimeError as e:
             if "Unexpected ASGI message 'websocket.send'" in str(
                 e
             ) or "Cannot call 'send' once a close message has been sent" in str(e):
-                logger.info("Websocket connection was forced to close.")
+                self.logger.info("Websocket connection was forced to close.")
             else:
                 raise e
