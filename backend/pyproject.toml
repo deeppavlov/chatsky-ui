@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "chatsky-ui"
+version = "0.2.0"
+description = "Chatsky-UI is GUI for Chatsky Framework, that is a free and open-source software stack for creating chatbots, released under the terms of Apache License 2.0."
+license = "Apache-2.0"
+authors = [
+    "Denis Kuznetsov <kuznetsov.den.p@gmail.com>",
+    "Maks Rogatkin <maksim2003003@gmail.com>",
+    "Rami Mashkouk <rami.n.mashkouk@gmail.com>",
+]
+readme = "README.md"
+packages = [{include = "chatsky_ui"}]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.28.0"}
+pydantic = "^2.6.3"
+typer = "^0.9.0"
+pydantic-settings = "^2.2.1"
+aiofiles = "^23.2.1"
+cookiecutter = "^2.6.0"
+dff = "==0.6.4.dev0"
+omegaconf = "^2.3.0"
+pytest = "^8.1.1"
+pytest-asyncio = "^0.23.6"
+pytest-mock = "^3.14.0"
+httpx = "^0.27.0"
+httpx-ws = "^0.6.0"
+pylint = "^3.2.3"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+
+[tool.poetry.scripts]
+"chatsky.ui" = "chatsky_ui.cli:cli"
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+isort = "^5"
+black = "^22"
+flake8 = "^4"

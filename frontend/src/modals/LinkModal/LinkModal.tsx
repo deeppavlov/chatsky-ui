@@ -1,11 +1,11 @@
-import React, { useContext, useState } from "react"
-import { ModalType } from "../../types/ModalTypes"
 import { Input, Modal, ModalBody, ModalContent, Select, SelectItem } from "@nextui-org/react"
-import { NodeDataType } from "../../types/NodeTypes"
+import React, { useContext, useState } from "react"
 import { flowContext } from "../../contexts/flowContext"
+import { ModalType } from "../../types/ModalTypes"
+import { LinkNodeDataType } from "../../types/NodeTypes"
 
 interface LinkModalType extends ModalType {
-  data: NodeDataType
+  data: LinkNodeDataType
 }
 
 const LinkModal = ({ isOpen, onClose, size = "3xl", data }: LinkModalType) => {

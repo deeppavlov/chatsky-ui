@@ -14,7 +14,7 @@ const Fallback = () => {
   return (
     <div
       data-testid='fallback-page'
-      className='flex flex-col items-center justify-center w-screen'>
+      className='flex flex-col items-center justify-center w-screen h-screen bg-background'>
       <svg
         width='540'
         height='314'

@@ -2,25 +2,22 @@ import { v4 } from "uuid"
 import { CreateFlowType } from "./modals/FlowModal/CreateFlowModal"
 import { conditionType } from "./types/ConditionTypes"
 import { FlowType } from "./types/FlowTypes"
-import { NodeType } from "./types/NodeTypes"
+import {
+  AppNode,
+  DefaultNodeDataType,
+  DefaultNodeType,
+  LinkNodeDataType,
+  LinkNodeType,
+  NodesTypes,
+} from "./types/NodeTypes"
 
 export const generateNewFlow = (flow: CreateFlowType) => {
-  const node_id = v4()
-  const node_2_id = v4()
-  const condition_id = v4()
   const newFlow: FlowType = {
     ...flow,
-    id: v4(),
+    id: "flow_" + v4(),
     data: {
       nodes: [],
-      edges: [
-        {
-          id: v4(),
-          source: node_id,
-          sourceHandle: condition_id,
-          target: node_2_id,
-        },
-      ],
+      edges: [],
       viewport: {
         x: 0,
         y: 0,
@@ -32,7 +29,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 }
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
-  return !flows.some((flow) => flow.name === name) && name.length > 2
+  return !flows.some((flow) => flow.name === name) && name.length >= 2
 }
 
 export const parseSearchParams = (
@@ -50,7 +47,7 @@ export const parseSearchParams = (
 
 export const generateNewConditionBase = (): conditionType => {
   return {
-    id: v4(),
+    id: "condition_" + v4(),
     name: "new_cnd",
     type: "python",
     data: {
@@ -60,8 +57,83 @@ export const generateNewConditionBase = (): conditionType => {
   }
 }
 
-export const isNodeDeletionValid = (nodes: NodeType[], id: string) => {
+export const isNodeDeletionValid = (nodes: AppNode[], id: string) => {
   const node = nodes.find((n) => n.id === id)
   if (!node) return false
-  return !node.data.flags?.includes("start")
+  if (node.type === "link_node") return true
+  if (node.type === "default_node") return !node.data.flags?.includes("start")
 }
+
+export function delay(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+export const generateNewNode = (
+  type: NodesTypes | undefined,
+  template?: Partial<
+    (Omit<DefaultNodeType, "data"> & {
+      data: Partial<DefaultNodeDataType>
+    }) &
+      (Omit<LinkNodeType, "data"> & { data: Partial<LinkNodeDataType> })
+  >
+) => {
+  const id = type + "_" + v4()
+  switch (type) {
+    case "default_node":
+      return {
+        id,
+        type,
+        position: template?.position ?? { x: 0, y: 0 },
+        data: {
+          id,
+          name: template?.data?.name ?? "New node",
+          response: template?.data?.response ?? {
+            id: "response_" + v4(),
+            name: "response",
+            type: "text",
+            data: [{ text: "New node response", priority: 1 }],
+          },
+          flags: template?.data?.flags ?? [],
+          conditions: template?.data?.conditions ?? [],
+          global_conditions: template?.data?.global_conditions ?? [],
+          local_conditions: template?.data?.local_conditions ?? [],
+        },
+      }
+    case "link_node":
+      return {
+        id,
+        type,
+        position: template?.position ?? { x: 0, y: 0 },
+        data: {
+          id,
+          name: template?.data?.name ?? "Link",
+          transition: template?.data?.transition ?? {
+            target_flow: template?.data?.transition?.target_flow ?? "",
+            target_node: template?.data?.transition?.target_flow ?? "",
+          },
+        },
+      }
+  }
+  return {
+    id,
+    type,
+    position: template?.position ?? { x: 0, y: 0 },
+    data: {
+      id,
+      name: template?.data?.name ?? "New node",
+      response: template?.data?.response ?? {
+        id: "response_" + v4(),
+        name: "response",
+        type: "text",
+        data: [{ text: "New node response", priority: 1 }],
+      },
+      flags: template?.data?.flags ?? [],
+      conditions: template?.data?.conditions ?? [],
+      global_conditions: template?.data?.global_conditions ?? [],
+      local_conditions: template?.data?.local_conditions ?? [],
+    },
+  }
+}
+

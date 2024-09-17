@@ -245,9 +245,6 @@ cython_debug/
 #.idea/
 
 .vscode
-/df_designer_front/node_modules
-/df_designer_front/vscode
-/df_designer_front/.vscode
 
 ./flows.json
 *.sqlite
@@ -256,4 +253,7 @@ my_project
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-df_designer_project
+
+temp_conf.yaml
+
+my_project

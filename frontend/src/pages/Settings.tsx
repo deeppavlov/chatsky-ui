@@ -1,10 +1,10 @@
-import React, { useContext } from "react"
-import { workspaceContext } from "../contexts/workspaceContext"
 import { Button, Divider, Select, SelectItem, Switch } from "@nextui-org/react"
 import { MoonIcon, SunIcon } from "lucide-react"
+import { memo, useContext } from "react"
 import { themeContext } from "../contexts/themeContext"
+import { workspaceContext } from "../contexts/workspaceContext"
 
-const Settings = () => {
+const Settings = memo(() => {
   const { settingsPage } = useContext(workspaceContext)
   const { theme, toggleTheme } = useContext(themeContext)
 
@@ -68,7 +68,13 @@ const Settings = () => {
             </section>
             <section className='mb-8'>
               <h3 className='text-xl font-semibold mb-4'>Language</h3>
-              <Select aria-label="language-select" value={"en"} disabledKeys={["ru"]} defaultSelectedKeys={["en"]} className="w-48" size="sm">
+              <Select
+                aria-label='language-select'
+                value={"en"}
+                disabledKeys={["ru"]}
+                defaultSelectedKeys={["en"]}
+                className='w-48'
+                size='sm'>
                 <SelectItem
                   key={"en"}
                   value='en'>
@@ -86,6 +92,6 @@ const Settings = () => {
       </div>
     </>
   )
-}
+})
 
 export default Settings

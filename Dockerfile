@@ -15,13 +15,9 @@ RUN bun run build
 
 #---------------------------------------------------------
 
-# Use a slim variant to reduce image size where possible
 FROM python:3.10-slim as backend-builder
 
 WORKDIR /temp
-
-ARG PROJECT_DIR
-# ENV PROJECT_DIR ${PROJECT_DIR}
 
 ENV POETRY_VERSION=1.8.2 \
     POETRY_HOME=/poetry \
@@ -34,38 +30,29 @@ RUN python3 -m venv $POETRY_VENV \
 
 ENV PATH="${PATH}:${POETRY_VENV}/bin"
 
-COPY ./backend/df_designer /temp/backend/df_designer
-COPY --from=frontend-builder /temp/frontend/dist /temp/backend/df_designer/app/static
+COPY ./backend /temp/backend
+COPY --from=frontend-builder /temp/frontend/dist /temp/backend/chatsky_ui/static
 
-COPY ./${PROJECT_DIR} /temp/${PROJECT_DIR}
 
 # Build the wheel
-WORKDIR /temp/backend/df_designer
+WORKDIR /temp/backend
 RUN poetry build
 
 #---------------------------------------------------------
-
-#TODO: create something like src named e.g. runtime/
 
 FROM python:3.10-slim as runtime
 
 ARG PROJECT_DIR
 
-COPY --from=backend-builder /poetry-venv /poetry-venv
-
-# Set environment variable to use the virtualenv
-ENV PATH="/poetry-venv/bin:$PATH"
+# Install pip and upgrade
+RUN pip install --upgrade pip
 
 # Copy only the necessary files
-COPY --from=backend-builder /temp/backend/df_designer /src2/backend/df_designer
-COPY ./${PROJECT_DIR} /src2/project_dir
+COPY --from=backend-builder /temp/backend/dist /src/dist
+COPY ./${PROJECT_DIR} /src/project_dir
 
 # Install the wheel
-WORKDIR /src2/project_dir
-RUN poetry lock --no-update \
-    && poetry install
+WORKDIR /src/project_dir
+RUN pip install ../dist/*.whl
 
-CMD ["poetry", "run", "dflowd", "run_app"]
-
-
-# #TODO: change scr to app (maybe)
+CMD ["chatsky.ui", "run_app"]

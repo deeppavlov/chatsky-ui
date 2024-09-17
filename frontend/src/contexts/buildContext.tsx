@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useEffect, useState } from "react"
-import toast from "react-hot-toast"
+import { createContext, useContext, useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import {
   buildApiStatusType,
@@ -12,6 +11,7 @@ import {
   get_builds,
   localBuildType,
 } from "../api/bot"
+import { NotificationsContext } from "./notificationsContext"
 
 type BuildContextType = {
   build: boolean
@@ -53,6 +53,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [logsPage, setLogsPage] = useState(searchParams.get("logs_page") === "opened")
   const [builds, setBuilds] = useState<localBuildType[]>([])
+  const { notification: n } = useContext(NotificationsContext)
 
   const setBuildsHandler = (builds: buildMinifyApiType[]) => {
     setBuilds(() =>
@@ -93,7 +94,11 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         if (timer > 15) {
           setBuild(() => false)
           setBuildStatus("failed")
-          toast.error("Build timeout!")
+          n.add({
+            title: "Build timeout error!",
+            message: "",
+            type: "error",
+          })
           await build_stop(start_res.build_id)
           return (flag = false)
         }
@@ -113,11 +118,19 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           if (status === "completed") {
             setBuildStatus("completed")
             setBuild(() => true)
-            toast.success("Build successfully!")
+            n.add({
+              title: "Build successfully!",
+              message: "",
+              type: "success",
+            })
           } else if (status === "failed") {
             setBuildStatus("failed")
             setBuild(() => false)
-            toast.error("Build failed!")
+            n.add({
+              title: "Build failed!",
+              message: "Unknown build error. Please check your script.",
+              type: "error",
+            })
           }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))

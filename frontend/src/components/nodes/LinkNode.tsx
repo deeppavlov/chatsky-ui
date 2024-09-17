@@ -1,5 +1,6 @@
 import {
   Button,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -19,24 +20,33 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react"
+import { Edge, Handle, Position, useReactFlow } from "@xyflow/react"
+import "@xyflow/react/dist/style.css"
+import classNames from "classnames"
 import { AlertTriangle, Link2, Trash2 } from "lucide-react"
 import { memo, useContext, useEffect, useMemo, useState } from "react"
-import { Handle, Node, Position } from "reactflow"
-import "reactflow/dist/style.css"
 import { flowContext } from "../../contexts/flowContext"
+import { NotificationsContext } from "../../contexts/notificationsContext"
 import "../../index.css"
 import { FlowType } from "../../types/FlowTypes"
-import { NodeDataType } from "../../types/NodeTypes"
+import { AppNode, LinkNodeDataType } from "../../types/NodeTypes"
 
-const LinkNode = memo(({ data }: { data: NodeDataType }) => {
+const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
+  const { updateNodeData } = useReactFlow<AppNode, Edge>()
   const { onOpen, onClose, isOpen } = useDisclosure()
   const { flows, deleteNode } = useContext(flowContext)
+  const [name, setName] = useState(data.name ?? "")
   const [toFlow, setToFlow] = useState<FlowType>()
-  const [toNode, setToNode] = useState<Node<NodeDataType>>()
-  // const { openPopUp } = useContext(PopUpContext)
+  const [toNode, setToNode] = useState<AppNode>()
+  const [error, setError] = useState(false)
+  const [isConfigured, setIsConfigured] = useState(data.transition.is_configured ?? false)
+  const { notification: n } = useContext(NotificationsContext)
 
+  /**
+   * This useEffect checks if link configured
+   */
   useEffect(() => {
-    if (data.transition.target_node) {
+    if (data.transition.is_configured) {
       const to_flow = flows.find((flow) =>
         flow.data.nodes.some((node) => node.data.id === data.transition.target_node)
       )
@@ -48,9 +58,10 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
         setToNode(to_node)
       }
     }
-    if (!data.transition.target_node) {
+    if (!data.transition.is_configured) {
       onOpen()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.transition.target_node])
 
   const handleFlowSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -70,6 +81,26 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
     [TO_FLOW?.data.nodes, data.transition.target_node]
   )
 
+  /**
+   * This useEffect checks the TO_FLOW and TO_NODE values is correct, and calls error if not
+   */
+  useEffect(() => {
+    if ((!TO_FLOW || !TO_NODE) && isConfigured) {
+      setError(true)
+      n.add({
+        message: `Link ${data.id} is broken! Please configure it again.`,
+        title: "Link error",
+        type: "error",
+      })
+    } else {
+      setError(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [TO_FLOW, TO_NODE])
+
+  /**
+   * This function will delete current link if TO_FLOW and TO_NODE values wasn't defined
+   */
   const onDismiss = () => {
     setToFlow(TO_FLOW)
     setToNode(TO_NODE)
@@ -81,10 +112,21 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
     }
   }
 
+  /**
+   * Link data save function
+   */
   const onSave = () => {
     if (toFlow && toNode) {
-      data.transition.target_flow = toFlow.name
-      data.transition.target_node = toNode.data.id
+      updateNodeData(data.id, {
+        ...data,
+        name: name,
+        transition: {
+          target_flow: toFlow.name,
+          target_node: toNode.data.id,
+          is_configured: true,
+        },
+      })
+      setIsConfigured(true)
       onClose()
     }
   }
@@ -93,7 +135,7 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
     <>
       <div
         onDoubleClick={onOpen}
-        className='default_node px-6 py-4'>
+        className={classNames(`default_node px-6 py-4`, error && "border-error")}>
         <div className=' w-full h-1/3 flex justify-between items-center bg-node rounded-node'>
           <Handle
             isConnectableEnd
@@ -117,7 +159,7 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
             </PopoverTrigger>
             <PopoverContent>ID: {data.id}</PopoverContent>
           </Popover>
-          {(!toFlow || !toNode) && (
+          {(!toFlow || !toNode) && isConfigured && (
             <Tooltip
               content='It looks like this node/flow is not defined. Please, re-create it!'
               radius='sm'>
@@ -134,7 +176,8 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
         <div className='py-2.5 h-2/3 flex items-start justify-between'>
           <div className='flex items-center gap-2'>
             <Link2 strokeWidth={1.3} />
-            {TO_FLOW ? TO_FLOW.name : "ERROR"} / {TO_NODE ? TO_NODE.data.name : "ERROR"}
+            {TO_FLOW ? TO_FLOW.name : isConfigured ? "ERROR" : "<FLOW_NAME>"} /{" "}
+            {TO_NODE ? TO_NODE.data.name : isConfigured ? "ERROR" : "<NODE_NAME>"}
           </div>
           <div></div>
         </div>
@@ -155,7 +198,7 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
                   className='text-white'
                   color='warning'
                   radius='sm'
-                  content='Link options is required to add a link'>
+                  content='Link options is required for creating a link'>
                   <AlertTriangle
                     className='ml-1 fill-amber-400 cursor-pointer'
                     stroke='white'
@@ -166,6 +209,16 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
             </div>
           </ModalHeader>
           <ModalBody>
+            <div>
+              <Input
+                label='Name'
+                value={name}
+                onValueChange={setName}
+                radius='sm'
+                variant='bordered'
+                labelPlacement='outside'
+              />
+            </div>
             <Table>
               <TableHeader>
                 <TableColumn>
@@ -218,7 +271,6 @@ const LinkNode = memo(({ data }: { data: NodeDataType }) => {
                       selectedKeys={toNode ? [toNode.data.name] : []}
                       items={
                         toFlow?.data.nodes.filter((node) => {
-                          console.log(node)
                           return (
                             !["link_node", "global", "local"].includes(node.type!) &&
                             !["LOCAL NODE", "GLOBAL NODE"].includes(node.data.name!)

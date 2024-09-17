@@ -20,14 +20,14 @@ jobs:
           python -m pip install --upgrade pip poetry
           python -m poetry lock --no-update
           python -m poetry install --with lint --no-ansi --no-interaction
-        working-directory: backend/df_designer
+        working-directory: backend
 
       - name: Create new project
-        run: python -m poetry run dflowd init --destination ../../ --no-input --overwrite-if-exists
-        working-directory: backend/df_designer
+        run: python -m poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists
+        working-directory: backend
 
       - name: Build Frontend
-        run: docker build -f Dockerfile --build-arg PROJECT_DIR=df_designer_project --target=frontend-builder .
+        run: docker build -f Dockerfile --build-arg PROJECT_DIR=my_project --target=frontend-builder .
 
       - name: Build backend & run app
-        run: docker build -f Dockerfile --build-arg PROJECT_DIR=df_designer_project --target=runtime .
+        run: docker build -f Dockerfile --build-arg PROJECT_DIR=my_project --target=runtime .

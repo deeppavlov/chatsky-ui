@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Inter';
+  font-family: "Inter";
   src: url(../public/Inter-VariableFont.ttf);
 }
 
 @layer base {
   :root {
     font-family:
-      'Inter',
+      "Inter",
       system-ui,
       -apple-system,
       BlinkMacSystemFont,
@@ -34,13 +34,13 @@
 
     --background: #fff;
     --foreground: #191919;
-    --bg-secondary: #f8fafc;
+    --bg-secondary: #F9FAFC;
     --fg-secondary: #333;
 
     --chat-background: #ebf5fa;
 
     --node: #fff;
-    --node-header: #f8fafc;
+    --node-header: #F9FAFC;
 
     --border: #e4e8ee;
     --border-node-selected: #94a3b8;
@@ -86,8 +86,20 @@
     --status-green: #00cc9a;
     --status-blue: #2563eb;
 
-    .dark {
+    --condition-test-success: #00cc9933;
+    --condition-test-error: #ff333333;
 
+    --node-start-label-bg: #e5faf5;
+    --node-start-label-fg: #00cc99;
+
+    --node-fallback-label-bg: #fde9e9;
+    --node-fallback-label-fg: #ff3333;
+
+    --logo-red: #E86C4A;
+    --logo-yellow: #FFC247;
+    --logo-blue: #00A3FF;
+
+    .dark {
       color: #ebebeb;
 
       --background: #212121;
@@ -128,6 +140,20 @@
       --info-background: #172554;
 
       --condition-default: rgba(51, 153, 204, 1);
+
+      --node-start-label-bg: #00cc99;
+      --node-start-label-fg: #e5faf5;
+
+      --node-fallback-label-bg: #ff3333;
+      --node-fallback-label-fg: #fde9e9;
+
+      /* --condition-test-success: #00cc99;
+      --condition-test-error: #ff3333; */
+
+    --logo-red: #E55934;
+    --logo-yellow: #FFBB33;
+    --logo-blue: #018BD9;
+
     }
   }
 }
@@ -138,7 +164,7 @@
   margin: 0;
   color: var(--text);
   font-family:
-    'Inter',
+    "Inter",
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -186,6 +212,16 @@ body {
 
 .selected .default_node {
   @apply border-node-selected;
+}
+
+.border-error {
+  /* --tw-border-opacity: 1;
+  border-color: rgb(239 68 68 / var(--tw-border-opacity)) !important; */
+  @apply border-red-500
+}
+
+.selected .border-error {
+  @apply border-red-800;
 }
 
 .header-service-btn {
