@@ -3,7 +3,7 @@ Websocket class for controling websocket operations.
 """
 import asyncio
 from asyncio.tasks import Task
-from typing import Dict, List, Set
+from typing import Dict, Set
 from uuid import uuid4
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -13,6 +13,7 @@ from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.services.process_manager import ProcessManager
 from chatsky_ui.db.base import write_conf, read_conf_as_obj
 from chatsky_ui.core.config import settings
+
 
 class WebSocketManager:
     """Controls websocket operations connect, disconnect, check status, and communicate."""
