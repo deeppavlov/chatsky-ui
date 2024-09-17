@@ -3,12 +3,16 @@ Websocket class for controling websocket operations.
 """
 import asyncio
 from asyncio.tasks import Task
-from typing import Dict, List, Set
+from typing import Dict, Set
+from uuid import uuid4
 
 from fastapi import WebSocket, WebSocketDisconnect
+from datetime import datetime
 
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.services.process_manager import ProcessManager
+from chatsky_ui.db.base import write_conf, read_conf_as_obj
+from chatsky_ui.core.config import settings
 
 
 class WebSocketManager:
@@ -16,7 +20,7 @@ class WebSocketManager:
 
     def __init__(self):
         self.pending_tasks: Dict[WebSocket, Set[Task]] = dict()
-        self.active_connections: List[WebSocket] = []
+        self.active_connections: Dict[int, dict] = {}
         self._logger = None
 
     @property
@@ -28,24 +32,45 @@ class WebSocketManager:
     def set_logger(self):
         self._logger = get_logger(__name__)
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, run_id: int, websocket: WebSocket):
         """Accepts the websocket connection and marks it as active connection."""
         await websocket.accept()
-        self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        """Cancels pending tasks of the open websocket process and removes it from active connections."""
-        # TODO: await websocket.close()
+        ws_id = uuid4().hex
+        self.active_connections[run_id] = {
+            "websocket": websocket,
+            "chat": {"id": ws_id, "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), "messages": []},
+        }
+
+    async def close(self, run_id: int):
+        """Closes an active websocket connection."""
+        websocket = self.active_connections[run_id]["websocket"]
+        await websocket.close()
+
+    async def disconnect(
+        self, run_id: int, websocket: WebSocket
+    ):  # no need to pass websocket. use active_connections[run_id]
+        """Executes cleanup.
+
+        - Writes the chat info to DB.
+        - Cancels pending tasks of the open websocket process.
+        - Removes the websocket from active connections."""
+        dict_chats = await read_conf_as_obj(settings.chats_path)
+        dict_chats = dict_chats or []
+        dict_chats.append(self.active_connections[run_id]["chat"])  # type: ignore
+        await write_conf(dict_chats, settings.chats_path)
+        self.logger.info("Chats info were written to DB")
+
         if websocket in self.pending_tasks:
             self.logger.info("Cancelling pending tasks")
             for task in self.pending_tasks[websocket]:
                 task.cancel()
             del self.pending_tasks[websocket]
-        self.active_connections.remove(websocket)
+        del self.active_connections[run_id]
 
-    def check_status(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            return websocket  # return Status!
+    def is_connected(self, run_id: int):
+        """Returns True if the run_id is connected to a websocket, False otherwise."""
+        return run_id in self.active_connections
 
     async def send_process_output_to_websocket(
         self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
@@ -56,11 +81,19 @@ class WebSocketManager:
                 response = await process_manager.processes[run_id].read_stdout()
                 if not response:
                     break
-                await websocket.send_text(response.decode().strip())
+                text = response.decode().strip()
+                await websocket.send_text(text)
+                self.active_connections[run_id]["chat"]["messages"].append(text)
         except WebSocketDisconnect:
-            self.logger.info("Websocket connection is closed by client")
-        except RuntimeError:
-            raise
+            self.logger.info("Websocket connection is closed")
+            await self.disconnect(run_id, websocket)
+        except RuntimeError as e:
+            if "Unexpected ASGI message 'websocket.send'" in str(
+                e
+            ) or "Cannot call 'send' once a close message has been sent" in str(e):
+                self.logger.info("Websocket connection was forced to close.")
+            else:
+                raise e
 
     async def forward_websocket_messages_to_process(
         self, run_id: int, process_manager: ProcessManager, websocket: WebSocket
@@ -72,9 +105,16 @@ class WebSocketManager:
                 if not user_message:
                     break
                 await process_manager.processes[run_id].write_stdin(user_message.encode() + b"\n")
+                self.active_connections[run_id]["chat"]["messages"].append(user_message)
         except asyncio.CancelledError:
-            self.logger.info("Websocket connection is closed")
+            self.logger.info("Websocket connection is cancelled")
         except WebSocketDisconnect:
-            self.logger.info("Websocket connection is closed by client")
-        except RuntimeError:
-            raise
+            self.logger.info("Websocket connection is closed")
+            await self.disconnect(run_id, websocket)
+        except RuntimeError as e:
+            if "Unexpected ASGI message 'websocket.send'" in str(
+                e
+            ) or "Cannot call 'send' once a close message has been sent" in str(e):
+                self.logger.info("Websocket connection was forced to close.")
+            else:
+                raise e

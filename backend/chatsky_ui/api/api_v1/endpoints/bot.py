@@ -2,6 +2,7 @@ import asyncio
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketException, status
+from omegaconf import OmegaConf
 
 from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
@@ -9,6 +10,9 @@ from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.index import Index
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
+from chatsky_ui.schemas.process_status import Status
+from chatsky_ui.core.config import settings
+from chatsky_ui.db.base import read_conf
 
 router = APIRouter()
 
@@ -166,7 +170,12 @@ async def start_run(
 
 
 @router.get("/run/stop/{run_id}", status_code=200)
-async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, str]:
+async def stop_run(
+    *,
+    run_id: int,
+    run_manager: RunManager = Depends(deps.get_run_manager),
+    websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager)
+) -> Dict[str, str]:
     """Stops a `run` process with the given id.
 
     Args:
@@ -179,7 +188,9 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
     Returns:
         {"status": "ok"}: in case of stopping a process successfully.
     """
-
+    if websocket_manager.is_connected(run_id):
+        run_manager.logger.info("Closing websocket connection")
+        await websocket_manager.close(run_id)
     return await _stop_process(run_id, run_manager, process="run")
 
 
@@ -260,8 +271,11 @@ async def connect(
     if run_id not in run_manager.processes:
         run_manager.logger.error("process with run_id '%s' exited or never existed", run_id)
         raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
+    if await run_manager.get_status(run_id) != Status.ALIVE:
+        run_manager.logger.error("process with run_id '%s' isn't Alive.", run_id)
+        raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
 
-    await websocket_manager.connect(websocket)
+    await websocket_manager.connect(run_id, websocket)
     run_manager.logger.info("Websocket for run process '%s' has been opened", run_id)
 
     await websocket.send_text("Start chatting")
@@ -278,4 +292,10 @@ async def connect(
         [output_task, input_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
-    websocket_manager.disconnect(websocket)
+
+
+@router.get("/run/chats/read", response_model=dict[str, Union[str, list[dict]]], status_code=200)
+async def read_chats():
+    omega_chats = await read_conf(settings.chats_path)
+    dict_chats = OmegaConf.to_container(omega_chats, resolve=True)
+    return {"status": "ok", "data": dict_chats}  # type: ignore

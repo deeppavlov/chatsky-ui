@@ -156,15 +156,15 @@ async def test_get_run_logs(mocker, pagination):
 async def test_connect(mocker):
     websocket = mocker.AsyncMock()
     websocket_manager = mocker.AsyncMock()
-    websocket_manager.disconnect = mocker.MagicMock()
-    run_manager = mocker.MagicMock()
-    run_process = mocker.MagicMock()
+    websocket_manager.disconnect = mocker.AsyncMock()
+    run_manager = mocker.AsyncMock()
+    run_process = mocker.AsyncMock()
     run_manager.processes = {RUN_ID: run_process}
+    run_manager.get_status = mocker.AsyncMock(return_value=Status.ALIVE)
     mocker.patch.object(websocket, "query_params", {"run_id": str(RUN_ID)})
 
     await connect(websocket, websocket_manager, run_manager)
 
-    websocket_manager.connect.assert_awaited_once_with(websocket)
+    websocket_manager.connect.assert_awaited_once_with(RUN_ID, websocket)
     websocket_manager.send_process_output_to_websocket.assert_awaited_once_with(RUN_ID, run_manager, websocket)
     websocket_manager.forward_websocket_messages_to_process.assert_awaited_once_with(RUN_ID, run_manager, websocket)
-    websocket_manager.disconnect.assert_called_once_with(websocket)

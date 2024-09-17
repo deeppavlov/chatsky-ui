@@ -43,6 +43,7 @@ class Settings:
     def _set_user_proj_paths(self):
         self.builds_path = self.work_directory / "chatsky_ui/app_data/builds.yaml"
         self.runs_path = self.work_directory / "chatsky_ui/app_data/runs.yaml"
+        self.chats_path = self.work_directory / "chatsky_ui/app_data/chats.yaml"
         self.frontend_flows_path = self.work_directory / "chatsky_ui/app_data/frontend_flows.yaml"
         self.dir_logs = self.work_directory / "chatsky_ui/logs"
         self.presets = self.work_directory / "chatsky_ui/presets"
