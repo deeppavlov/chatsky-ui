@@ -294,7 +294,7 @@ async def connect(
     )
 
 
-@router.get("/run/chats/read", response_model=dict[str, str | list[dict]], status_code=200)
+@router.get("/run/chats/read", response_model=dict[str, Union[str, list[dict]]], status_code=200)
 async def read_chats():
     omega_chats = await read_conf(settings.chats_path)
     dict_chats = OmegaConf.to_container(omega_chats, resolve=True)
