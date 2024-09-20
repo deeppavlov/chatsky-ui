@@ -39,6 +39,13 @@ export default {
         "f-card-trash": "var(--flow-card-trash-btn)",
         "contrast-border": "var(--contrast-border)",
         chat: "var(--chat-background)",
+        "btn-accent": "var(--btn-accent)",
+        "input-background": "var(--input-background)",
+        "input-background-disabled": "var(--input-background-disabled)",
+        "input-foreground": "var(--input-foreground)",
+        "input-border": "var(--input-border)",
+        "input-border-focus": "var(--input-border-focus)",
+        "input-border-error": "var(--input-border-error)",
       },
       borderRadius: {
         node: "16px",
@@ -47,6 +54,7 @@ export default {
   },
   darkMode: "class",
   plugins: [
+    import('tailwindcss-children'),
     nextui({
       layout: {
         boxShadow: {
