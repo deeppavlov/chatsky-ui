@@ -9,9 +9,7 @@ export type conditionDataType = {
   python?: {
     action: string
   }
-  slot?: {
-    slot_id: string
-  }
+  slot?: string
   button?: {
     button_name: string
   }

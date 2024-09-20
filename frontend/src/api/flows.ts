@@ -10,5 +10,9 @@ export const get_flows = async (): Promise<GetFlowsResponseType> => {
 }
 
 export const save_flows = async (flows: FlowType[], slots?: Record<string, ParsedSlot> | null): Promise<SaveFlowsResponseType> => {
-  return (await $v1.post("/flows", {flows, slots})).data
+  const json = {
+    flows,
+    slots: slots ?? {},
+  }
+  return (await $v1.post("/flows", json)).data
 }

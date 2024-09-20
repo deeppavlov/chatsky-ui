@@ -10,14 +10,23 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
         type: "slot",
         data: {
           ...condition.data,
-          slot: {
-            slot_id: "",
-          }
+          slot: "",
         },
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const changeConditionValue = (value: string) => {
+    setData({
+      ...condition,
+      type: "slot",
+      data: {
+        ...condition.data,
+        slot: value
+      }
+    })
+  }
 
   // useEffect(() => {
   //   if (condition.data.python?.action) {
@@ -38,7 +47,9 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
 
   return (
     <div>
-      <div></div>
+      <div>
+        <input type="text" value={condition.data.slot} onChange={(e) => changeConditionValue(e.target.value)} />
+      </div>
     </div>
   )
 }

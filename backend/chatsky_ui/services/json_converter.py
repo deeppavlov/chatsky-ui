@@ -147,7 +147,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots
 def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
     """Fill nodes into chatsky script dictunary."""
     for _, node in nodes.items():
-        if node["info"].type == "link_node":
+        if node["info"].type in ["link_node", "slots_node"]:
             continue
         if node["flow"] not in script["script"]:
             script["script"][node["flow"]] = {}
@@ -171,7 +171,7 @@ async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
     """
     responses_list = []
     for node in nodes.values():
-        if node["info"].type == "link_node":
+        if node["info"].type in ["link_node", "slots_node"]:
             continue
         response = node["info"].data.response
         logger.debug("response type: %s", response.type)

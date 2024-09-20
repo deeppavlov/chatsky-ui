@@ -22,12 +22,13 @@ import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
 import { AppNode, DefaultNodeDataType, DefaultNodeType } from "../../types/NodeTypes"
 import { generateNewConditionBase } from "../../utils"
 import PythonCondition from "./components/PythonCondition"
+import SlotCondition from "./components/SlotCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
 
 export type ConditionModalContentType = {
   condition: conditionType
-  setData: React.Dispatch<React.SetStateAction<conditionType>> 
-} 
+  setData: React.Dispatch<React.SetStateAction<conditionType>>
+}
 
 type ConditionModalProps = {
   data: DefaultNodeDataType
@@ -78,11 +79,12 @@ const ConditionModal = ({
   const validateConditionName = (is_create: boolean) => {
     const nodes = getNodes() as AppNode[]
     if (!is_create) {
-      const is_name_valid = !nodes.some((node: AppNode) =>
-        node.type === "default_node" &&
-        node.data.conditions.some(
-          (c) => c.name === currentCondition.name && c.id !== currentCondition.id
-        )
+      const is_name_valid = !nodes.some(
+        (node: AppNode) =>
+          node.type === "default_node" &&
+          node.data.conditions.some(
+            (c) => c.name === currentCondition.name && c.id !== currentCondition.id
+          )
       )
       if (!is_name_valid) {
         return {
@@ -96,9 +98,10 @@ const ConditionModal = ({
         }
       }
     } else {
-      const is_name_valid = !nodes.some((node: AppNode) =>
-        node.type === "default_node" && 
-        node.data.conditions?.some((c) => c.name === currentCondition.name)
+      const is_name_valid = !nodes.some(
+        (node: AppNode) =>
+          node.type === "default_node" &&
+          node.data.conditions?.some((c) => c.name === currentCondition.name)
       )
       if (!is_name_valid) {
         return {
@@ -191,7 +194,6 @@ const ConditionModal = ({
     []
   )
 
-
   const bodyItems = useMemo(
     () => ({
       llm: (
@@ -200,7 +202,12 @@ const ConditionModal = ({
           setData={setCurrentCondition}
         />
       ),
-      slot: <div>Slot filling</div>,
+      slot: (
+        <SlotCondition
+          condition={currentCondition}
+          setData={setCurrentCondition}
+        />
+      ),
       button: <div>Button</div>,
       python: (
         <PythonCondition
@@ -212,7 +219,6 @@ const ConditionModal = ({
     }),
     [currentCondition]
   )
-
 
   const lintCondition = async () => {
     setLintStatus(null)
@@ -263,7 +269,7 @@ const ConditionModal = ({
     const currentFlow = flows.find((flow) => flow.name === flowId)
     const validate_name: ValidateErrorType = validateConditionName(is_create)
     if (validate_name.status) {
-      if (node && node.type === 'default_node' && currentFlow) {
+      if (node && node.type === "default_node" && currentFlow) {
         const new_node: DefaultNodeType = {
           ...node,
           data: {
@@ -282,9 +288,7 @@ const ConditionModal = ({
         quietSaveFlows()
       }
       onClose()
-      setCurrentCondition(
-        is_create || !condition ? generateNewConditionBase() : currentCondition
-      )
+      setCurrentCondition(is_create || !condition ? generateNewConditionBase() : currentCondition)
     } else {
       if (!validate_name.status) {
         n.add({
@@ -300,7 +304,7 @@ const ConditionModal = ({
     const nodes = getNodes()
     const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
-    if (node && node.type === 'default_node' && currentFlow) {
+    if (node && node.type === "default_node" && currentFlow) {
       const new_node: DefaultNodeType = {
         ...node,
         data: {
@@ -351,11 +355,11 @@ const ConditionModal = ({
               )}
             </Tabs>
           </label>
-          <div className="grid grid-cols-4 items-center gap-4 mt-4">
+          <div className='grid grid-cols-4 items-center gap-4 mt-4'>
             <Input
-              className="col-span-3"
+              className='col-span-3'
               label='Name'
-              variant="bordered"
+              variant='bordered'
               labelPlacement='outside'
               placeholder="Enter condition's name here"
               value={currentCondition.name}
@@ -363,15 +367,20 @@ const ConditionModal = ({
             />
             <Input
               label='Priority'
-              variant="bordered"
+              variant='bordered'
               labelPlacement='outside'
               placeholder="Enter condition's priority here"
-              type="number"
+              type='number'
               value={currentCondition.data.priority.toString()}
-              onChange={(e) => setCurrentCondition({ ...currentCondition, data: {
-                ...currentCondition.data,
-                priority: parseInt(e.target.value)
-              } })}
+              onChange={(e) =>
+                setCurrentCondition({
+                  ...currentCondition,
+                  data: {
+                    ...currentCondition.data,
+                    priority: parseInt(e.target.value),
+                  },
+                })
+              }
             />
           </div>
           <div>
@@ -386,7 +395,9 @@ const ConditionModal = ({
                   <p
                     className={classNames(
                       "text-xs p-2 mt-2 rounded-lg font-mono",
-                      lintStatus?.status == "error" ? "bg-[var(--condition-test-error)]" : "bg-[var(--condition-test-success)]",
+                      lintStatus?.status == "error"
+                        ? "bg-[var(--condition-test-error)]"
+                        : "bg-[var(--condition-test-success)]"
                     )}>
                     {lintStatus?.status == "ok" ? "Condition test passed!" : lintStatus?.message}
                   </p>

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Edge, OnBeforeDelete, ReactFlowInstance } from "@xyflow/react"
+import { AxiosError } from "axios"
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { v4 } from "uuid"
@@ -116,6 +117,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const { notification: n } = useContext(NotificationsContext)
   const { screenLoading } = useContext(MetaContext)
 
+  console.log(slots)
+
   useEffect(() => {
     // set null reactFlowInstance before Init new flow
     setReactFlowInstance(null)
@@ -157,8 +160,14 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    * @param {FlowType[]} flows flows to save array
    */
   const saveFlows = async (flows: FlowType[]) => {
-    await save_flows(flows)
-    setFlows(flows)
+    try {
+      await save_flows(flows, slots)
+      setFlows(flows)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+    } catch (error: AxiosError) {
+      n.add({ title: "Error", message: error?.message ?? "Something went wrong", type: "error" })
+    }
   }
 
   /**
