@@ -8,7 +8,7 @@ from pylint.lint import Run, pylinter
 from pylint.reporters.text import TextReporter
 
 from chatsky_ui.api.deps import get_index
-from chatsky_ui.clients.dff_client import get_dff_conditions
+from chatsky_ui.clients.chatsky_client import get_chatsky_conditions
 from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.code_snippet import CodeSnippet
 from chatsky_ui.services.index import Index
@@ -56,5 +56,5 @@ async def lint_snippet(snippet: CodeSnippet) -> Dict[str, str]:
 
 @router.get("/get_conditions", status_code=200)
 async def get_conditions() -> Dict[str, Union[str, list]]:
-    """Gets the dff's out-of-the-box conditions."""
-    return {"status": "ok", "data": get_dff_conditions()}
+    """Gets the chatsky's out-of-the-box conditions."""
+    return {"status": "ok", "data": get_chatsky_conditions()}

@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/")
-async def flows_get() -> Dict[str, Union[str, Dict[str, list]]]:
+async def flows_get() -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
     """Get the flows by reading the frontend_flows.yaml file."""
     omega_flows = await read_conf(settings.frontend_flows_path)
     dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
@@ -18,7 +18,7 @@ async def flows_get() -> Dict[str, Union[str, Dict[str, list]]]:
 
 
 @router.post("/")
-async def flows_post(flows: Dict[str, list]) -> Dict[str, str]:
+async def flows_post(flows: Dict[str, Union[list, dict]]) -> Dict[str, str]:
     """Write the flows to the frontend_flows.yaml file."""
     await write_conf(flows, settings.frontend_flows_path)
     return {"status": "ok"}

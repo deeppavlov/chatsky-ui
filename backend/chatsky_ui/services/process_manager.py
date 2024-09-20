@@ -55,6 +55,12 @@ class ProcessManager:
         except (RuntimeError, ProcessLookupError):
             raise
 
+    async def stop_all(self) -> None:
+        self.logger.info("Stopping all process %s", self.processes)
+        for id_, process in self.processes.items():
+            if process.process.returncode is None:
+                await self.stop(id_)
+
     async def check_status(self, id_: int, *args, **kwargs) -> None:
         """Checks the status of the process with the given id by calling the `periodically_check_status`
         method of the process.
@@ -104,7 +110,7 @@ class ProcessManager:
 
 
 class RunManager(ProcessManager):
-    """Process manager for running a DFF pipeline."""
+    """Process manager for running a Chatsky pipeline."""
 
     async def start(self, build_id: int, preset: Preset) -> int:
         """Starts a new run process.
@@ -152,7 +158,7 @@ class RunManager(ProcessManager):
 
 
 class BuildManager(ProcessManager):
-    """Process manager for converting a frontned graph to a DFF script."""
+    """Process manager for converting a frontned graph to a Chatsky script."""
 
     async def start(self, preset: Preset) -> int:
         """Starts a new build process.

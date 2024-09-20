@@ -157,8 +157,8 @@ async def test_connect(mocker):
     websocket = mocker.AsyncMock()
     websocket_manager = mocker.AsyncMock()
     websocket_manager.disconnect = mocker.MagicMock()
-    run_manager = mocker.MagicMock()
-    run_process = mocker.MagicMock()
+    run_manager = mocker.AsyncMock()
+    run_process = mocker.AsyncMock()
     run_manager.processes = {RUN_ID: run_process}
     mocker.patch.object(websocket, "query_params", {"run_id": str(RUN_ID)})
 
