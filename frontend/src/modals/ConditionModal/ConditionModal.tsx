@@ -24,6 +24,11 @@ import { generateNewConditionBase } from "../../utils"
 import PythonCondition from "./components/PythonCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
 
+export type ConditionModalContentType = {
+  condition: conditionType
+  setData: React.Dispatch<React.SetStateAction<conditionType>> 
+} 
+
 type ConditionModalProps = {
   data: DefaultNodeDataType
   condition?: conditionType
@@ -314,7 +319,7 @@ const ConditionModal = ({
 
   return (
     <ModalComponent
-      className='bg-background min-h-[584px]'
+      className='bg-background min-h-[600px] h-[600px]'
       motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
       isOpen={isOpen}
       onClose={onClose}
@@ -324,7 +329,7 @@ const ConditionModal = ({
         <ModalBody>
           <label>
             <Tabs
-              disabledKeys={["llm", "custom", "slot", "button"]}
+              disabledKeys={["llm", "custom", "button"]}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore

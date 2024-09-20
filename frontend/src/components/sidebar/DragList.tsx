@@ -1,4 +1,3 @@
-import React from "react"
 import DragListItem from "./DragListItem"
 
 export const DragList = () => {
@@ -15,21 +14,13 @@ export const DragList = () => {
           type: "default_node",
         }}
       />
-      {/* <DragListItem
+      <DragListItem
         item={{
-          color: "#00cc99",
-          name: "Start Node",
-          type: "start_node",
+          color: "var(--foreground)",
+          name: "Slots",
+          type: "slots_node",
         }}
       />
-      <DragListItem item={{
-        color: "#ff3434",
-        name: "Fallback Node",
-        type: "fallback_node",
-      }} /> */}
-      {/* <div className="dndnode output" onDragStart={(event) => onDragStart(event, 'output')} draggable>
-        Output Node
-      </div> */}
     </div>
   )
 }

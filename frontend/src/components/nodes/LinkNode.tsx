@@ -23,10 +23,11 @@ import {
 import { Edge, Handle, Position, useReactFlow } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import classNames from "classnames"
-import { AlertTriangle, Link2, Trash2 } from "lucide-react"
+import { AlertTriangle, Link2 } from "lucide-react"
 import { memo, useContext, useEffect, useMemo, useState } from "react"
 import { flowContext } from "../../contexts/flowContext"
 import { NotificationsContext } from "../../contexts/notificationsContext"
+import TrashIcon from "../../icons/TrashIcon"
 import "../../index.css"
 import { FlowType } from "../../types/FlowTypes"
 import { AppNode, LinkNodeDataType } from "../../types/NodeTypes"
@@ -168,7 +169,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                 isIconOnly
                 color='danger'
                 onClick={() => deleteNode(data.id)}>
-                <Trash2 className='stroke-white' />
+                <TrashIcon className='stroke-white' />
               </Button>
             </Tooltip>
           )}

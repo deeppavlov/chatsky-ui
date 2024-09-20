@@ -24,6 +24,7 @@ import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
 import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
 import LinkNode from "../components/nodes/LinkNode"
+import SlotsNode from "../components/nodes/SlotsNode"
 import ReactFlowCustom from "../components/ReactFlowCustom"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
@@ -34,9 +35,10 @@ import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
-import { AppNode, NodesTypes } from "../types/NodeTypes"
+import { AppNode, NodesTypes, SlotsNodeType } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
 import { Preloader } from "../UI/Preloader/Preloader"
+import { parseGroups } from "../utils"
 import Fallback from "./Fallback"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
@@ -45,6 +47,7 @@ import Settings from "./Settings"
 const nodeTypes = {
   default_node: DefaultNode,
   link_node: LinkNode,
+  slots_node: SlotsNode,
 }
 
 const edgeTypes = {
@@ -59,6 +62,7 @@ export default function Flow() {
     reactFlowInstance,
     setReactFlowInstance,
     validateDeletion,
+    setSlots
   } = useContext(flowContext)
   const {
     toggleWorkspaceMode,
@@ -96,6 +100,11 @@ export default function Flow() {
             const curr_node = nodes.find((nd) => nd.id === node.id)
             return curr_node ?? node
           })
+          const slot_nodes: SlotsNodeType[] = flow.data.nodes.filter((node) => node.type === "slots_node") as SlotsNodeType[]
+          const groups = slot_nodes.map((node) => node.data.groups).flat()
+          const parsed_groups = parseGroups(groups)
+          console.log(JSON.stringify(parsed_groups, null, 2))
+          setSlots(parsed_groups)
         }
         if (edges) {
           flow.data.edges = flow.data.edges.map((edge) => {
@@ -156,7 +165,6 @@ export default function Flow() {
 
   const onNodesChangeMod = useCallback(
     (nds: NodeChange<AppNode>[]) => {
-      console.log("nds change")
       if (nds) {
         // only calls update flow data function when node change type = "replace" (no call when move)
         if (nds.every((nd) => nd.type === "replace")) {
@@ -180,7 +188,6 @@ export default function Flow() {
             }
           })
           .forEach((nd) => {
-            console.log(nd)
             if (nd.type === "select") {
               if (nd.selected) {
                 setSelectedNode(nd.id)
@@ -307,6 +314,18 @@ export default function Flow() {
               target_flow: "",
               target_node: "",
             },
+          },
+        }
+      }
+      if (type === "slots_node") {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          data: {
+            id: newId,
+            name: "Slots",
+            groups: [],
           },
         }
       }

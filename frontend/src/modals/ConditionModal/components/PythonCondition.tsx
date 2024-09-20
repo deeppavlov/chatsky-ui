@@ -1,24 +1,18 @@
 import { CompletionContext, autocompletion } from "@codemirror/autocomplete"
 import { globalCompletion, python } from "@codemirror/lang-python"
-import { indentUnit } from '@codemirror/language'
+import { indentUnit } from "@codemirror/language"
 import { andromeda } from "@uiw/codemirror-theme-andromeda"
 import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
 import ReactCodeMirror from "@uiw/react-codemirror"
-import React, { useContext, useEffect } from "react"
+import { useContext, useEffect } from "react"
 import { IdeContext } from "../../../contexts/ideContext"
 import { themeContext } from "../../../contexts/themeContext"
-import { conditionType } from "../../../types/ConditionTypes"
+import { ConditionModalContentType } from "../ConditionModal"
 import { firstLinePlugin } from "../editorOptions"
 
-const tabSize = '    '
+const tabSize = "    "
 
-const PythonCondition = ({
-  condition,
-  setData,
-}: {
-  condition: conditionType
-  setData: React.Dispatch<React.SetStateAction<conditionType>>
-}) => {
+const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
 
@@ -37,21 +31,8 @@ const PythonCondition = ({
         },
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const changeConditionValue = (value: string) => {
-    setData({
-      ...condition,
-      type: "python",
-      data: {
-        ...condition.data,
-        python: {
-          action: `${firstString}\n${value.split("\n").slice(1).join("\n")}`,
-        },
-      },
-    })
-  }
 
   useEffect(() => {
     if (condition.data.python?.action) {
@@ -66,38 +47,45 @@ const PythonCondition = ({
         },
       })
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [condition.name])
 
-
-function dffAutocomplete(context: CompletionContext) {
-  const word = context.matchBefore(/\b(?:cnd)\.\w*/);
-  if (!word) return null;
-  if (word.from === word.to && !context.explicit) return null;
-
-  const options = dffMethods
-  
-
-  return {
-    from: word.from,
-    options,
-    validFor: /^\w*$/,
-  };
-}
-
-function myCompletion(context: CompletionContext) {
-  const word = context.matchBefore(/\w*/)
-  if (!word) return null;
-  if (word.from == word.to && !context.explicit)
-    return null
-  return {
-    from: word.from,
-    options: [
-      {label: "cnd", type: "function", info: 'DFF conditions base methods object'}
-    ]
+  const changeConditionValue = (value: string) => {
+    setData({
+      ...condition,
+      type: "python",
+      data: {
+        ...condition.data,
+        python: {
+          action: `${firstString}\n${value.split("\n").slice(1).join("\n")}`,
+        },
+      },
+    })
   }
-}
 
+  function dffAutocomplete(context: CompletionContext) {
+    const word = context.matchBefore(/\b(?:cnd)\.\w*/)
+    if (!word) return null
+    if (word.from === word.to && !context.explicit) return null
+
+    const options = dffMethods
+
+    return {
+      from: word.from,
+      options,
+      validFor: /^\w*$/,
+    }
+  }
+
+  function myCompletion(context: CompletionContext) {
+    const word = context.matchBefore(/\w*/)
+    if (!word) return null
+    if (word.from == word.to && !context.explicit) return null
+    return {
+      from: word.from,
+      options: [{ label: "cnd", type: "function", info: "DFF conditions base methods object" }],
+    }
+  }
 
   return (
     <>
@@ -111,7 +99,15 @@ function myCompletion(context: CompletionContext) {
               "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
           }}
           lang='python'
-          extensions={[firstLinePlugin, indentUnit.of(tabSize), autocompletion({ override: [dffAutocomplete, globalCompletion, myCompletion], maxRenderedOptions: 10 }), python()]}
+          extensions={[
+            firstLinePlugin,
+            indentUnit.of(tabSize),
+            autocompletion({
+              override: [dffAutocomplete, globalCompletion, myCompletion],
+              maxRenderedOptions: 10,
+            }),
+            python(),
+          ]}
           value={condition.data.python?.action}
           onChange={changeConditionValue}
           className='w-full border-none outline-none focus-within:outline-none focus:outline-none font-mono'

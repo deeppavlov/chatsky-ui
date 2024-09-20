@@ -7,6 +7,7 @@ import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
 import { FlowType } from "../types/FlowTypes"
 import { AppNode } from "../types/NodeTypes"
+import { ParsedSlot } from "../utils"
 import { MetaContext } from "./metaContext"
 import { NotificationsContext } from "./notificationsContext"
 // import { v4 } from "uuid"
@@ -59,6 +60,8 @@ type TabContextType = {
   setTab: React.Dispatch<React.SetStateAction<string>>
   flows: FlowType[]
   setFlows: React.Dispatch<React.SetStateAction<FlowType[]>>
+  slots: Record<string, ParsedSlot> | null
+  setSlots: React.Dispatch<React.SetStateAction<Record<string, ParsedSlot> | null>>
   deleteFlow: (flow: FlowType) => void
   saveFlows: (flows: FlowType[]) => void
   quietSaveFlows: () => void
@@ -79,6 +82,8 @@ const initialValue: TabContextType = {
   setTab: () => {},
   flows: [],
   setFlows: () => {},
+  slots: null,
+  setSlots: () => {},
   deleteFlow: () => {},
   saveFlows: () => {},
   quietSaveFlows: () => {},
@@ -107,6 +112,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const [tab, setTab] = useState(initialValue.tab)
   const { flowId } = useParams()
   const [flows, setFlows] = useState<FlowType[]>([])
+  const [slots, setSlots] = useState<Record<string, ParsedSlot> | null>(null)
   const { notification: n } = useContext(NotificationsContext)
   const { screenLoading } = useContext(MetaContext)
 
@@ -324,6 +330,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         setTab,
         flows,
         setFlows,
+        slots,
+        setSlots,
         deleteFlow,
         saveFlows,
         quietSaveFlows,
