@@ -10,7 +10,7 @@ export type conditionDataType = {
     action: string
   }
   slot?: {
-    slot_name: string
+    slot_id: string
   }
   button?: {
     button_name: string
