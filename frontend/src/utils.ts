@@ -143,11 +143,11 @@ export const generateNewNode = (
   };
 };
 
-export const generateNewSlot = (group_name: string): SlotType => {
+export const generateNewSlot = (group_id: string): SlotType => {
   return {
     id: "slot_" + v4(),
     name: "New slot",
-    group_name,
+    group_id,
     type: "RegexpSlot",
     method: "",
     value: "",
@@ -171,9 +171,9 @@ export type ParsedSlot = {
   [key: string]: unknown;
 };
 
-export function parseGroups(
+export async function parseGroups(
   groups: SlotsGroupType[],
-): Record<string, ParsedSlot> {
+): Promise<Record<string, ParsedSlot>> {
   const result: Record<string, ParsedSlot> = {};
 
   function processGroup(group: SlotsGroupType): ParsedSlot {

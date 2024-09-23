@@ -6,9 +6,9 @@ import { useParams } from "react-router-dom"
 import { v4 } from "uuid"
 import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
-import { FlowType } from "../types/FlowTypes"
-import { AppNode } from "../types/NodeTypes"
-import { ParsedSlot } from "../utils"
+import { FlowType, SlotsGroupType, SlotType } from "../types/FlowTypes"
+import { AppNode, SlotsNodeType } from "../types/NodeTypes"
+import { parseGroups } from "../utils"
 import { MetaContext } from "./metaContext"
 import { NotificationsContext } from "./notificationsContext"
 // import { v4 } from "uuid"
@@ -61,8 +61,10 @@ type TabContextType = {
   setTab: React.Dispatch<React.SetStateAction<string>>
   flows: FlowType[]
   setFlows: React.Dispatch<React.SetStateAction<FlowType[]>>
-  slots: Record<string, ParsedSlot> | null
-  setSlots: React.Dispatch<React.SetStateAction<Record<string, ParsedSlot> | null>>
+  slots: SlotType[]
+  setSlots: React.Dispatch<React.SetStateAction<SlotType[]>>
+  groups: SlotsGroupType[]
+  setGroups: React.Dispatch<React.SetStateAction<SlotsGroupType[]>>
   deleteFlow: (flow: FlowType) => void
   saveFlows: (flows: FlowType[]) => void
   quietSaveFlows: () => void
@@ -83,8 +85,10 @@ const initialValue: TabContextType = {
   setTab: () => {},
   flows: [],
   setFlows: () => {},
-  slots: null,
+  slots: [],
   setSlots: () => {},
+  groups: [],
+  setGroups: () => {},
   deleteFlow: () => {},
   saveFlows: () => {},
   quietSaveFlows: () => {},
@@ -113,11 +117,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const [tab, setTab] = useState(initialValue.tab)
   const { flowId } = useParams()
   const [flows, setFlows] = useState<FlowType[]>([])
-  const [slots, setSlots] = useState<Record<string, ParsedSlot> | null>(null)
+  const [groups, setGroups] = useState<SlotsGroupType[]>([])
+  const [slots, setSlots] = useState<SlotType[]>([])
   const { notification: n } = useContext(NotificationsContext)
   const { screenLoading } = useContext(MetaContext)
-
-  console.log(slots)
 
   useEffect(() => {
     // set null reactFlowInstance before Init new flow
@@ -134,6 +137,14 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { data } = await get_flows()
       if (data.flows) {
+        const slot_nodes: SlotsNodeType[] = data.flows
+          .map((flow) => flow.data.nodes)
+          .flat()
+          .filter((node) => node.type === "slots_node") as SlotsNodeType[]
+        const groups = slot_nodes.map((node) => node.data.groups).flat()
+        const slots = groups.map((group) => group.slots).flat()
+        setSlots(slots)
+        setGroups(groups)
         if (data.flows.some((flow) => flow.name === "Global")) {
           setFlows(data.flows)
         } else {
@@ -156,12 +167,22 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   /**
-   * 
+   *
    * @param {FlowType[]} flows flows to save array
    */
   const saveFlows = async (flows: FlowType[]) => {
+    const slot_nodes: SlotsNodeType[] = flows
+      .map((flow) => flow.data.nodes)
+      .flat()
+      .filter((node) => node.type === "slots_node") as SlotsNodeType[]
+    const groups = slot_nodes.map((node) => node.data.groups).flat()
+    const slots = groups.map((group) => group.slots).flat()
+    setSlots(slots)
+    setGroups(groups)
+    const parsed_groups = await parseGroups(groups)
+    console.log(JSON.stringify(parsed_groups, null, 2))
     try {
-      await save_flows(flows, slots)
+      await save_flows(flows, parsed_groups)
       setFlows(flows)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -178,7 +199,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("quiet save flows")
       await saveFlows(flows)
       n.add({ message: "Flows saved", title: "DEBUG", type: "debug" })
-    }, 100)
+    }, 300)
   }
 
   /**
@@ -187,7 +208,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const getLocaleFlows = useCallback(() => {
     return flows
   }, [flows])
-
 
   /**
    * Delete flow function
@@ -243,7 +263,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     })
   }
 
-    /**
+  /**
    * Validate node deletion function
    * @param {AppNode} node node to check before deletion
    * @returns {boolean} boolean is_deletion_valid value
@@ -341,6 +361,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         setFlows,
         slots,
         setSlots,
+        groups,
+        setGroups,
         deleteFlow,
         saveFlows,
         quietSaveFlows,

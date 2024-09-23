@@ -2,7 +2,7 @@ import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons"
 import * as RadixSelect from "@radix-ui/react-select"
 import classNames from "classnames"
 import { motion } from "framer-motion"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 type ItemSelectType = {
   key: string
@@ -12,20 +12,28 @@ type ItemSelectType = {
 
 type DefSelectProps = {
   placeholder?: string
+  disabled?: boolean
   className?: string
   items: ItemSelectType[]
   defaultValue?: string
   onValueChange?: (value: string) => void
+  mini?: boolean
 }
 
 const DefSelect = ({
+  disabled = false,
   className,
   items,
   defaultValue,
   onValueChange,
   placeholder,
+  mini = false,
 }: DefSelectProps) => {
   const [selectedValue, setSelectedValue] = useState(defaultValue || "")
+
+  useEffect(() => {
+    setSelectedValue(defaultValue || "")
+  }, [defaultValue])
 
   const handleChange = (value: string) => {
     setSelectedValue(value)
@@ -33,15 +41,15 @@ const DefSelect = ({
       onValueChange(value)
     }
   }
- 
 
   return (
     <RadixSelect.Root
       value={selectedValue}
       onValueChange={handleChange}>
       <RadixSelect.Trigger
+        disabled={disabled}
         className={classNames(
-          "relative flex items-center justify-between min-h-10 h-10 px-3.5 rounded-[8px] shadow-none bg-input-background border border-input-border hover:bg-transparent",
+          "relative flex items-center justify-between min-h-10 h-10 px-3.5 rounded-[8px] shadow-none bg-input-background border border-input-border hover:bg-transparent *:data-[placeholder]:text-input-border",
           className
         )}
         aria-label='Select'>
@@ -70,9 +78,11 @@ const DefSelect = ({
                   key={item.key}
                   value={item.value}
                   className={classNames(
-                    "flex items-center justify-between rounded-[8px] p-2 hover:bg-input-background-disabled data-[highlighted]:bg-input-background-disabled cursor-pointer",
+                    `flex items-center justify-between rounded-[8px] ${mini ? "px-2 py-0.5" : "p-2"} hover:bg-input-background-disabled data-[highlighted]:bg-input-background-disabled cursor-pointer`,
                     {
                       "bg-input-background-disabled": item.value === selectedValue,
+                      "*:text-sm": mini,
+                      "rounded-[4px]": mini,
                     }
                   )}>
                   <RadixSelect.ItemText>{item.value}</RadixSelect.ItemText>

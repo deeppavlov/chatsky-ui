@@ -1,8 +1,8 @@
-import * as Dialog from "@radix-ui/react-dialog"
-import classNames from "classnames"
+import * as Dialog from "@radix-ui/react-dialog";
+import classNames from "classnames";
 import { motion } from "framer-motion"; // Для анимации
-import { X } from "lucide-react"
-import { forwardRef } from "react"
+import { X } from "lucide-react";
+import { forwardRef } from "react";
 
 export type CustomModalProps = {
   id?: string
@@ -16,10 +16,11 @@ export type ModalProps = {
   onClose: () => void
   children: React.ReactNode
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full"
+  className?: string
 }
 
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(
-  ({ id, isOpen, onClose, children, size = "3xl" }, ref) => {
+  ({ id, isOpen, onClose, children, size = "3xl", className }, ref) => {
     return (
       <Dialog.Root
         open={isOpen}
@@ -39,11 +40,14 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
             <motion.div
               key={id}
               ref={ref}
-              className={`fixed z-50 w-full max-w-${size} p-6 bg-background rounded-2xl shadow-lg`}
+              className={classNames(
+                `fixed z-50 w-full max-w-${size} p-6 bg-background rounded-2xl shadow-lg`,
+                className
+              )}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}>
+              transition={{ duration: 0.15 }}>
               {children}
             </motion.div>
           </Dialog.Content>
@@ -62,9 +66,9 @@ type ModalHeaderProps = {
 
 export const ModalHeader = ({ children, className }: ModalHeaderProps) => (
   <div className={classNames("flex items-center justify-between pb-4", className)}>
-    {children}
+    <Dialog.Title>{children}</Dialog.Title>
     <Dialog.Close asChild>
-      <button className='text-gray-400 hover:text-gray-600'>
+      <button className='text-foreground bg-background hover:bg-bg-secondary transition-colors rounded-lg p-0.5'>
         <X size={20} />
       </button>
     </Dialog.Close>

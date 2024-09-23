@@ -60,6 +60,8 @@
     --input-border-focus: #8d96b5;
     --input-border-error: #ff3333;
 
+    --table-background: #F9FAFC;
+
     --condition-input-handle: #67b5ff;
     --condition-output-handle: #ff963b;
     --condition-link-input: #f5b75a;
@@ -136,6 +138,8 @@
       --input-border-focus: #a1a0a0;
       --input-border-error: #ff3333;
 
+      --table-background:#353434;
+
       --text: white;
       --btn-black: var(--accent);
 
@@ -170,6 +174,8 @@
       --logo-yellow: #ffbb33;
       --logo-blue: #018bd9;
     }
+
+    --radius: 0.5rem
   }
 }
 
@@ -191,7 +197,7 @@
     "Open Sans",
     "Helvetica Neue",
     sans-serif;
-  @apply text-base transition-colors ease-in-out;
+  @apply text-base;
 }
 
 html {

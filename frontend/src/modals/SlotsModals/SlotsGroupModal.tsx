@@ -32,16 +32,19 @@ const SlotsGroupModal = ({
   const { closePopUp } = useContext(PopUpContext)
   const { notification: n } = useContext(NotificationsContext)
   const [isSubGroup, setIsSubGroup] = useState<boolean>(false)
-  const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(
-    group ?? {
-      id: "group_" + v4(),
-      name: "New group",
-      slots: [generateNewSlot("New group")],
-      subgroups: [],
-      subgroup_to: "",
-      flow: "global",
-    }
-  )
+  const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
+    const id = "group_" + v4()
+    return (
+      group ?? {
+        id: id,
+        name: "New group",
+        slots: [generateNewSlot(id)],
+        subgroups: [],
+        subgroup_to: "",
+        flow: "global",
+      }
+    )
+  })
 
   useEffect(() => {
     if (group) {
@@ -50,7 +53,7 @@ const SlotsGroupModal = ({
   }, [group])
 
   const onAddSlot = () => {
-    const newSlot: SlotType = generateNewSlot(currentGroup.name)
+    const newSlot: SlotType = generateNewSlot(currentGroup.id)
     setCurrentGroup((prevGroup) => ({
       ...prevGroup,
       slots: [...prevGroup.slots, newSlot],
@@ -60,7 +63,7 @@ const SlotsGroupModal = ({
   const onSave = () => {
     if (
       !currentGroup.name ||
-      !currentGroup.slots.every((slot) => slot.name && slot.group_name && slot.type && slot.value)
+      !currentGroup.slots.every((slot) => slot.name && slot.group_id && slot.type && slot.value)
     ) {
       return n.add({
         type: "warning",

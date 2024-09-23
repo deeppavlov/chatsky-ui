@@ -4,10 +4,10 @@ import { PopUpContext } from '../contexts/popUpContext';
 import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from './ModalComponents';
 
 type AlertModalProps = CustomModalProps & {
-  title: string;
-  description: string;
-  actionText?: string;
-  cancelText?: string;
+  title: React.ReactNode;
+  description: React.ReactNode;
+  actionText?: React.ReactNode;
+  cancelText?: React.ReactNode;
   onAction: () => void;
   onCancel?: () => void;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full";

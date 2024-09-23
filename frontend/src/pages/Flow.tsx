@@ -35,10 +35,9 @@ import { undoRedoContext } from "../contexts/undoRedoContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 import "../index.css"
 import { FlowType } from "../types/FlowTypes"
-import { AppNode, NodesTypes, SlotsNodeType } from "../types/NodeTypes"
+import { AppNode, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
 import { Preloader } from "../UI/Preloader/Preloader"
-import { parseGroups } from "../utils"
 import Fallback from "./Fallback"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
@@ -62,7 +61,6 @@ export default function Flow() {
     reactFlowInstance,
     setReactFlowInstance,
     validateDeletion,
-    setSlots
   } = useContext(flowContext)
   const {
     toggleWorkspaceMode,
@@ -100,11 +98,6 @@ export default function Flow() {
             const curr_node = nodes.find((nd) => nd.id === node.id)
             return curr_node ?? node
           })
-          const slot_nodes: SlotsNodeType[] = flow.data.nodes.filter((node) => node.type === "slots_node") as SlotsNodeType[]
-          const groups = slot_nodes.map((node) => node.data.groups).flat()
-          const parsed_groups = parseGroups(groups)
-          console.log(JSON.stringify(parsed_groups, null, 2))
-          setSlots(parsed_groups)
         }
         if (edges) {
           flow.data.edges = flow.data.edges.map((edge) => {
