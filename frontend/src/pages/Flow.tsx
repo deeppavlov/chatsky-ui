@@ -24,6 +24,7 @@ import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
 import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
 import LinkNode from "../components/nodes/LinkNode"
+import SlotsNode from "../components/nodes/SlotsNode"
 import ReactFlowCustom from "../components/ReactFlowCustom"
 import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
@@ -45,6 +46,7 @@ import Settings from "./Settings"
 const nodeTypes = {
   default_node: DefaultNode,
   link_node: LinkNode,
+  slots_node: SlotsNode,
 }
 
 const edgeTypes = {
@@ -156,7 +158,6 @@ export default function Flow() {
 
   const onNodesChangeMod = useCallback(
     (nds: NodeChange<AppNode>[]) => {
-      console.log("nds change")
       if (nds) {
         // only calls update flow data function when node change type = "replace" (no call when move)
         if (nds.every((nd) => nd.type === "replace")) {
@@ -180,7 +181,6 @@ export default function Flow() {
             }
           })
           .forEach((nd) => {
-            console.log(nd)
             if (nd.type === "select") {
               if (nd.selected) {
                 setSelectedNode(nd.id)
@@ -307,6 +307,18 @@ export default function Flow() {
               target_flow: "",
               target_node: "",
             },
+          },
+        }
+      }
+      if (type === "slots_node") {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          data: {
+            id: newId,
+            name: "Slots",
+            groups: [],
           },
         }
       }

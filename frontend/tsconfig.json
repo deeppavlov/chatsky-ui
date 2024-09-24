@@ -20,7 +20,12 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "types": ["jest", "@testing-library/react"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+
   },
-  "include": ["src"],
+  "include": ["src", "tsconfig.app.json"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

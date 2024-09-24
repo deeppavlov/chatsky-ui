@@ -9,6 +9,7 @@ from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.index import Index
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
+from chatsky_ui.schemas.process_status import Status
 
 router = APIRouter()
 
@@ -277,4 +278,5 @@ async def connect(
         return_when=asyncio.FIRST_COMPLETED,
     )
     websocket_manager.disconnect(websocket)
-    await run_manager.stop_all()
+    if await run_manager.get_status(run_id) in [Status.ALIVE, Status.RUNNING]:
+        await run_manager.stop(run_id)

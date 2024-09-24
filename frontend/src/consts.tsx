@@ -8,8 +8,8 @@ import { conditionLabelType } from "./types/ConditionTypes"
 
 export const NODE_TYPES = {
   default_node: "default_node",
-  // start_node: "start_node",
-  // fallback_node: "fallback_node",
+  link_node: "link_node",
+  slots_node: "slots_node",
 }
 
 export const NODE_NAMES = [

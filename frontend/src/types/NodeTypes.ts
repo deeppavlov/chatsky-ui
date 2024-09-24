@@ -1,12 +1,14 @@
 import { Node } from "@xyflow/react"
 import { conditionType } from "./ConditionTypes"
+import { SlotsGroupType } from "./FlowTypes"
 import { responseType } from "./ResponseTypes"
 
-export type NodesTypes = 'default_node' | 'link_node'
+export type NodesTypes = 'default_node' | 'link_node' | "slots_node"
 
 export type DefaultNodeType = Node<DefaultNodeDataType, "default_node">
 export type LinkNodeType = Node<LinkNodeDataType, "link_node">
-export type AppNode = DefaultNodeType | LinkNodeType
+export type SlotsNodeType = Node<SlotsNodeDataType, "slots_node">
+export type AppNode = DefaultNodeType | LinkNodeType | SlotsNodeType
 export type AllowAppNode = DefaultNodeType & LinkNodeType
 
 
@@ -28,6 +30,13 @@ export type LinkNodeDataType = {
     target_node: string
     is_configured?: boolean | undefined
   }
+}
+
+export type SlotsNodeDataType = {
+  id: string
+  name: string
+  description?: string
+  groups: SlotsGroupType[]
 }
 
 export type PartialDefaultNodeDataType = Partial<DefaultNodeDataType>

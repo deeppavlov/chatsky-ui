@@ -5,6 +5,7 @@ import { FlowType } from "../types/FlowTypes"
 import { AppNode } from "../types/NodeTypes"
 import { flowContext } from "./flowContext"
 import { NotificationsContext } from "./notificationsContext"
+import { PopUpContext } from "./popUpContext"
 
 type WorkspaceContextType = {
   workspaceMode: boolean
@@ -56,6 +57,7 @@ export const workspaceContext = createContext<WorkspaceContextType>({
 } as WorkspaceContextType)
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
+  const { popUpElements } = useContext(PopUpContext)
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [managerMode, setManagerMode] = useState(false)

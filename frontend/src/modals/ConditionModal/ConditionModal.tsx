@@ -1,36 +1,38 @@
-import {
-  Button,
-  Input,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalProps,
-  Tab,
-  Tabs,
-} from "@nextui-org/react"
+import ButtonConditionIcon from "@/icons/nodes/conditions/ButtonConditionIcon"
+import CodeConditionIcon from "@/icons/nodes/conditions/CodeConditionIcon"
+import CustomConditionIcon from "@/icons/nodes/conditions/CustomConditionIcon"
+import LLMConditionIcon from "@/icons/nodes/conditions/LLMConditionIcon"
+import SlotsConditionIcon from "@/icons/nodes/conditions/SlotsConditionIcon"
+import { Button, Tab, Tabs } from "@nextui-org/react"
 import { Edge, useReactFlow } from "@xyflow/react"
 import classNames from "classnames"
-import { HelpCircle, TrashIcon } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
+import { HelpCircle, PlusCircleIcon, TrashIcon } from "lucide-react"
 import { useContext, useEffect, useMemo, useState } from "react"
-import { useParams } from "react-router-dom"
 import { lint_service } from "../../api/services"
-import ModalComponent from "../../components/ModalComponent"
 import { flowContext } from "../../contexts/flowContext"
 import { NotificationsContext } from "../../contexts/notificationsContext"
+import { PopUpContext } from "../../contexts/popUpContext"
+import EditPenIcon from "../../icons/EditPenIcon"
 import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
-import { AppNode, DefaultNodeDataType, DefaultNodeType } from "../../types/NodeTypes"
+import { AppNode, DefaultNodeDataType } from "../../types/NodeTypes"
+import DefInput from "../../UI/Input/DefInput"
 import { generateNewConditionBase } from "../../utils"
+import AlertModal from "../AlertModal"
+import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents"
 import PythonCondition from "./components/PythonCondition"
+import SlotCondition from "./components/SlotCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
 
-type ConditionModalProps = {
+export type ConditionModalContentType = {
+  condition: conditionType
+  setData: React.Dispatch<React.SetStateAction<conditionType>>
+}
+
+type ConditionModalProps = CustomModalProps & {
   data: DefaultNodeDataType
   condition?: conditionType
   is_create?: boolean
-  size?: ModalProps["size"]
-  isOpen: boolean
-  onClose: () => void
 }
 
 type ConditionModalTab = "Using LLM" | "Slot filling" | "Button" | "Python code" | "Custom"
@@ -49,22 +51,20 @@ const ConditionModal = ({
   data,
   condition,
   is_create = false,
-  isOpen,
-  onClose,
-  size = "3xl",
+  id = "condition-modal",
 }: ConditionModalProps) => {
+  const { closePopUp, openPopUp } = useContext(PopUpContext)
+  const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
+  const { notification: n } = useContext(NotificationsContext)
+  const { quietSaveFlows } = useContext(flowContext)
   const [selected, setSelected] = useState<conditionTypeType>(condition?.type ?? "python")
   const [lintStatus, setLintStatus] = useState<LintStatusType | null>(null)
   const [testConditionPending, setTestConditionPending] = useState(false)
+
   const setSelectedHandler = (key: conditionTypeType) => {
     setCurrentCondition({ ...currentCondition, type: key })
     setSelected(key)
   }
-
-  const { getNode, setNodes, getNodes } = useReactFlow<AppNode, Edge>()
-  const { notification: n } = useContext(NotificationsContext)
-  const { flows, quietSaveFlows } = useContext(flowContext)
-  const { flowId } = useParams()
 
   const [currentCondition, setCurrentCondition] = useState(
     is_create || !condition ? generateNewConditionBase() : condition
@@ -73,11 +73,12 @@ const ConditionModal = ({
   const validateConditionName = (is_create: boolean) => {
     const nodes = getNodes() as AppNode[]
     if (!is_create) {
-      const is_name_valid = !nodes.some((node: AppNode) =>
-        node.type === "default_node" &&
-        node.data.conditions.some(
-          (c) => c.name === currentCondition.name && c.id !== currentCondition.id
-        )
+      const is_name_valid = !nodes.some(
+        (node: AppNode) =>
+          node.type === "default_node" &&
+          node.data.conditions.some(
+            (c) => c.name === currentCondition.name && c.id !== currentCondition.id
+          )
       )
       if (!is_name_valid) {
         return {
@@ -91,9 +92,10 @@ const ConditionModal = ({
         }
       }
     } else {
-      const is_name_valid = !nodes.some((node: AppNode) =>
-        node.type === "default_node" && 
-        node.data.conditions?.some((c) => c.name === currentCondition.name)
+      const is_name_valid = !nodes.some(
+        (node: AppNode) =>
+          node.type === "default_node" &&
+          node.data.conditions?.some((c) => c.name === currentCondition.name)
       )
       if (!is_name_valid) {
         return {
@@ -160,32 +162,37 @@ const ConditionModal = ({
   const tabItems: {
     title: ConditionModalTab
     value: conditionTypeType
+    icon: JSX.Element
   }[] = useMemo(
     () => [
       {
         title: "Python code",
         value: "python",
+        icon: <CodeConditionIcon className="size-5" />,
       },
       {
         title: "Using LLM",
         value: "llm",
+        icon: <LLMConditionIcon className="size-5" />,
       },
       {
         title: "Slot filling",
         value: "slot",
+        icon: <SlotsConditionIcon className="size-5" />,
       },
       {
         title: "Button",
         value: "button",
+        icon: <ButtonConditionIcon className="size-5" />,
       },
       {
         title: "Custom",
         value: "custom",
+        icon: <CustomConditionIcon className="size-5" />,
       },
     ],
     []
   )
-
 
   const bodyItems = useMemo(
     () => ({
@@ -195,7 +202,12 @@ const ConditionModal = ({
           setData={setCurrentCondition}
         />
       ),
-      slot: <div>Slot filling</div>,
+      slot: (
+        <SlotCondition
+          condition={currentCondition}
+          setData={setCurrentCondition}
+        />
+      ),
       button: <div>Button</div>,
       python: (
         <PythonCondition
@@ -207,7 +219,6 @@ const ConditionModal = ({
     }),
     [currentCondition]
   )
-
 
   const lintCondition = async () => {
     setLintStatus(null)
@@ -252,34 +263,40 @@ const ConditionModal = ({
     setLintStatus(() => null)
   }, [selected])
 
+  const onCloseHandler = () => {
+    closePopUp(id)
+  }
+
   const saveCondition = () => {
-    const nodes = getNodes()
-    const node = getNode(data.id)
-    const currentFlow = flows.find((flow) => flow.name === flowId)
+    // const nodes = getNodes()
+    // const node = getNode(data.id)
+    // const currentFlow = flows.find((flow) => flow.name === flowId)
     const validate_name: ValidateErrorType = validateConditionName(is_create)
     if (validate_name.status) {
-      if (node && node.type === 'default_node' && currentFlow) {
-        const new_node: DefaultNodeType = {
-          ...node,
-          data: {
-            ...node.data,
-            conditions: is_create
-              ? [...node.data.conditions, currentCondition]
-              : data.conditions.map((condition) =>
-                  condition.id === currentCondition.id ? currentCondition : condition
-                ),
-          },
-        }
-        const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-        setNodes(() => new_nodes)
-        // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-        // updateFlow(currentFlow)
-        quietSaveFlows()
-      }
-      onClose()
-      setCurrentCondition(
-        is_create || !condition ? generateNewConditionBase() : currentCondition
-      )
+      updateNodeData(data.id, {
+        ...data,
+        conditions: is_create
+          ? [...data.conditions, currentCondition]
+          : data.conditions.map((condition) =>
+              condition.id === currentCondition.id ? currentCondition : condition
+            ),
+      })
+      // const new_node: DefaultNodeType = {
+      //   ...node,
+      //   data: {
+      //     ...node.data,
+      //     conditions: is_create
+      //       ? [...node.data.conditions, currentCondition]
+      //       : data.conditions.map((condition) =>
+      //           condition.id === currentCondition.id ? currentCondition : condition
+      //         ),
+      //   },
+      // }
+      // const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+      // setNodes(() => new_nodes)
+      quietSaveFlows()
+      onCloseHandler()
+      // setCurrentCondition(is_create || !condition ? generateNewConditionBase() : currentCondition)
     } else {
       if (!validate_name.status) {
         n.add({
@@ -292,136 +309,181 @@ const ConditionModal = ({
   }
 
   const deleteCondition = () => {
-    const nodes = getNodes()
-    const node = getNode(data.id)
-    const currentFlow = flows.find((flow) => flow.name === flowId)
-    if (node && node.type === 'default_node' && currentFlow) {
-      const new_node: DefaultNodeType = {
-        ...node,
-        data: {
-          ...node.data,
-          conditions: data.conditions?.filter((condition) => condition.id !== currentCondition.id),
-        },
-      }
-      const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-      setNodes(() => new_nodes)
-      // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-      // updateFlow(currentFlow)
-      quietSaveFlows()
-    }
-    onClose()
+    // const nodes = getNodes()
+    // const node = getNode(data.id)
+    // const currentFlow = flows.find((flow) => flow.name === flowId)
+    // if (node && node.type === "default_node" && currentFlow) {
+    // const new_node: DefaultNodeType = {
+    //   ...node,
+    //   data: {
+    //     ...node.data,
+    //     conditions: data.conditions?.filter((condition) => condition.id !== currentCondition.id),
+    //   },
+    // }
+    // const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+    // setNodes(() => new_nodes)
+    updateNodeData(data.id, {
+      ...data,
+      conditions: data.conditions?.filter((condition) => condition.id !== currentCondition.id),
+    })
+    quietSaveFlows()
+    // }
+    onCloseHandler()
+  }
+
+  const handleConfirmDeleteOpen = () => {
+    // Открываем модал для подтверждения удаления слота
+    openPopUp(
+      <AlertModal
+        id='delete-condition'
+        onAction={() => deleteCondition()} // Подтверждение удаления
+        title='Delete condition'
+        description={
+          <>
+            Are you sure you want to delete the condition{" "}
+            <span className='text-sm bg-border rounded px-1'>{currentCondition?.name}</span>? This
+            action cannot be undone.
+          </>
+        }
+        actionText='Delete'
+        cancelText='Cancel'
+      />,
+      "delete-condition"
+    )
   }
 
   return (
-    <ModalComponent
-      className='bg-background min-h-[584px]'
-      motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
-      isOpen={isOpen}
-      onClose={onClose}
-      size={size}>
-      <ModalContent>
-        <ModalHeader>{is_create ? "Create condition" : "Edit condition"}</ModalHeader>
-        <ModalBody>
-          <label>
-            <Tabs
-              disabledKeys={["llm", "custom", "slot", "button"]}
-              selectedKey={selected}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              onSelectionChange={setSelectedHandler}
-              items={tabItems}
-              classNames={{
-                tabList: "w-full",
-                tab: "",
-                cursor: "border border-contrast-border",
-              }}
-              className='bg-background w-full max-w-full'>
-              {(item) => (
-                <Tab
-                  key={item.value}
-                  title={item.title}
-                  onClick={() =>
-                    setCurrentCondition({ ...currentCondition, type: item.value })
-                  }></Tab>
-              )}
-            </Tabs>
-          </label>
-          <div className="grid grid-cols-4 items-center gap-4 mt-4">
-            <Input
-              className="col-span-3"
-              label='Name'
-              variant="bordered"
-              labelPlacement='outside'
-              placeholder="Enter condition's name here"
-              value={currentCondition.name}
-              onChange={(e) => setCurrentCondition({ ...currentCondition, name: e.target.value })}
-            />
-            <Input
-              label='Priority'
-              variant="bordered"
-              labelPlacement='outside'
-              placeholder="Enter condition's priority here"
-              type="number"
-              value={currentCondition.data.priority.toString()}
-              onChange={(e) => setCurrentCondition({ ...currentCondition, data: {
-                ...currentCondition.data,
-                priority: parseInt(e.target.value)
-              } })}
-            />
-          </div>
-          <div>
-            {bodyItems[selected]}
-            {selected === "python" && (
-              <div
-                className='grid transition-all duration-150 overflow-hidden'
-                style={{
-                  gridTemplateRows: lintStatus ? "1fr" : "0fr",
-                }}>
-                <div className='min-h-0 transition-all duration-150'>
-                  <p
-                    className={classNames(
-                      "text-xs p-2 mt-2 rounded-lg font-mono",
-                      lintStatus?.status == "error" ? "bg-[var(--condition-test-error)]" : "bg-[var(--condition-test-success)]",
-                    )}>
-                    {lintStatus?.status == "ok" ? "Condition test passed!" : lintStatus?.message}
-                  </p>
-                </div>
-              </div>
+    <Modal
+      isOpen={true}
+      onClose={onCloseHandler}
+      size='3xl'>
+      <ModalHeader>
+        <div className='flex items-center gap-2'>
+          {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
+          {is_create ? "Create condition" : "Edit condition"}
+        </div>
+      </ModalHeader>
+      <ModalBody className='min-h-[480px]'>
+        <label>
+          <Tabs
+            disabledKeys={["llm", "custom", "button"]}
+            selectedKey={selected}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onSelectionChange={setSelectedHandler}
+            items={tabItems}
+            classNames={{
+              tabList: "w-full bg-table-background",
+              tab: "",
+              cursor: "border border-contrast-border",
+            }}
+            className='bg-background w-full max-w-full'>
+            {(item) => (
+              <Tab
+                key={item.value}
+                title={
+                  <div className='flex items-center gap-1 text-sm'>
+                    {item.icon} {item.title}
+                  </div>
+                }
+                onClick={() =>
+                  setCurrentCondition({ ...currentCondition, type: item.value })
+                }></Tab>
             )}
-          </div>
-        </ModalBody>
-        <ModalFooter className='flex justify-between items-center'>
-          <div className='flex items-center justify-start gap-2'>
+          </Tabs>
+        </label>
+        <div className='grid grid-cols-4 items-center gap-4 mt-4 mb-2'>
+          <DefInput
+            className='col-span-3'
+            label='Name'
+            variant='bordered'
+            labelPlacement='outside'
+            placeholder="Enter condition's name here"
+            value={currentCondition.name}
+            onChange={(e) => setCurrentCondition({ ...currentCondition, name: e.target.value })}
+          />
+          <DefInput
+            label='Priority'
+            variant='bordered'
+            labelPlacement='outside'
+            placeholder="Enter condition's priority here"
+            type='number'
+            value={currentCondition.data.priority.toString()}
+            onChange={(e) =>
+              setCurrentCondition({
+                ...currentCondition,
+                data: {
+                  ...currentCondition.data,
+                  priority: parseInt(e.target.value),
+                },
+              })
+            }
+          />
+        </div>
+        <div>
+          <AnimatePresence mode='wait'>
+            <motion.div
+              key={selected}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}>
+              {bodyItems[selected]}
+            </motion.div>
+          </AnimatePresence>
+          {selected === "python" && (
+            <div
+              className='grid transition-all duration-150 overflow-hidden'
+              style={{
+                gridTemplateRows: lintStatus ? "1fr" : "0fr",
+              }}>
+              <div className='min-h-0 transition-all duration-150'>
+                <p
+                  className={classNames(
+                    "text-xs p-2 mt-2 rounded-lg font-mono",
+                    lintStatus?.status == "error"
+                      ? "bg-[var(--condition-test-error)]"
+                      : "bg-[var(--condition-test-success)]"
+                  )}>
+                  {lintStatus?.status == "ok" ? "Condition test passed!" : lintStatus?.message}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </ModalBody>
+      <ModalFooter className='flex justify-between items-center'>
+        <div className='flex items-center justify-start gap-2'>
+          <Button
+            isIconOnly
+            className='rounded-full'>
+            <HelpCircle />
+          </Button>
+          {!is_create && (
             <Button
-              isIconOnly
-              className='rounded-full'>
-              <HelpCircle />
-            </Button>
-            <Button
-              onClick={deleteCondition}
+              onClick={handleConfirmDeleteOpen}
               className='hover:bg-red-500'
               isIconOnly>
               <TrashIcon />
             </Button>
-          </div>
-          <div className='flex items-end gap-2'>
-            <Button
-              data-testid='test-condition-button'
-              onClick={testCondition}
-              isLoading={testConditionPending}
-              className=''>
-              Test condition
-            </Button>
-            <Button
-              data-testid='save-condition-button'
-              onClick={saveCondition}
-              className='bg-foreground text-background'>
-              Save condition
-            </Button>
-          </div>
-        </ModalFooter>
-      </ModalContent>
-    </ModalComponent>
+          )}
+        </div>
+        <div className='flex items-end gap-2'>
+          <Button
+            data-testid='test-condition-button'
+            onClick={testCondition}
+            isLoading={testConditionPending}
+            className=''>
+            Test condition
+          </Button>
+          <Button
+            data-testid='save-condition-button'
+            onClick={saveCondition}
+            className='bg-foreground text-background'>
+            Save condition
+          </Button>
+        </div>
+      </ModalFooter>
+    </Modal>
   )
 }
 

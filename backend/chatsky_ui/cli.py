@@ -179,6 +179,7 @@ def init(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="feat/add-slots2"
         )
     finally:
         os.chdir(original_dir)
