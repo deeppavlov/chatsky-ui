@@ -180,7 +180,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     setSlots(slots)
     setGroups(groups)
     const parsed_groups = await parseGroups(groups)
-    console.log(JSON.stringify(parsed_groups, null, 2))
     try {
       await save_flows(flows, parsed_groups)
       setFlows(flows)

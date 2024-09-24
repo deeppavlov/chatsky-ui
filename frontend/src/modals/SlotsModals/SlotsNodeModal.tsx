@@ -1,17 +1,13 @@
+import SlotsGroupsTable from "@/components/nodes/slots/SlotsGroupsTable"
 import { flowContext } from "@/contexts/flowContext"
-import { Button, TableCell, TableRow } from "@nextui-org/react"
+import { Button } from "@nextui-org/react"
 import { useReactFlow } from "@xyflow/react"
 import { Plus } from "lucide-react"
-import { Fragment, useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { PopUpContext } from "../../contexts/popUpContext"
-import NewWindowIcon from "../../icons/NewWindowIcon"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
-import TrashIcon from "../../icons/TrashIcon"
-import { SlotsGroupType } from "../../types/FlowTypes"
 import { SlotsNodeDataType } from "../../types/NodeTypes"
 import DefTextarea from "../../UI/Input/DefTextarea"
-import DefTable from "../../UI/Table/DefTable"
-import AlertModal from "../AlertModal"
 import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents"; // Убедитесь, что путь правильный
 import SlotsGroupModal from "./SlotsGroupModal"
 
@@ -19,7 +15,6 @@ type SlotsNodeModalType = CustomModalProps & {
   data: SlotsNodeDataType
   setData: React.Dispatch<React.SetStateAction<SlotsNodeDataType>>
 }
-
 
 const SlotsNodeModal = ({ id = "slots-node-modal", data, setData }: SlotsNodeModalType) => {
   const [nodeData, setNodeData] = useState(data)
@@ -44,24 +39,6 @@ const SlotsNodeModal = ({ id = "slots-node-modal", data, setData }: SlotsNodeMod
     updateNodeData(data.id, newData)
   }
 
-  const handleDeleteGroup = (group: SlotsGroupType) => {
-    // Удаление группы
-    openPopUp(
-      <AlertModal
-        size={"lg"}
-        id='delete-group-modal'
-        title='Delete group'
-        description={`Are you sure you want to delete "${group.name}" group?`}
-        onAction={() => {
-          const updatedGroups = nodeData.groups.filter((g) => g.id !== group.id)
-          setGroups(updatedGroups)
-        }}
-        actionText='Delete'
-      />,
-      "delete-group-modal"
-    )
-  }
-
   const handleNewGroupModalOpen = () => {
     openPopUp(
       <SlotsGroupModal
@@ -72,19 +49,6 @@ const SlotsNodeModal = ({ id = "slots-node-modal", data, setData }: SlotsNodeMod
         is_create={true}
       />,
       "slots-group-modal-create"
-    )
-  }
-
-  const handleGroupModalOpen = (group: SlotsGroupType) => {
-    openPopUp(
-      <SlotsGroupModal
-        id='slots-group-modal-edit'
-        data={nodeData}
-        setData={setNodeData}
-        group={group}
-        is_create={false}
-      />,
-      "slots-group-modal-edit"
     )
   }
 
@@ -119,46 +83,12 @@ const SlotsNodeModal = ({ id = "slots-node-modal", data, setData }: SlotsNodeMod
         </div>
         <div>
           <label className='block text-xs font-semibold mb-3'>Groups</label>
-          <DefTable headers={[" ", "name", "contains slots", "actions"]}>
-            {groups.map((group) => (
-              <TableRow key={group.id}>
-                <TableCell> </TableCell>
-                <TableCell>{group.name}</TableCell>
-                <TableCell>
-                  <ul className='list-disc'>
-                    {group.slots.slice(0, 3).map((slot, idx) => (
-                      <Fragment key={slot.id}>
-                        {idx === 2 && group.slots.length > 3 ? (
-                          <li className='text-sm text-gray-400'>+ {group.slots.length - 2} more</li>
-                        ) : (
-                          idx === 2 && <li>{slot.name}</li>
-                        )}
-                        {idx !== 2 && <li>{slot.name}</li>}
-                      </Fragment>
-                    ))}
-                  </ul>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    onClick={() => handleDeleteGroup(group)}
-                    size='sm'
-                    isIconOnly
-                    variant='light'
-                    color='danger'>
-                    <TrashIcon />
-                  </Button>
-                  <Button
-                    onClick={() => handleGroupModalOpen(group)}
-                    size='sm'
-                    isIconOnly
-                    variant='light'
-                    color='default'>
-                    <NewWindowIcon />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </DefTable>
+          <SlotsGroupsTable
+            groups={groups}
+            setGroups={setGroups}
+            nodeData={nodeData}
+            setNodeData={setNodeData}
+          />
         </div>
       </ModalBody>
       <ModalFooter>

@@ -1,19 +1,20 @@
-import { flowContext } from "@/contexts/flowContext";
+import SlotsGroupsTable from "@/components/nodes/slots/SlotsGroupsTable"
+import { flowContext } from "@/contexts/flowContext"
 import { Button, Switch } from "@nextui-org/react"; // Можно заменить на свой UI-компонент
-import { useReactFlow } from "@xyflow/react";
-import { Plus } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
-import { v4 } from "uuid";
-import { NotificationsContext } from "../../contexts/notificationsContext";
-import { PopUpContext } from "../../contexts/popUpContext";
-import SlotsConditionIcon from "../../icons/nodes/conditions/SlotsConditionIcon";
-import { SlotsGroupType, SlotType } from "../../types/FlowTypes";
-import { SlotsNodeDataType } from "../../types/NodeTypes";
-import DefInput from "../../UI/Input/DefInput";
-import DefSelect from "../../UI/Input/DefSelect";
-import { generateNewSlot } from "../../utils";
-import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents";
-import SlotItem from "./components/SlotItem";
+import { useReactFlow } from "@xyflow/react"
+import { Plus } from "lucide-react"
+import { useContext, useEffect, useState } from "react"
+import { v4 } from "uuid"
+import { NotificationsContext } from "../../contexts/notificationsContext"
+import { PopUpContext } from "../../contexts/popUpContext"
+import SlotsConditionIcon from "../../icons/nodes/conditions/SlotsConditionIcon"
+import { SlotsGroupType, SlotType } from "../../types/FlowTypes"
+import { SlotsNodeDataType } from "../../types/NodeTypes"
+import DefInput from "../../UI/Input/DefInput"
+import DefSelect from "../../UI/Input/DefSelect"
+import { generateNewSlot } from "../../utils"
+import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents"
+import SlotItem from "./components/SlotItem"
 
 type SlotsGroupModalType = CustomModalProps & {
   data: SlotsNodeDataType
@@ -30,10 +31,18 @@ const SlotsGroupModal = ({
   group,
 }: SlotsGroupModalType) => {
   const { updateNodeData } = useReactFlow()
-  const { closePopUp } = useContext(PopUpContext)
+  const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { notification: n } = useContext(NotificationsContext)
   const { quietSaveFlows } = useContext(flowContext)
-  const [isSubGroup, setIsSubGroup] = useState<boolean>(false)
+  const [nodeData, setNodeData] = useState(data)
+  const [groups, setGroups] = useState<SlotsGroupType[]>(data.groups ?? [])
+  const [subgroups, setSubgroups] = useState<SlotsGroupType[]>(
+    !is_create && group && group.subgroups
+      ? group.subgroups.map((id) => groups.find((g) => g.id === id)!)
+      : []
+  )
+  const [isSubGroup, setIsSubGroup] = useState<boolean>(!!group?.subgroup_to ?? false)
+  const [parentGroup, setParentGroup] = useState<SlotsGroupType | null>(null)
   const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
     const id = "group_" + v4()
     return (
@@ -62,6 +71,11 @@ const SlotsGroupModal = ({
     }))
   }
 
+  useEffect(() => {
+    setGroups(nodeData.groups ?? [])
+    setSubgroups(nodeData.groups.filter((g) => g.subgroup_to === group?.id) ?? [])
+  }, [nodeData])
+
   const onSave = () => {
     if (
       !currentGroup.name ||
@@ -74,16 +88,21 @@ const SlotsGroupModal = ({
       })
     } else {
       const newData = {
-        ...data,
+        ...nodeData,
         groups: is_create
-          ? [...data.groups, currentGroup]
-          : data.groups.map((g: SlotsGroupType) => (g.id === currentGroup.id ? currentGroup : g)),
+          ? [
+              ...groups.map((g: SlotsGroupType) => (g.id === parentGroup?.id ? parentGroup : g)),
+              currentGroup,
+            ]
+          : groups.map((g: SlotsGroupType) =>
+              g.id === currentGroup.id ? currentGroup : g.id === parentGroup?.id ? parentGroup : g
+            ),
       }
       updateNodeData(data.id, newData)
       setData(() => newData)
     }
   }
-  
+
   const onSaveHandler = () => {
     onSave()
     quietSaveFlows()
@@ -93,6 +112,21 @@ const SlotsGroupModal = ({
   const onCloseHandler = () => {
     closePopUp(id)
   }
+
+  const onDeleteTableGroupHandler = (group: SlotsGroupType, updatedGroups: SlotsGroupType[]) => {
+    setCurrentGroup((prev) => ({
+      ...prev,
+      subgroups: updatedGroups.map((g) => g.id),
+    }))
+    setGroups((prev) => prev.map((g) => (g.id === group.id ? { ...g, subgroup_to: "" } : g)))
+  }
+
+  useEffect(() => {
+    if (!isSubGroup) {
+      setParentGroup(null)
+      setCurrentGroup({ ...currentGroup, subgroup_to: "" })
+    }
+  }, [isSubGroup])
 
   return (
     <Modal
@@ -114,8 +148,8 @@ const SlotsGroupModal = ({
             value={currentGroup.name}
             onValueChange={(name) => setCurrentGroup({ ...currentGroup, name })}
           />
-          {data.groups.length >= (is_create ? 1 : 2) && (
-            <div className='flex flex-col items-start gap-1.5 mt-1'>
+          {groups.length >= (is_create ? 1 : 2) && (
+            <div className='flex items-center gap-1.5 mt-1 h-8'>
               <div className='flex items-center gap-1'>
                 <p className='text-xs'>Standalone</p>
                 <Switch
@@ -127,13 +161,21 @@ const SlotsGroupModal = ({
               </div>
               {isSubGroup && (
                 <DefSelect
-                  defaultValue={currentGroup.subgroup_to}
-                  onValueChange={(value) =>
-                    setCurrentGroup({ ...currentGroup, subgroup_to: value })
-                  }
+                  mini
+                  defaultValue={parentGroup?.name ?? ""}
+                  onValueChange={(value) => {
+                    const parent_group = nodeData.groups.find((g) => g.name === value)
+                    if (parent_group) {
+                      setParentGroup({
+                        ...parent_group,
+                        subgroups: [...(parent_group.subgroups ?? []), currentGroup.id],
+                      })
+                      setCurrentGroup({ ...currentGroup, subgroup_to: parent_group.id })
+                    }
+                  }}
                   placeholder='Select parent group'
-                  className='w-1/3'
-                  items={data.groups
+                  className='w-1/3 h-8 min-h-8'
+                  items={nodeData.groups
                     .filter((g) => g.id !== currentGroup.id)
                     .map((g) => ({ key: g.name, value: g.name }))}
                 />
@@ -141,7 +183,19 @@ const SlotsGroupModal = ({
             </div>
           )}
         </div>
-        <div className='grid gap-4 mt-4'>
+        {!is_create && subgroups.length > 0 && (
+          <div className='mt-4'>
+            <p className='text-sm font-medium mb-2'>Subgroups</p>
+            <SlotsGroupsTable
+              groups={subgroups}
+              setGroups={setSubgroups}
+              nodeData={nodeData}
+              setNodeData={setNodeData}
+              onDeleteGroupHandler={onDeleteTableGroupHandler}
+            />
+          </div>
+        )}
+        <div className='grid gap-4 mt-6'>
           {currentGroup.slots.map((slot) => (
             <SlotItem
               key={slot.id}

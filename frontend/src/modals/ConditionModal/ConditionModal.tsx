@@ -1,3 +1,8 @@
+import ButtonConditionIcon from "@/icons/nodes/conditions/ButtonConditionIcon"
+import CodeConditionIcon from "@/icons/nodes/conditions/CodeConditionIcon"
+import CustomConditionIcon from "@/icons/nodes/conditions/CustomConditionIcon"
+import LLMConditionIcon from "@/icons/nodes/conditions/LLMConditionIcon"
+import SlotsConditionIcon from "@/icons/nodes/conditions/SlotsConditionIcon"
 import { Button, Tab, Tabs } from "@nextui-org/react"
 import { Edge, useReactFlow } from "@xyflow/react"
 import classNames from "classnames"
@@ -157,27 +162,33 @@ const ConditionModal = ({
   const tabItems: {
     title: ConditionModalTab
     value: conditionTypeType
+    icon: JSX.Element
   }[] = useMemo(
     () => [
       {
         title: "Python code",
         value: "python",
+        icon: <CodeConditionIcon className="size-5" />,
       },
       {
         title: "Using LLM",
         value: "llm",
+        icon: <LLMConditionIcon className="size-5" />,
       },
       {
         title: "Slot filling",
         value: "slot",
+        icon: <SlotsConditionIcon className="size-5" />,
       },
       {
         title: "Button",
         value: "button",
+        icon: <ButtonConditionIcon className="size-5" />,
       },
       {
         title: "Custom",
         value: "custom",
+        icon: <CustomConditionIcon className="size-5" />,
       },
     ],
     []
@@ -362,7 +373,7 @@ const ConditionModal = ({
             onSelectionChange={setSelectedHandler}
             items={tabItems}
             classNames={{
-              tabList: "w-full",
+              tabList: "w-full bg-table-background",
               tab: "",
               cursor: "border border-contrast-border",
             }}
@@ -370,7 +381,11 @@ const ConditionModal = ({
             {(item) => (
               <Tab
                 key={item.value}
-                title={item.title}
+                title={
+                  <div className='flex items-center gap-1 text-sm'>
+                    {item.icon} {item.title}
+                  </div>
+                }
                 onClick={() =>
                   setCurrentCondition({ ...currentCondition, type: item.value })
                 }></Tab>

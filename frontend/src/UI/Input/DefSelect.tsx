@@ -72,17 +72,16 @@ const DefSelect = ({
               scale: 0.95,
               transition: { duration: 0.2 },
             }}>
-            <RadixSelect.Viewport className='p-1 grid gap-1 w-full'>
+            <RadixSelect.Viewport className='py-1 grid gap-1 w-full'>
               {items.map((item) => (
                 <RadixSelect.Item
                   key={item.key}
                   value={item.value}
                   className={classNames(
-                    `flex items-center justify-between rounded-[8px] ${mini ? "px-2 py-0.5" : "p-2"} hover:bg-input-background-disabled data-[highlighted]:bg-input-background-disabled cursor-pointer`,
+                    `flex items-center justify-between ${mini ? "px-2 py-0.5" : "p-2"} hover:bg-input-background-disabled data-[highlighted]:bg-input-background-disabled cursor-pointer`,
                     {
                       "bg-input-background-disabled": item.value === selectedValue,
                       "*:text-sm": mini,
-                      "rounded-[4px]": mini,
                     }
                   )}>
                   <RadixSelect.ItemText>{item.value}</RadixSelect.ItemText>

@@ -1,7 +1,7 @@
 import * as Popover from "@radix-ui/react-popover"
 import classNames from "classnames"
 import { CheckIcon } from "lucide-react"
-import React, { ReactNode, useEffect, useRef, useState } from "react"
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from "react"
 
 interface ComboboxProps {
   items: string[]
@@ -35,11 +35,14 @@ const DefCombobox: React.FC<ComboboxProps> = ({
     setIsOpen(true)
   }
 
-  const handleSelectItem = (item: string) => {
-    setInputValue(item)
-    setSelected(item)
-    setIsOpen(false)
-  }
+  const handleSelectItem = useCallback(
+    (item: string) => {
+      setInputValue(item)
+      setSelected(item)
+      setIsOpen(false)
+    },
+    [setSelected]
+  )
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -50,17 +53,13 @@ const DefCombobox: React.FC<ComboboxProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isOpen) {
-        console.log(e.key, highlightedIndex)
         if (e.key === "ArrowDown") {
-          console.log("arrow down")
           setHighlightedIndex((prev) => Math.min(prev + 1, filteredItems.length - 1))
           e.preventDefault() // Предотвращаем прокрутку страницы
         } else if (e.key === "ArrowUp") {
-          console.log("arrow up")
           setHighlightedIndex((prev) => Math.max(prev - 1, 0))
           e.preventDefault() // Предотвращаем прокрутку страницы
         } else if (e.key === "Enter" && highlightedIndex >= 0) {
-          console.log("enter")
           handleSelectItem(filteredItems[highlightedIndex])
           e.preventDefault() // Предотвращаем отправку формы, если она есть
         }
@@ -71,34 +70,21 @@ const DefCombobox: React.FC<ComboboxProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [isOpen, highlightedIndex, filteredItems])
-
-  console.log(isOpen)
+  }, [isOpen, highlightedIndex, filteredItems, handleSelectItem])
 
   return (
     <div className='combobox-container'>
-      {/* Input field */}
-      {/* <input
-        ref={inputRef}
-        type='text'
-        value={inputValue}
-        onChange={handleInputChange}
-        // onFocus={() => setIsOpen(true)} // Открываем Popover при фокусе на поле ввода
-        placeholder={placeholder}
-        className='w-full bg-background p-2 rounded-lg border border-input-border'
-      /> */}
       <div
         ref={containerRef}
-        className='w-full flex items-center justify-between bg-background p-2 rounded-lg border border-input-border'>
+        className='w-full flex items-center justify-between bg-background p-2 rounded-lg border border-input-border hover:bg-bg-secondary transition-colors'>
         {startContent && <span style={{ marginRight: "8px" }}>{startContent}</span>}
         <input
           ref={inputRef}
           type='text'
           value={inputValue}
           onChange={handleInputChange}
-          // onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className='w-full bg-transparent outline-none'
+          className='w-full bg-transparent outline-none placeholder:text-input-border text-sm'
         />
         {endContent && <span style={{ marginLeft: "8px" }}>{endContent}</span>}
       </div>
@@ -118,7 +104,7 @@ const DefCombobox: React.FC<ComboboxProps> = ({
           style={{
             width: containerRef.current?.offsetWidth ?? "320px",
           }}
-          className={`mt-2 bg-background border border-input-border rounded-lg py-1 z-[9999] overflow-x-hidden`}>
+          className={`mt-2 bg-background border border-input-border rounded-lg py-1 z-[9999] overflow-x-hidden *:text-sm`}>
           {filteredItems.length ? (
             filteredItems.map((item, index) => (
               <div

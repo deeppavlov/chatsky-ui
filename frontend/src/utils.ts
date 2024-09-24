@@ -196,10 +196,10 @@ export async function parseGroups(
 
     // Если у группы есть подгруппы, обрабатываем их рекурсивно
     if (group.subgroups) {
-      group.subgroups.forEach((subgroupName) => {
-        const subgroup = groups.find((g) => g.name === subgroupName);
+      group.subgroups.forEach((subgroupId) => {
+        const subgroup = groups.find((g) => g.id === subgroupId);
         if (subgroup) {
-          groupData[subgroupName] = processGroup(subgroup);
+          groupData[subgroup.name] = processGroup(subgroup);
         }
       });
     }

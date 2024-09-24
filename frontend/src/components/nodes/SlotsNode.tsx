@@ -1,6 +1,6 @@
 import { Button } from "@nextui-org/react"
 import { PlusIcon } from "lucide-react"
-import { memo, useContext, useEffect, useState } from "react"
+import { memo, useContext, useState } from "react"
 import { PopUpContext } from "../../contexts/popUpContext"
 import SlotsConditionIcon from "../../icons/nodes/conditions/SlotsConditionIcon"
 import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
@@ -13,9 +13,6 @@ const SlotsNode = memo(({ data }: { data: SlotsNodeDataType }) => {
   const { openPopUp } = useContext(PopUpContext)
   const [nodeData, setNodeData] = useState(data)
 
-  useEffect(() => {
-    console.log(nodeData)
-  }, [nodeData])
 
   const onNodeModalOpen = () => {
     openPopUp(
