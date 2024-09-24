@@ -1,3 +1,4 @@
+import { flowContext } from "@/contexts/flowContext"
 import { Button, TableCell, TableRow } from "@nextui-org/react"
 import { useReactFlow } from "@xyflow/react"
 import { Plus } from "lucide-react"
@@ -24,6 +25,7 @@ const SlotsNodeModal = ({ id = "slots-node-modal", data, setData }: SlotsNodeMod
   const [nodeData, setNodeData] = useState(data)
   const { updateNodeData } = useReactFlow()
   const { openPopUp, closePopUp } = useContext(PopUpContext)
+  const { quietSaveFlows } = useContext(flowContext)
 
   const [description, setDescription] = useState(nodeData.description ?? "")
   const [groups, setGroups] = useState(nodeData.groups ?? [])
@@ -88,6 +90,7 @@ const SlotsNodeModal = ({ id = "slots-node-modal", data, setData }: SlotsNodeMod
 
   const onSaveHandler = () => {
     onSave()
+    quietSaveFlows()
     closePopUp(id)
   }
 

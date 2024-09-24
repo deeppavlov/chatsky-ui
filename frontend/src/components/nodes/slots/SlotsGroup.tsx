@@ -1,3 +1,4 @@
+import { flowContext } from "@/contexts/flowContext"
 import { Button } from "@nextui-org/react"
 import { useReactFlow } from "@xyflow/react"
 import { ChevronDown, PlusIcon, X } from "lucide-react"
@@ -17,6 +18,7 @@ type SlotsGroupProps = {
 }
 
 const SlotsGroup = ({ data, setData, group }: SlotsGroupProps) => {
+  const { quietSaveFlows } = useContext(flowContext)
   const { updateNodeData } = useReactFlow()
   const { openPopUp } = useContext(PopUpContext)
   const [isOpen, setIsOpen] = useState(false)
@@ -38,7 +40,10 @@ const SlotsGroup = ({ data, setData, group }: SlotsGroupProps) => {
     openPopUp(
       <AlertModal
         id='delete-slot'
-        onAction={() => slot && handleDeleteSlot(slot.id)} // Подтверждение удаления
+        onAction={() => {
+          slot && handleDeleteSlot(slot.id)
+          quietSaveFlows()
+        }} // Подтверждение удаления
         title='Delete slot'
         description={`Are you sure you want to delete the slot "${slot?.name}"? This action cannot be undone.`}
         actionText='Delete'

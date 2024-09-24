@@ -1,3 +1,4 @@
+import { flowContext } from "@/contexts/flowContext";
 import { Button, Switch } from "@nextui-org/react"; // Можно заменить на свой UI-компонент
 import { useReactFlow } from "@xyflow/react";
 import { Plus } from "lucide-react";
@@ -10,7 +11,7 @@ import { SlotsGroupType, SlotType } from "../../types/FlowTypes";
 import { SlotsNodeDataType } from "../../types/NodeTypes";
 import DefInput from "../../UI/Input/DefInput";
 import DefSelect from "../../UI/Input/DefSelect";
-import { generateNewSlot, generateNewSlotsGroup } from "../../utils";
+import { generateNewSlot } from "../../utils";
 import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents";
 import SlotItem from "./components/SlotItem";
 
@@ -31,6 +32,7 @@ const SlotsGroupModal = ({
   const { updateNodeData } = useReactFlow()
   const { closePopUp } = useContext(PopUpContext)
   const { notification: n } = useContext(NotificationsContext)
+  const { quietSaveFlows } = useContext(flowContext)
   const [isSubGroup, setIsSubGroup] = useState<boolean>(false)
   const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
     const id = "group_" + v4()
@@ -79,12 +81,12 @@ const SlotsGroupModal = ({
       }
       updateNodeData(data.id, newData)
       setData(() => newData)
-      setCurrentGroup(generateNewSlotsGroup())
     }
   }
-
+  
   const onSaveHandler = () => {
     onSave()
+    quietSaveFlows()
     closePopUp(id)
   }
 

@@ -1,3 +1,4 @@
+import { flowContext } from "@/contexts/flowContext"
 import { Button } from "@nextui-org/react"
 import { useReactFlow } from "@xyflow/react"
 import { useContext, useState } from "react"
@@ -20,6 +21,7 @@ const SlotModal = ({ id = "new-slot-modal", data, setData, group }: SlotModalTyp
   const { closePopUp } = useContext(PopUpContext)
   const { updateNodeData } = useReactFlow()
   const { notification: n } = useContext(NotificationsContext)
+  const { quietSaveFlows } = useContext(flowContext)
   const [slot, setSlot] = useState<SlotType>(generateNewSlot(group.name))
 
   const onSave = () => {
@@ -44,6 +46,7 @@ const SlotModal = ({ id = "new-slot-modal", data, setData, group }: SlotModalTyp
   const onSaveHandler = () => {
     onSave()
     closePopUp(id)
+    quietSaveFlows()
   }
 
   return (
