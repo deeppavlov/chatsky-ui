@@ -321,14 +321,79 @@ table thead tr:nth-child(2) {
 .popup {
   transition: opacity 300ms ease-in-out;
 }
-.fade-in {
+/* .fade-in {
   opacity: 1;
 }
 .fade-out {
   opacity: 0;
-}
+} */
 
 .select-content {
   width: var(--radix-select-trigger-width);
   max-height: var(--radix-select-content-available-height);
+}
+
+.dropdown-content[data-state="open"] {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-content[data-state="closed"] {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes zoom-in {
+  0% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes zoom-out {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.95);
+  }
+}
+
+/* Добавляем классы для анимаций */
+.fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
+.fade-out {
+  animation: fade-out 0.2s ease-in forwards;
+}
+
+.zoom-in {
+  animation: zoom-in 0.2s ease-out forwards;
+}
+
+.zoom-out {
+  animation: zoom-out 0.2s ease-in forwards;
 }

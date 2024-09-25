@@ -1,3 +1,4 @@
+import { flowContext } from "@/contexts/flowContext"
 import { Button, Spinner, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
 import { useContext } from "react"
@@ -11,24 +12,14 @@ import StopIcon from "../../icons/buildmenu/StopIcon"
 import { parseSearchParams } from "../../utils"
 
 const BuildMenu = () => {
-  const { buildStart, buildPending } = useContext(buildContext)
+  const { saveFlows, flows } = useContext(flowContext)
+  const { buildStart, buildPending, buildStatus, setBuildStatus } = useContext(buildContext)
   const { chat, setChat } = useContext(chatContext)
   const { runStart, runPending, runStatus, runStop, run, setRunStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
 
   return (
     <div className='flex items-center justify-start gap-1.5'>
-      {/* <Button
-        data-testid='build-menu-open-btn'
-        isIconOnly
-        className={
-          "bg-transparent border border-transparent hover:bg-header-btn-hover hover:border-border-darker rounded p-0 max-w-5 w-5 min-w-5 h-[34px]"
-        }
-        onClick={() => setShowBuildMenu(!showBuildMenu)}>
-        <ChevronLeft
-          className={classNames("transition-all duration-300", showBuildMenu && "rotate-180")}
-        />
-      </Button> */}
       <Tooltip
         content='Start build and run script process'
         radius='sm'>
@@ -38,7 +29,8 @@ const BuildMenu = () => {
           style={{}}
           onClick={async () => {
             if (runStatus !== "alive") {
-              setRunStatus(() => 'running')
+              saveFlows(flows, { interface: "ui" })
+              setRunStatus(() => "running")
               await buildStart({ wait_time: 1, end_status: "success" })
               await runStart({ end_status: "success", wait_time: 0 })
             } else if (runStatus === "alive" && run) {

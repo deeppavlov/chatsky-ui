@@ -54,6 +54,26 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        in: {
+          "0%": { opacity: "0", transform: "translateY(-10px) scale(0.95)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        out: {
+          "0%": { opacity: "1", transform: "translateY(0) scale(1)" },
+          "100%": { opacity: "0", transform: "translateY(-10px) scale(0.95)" },
+        },
+      },
+      animation: {
+        "open": "open 0.2s ease forwards",
+        "close": "close 0.2s ease forwards",
+        "fade-in": "fade-in 0.2s ease forwards",
+        "fade-out": "fade-out 0.2s ease forwards",
+        "zoom-in": "zoom-in 0.2s ease forwards",
+        "zoom-out": "zoom-out 0.2s ease forwards",
+        "in": "in 0.2s ease forwards",
+        "out": "out 0.2s ease forwards",
+      },
     },
   },
   darkMode: ["class", "class"],

@@ -1,6 +1,13 @@
+import Code from "@/UI/Code"
+import Dropdown, { DropdownGroupType } from "@/UI/Dropdown/Dropdown"
+import { NotificationsContext } from "@/contexts/notificationsContext"
+import { PopUpContext } from "@/contexts/popUpContext"
+import { undoRedoContext } from "@/contexts/undoRedoContext"
+import TelegramIcon from "@/icons/TelegramIcon"
+import LaunchModal from "@/modals/LaunchModal"
 import { Button, Popover, PopoverContent, PopoverTrigger, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
-import { Github, InfoIcon } from "lucide-react"
+import { ChevronDownIcon, Github, InfoIcon, Link2, Redo, Save, Undo } from "lucide-react"
 import { memo, useContext, useMemo } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
@@ -15,6 +22,7 @@ import NodeInstruments from "./components/NodeInstruments"
 
 const Header = memo(() => {
   const { version } = useContext(MetaContext)
+  const { openPopUp } = useContext(PopUpContext)
   const location = useLocation()
   const {
     toggleWorkspaceMode,
@@ -25,8 +33,82 @@ const Header = memo(() => {
     managerMode,
     toggleManagerMode,
   } = useContext(workspaceContext)
-  const { flows, tab } = useContext(flowContext)
+  const { flows, tab, saveFlows } = useContext(flowContext)
+  const { undo, redo } = useContext(undoRedoContext)
+  const { notification: n } = useContext(NotificationsContext)
   const flow = useMemo(() => flows.find((flow) => flow.name === tab), [flows, tab])
+  const dropdownItems: DropdownGroupType[] = useMemo(() => {
+    return [
+      {
+        items: [
+          {
+            label: "Launch in Telegram",
+            value: "launch_telegram",
+            className: "border !border-foreground font-semibold",
+            icon: <TelegramIcon />,
+            onClick: () => {
+              openPopUp(
+                <LaunchModal
+                  id='telegram-launch-modal'
+                  title={
+                    <div className='flex items-center gap-1'>
+                      <Link2 /> Bot setup
+                    </div>
+                  }
+                  interface_description={
+                    <div>
+                      <p className='font-semibold'>Short startup tutorial:</p>
+                      <ul className='*:text-sm'>
+                        <li className='mt-2'>1. Open 'BotFather' bot in Telegram</li>
+                        <li>
+                          2. Enter <Code>/start</Code> command and then select <Code>/newbot</Code> in the opening message
+                        </li>
+                        <li>3. Enter your new bot's name</li>
+                        <li>
+                          4. After the bot is configured, copy its HTTP API key and paste it in the
+                          form below
+                        </li>
+                      </ul>
+                    </div>
+                  }
+                />,
+                "telegram-launch-modal"
+              )
+            },
+          },
+          {
+            label: "Undo",
+            value: "undo",
+            icon: <Undo strokeWidth={1.5} />,
+            onClick: undo,
+          },
+          {
+            label: "Redo",
+            value: "redo",
+            icon: <Redo strokeWidth={1.5} />,
+            onClick: redo,
+          },
+        ],
+      },
+      {
+        items: [
+          {
+            label: "Save skill",
+            value: "save",
+            icon: <Save strokeWidth={1.5} />,
+            onClick: () => {
+              try {
+                saveFlows(flows)
+                n.add({ message: "", title: "Saved", type: "success", timestamp: Date.now() })
+              } catch (error) {
+                console.log(error)
+              }
+            },
+          },
+        ]
+      }
+    ]
+  }, [flows])
 
   return (
     <div
@@ -40,12 +122,23 @@ const Header = memo(() => {
           <Logo />
           <div className='flex items-end justify-start gap-1'>
             <span className='flex font-bold text-lg'>Chatsky UI</span>
-            {/* <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span> */}
           </div>
         </Link>
       )}
       {location.pathname.includes("flow") && (
-        <div className='flex items-center gap-4 w-52'>
+        <div className='flex items-center gap-1.5'>
+          <div>
+            <Dropdown
+              groups={dropdownItems}
+              onSelect={console.log}
+              triggerContent={
+                <div className='w-max px-3 h-10 flex items-center gap-2 bg-background group-data-[state=open]:bg-bg-secondary group-data-[state=open]:[&>svg]:rotate-180 rounded-lg border border-border cursor-pointer transition-colors duration-150 hover:bg-overlay'>
+                  <p> Project menu </p>
+                  <ChevronDownIcon className='size-5 stroke-1.5 transition-transform' />
+                </div>
+              }
+            />
+          </div>
           <div className='flex items-center gap-1.5'>
             <Tooltip
               radius='sm'
@@ -83,7 +176,6 @@ const Header = memo(() => {
                   " bg-background hover:bg-overlay border border-border rounded-small",
                   nodesLayoutMode ? "bg-overlay border-border-darker" : ""
                 )}>
-                {/* {nodesLayoutMode ? "Canvas Mode" : "List mode"} */}
                 <ListViewIcon />
               </Button>
             </Tooltip>
