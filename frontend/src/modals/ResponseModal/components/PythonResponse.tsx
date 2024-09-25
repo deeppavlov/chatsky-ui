@@ -8,7 +8,7 @@ import React, { useContext, useEffect } from "react"
 import { IdeContext } from "../../../contexts/ideContext"
 import { themeContext } from "../../../contexts/themeContext"
 import { responseType } from "../../../types/ResponseTypes"
-import { firstLinePlugin } from "../../ConditionModal/editorOptions"
+import { responseEditorPlugin } from "../../ConditionModal/editorOptions"
 
 const tabSize = "    "
 
@@ -22,7 +22,8 @@ const PythonResponse = ({
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
 
-  const firstString = `def ${response.name}(ctx: Context, pipeline: Pipeline) -> Message(""):`
+  const firstString = `class ${response.name}(BaseResponse):`
+  const secondString = `    async def call(self, ctx: Context) -> Message:`
 
   useEffect(() => {
     if (!response.data[0].python) {
@@ -33,7 +34,7 @@ const PythonResponse = ({
           {
             priority: 1,
             python: {
-              action: `def ${response.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python response:\n    return Message('Hello')`,
+              action: `${firstString}\n${secondString}\n        return Message('Hello')`,
             },
           },
         ],
@@ -50,7 +51,7 @@ const PythonResponse = ({
         {
           priority: 1,
           python: {
-            action: `${firstString}\n${value.split("\n").slice(1).join("\n")}`,
+            action: `${firstString}\n${secondString}\n${value.split("\n").slice(2).join("\n")}`,
           },
         },
       ],
@@ -66,7 +67,7 @@ const PythonResponse = ({
           {
             priority: 1,
             python: {
-              action: `${firstString}\n${response.data[0].python.action.split("\n").slice(1).join("\n")}`,
+              action: `${firstString}\n${secondString}\n${response.data[0].python.action.split("\n").slice(2).join("\n")}`,
             },
           },
         ],
@@ -112,7 +113,7 @@ const PythonResponse = ({
           }}
           lang='python'
           extensions={[
-            firstLinePlugin,
+            responseEditorPlugin,
             indentUnit.of(tabSize),
             autocompletion({
               override: [dffAutocomplete, globalCompletion, myCompletion],

@@ -116,8 +116,8 @@ const ConditionModal = ({
     if (currentCondition.type === "python" && currentCondition.data.python?.action) {
       if (
         currentCondition.data.python?.action.includes("return") &&
-        currentCondition.data.python?.action.includes("def") &&
-        currentCondition.data.python?.action.includes("(ctx: Context, pipeline: Pipeline) -> bool:")
+        currentCondition.data.python?.action.includes("class") &&
+        currentCondition.data.python?.action.includes("(BaseCondition):")
       ) {
         return {
           status: true,
@@ -127,12 +127,12 @@ const ConditionModal = ({
         if (!currentCondition.data.python?.action.includes("return")) {
           reasons.push("Missing return statement")
         }
-        if (!currentCondition.data.python?.action.includes("def")) {
+        if (!currentCondition.data.python?.action.includes("class")) {
           reasons.push("Missing def statement")
         }
         if (
           !currentCondition.data.python?.action.includes(
-            "(ctx: Context, pipeline: Pipeline) -> bool:"
+            "(BaseCondition):"
           )
         ) {
           reasons.push("Missing condition statement")
