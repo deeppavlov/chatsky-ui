@@ -15,3 +15,5 @@ if [ -z "$WHEEL_FILE" ]; then
     exit 1
 fi
 pip install "$WHEEL_FILE"
+
+chatsky.ui init --no-input
