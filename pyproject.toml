@@ -9,7 +9,7 @@ authors = [
     "Rami Mashkouk <rami.n.mashkouk@gmail.com>",
 ]
 readme = "README.md"
-packages = [{include = "backend/chatsky_ui"}]
+packages = [{include = "chatsky_ui", from = "backend" }]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
@@ -32,7 +32,7 @@ sphinx = "*"
 sphinx-rtd-theme = "*"
 
 [tool.poetry.scripts]
-"chatsky.ui" = "backend.chatsky_ui.cli:cli"
+"chatsky.ui" = "chatsky_ui.cli:cli"
 
 [tool.poetry.group.lint]
 optional = true

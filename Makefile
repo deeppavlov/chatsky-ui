@@ -64,7 +64,7 @@ check_project_arg:
 run_backend: check_project_arg ## Runs backend using the built dist. NEEDS arg: PROJECT_NAME
 	@if [ -f $(CURDIR)/.env ]; then set -a && . $(CURDIR)/.env; fi && \
 	cd ${PROJECT_NAME} && \
-    poetry add $(CURDIR)/${BACKEND_DIR}/dist/*.whl && \
+    poetry add $(CURDIR)/dist/*.whl && \
     poetry install && \
     . `poetry env info --path`/bin/activate && \
     chatsky.ui run_app
