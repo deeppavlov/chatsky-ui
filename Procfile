@@ -1,1 +1,1 @@
-web: make run_app
+web: npm install -g bun && make run_app
