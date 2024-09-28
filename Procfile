@@ -1,1 +1,2 @@
-web: chatsky.ui init && cd my_project
+release: pip install dist/*.whl
+web: chatsky.ui init --no-input && chatsky.ui run_app --project-dir my_project
