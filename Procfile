@@ -1,1 +1,1 @@
-web: npm install -g bun && make run_app
+web: cd frontend && npm install -g bun && make run_app
