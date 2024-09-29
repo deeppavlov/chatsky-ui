@@ -100,5 +100,8 @@
     "typescript": "^5.2.2",
     "vite": "^5.2.11"
   },
-  "module": "index.ts"
+  "module": "index.ts",
+  "engines": {
+    "node": ">=21.6.2"
+  }
 }
