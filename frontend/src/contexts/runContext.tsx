@@ -106,7 +106,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         let timer = 0
         const timerId = setInterval(() => timer++, 500)
         while (flag) {
-          if (timer > 9999) {
+          if (timer > 7200) {
             setRunPending(() => false)
             setRunStatus("failed")
             n.add({
@@ -131,6 +131,11 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
               title: "Run failed!",
               type: "error",
             })
+          }
+          if (status === "stopped") {
+            flag = false
+            setRunPending(false)
+            setRunStatus("stopped")
           }
           await new Promise((resolve) => setTimeout(resolve, 500))
         }

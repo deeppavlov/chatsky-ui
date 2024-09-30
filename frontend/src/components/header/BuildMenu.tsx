@@ -1,5 +1,6 @@
 import { flowContext } from "@/contexts/flowContext"
-import { Button, Spinner, Tooltip } from "@nextui-org/react"
+import Loader from "@/UI/Loader/Loader"
+import { Button, Tooltip } from "@nextui-org/react"
 import classNames from "classnames"
 import { useContext } from "react"
 import { useSearchParams } from "react-router-dom"
@@ -13,41 +14,35 @@ import { parseSearchParams } from "../../utils"
 
 const BuildMenu = () => {
   const { saveFlows, flows } = useContext(flowContext)
-  const { buildStart, buildPending, buildStatus, setBuildStatus } = useContext(buildContext)
+  const { buildStart, buildPending, buildStatus, setBuildStatus, buildStop } =
+    useContext(buildContext)
   const { chat, setChat } = useContext(chatContext)
   const { runStart, runPending, runStatus, runStop, run, setRunStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const buttonClickHandler = async () => {
+    if (runStatus !== "alive" && runStatus !== "running") {
+      saveFlows(flows, { interface: "ui" })
+      setRunStatus(() => "running")
+      await buildStart({ wait_time: 1, end_status: "success" })
+      await runStart({ end_status: "success", wait_time: 0 })
+    } else if ((runStatus === "alive" || runStatus === "running") && run) {
+      runStop(run?.id)
+    } else if (buildStatus === "running") {
+      buildStop()
+    }
+  }
 
   return (
     <div className='flex items-center justify-start gap-1.5'>
       <Tooltip
         content='Start build and run script process'
         radius='sm'>
-        <Button
+        <button
           data-testid='run-btn'
-          isIconOnly
-          style={{}}
-          onClick={async () => {
-            if (runStatus !== "alive") {
-              saveFlows(flows, { interface: "ui" })
-              setRunStatus(() => "running")
-              await buildStart({ wait_time: 1, end_status: "success" })
-              await runStart({ end_status: "success", wait_time: 0 })
-            } else if (runStatus === "alive" && run) {
-              runStop(run?.id)
-            }
-          }}
-          isLoading={runPending || buildPending}
-          spinner={
-            <Spinner
-              color={
-                runStatus === "alive" ? "success" : runStatus === "running" ? "warning" : "danger"
-              }
-              size='sm'
-            />
-          }
+          onClick={buttonClickHandler}
           className={classNames(
-            "bg-background hover:bg-overlay border border-border rounded-small",
+            "relative flex items-center justify-center bg-background hover:bg-overlay border border-border rounded-small w-10 h-10 transition-colors",
             runStatus === "alive"
               ? "border-emerald-500"
               : runStatus === "stopped"
@@ -56,10 +51,15 @@ const BuildMenu = () => {
                   ? "border-amber-600"
                   : "border-red-500"
           )}>
-          {runStatus !== "alive" ? (
-            <PlayIcon className='w-[18px] h-[18px]' />
-          ) : (
+          {(runPending || buildPending) && (
+            <div className='absolute bg-background rounded-full -bottom-1.5 -right-1.5 w-5 h-5 transition animate-fade-in'>
+              <Loader className='!border-danger border-2 !w-4 !h-4' />
+            </div>
+          )}
+          {runStatus === "alive" || runStatus === "running" ? (
             <StopIcon className='w-4 h-4' />
+          ) : (
+            <PlayIcon className='w-[18px] h-[18px]' />
           )}
           {/* <span
           className={classNames(
@@ -72,7 +72,7 @@ const BuildMenu = () => {
             runPending && "bg-warning"
           )}
         /> */}
-        </Button>
+        </button>
       </Tooltip>
       {/* <Button
         data-testid='build-btn'

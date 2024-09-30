@@ -142,7 +142,21 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
       setBuildPending(() => false)
     }
   }
-  const buildStop = () => {}
+  const buildStop = async () => {
+    console.log(builds)
+    try {
+      await build_stop(builds[0].id + 1)
+      setBuildPending(() => false)
+      setBuildStatus("stopped")
+    } catch (error) {
+      console.log(error)
+      n.add({
+        title: "Build stop error!",
+        message: (error as Error).message,
+        type: "error",
+      })
+    }
+  }
 
   return (
     <buildContext.Provider
