@@ -156,7 +156,12 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
 
     const keyDownHandler = (event: KeyboardEvent) => {
-      if (event.key === "z" && (event.ctrlKey || event.metaKey) && event.shiftKey && !disableCopyPaste) {
+      if (
+        event.key === "z" &&
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        !disableCopyPaste
+      ) {
         redo()
       } else if (event.key === "y" && (event.ctrlKey || event.metaKey) && !disableCopyPaste) {
         event.preventDefault() // prevent the default action
@@ -177,12 +182,10 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   const [copiedSelection, setCopiedSelection] = useState<OnSelectionChangeParams | null>(null)
 
   useEffect(() => {
-    console.log(modalsOpened)
     if (modalsOpened === 0) {
       setDisableCopyPaste(false)
     } else if (modalsOpened > 0) {
       setDisableCopyPaste(true)
-      console.log(true)
     }
   }, [modalsOpened])
 
@@ -212,7 +215,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   /**
    * Paste function
    * @param selectionInstance last selection of nodes&edges
-   * @param position position of pasting nodes&edges 
+   * @param position position of pasting nodes&edges
    */
   const paste = (
     selectionInstance: OnSelectionChangeParams,
@@ -312,7 +315,6 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
 
     const newNodes = [...nodes.map((e: AppNode) => ({ ...e, selected: false })), ...resultNodes]
-
 
     selectionInstance.edges.forEach((e) => {
       const source = idsMap[e.source]
