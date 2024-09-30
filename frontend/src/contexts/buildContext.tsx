@@ -143,7 +143,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
   const buildStop = async () => {
-    console.log(builds)
     try {
       await build_stop(builds[0].id + 1)
       setBuildPending(() => false)
