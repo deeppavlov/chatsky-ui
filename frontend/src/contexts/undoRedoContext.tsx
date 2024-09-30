@@ -60,6 +60,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   const [past, setPast] = useState<HistoryItem[][]>(flows.map(() => []))
   const [future, setFuture] = useState<HistoryItem[][]>(flows.map(() => []))
   const [tabIndex, setTabIndex] = useState(flows.findIndex((f) => f.name === tab))
+  const [disableCopyPaste, setDisableCopyPaste] = useState(false)
 
   useEffect(() => {
     // whenever the flows variable changes, we need to add one array to the past and future states
@@ -155,12 +156,12 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
 
     const keyDownHandler = (event: KeyboardEvent) => {
-      if (event.key === "z" && (event.ctrlKey || event.metaKey) && event.shiftKey) {
+      if (event.key === "z" && (event.ctrlKey || event.metaKey) && event.shiftKey && !disableCopyPaste) {
         redo()
-      } else if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
+      } else if (event.key === "y" && (event.ctrlKey || event.metaKey) && !disableCopyPaste) {
         event.preventDefault() // prevent the default action
         redo()
-      } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
+      } else if (event.key === "z" && (event.ctrlKey || event.metaKey) && !disableCopyPaste) {
         undo()
       }
     }
@@ -170,17 +171,18 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener("keydown", keyDownHandler)
     }
-  }, [undo, redo])
+  }, [undo, redo, disableCopyPaste])
 
   const { reactFlowInstance } = useContext(flowContext)
   const [copiedSelection, setCopiedSelection] = useState<OnSelectionChangeParams | null>(null)
-  const [disableCopyPaste, setDisableCopyPaste] = useState(false)
 
   useEffect(() => {
+    console.log(modalsOpened)
     if (modalsOpened === 0) {
       setDisableCopyPaste(false)
     } else if (modalsOpened > 0) {
       setDisableCopyPaste(true)
+      console.log(true)
     }
   }, [modalsOpened])
 
