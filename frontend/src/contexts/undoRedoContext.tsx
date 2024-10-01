@@ -60,6 +60,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   const [past, setPast] = useState<HistoryItem[][]>(flows.map(() => []))
   const [future, setFuture] = useState<HistoryItem[][]>(flows.map(() => []))
   const [tabIndex, setTabIndex] = useState(flows.findIndex((f) => f.name === tab))
+  const [disableCopyPaste, setDisableCopyPaste] = useState(false)
 
   useEffect(() => {
     // whenever the flows variable changes, we need to add one array to the past and future states
@@ -155,12 +156,17 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
 
     const keyDownHandler = (event: KeyboardEvent) => {
-      if (event.key === "z" && (event.ctrlKey || event.metaKey) && event.shiftKey) {
+      if (
+        event.key === "z" &&
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        !disableCopyPaste
+      ) {
         redo()
-      } else if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
+      } else if (event.key === "y" && (event.ctrlKey || event.metaKey) && !disableCopyPaste) {
         event.preventDefault() // prevent the default action
         redo()
-      } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
+      } else if (event.key === "z" && (event.ctrlKey || event.metaKey) && !disableCopyPaste) {
         undo()
       }
     }
@@ -170,11 +176,10 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener("keydown", keyDownHandler)
     }
-  }, [undo, redo])
+  }, [undo, redo, disableCopyPaste])
 
   const { reactFlowInstance } = useContext(flowContext)
   const [copiedSelection, setCopiedSelection] = useState<OnSelectionChangeParams | null>(null)
-  const [disableCopyPaste, setDisableCopyPaste] = useState(false)
 
   useEffect(() => {
     if (modalsOpened === 0) {
@@ -210,7 +215,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
   /**
    * Paste function
    * @param selectionInstance last selection of nodes&edges
-   * @param position position of pasting nodes&edges 
+   * @param position position of pasting nodes&edges
    */
   const paste = (
     selectionInstance: OnSelectionChangeParams,
@@ -310,7 +315,6 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     }
 
     const newNodes = [...nodes.map((e: AppNode) => ({ ...e, selected: false })), ...resultNodes]
-
 
     selectionInstance.edges.forEach((e) => {
       const source = idsMap[e.source]

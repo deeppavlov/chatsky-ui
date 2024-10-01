@@ -6,10 +6,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocke
 from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
+from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.index import Index
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
-from chatsky_ui.schemas.process_status import Status
 
 router = APIRouter()
 

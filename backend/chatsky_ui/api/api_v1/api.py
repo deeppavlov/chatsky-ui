@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from chatsky_ui.api.api_v1.endpoints import bot, config, chatsky_services, flows
+from chatsky_ui.api.api_v1.endpoints import bot, chatsky_services, config, flows
 from chatsky_ui.core.config import settings
 
 api_router = APIRouter()

@@ -5,6 +5,7 @@
 
 import os
 import sys
+from chatsky_ui import __version__
 
 sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
@@ -13,7 +14,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = 'Chatsky-UI'
 copyright = '2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk'
 author = 'Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk'
-release = '0.2.0'
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/maste r/usage/configuration.html#general-configuration

@@ -8,7 +8,7 @@ import { useContext, useEffect } from "react"
 import { IdeContext } from "../../../contexts/ideContext"
 import { themeContext } from "../../../contexts/themeContext"
 import { ConditionModalContentType } from "../ConditionModal"
-import { firstLinePlugin } from "../editorOptions"
+import { conditionEditorPlugin } from "../editorOptions"
 
 const tabSize = "    "
 
@@ -16,7 +16,8 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
 
-  const firstString = `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:`
+  const firstString = `class ${condition.name}(BaseCondition):`
+  const secondString = `    async def call(self, ctx: Context) -> bool:`
 
   useEffect(() => {
     if (!condition.data.python) {
@@ -26,13 +27,13 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
         data: {
           ...condition.data,
           python: {
-            action: `def ${condition.name}(ctx: Context, pipeline: Pipeline) -> bool:\n  # enter your python condition:\n    return True`,
+            action: `${firstString}\n${secondString}\n        return True`,
           },
         },
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [condition.name])
 
   useEffect(() => {
     if (condition.data.python?.action) {
@@ -42,7 +43,7 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
         data: {
           ...condition.data,
           python: {
-            action: `${firstString}\n${condition.data.python.action.split("\n").slice(1).join("\n")}`,
+            action: `${firstString}\n${secondString}\n${condition.data.python.action.split("\n").slice(2).join("\n")}`,
           },
         },
       })
@@ -57,7 +58,7 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
       data: {
         ...condition.data,
         python: {
-          action: `${firstString}\n${value.split("\n").slice(1).join("\n")}`,
+          action: `${firstString}\n${secondString}\n${value.split("\n").slice(2).join("\n")}`,
         },
       },
     })
@@ -83,7 +84,7 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
     if (word.from == word.to && !context.explicit) return null
     return {
       from: word.from,
-      options: [{ label: "cnd", type: "function", info: "DFF conditions base methods object" }],
+      options: [{ label: "cnd", type: "function", info: "Chatsky conditions base methods object" }],
     }
   }
 
@@ -100,7 +101,7 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
           }}
           lang='python'
           extensions={[
-            firstLinePlugin,
+            conditionEditorPlugin,
             indentUnit.of(tabSize),
             autocompletion({
               override: [dffAutocomplete, globalCompletion, myCompletion],

@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion"
-import React, { createContext, ReactNode, useContext, useState } from "react"
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { workspaceContext } from "./workspaceContext"
 
 type PopUpContextType = {
@@ -27,13 +27,18 @@ const PopUpProvider = ({ children }: PopUpProviderProps) => {
   const [popUpElements, setPopUpElements] = useState<{ id: string; element: JSX.Element }[]>([])
   const [closingId, setClosingId] = useState<string | null>(null)
 
+
+  useEffect(() => {
+    setModalsOpened(popUpElements.length)
+  }, [popUpElements, setModalsOpened])
+
   const openPopUp = (element: JSX.Element, id: string) => {
-    setModalsOpened((prev) => prev + 1)
+    // setModalsOpened((prev) => prev + 1)
     setPopUpElements((prevPopUps) => [{ id, element }, ...prevPopUps])
   }
 
   const closePopUp = (id: string) => {
-    setModalsOpened((prev) => prev - 1)
+    // setModalsOpened((prev) => prev - 1)
     setClosingId(id)
     // Время ожидания анимации
     setPopUpElements((prevPopUps) => prevPopUps.filter((popUp) => popUp.id !== id))

@@ -5,9 +5,9 @@ JSON Converter
 Converts a user project's frontend graph to a script understandable by Chatsky json-importer.
 """
 import ast
+from collections import defaultdict
 from pathlib import Path
 from typing import List, Optional, Tuple
-from collections import defaultdict
 
 from omegaconf.dictconfig import DictConfig
 
@@ -19,9 +19,6 @@ from chatsky_ui.services.condition_finder import ServiceReplacer
 logger = get_logger(__name__)
 
 PRE_TRANSITIONS_PROCESSING = "PRE_TRANSITIONS_PROCESSING"
-
-
-PRE_TRANSITION = "PRE_TRANSITION"
 
 
 PRE_TRANSITION = "PRE_TRANSITION"
@@ -208,7 +205,7 @@ def map_interface(interface: DictConfig) -> dict:
     if not isinstance(interface, DictConfig):
         raise ValueError(f"Interface must be a dictionary. Got: {type(interface)}")
     keys = interface.keys()
-    if len(keys)!=1:
+    if len(keys) != 1:
         raise ValueError("There must be only one key in the interface")
 
     key = next(iter(keys))
@@ -217,17 +214,12 @@ def map_interface(interface: DictConfig) -> dict:
             raise ValueError("Token keyworkd is not provided for telegram interface")
         if not interface[key]["token"]:
             raise ValueError("Token is not provided for telegram interface")
-        return {
-            "chatsky.messengers.telegram.LongpollingInterface": {
-                "token": interface[key]["token"]
-            }
-        }
+        return {"chatsky.messengers.telegram.LongpollingInterface": {"token": interface[key]["token"]}}
     if key == "cli":
-        return {
-            "chatsky.messengers.console.CLIMessengerInterface": {}
-        }
+        return {"chatsky.messengers.console.CLIMessengerInterface": {}}
     else:
         raise ValueError(f"Unknown interface: {key}")
+
 
 async def converter(build_id: int) -> None:
     """Translate frontend flow script into chatsky script."""
