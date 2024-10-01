@@ -39,14 +39,26 @@ export default {
         "f-card-trash": "var(--flow-card-trash-btn)",
         "contrast-border": "var(--contrast-border)",
         chat: "var(--chat-background)",
+        "btn-accent": "var(--btn-accent)",
+        "input-background": "var(--input-background)",
+        "input-background-disabled": "var(--input-background-disabled)",
+        "input-foreground": "var(--input-foreground)",
+        "input-border": "var(--input-border)",
+        "input-border-focus": "var(--input-border-focus)",
+        "input-border-error": "var(--input-border-error)",
+        "table-background": "var(--table-background)",
       },
       borderRadius: {
         node: "16px",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
-  darkMode: "class",
+  darkMode: ["class", "class"],
   plugins: [
+    import("tailwindcss-children"),
     nextui({
       layout: {
         boxShadow: {
@@ -60,21 +72,22 @@ export default {
           colors: {
             background: "#212121",
             content1: "#212121",
-            overlay: '#121212',
-            success: '#00CC99',
-            danger: '#FF3333'
+            overlay: "#121212",
+            success: "#00CC99",
+            danger: "#FF3333",
           },
         },
         light: {
           colors: {
             background: "#fff",
             content1: "#fff",
-            overlay: '#f8fafc',
-            success: '#00CC99',
-            danger: '#FF3333'
+            overlay: "#f8fafc",
+            success: "#00CC99",
+            danger: "#FF3333",
           },
         },
       },
     }),
+    import("tailwindcss-animate"),
   ],
 }

@@ -127,8 +127,8 @@ const Chat = memo(() => {
       }
       socket.onmessage = (event: MessageEvent) => {
         console.log(event)
-        if (event.data && event.data.includes("response")) {
-          const data = event.data.split(":")[2].split("attachments")[0].slice(0, -2)
+        if (event.data) {
+          const data = event.data
           setTimeout(() => {
             setMessages((prev) => [...prev, { message: data, type: "bot" }])
           }, 500)

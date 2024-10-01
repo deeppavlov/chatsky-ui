@@ -11,13 +11,17 @@ from collections import defaultdict
 
 from omegaconf.dictconfig import DictConfig
 
-from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.core.config import settings
+from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.services.condition_finder import ServiceReplacer
 
-
 logger = get_logger(__name__)
+
+PRE_TRANSITIONS_PROCESSING = "PRE_TRANSITIONS_PROCESSING"
+
+
+PRE_TRANSITION = "PRE_TRANSITION"
 
 
 PRE_TRANSITION = "PRE_TRANSITION"
@@ -147,7 +151,7 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots
 def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
     """Fill nodes into chatsky script dictunary."""
     for _, node in nodes.items():
-        if node["info"].type == "link_node":
+        if node["info"].type in ["link_node", "slots_node"]:
             continue
         if node["flow"] not in script["script"]:
             script["script"][node["flow"]] = {}
@@ -171,7 +175,7 @@ async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
     """
     responses_list = []
     for node in nodes.values():
-        if node["info"].type == "link_node":
+        if node["info"].type in ["link_node", "slots_node"]:
             continue
         response = node["info"].data.response
         logger.debug("response type: %s", response.type)

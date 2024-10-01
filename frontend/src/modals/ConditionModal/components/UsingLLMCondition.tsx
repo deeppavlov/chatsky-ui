@@ -1,14 +1,11 @@
 import { Input, Select, SelectItem, Textarea } from "@nextui-org/react"
 import React, { useEffect, useMemo } from "react"
-import { conditionType } from "../../../types/ConditionTypes"
+import { ConditionModalContentType } from "../ConditionModal"
 
 const UsingLLMConditionSection = ({
   condition,
   setData,
-}: {
-  condition: conditionType
-  setData: React.Dispatch<React.SetStateAction<conditionType>>
-}) => {
+}: ConditionModalContentType) => {
   const modelNames = useMemo(() => ["gpt-3", "gpt-3.5-turbo", "gpt-4"], [])
 
   useEffect(() => {

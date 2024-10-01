@@ -1,41 +1,40 @@
-import { useDisclosure } from "@nextui-org/react"
 import * as ContextMenu from "@radix-ui/react-context-menu"
 import { Handle, Position, useReactFlow } from "@xyflow/react"
 import { useContext, useEffect, useState } from "react"
 import { CONDITION_LABELS, conditionTypeIcons } from "../../../consts"
-import { workspaceContext } from "../../../contexts/workspaceContext"
+import { PopUpContext } from "../../../contexts/popUpContext"
 import ConditionModal from "../../../modals/ConditionModal/ConditionModal"
 import { conditionLabelType } from "../../../types/ConditionTypes"
 import { NodeComponentConditionType } from "../../../types/NodeTypes"
 
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
+  const { openPopUp } = useContext(PopUpContext)
   const [label, setLabel] = useState<conditionLabelType>(condition.data.transition_type ?? "manual")
-  const { onModalOpen, onModalClose } = useContext(workspaceContext)
-  const {
-    onOpen: onConditionOpen,
-    onClose: onConditionClose,
-    isOpen: isConditionOpen,
-  } = useDisclosure()
 
   const edges = useReactFlow().getEdges()
 
   useEffect(() => {
     condition.data.transition_type = label
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label])
 
   const conditionOpenHandler = () => {
-    onModalOpen(onConditionOpen)
-  }
-  
-  const conditionCloseHandler = () => {
-    onModalClose(onConditionClose)
+    openPopUp(
+      <ConditionModal
+        id="condition-condition-modal"
+        data={data}
+        condition={condition}
+      />,
+      "condition-condition-modal"
+    )
   }
 
   return (
     <ContextMenu.Root>
       <div className='w-full relative flex items-center justify-start text-start'>
-        <div onClick={conditionOpenHandler} className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer transition-colors hover:border-border-darker'>
+        <div
+          onClick={conditionOpenHandler}
+          className='w-full bg-node-header py-2.5 px-4 rounded-lg border-[0.5px] border-border flex items-center justify-between gap-2 cursor-pointer transition-colors hover:border-border-darker'>
           <div className='flex items-center gap-2'>
             {conditionTypeIcons[condition.type]}
             {condition.name}
@@ -85,12 +84,12 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
           ))}
         </ContextMenu.Content>
       </ContextMenu.Portal>
-      <ConditionModal
+      {/* <ConditionModal
         data={data}
         isOpen={isConditionOpen}
         onClose={conditionCloseHandler}
         condition={condition}
-      />
+      /> */}
     </ContextMenu.Root>
   )
 }
