@@ -1,6 +1,6 @@
 import ast
 from ast import NodeTransformer
-from typing import List, Dict
+from typing import Dict, List
 
 from chatsky_ui.core.logger_config import get_logger
 

@@ -64,10 +64,6 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
     })
   }
 
-  // useEffect(() => {
-  //   console.log(condition.data.python?.action)
-  // }, [condition])
-
   function dffAutocomplete(context: CompletionContext) {
     const word = context.matchBefore(/\b(?:cnd)\.\w*/)
     if (!word) return null

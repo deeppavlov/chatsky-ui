@@ -9,11 +9,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from omegaconf.dictconfig import DictConfig
+
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.services.condition_finder import ServiceReplacer
-from omegaconf.dictconfig import DictConfig
 
 logger = get_logger(__name__)
 
