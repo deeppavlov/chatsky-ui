@@ -199,12 +199,42 @@ async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
     return nodes, responses_list
 
 
+def map_interface(interface: DictConfig) -> dict:
+    """Map frontend interface to chatsky interface."""
+    if not isinstance(interface, DictConfig):
+        raise ValueError(f"Interface must be a dictionary. Got: {type(interface)}")
+    keys = interface.keys()
+    if len(keys)!=1:
+        raise ValueError("There must be only one key in the interface")
+
+    key = next(iter(keys))
+    if key == "telegram":
+        if "token" not in interface[key]:
+            raise ValueError("Token keyworkd is not provided for telegram interface")
+        if not interface[key]["token"]:
+            raise ValueError("Token is not provided for telegram interface")
+        return {
+            "chatsky.messengers.telegram.LongpollingInterface": {
+                "token": interface[key]["token"]
+            }
+        }
+    if key == "cli":
+        return {
+            "chatsky.messengers.console.CLIMessengerInterface": {}
+        }
+    else:
+        raise ValueError(f"Unknown interface: {key}")
+
 async def converter(build_id: int) -> None:
     """Translate frontend flow script into chatsky script."""
     frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id)
 
-    script = {"script": {}}
     flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
+    script = {
+        "script": {},
+        "messenger_interface": map_interface(flow_graph["interface"]),
+    }
+    del flow_graph["interface"]
 
     nodes, script = _organize_graph_according_to_nodes(flow_graph, script)
 
