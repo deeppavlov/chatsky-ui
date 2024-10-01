@@ -204,7 +204,7 @@ def map_interface(interface: DictConfig) -> dict:
     if not isinstance(interface, DictConfig):
         raise ValueError(f"Interface must be a dictionary. Got: {type(interface)}")
     keys = interface.keys()
-    if len(keys)!=1:
+    if len(keys) != 1:
         raise ValueError("There must be only one key in the interface")
 
     key = next(iter(keys))
@@ -213,17 +213,12 @@ def map_interface(interface: DictConfig) -> dict:
             raise ValueError("Token keyworkd is not provided for telegram interface")
         if not interface[key]["token"]:
             raise ValueError("Token is not provided for telegram interface")
-        return {
-            "chatsky.messengers.telegram.LongpollingInterface": {
-                "token": interface[key]["token"]
-            }
-        }
+        return {"chatsky.messengers.telegram.LongpollingInterface": {"token": interface[key]["token"]}}
     if key == "cli":
-        return {
-            "chatsky.messengers.console.CLIMessengerInterface": {}
-        }
+        return {"chatsky.messengers.console.CLIMessengerInterface": {}}
     else:
         raise ValueError(f"Unknown interface: {key}")
+
 
 async def converter(build_id: int) -> None:
     """Translate frontend flow script into chatsky script."""
