@@ -78,7 +78,8 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
                 group_slot[slot_name] = _convert_slots(slot_values)
         return dict(group_slot)
 
-    script["slots"] = _convert_slots(flow_graph["slots"])
+    if "slots" in flow_graph:
+        script["slots"] = _convert_slots(flow_graph["slots"])
 
     return nodes, script
 
