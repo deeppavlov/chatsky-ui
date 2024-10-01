@@ -1,12 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Edge, OnBeforeDelete, ReactFlowInstance } from "@xyflow/react"
+import { AxiosError } from "axios"
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { v4 } from "uuid"
 import { get_flows, save_flows } from "../api/flows"
 import { FLOW_COLORS } from "../consts"
-import { FlowType } from "../types/FlowTypes"
-import { AppNode } from "../types/NodeTypes"
+import { FlowType, SlotsGroupType, SlotType } from "../types/FlowTypes"
+import { AppNode, SlotsNodeType } from "../types/NodeTypes"
+import { parseGroups } from "../utils"
 import { MetaContext } from "./metaContext"
 import { NotificationsContext } from "./notificationsContext"
 // import { v4 } from "uuid"
@@ -59,8 +61,12 @@ type TabContextType = {
   setTab: React.Dispatch<React.SetStateAction<string>>
   flows: FlowType[]
   setFlows: React.Dispatch<React.SetStateAction<FlowType[]>>
+  slots: SlotType[]
+  setSlots: React.Dispatch<React.SetStateAction<SlotType[]>>
+  groups: SlotsGroupType[]
+  setGroups: React.Dispatch<React.SetStateAction<SlotsGroupType[]>>
   deleteFlow: (flow: FlowType) => void
-  saveFlows: (flows: FlowType[]) => void
+  saveFlows: (flows: FlowType[], _interface?: interfaceType) => void
   quietSaveFlows: () => void
   updateFlow: (flow: FlowType) => void
   getLocaleFlows: () => FlowType[]
@@ -79,6 +85,10 @@ const initialValue: TabContextType = {
   setTab: () => {},
   flows: [],
   setFlows: () => {},
+  slots: [],
+  setSlots: () => {},
+  groups: [],
+  setGroups: () => {},
   deleteFlow: () => {},
   saveFlows: () => {},
   quietSaveFlows: () => {},
@@ -97,6 +107,11 @@ const initialValue: TabContextType = {
   validateNodeDeletion: () => false,
 }
 
+export type interfaceType = {
+  interface: "tg" | "ui"
+  token?: string
+}
+
 export const flowContext = createContext(initialValue)
 
 export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
@@ -107,6 +122,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const [tab, setTab] = useState(initialValue.tab)
   const { flowId } = useParams()
   const [flows, setFlows] = useState<FlowType[]>([])
+  const [groups, setGroups] = useState<SlotsGroupType[]>([])
+  const [slots, setSlots] = useState<SlotType[]>([])
   const { notification: n } = useContext(NotificationsContext)
   const { screenLoading } = useContext(MetaContext)
 
@@ -125,6 +142,14 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { data } = await get_flows()
       if (data.flows) {
+        const slot_nodes: SlotsNodeType[] = data.flows
+          .map((flow) => flow.data.nodes)
+          .flat()
+          .filter((node) => node.type === "slots_node") as SlotsNodeType[]
+        const groups = slot_nodes.map((node) => node.data.groups).flat()
+        const slots = groups.map((group) => group.slots).flat()
+        setSlots(slots)
+        setGroups(groups)
         if (data.flows.some((flow) => flow.name === "Global")) {
           setFlows(data.flows)
         } else {
@@ -147,12 +172,27 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   /**
-   * 
+   *
    * @param {FlowType[]} flows flows to save array
    */
-  const saveFlows = async (flows: FlowType[]) => {
-    await save_flows(flows)
-    setFlows(flows)
+  const saveFlows = async (flows: FlowType[], _interface?: interfaceType) => {
+    const slot_nodes: SlotsNodeType[] = flows
+      .map((flow) => flow.data.nodes)
+      .flat()
+      .filter((node) => node.type === "slots_node") as SlotsNodeType[]
+    const groups = slot_nodes.map((node) => node.data.groups).flat()
+    const slots = groups.map((group) => group.slots).flat()
+    setSlots(slots)
+    setGroups(groups)
+    const parsed_groups = await parseGroups(groups)
+    try {
+      await save_flows(flows, (_interface = _interface ?? { interface: "ui" }), parsed_groups)
+      setFlows(flows)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+    } catch (error: AxiosError) {
+      n.add({ title: "Error", message: error?.message ?? "Something went wrong", type: "error" })
+    }
   }
 
   /**
@@ -163,7 +203,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("quiet save flows")
       await saveFlows(flows)
       n.add({ message: "Flows saved", title: "DEBUG", type: "debug" })
-    }, 100)
+    }, 300)
   }
 
   /**
@@ -172,7 +212,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   const getLocaleFlows = useCallback(() => {
     return flows
   }, [flows])
-
 
   /**
    * Delete flow function
@@ -228,7 +267,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     })
   }
 
-    /**
+  /**
    * Validate node deletion function
    * @param {AppNode} node node to check before deletion
    * @returns {boolean} boolean is_deletion_valid value
@@ -324,6 +363,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         setTab,
         flows,
         setFlows,
+        slots,
+        setSlots,
+        groups,
+        setGroups,
         deleteFlow,
         saveFlows,
         quietSaveFlows,

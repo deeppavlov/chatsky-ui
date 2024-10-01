@@ -6,6 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocke
 from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
+from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.index import Index
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
@@ -264,8 +265,6 @@ async def connect(
     await websocket_manager.connect(websocket)
     run_manager.logger.info("Websocket for run process '%s' has been opened", run_id)
 
-    await websocket.send_text("Start chatting")
-
     output_task = asyncio.create_task(
         websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket)
     )
@@ -279,3 +278,5 @@ async def connect(
         return_when=asyncio.FIRST_COMPLETED,
     )
     websocket_manager.disconnect(websocket)
+    if await run_manager.get_status(run_id) in [Status.ALIVE, Status.RUNNING]:
+        await run_manager.stop(run_id)

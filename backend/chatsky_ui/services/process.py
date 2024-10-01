@@ -195,7 +195,7 @@ class Process(ABC):
 
 
 class RunProcess(Process):
-    """Process for running a DFF pipeline."""
+    """Process for running a Chatsky pipeline."""
 
     def __init__(self, id_: int, build_id: int, preset_end_status: str = ""):
         super().__init__(id_, preset_end_status)
@@ -239,7 +239,7 @@ class RunProcess(Process):
 
 
 class BuildProcess(Process):
-    """Process for converting a frontned graph to a DFF script."""
+    """Process for converting a frontned graph to a Chatsky script."""
 
     def __init__(self, id_: int, preset_end_status: str = ""):
         super().__init__(id_, preset_end_status)

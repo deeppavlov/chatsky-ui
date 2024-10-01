@@ -4,6 +4,7 @@ from fastapi import APIRouter, FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
+from chatsky_ui import __version__
 from chatsky_ui.api.api_v1.api import api_router
 from chatsky_ui.api.deps import get_index
 from chatsky_ui.core.config import settings
@@ -20,10 +21,10 @@ async def lifespan(app: FastAPI):
     await index_dict["instance"].load()
     yield
 
-    settings.temp_conf.unlink(missing_ok=True)
+    # settings.temp_conf.unlink(missing_ok=True)
 
 
-app = FastAPI(title="DF Designer", lifespan=lifespan)
+app = FastAPI(title="DF Designer", version=__version__, lifespan=lifespan)
 
 
 app.add_middleware(

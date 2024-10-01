@@ -3,6 +3,7 @@ import { ReactFlowProvider } from "@xyflow/react"
 import { RouterProvider, createBrowserRouter } from "react-router-dom"
 import { Preloader } from "./UI/Preloader/Preloader"
 import ContextWrapper from "./contexts"
+import PopUpProvider from "./contexts/popUpContext"
 import { UndoRedoProvider } from "./contexts/undoRedoContext"
 import Fallback from "./pages/Fallback"
 import Flow from "./pages/Flow"
@@ -10,7 +11,6 @@ import Home from "./pages/Home"
 import Index from "./pages/Index"
 
 const App = () => {
-  
   const router = createBrowserRouter([
     {
       path: "/",
@@ -26,9 +26,11 @@ const App = () => {
           path: "app/flow/:flowId",
           element: (
             <ReactFlowProvider>
-              <UndoRedoProvider>
-                <Flow />
-              </UndoRedoProvider>
+              <PopUpProvider>
+                <UndoRedoProvider>
+                  <Flow />
+                </UndoRedoProvider>
+              </PopUpProvider>
             </ReactFlowProvider>
           ),
           loader: Preloader,

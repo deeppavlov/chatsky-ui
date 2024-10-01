@@ -27,7 +27,7 @@ const ModalComponent = ({ ...props }: ModalProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return <Modal {...props}>{props.children}</Modal>
+  return <Modal {...props} portalContainer={document.querySelector(".popups-container") ?? document.body}>{props.children}</Modal>
 }
 
 export default ModalComponent

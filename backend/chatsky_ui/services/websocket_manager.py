@@ -56,7 +56,7 @@ class WebSocketManager:
                 response = await process_manager.processes[run_id].read_stdout()
                 if not response:
                     break
-                await websocket.send_text(response.decode().strip())
+                await websocket.send_text(response.decode().strip().split("text=")[-1].strip("'"))
         except WebSocketDisconnect:
             self.logger.info("Websocket connection is closed by client")
         except RuntimeError:

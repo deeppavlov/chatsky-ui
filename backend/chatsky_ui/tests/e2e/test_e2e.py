@@ -50,6 +50,5 @@ async def test_all(mocker):
             await asyncio.sleep(10)
             assert await process_manager.get_status(run_id) == Status.ALIVE
 
-            async with aconnect_ws(f"http://localhost:8000/api/v1/bot/run/connect?run_id={run_id}", client) as ws:
-                message = await ws.receive_text()
-                assert message == "Start chatting"
+            async with aconnect_ws(f"http://localhost:8000/api/v1/bot/run/connect?run_id={run_id}", client):
+                pass

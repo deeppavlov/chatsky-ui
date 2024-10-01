@@ -4,7 +4,6 @@ import { FlowProvider } from "./flowContext"
 import IdeProvider from "./ideContext"
 import MetaProvider from "./metaContext"
 import NotificationsProvider from "./notificationsContext"
-import PopUpProvider from "./popUpContext"
 import { RunProvider } from "./runContext"
 import { ThemeProvider } from "./themeContext"
 import { WorkspaceProvider } from "./workspaceContext"
@@ -19,9 +18,7 @@ export default function ContextWrapper({ children }: { children: React.ReactNode
               <RunProvider>
                 <FlowProvider>
                   <WorkspaceProvider>
-                    <IdeProvider>
-                      <PopUpProvider>{children}</PopUpProvider>
-                    </IdeProvider>
+                    <IdeProvider>{children}</IdeProvider>
                   </WorkspaceProvider>
                 </FlowProvider>
               </RunProvider>

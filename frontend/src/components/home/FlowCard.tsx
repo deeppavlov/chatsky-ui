@@ -1,8 +1,9 @@
 import classNames from "classnames"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit } from "lucide-react"
 import React, { useCallback, useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { flowContext } from "../../contexts/flowContext"
+import TrashIcon from "../../icons/TrashIcon"
 import { FlowType } from "../../types/FlowTypes"
 
 const FlowCard = ({ flow }: { flow: FlowType }) => {
@@ -42,7 +43,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
             className={`w-8 h-8 rounded-lg border border-transparent flex items-center justify-center bg-transparent hover:bg-f-card-trash hover:border-border transition ${
               !hover && "opacity-0"
             } absolute top-4 right-4 z-10`}>
-            <Trash2 className='stroke-foreground w-5 h-5' />
+            <TrashIcon className='stroke-foreground w-5 h-5' />
           </button>
         </div>
         <p className=''>{flow.description}</p>

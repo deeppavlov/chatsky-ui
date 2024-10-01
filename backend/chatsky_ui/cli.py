@@ -10,7 +10,7 @@ import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
 
-# Patch nest_asyncio before importing DFF
+# Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402

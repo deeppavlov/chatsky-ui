@@ -1,7 +1,7 @@
 import { v4 } from "uuid"
 import { CreateFlowType } from "./modals/FlowModal/CreateFlowModal"
 import { conditionType } from "./types/ConditionTypes"
-import { FlowType } from "./types/FlowTypes"
+import { FlowType, SlotsGroupType, SlotType } from "./types/FlowTypes"
 import {
   AppNode,
   DefaultNodeDataType,
@@ -9,6 +9,7 @@ import {
   LinkNodeDataType,
   LinkNodeType,
   NodesTypes,
+  SlotsNodeDataType,
 } from "./types/NodeTypes"
 
 export const generateNewFlow = (flow: CreateFlowType) => {
@@ -30,6 +31,12 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
   return !flows.some((flow) => flow.name === name) && name.length >= 2
+}
+
+export function capitalizeFirstWord(str: string) {
+  return str.replace(/\w\S*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+  })
 }
 
 export const parseSearchParams = (
@@ -76,7 +83,8 @@ export const generateNewNode = (
     (Omit<DefaultNodeType, "data"> & {
       data: Partial<DefaultNodeDataType>
     }) &
-      (Omit<LinkNodeType, "data"> & { data: Partial<LinkNodeDataType> })
+      (Omit<LinkNodeType, "data"> & { data: Partial<LinkNodeDataType> }) &
+      (Omit<SlotsGroupType, "data"> & { data: Partial<SlotsNodeDataType> })
   >
 ) => {
   const id = type + "_" + v4()
@@ -115,6 +123,17 @@ export const generateNewNode = (
           },
         },
       }
+    case "slots_node":
+      return {
+        id,
+        type,
+        position: template?.position ?? { x: 0, y: 0 },
+        data: {
+          id,
+          name: template?.data?.name ?? "Slots",
+          groups: template?.data?.groups ?? [],
+        },
+      }
   }
   return {
     id,
@@ -137,3 +156,74 @@ export const generateNewNode = (
   }
 }
 
+export const generateNewSlot = (group_id: string): SlotType => {
+  return {
+    id: "slot_" + v4(),
+    name: "New slot",
+    group_id,
+    type: "RegexpSlot",
+    method: "",
+    value: "",
+  }
+}
+
+export const generateNewSlotsGroup = (): SlotsGroupType => {
+  return {
+    id: "group_" + v4(),
+    name: "New group",
+    slots: [],
+    flow: "global",
+    subgroups: [],
+    subgroup_to: "",
+  }
+}
+
+export type ParsedSlot = {
+  id: string
+  type: "GroupSlot" | "RegexpSlot"
+  [key: string]: unknown
+}
+
+export async function parseGroups(groups: SlotsGroupType[]): Promise<Record<string, ParsedSlot>> {
+  const result: Record<string, ParsedSlot> = {}
+
+  function processGroup(group: SlotsGroupType): ParsedSlot {
+    const groupData: ParsedSlot = {
+      id: group.id,
+      type: "GroupSlot",
+    }
+
+    // Обрабатываем слоты внутри группы
+    group.slots.forEach((slot) => {
+      if (slot.type === "RegexpSlot" && slot.name) {
+        groupData[slot.name] = {
+          id: slot.id,
+          type: slot.type,
+          regexp: slot.value, // Предполагаем, что value хранит регулярное выражение
+          match_group_idx: 1, // Здесь предполагается индекс группы захвата
+        }
+      }
+    })
+
+    // Если у группы есть подгруппы, обрабатываем их рекурсивно
+    if (group.subgroups) {
+      group.subgroups.forEach((subgroupId) => {
+        const subgroup = groups.find((g) => g.id === subgroupId)
+        if (subgroup) {
+          groupData[subgroup.name] = processGroup(subgroup)
+        }
+      })
+    }
+
+    return groupData
+  }
+
+  // Перебираем все группы верхнего уровня и строим структуру
+  groups.forEach((group) => {
+    if (!group.subgroup_to) {
+      result[group.name] = processGroup(group)
+    }
+  })
+
+  return result
+}
