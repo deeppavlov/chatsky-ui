@@ -2,24 +2,29 @@
 JSON Converter
 ---------------
 
-Converts a user project's frontend graph to a script understandable by DFF json-importer.
+Converts a user project's frontend graph to a script understandable by Chatsky json-importer.
 """
+import ast
 from pathlib import Path
 from typing import List, Optional, Tuple
+from collections import defaultdict
 
 from omegaconf.dictconfig import DictConfig
 
-from chatsky_ui.api.deps import get_index
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
-from chatsky_ui.services.index import Index
+from chatsky_ui.services.condition_finder import ServiceReplacer
+
 
 logger = get_logger(__name__)
 
 
+PRE_TRANSITION = "PRE_TRANSITION"
+
+
 def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
-    """Get paths to frontend graph, dff script, and dff custom conditions files."""
+    """Get paths to frontend graph, chatsky script, and chatsky custom conditions files."""
     frontend_graph_path = settings.frontend_flows_path
     custom_conditions_file = settings.conditions_path
     custom_responses_file = settings.responses_path
@@ -38,20 +43,20 @@ def _get_db_paths(build_id: int) -> Tuple[Path, Path, Path, Path]:
     return frontend_graph_path, script_path, custom_conditions_file, custom_responses_file
 
 
-def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> dict:
+def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> Tuple[dict, dict]:
     nodes = {}
     for flow in flow_graph["flows"]:
         node_names_in_one_flow = []
         for node in flow.data.nodes:
             if "flags" in node.data:
                 if "start" in node.data.flags:
-                    if "start_label" in script["CONFIG"]:
+                    if "start_label" in script:
                         raise ValueError("There are more than one start node in the script")
-                    script["CONFIG"]["start_label"] = [flow.name, node.data.name]
+                    script["start_label"] = [flow.name, node.data.name]
                 if "fallback" in node.data.flags:
-                    if "fallback_label" in script["CONFIG"]:
+                    if "fallback_label" in script:
                         raise ValueError("There are more than one fallback node in the script")
-                    script["CONFIG"]["fallback_label"] = [flow.name, node.data.name]
+                    script["fallback_label"] = [flow.name, node.data.name]
 
             if node.data.name in node_names_in_one_flow:
                 raise ValueError(f"There is more than one node with the name '{node.data.name}' in the same flow.")
@@ -59,7 +64,24 @@ def _organize_graph_according_to_nodes(flow_graph: DictConfig, script: dict) -> 
             nodes[node.id] = {"info": node}
             nodes[node.id]["flow"] = flow.name
             nodes[node.id]["TRANSITIONS"] = []
-    return nodes
+            nodes[node.id][PRE_TRANSITION] = dict()
+
+    def _convert_slots(slots: dict) -> dict:
+        group_slot = defaultdict(dict)
+        for slot_name, slot_values in slots.copy().items():
+            slot_type = slot_values["type"]
+            del slot_values["id"]
+            del slot_values["type"]
+            if slot_type != "GroupSlot":
+                group_slot[slot_name].update({f"chatsky.slots.{slot_type}": {k: v for k, v in slot_values.items()}})
+            else:
+                group_slot[slot_name] = _convert_slots(slot_values)
+        return dict(group_slot)
+
+    if "slots" in flow_graph:
+        script["slots"] = _convert_slots(flow_graph["slots"])
+
+    return nodes, script
 
 
 def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
@@ -70,18 +92,36 @@ def _get_condition(nodes: dict, edge: DictConfig) -> Optional[DictConfig]:
     )
 
 
-def _write_list_to_file(conditions_lines: list, custom_conditions_file: Path) -> None:
-    """Write dff custom conditions from list to file."""
-    # TODO: make reading and writing conditions async
-    with open(custom_conditions_file, "w", encoding="UTF-8") as file:
-        for line in conditions_lines:
-            if not line.endswith("\n"):
-                line = "".join([line, "\n"])
-            file.write(line)
-
-
-def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> None:
+def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig, slots: DictConfig) -> None:
     """Add transitions to a node according to `edge` and `condition`."""
+
+    def _get_slot(slots, id_):
+        if not slots:
+            return ""
+        for name, value in slots.copy().items():
+            slot_path = name
+            if value.get("id") == id_:
+                return name
+            elif value.get("type") != "GroupSlot":
+                continue
+            else:
+                del value["id"]
+                del value["type"]
+                slot_path = _get_slot(value, id_)
+                if slot_path:
+                    slot_path = ".".join([name, slot_path])
+        return slot_path
+
+    if condition["type"] == "python":
+        converted_cnd = {f"custom.conditions.{condition.name}": None}
+    elif condition["type"] == "slot":
+        slot = _get_slot(slots, id_=condition.data.slot)
+        converted_cnd = {"chatsky.conditions.slots.SlotsExtracted": slot}
+        nodes[edge.source][PRE_TRANSITION].update({slot: {"chatsky.processing.slots.Extract": slot}})
+    # TODO: elif condition["type"] == "chatsky":
+    else:
+        raise ValueError(f"Unknown condition type: {condition['type']}")
+
     # if the edge is a link_node, we add transition of its source and target
     if nodes[edge.target]["info"].type == "link_node":
         flow = nodes[edge.target]["info"].data.transition.target_flow
@@ -91,107 +131,45 @@ def _add_transitions(nodes: dict, edge: DictConfig, condition: DictConfig) -> No
     else:
         flow = nodes[edge.target]["flow"]
         node = nodes[edge.target]["info"].data.name
+
     nodes[edge.source]["TRANSITIONS"].append(
         {
-            "lbl": [
+            "dst": [
                 flow,
                 node,
-                condition.data.priority,
             ],
-            "cnd": f"custom_dir.conditions.{condition.name}",
+            "priority": condition.data.priority,
+            "cnd": converted_cnd,
         }
     )
 
 
 def _fill_nodes_into_script(nodes: dict, script: dict) -> None:
-    """Fill nodes into dff script dictunary."""
+    """Fill nodes into chatsky script dictunary."""
     for _, node in nodes.items():
         if node["info"].type == "link_node":
             continue
-        if node["flow"] not in script:
-            script[node["flow"]] = {}
-        script[node["flow"]].update(
+        if node["flow"] not in script["script"]:
+            script["script"][node["flow"]] = {}
+        script["script"][node["flow"]].update(
             {
                 node["info"].data.name: {
                     "RESPONSE": node["info"].data.response,
                     "TRANSITIONS": node["TRANSITIONS"],
+                    PRE_TRANSITION: node[PRE_TRANSITION],
                 }
             }
         )
 
 
-def _append(service: DictConfig, services_lines: list) -> list:
-    """Append a condition to a list"""
-    if service.type == "python":
-        service_with_newline = "".join([service.data.python.action + "\n\n"])
-
-    logger.debug("Service to append: %s", service_with_newline)
-    logger.debug("services_lines before appending: %s", services_lines)
-
-    all_lines = services_lines + service_with_newline.split("\n")
-    return all_lines
-
-
-async def _shift_cnds_in_index(index: Index, cnd_strt_lineno: int, diff_in_lines: int) -> None:
-    """Update the start line number of conditions in index by shifting them by `diff_in_lines`."""
-    services = index.get_services()
-    for _, service in services.items():
-        if service["type"] == "condition":
-            if service["lineno"] - 1 > cnd_strt_lineno:  # -1 is here to convert from file numeration to list numeration
-                service["lineno"] += diff_in_lines
-
-    await index.indexit_all(
-        [service_name for service_name, _ in services.items()],
-        [service["type"] for _, service in services.items()],
-        [service["lineno"] for _, service in services.items()],
-    )
-
-
-async def _replace(service: DictConfig, services_lines: list, cnd_strt_lineno: int, index: Index) -> list:
-    """Replace a servuce in a services list with a new one.
-
-    Args:
-        service: service to replace. `condition.data.python.action` is a string with the new service(condition)
-        conditions_lines: list of conditions lines
-        cnd_strt_lineno: a pointer to the service start line in custom conditions file
-        index: index object to update
-
-    Returns:
-        list of all conditions as lines
-    """
-    cnd_strt_lineno = cnd_strt_lineno - 1  # conversion from file numeration to list numeration
-    all_lines = services_lines.copy()
-    if service.type == "python":
-        condition = "".join([service.data.python.action + "\n\n"])
-    new_cnd_lines = condition.split("\n")
-
-    old_cnd_lines_num = 0
-    for lineno, line in enumerate(all_lines[cnd_strt_lineno:]):
-        if line.startswith("def ") and lineno != 0:
-            break
-        old_cnd_lines_num += 1
-
-    next_func_location = cnd_strt_lineno + old_cnd_lines_num
-
-    logger.debug("new_cnd_lines\n")
-    logger.debug(new_cnd_lines)
-    all_lines = all_lines[:cnd_strt_lineno] + new_cnd_lines + all_lines[next_func_location:]
-
-    diff_in_lines = len(new_cnd_lines) - old_cnd_lines_num
-    logger.debug("diff_in_lines: %s", diff_in_lines)
-    logger.debug("cnd_strt_lineno: %s", cnd_strt_lineno)
-
-    await _shift_cnds_in_index(index, cnd_strt_lineno, diff_in_lines)
-    return all_lines
-
-
-async def update_responses_lines(nodes: dict, responses_lines: list, index: Index) -> Tuple[dict, List[str]]:
+async def update_responses_lines(nodes: dict) -> Tuple[dict, List[str]]:
     """Organizes the responses in nodes in a format that json-importer accepts.
 
     If the response type is "python", its function will be added to responses_lines to be written
     to the custom_conditions_file later.
     * If the response already exists in the responses_lines, it will be replaced with the new one.
     """
+    responses_list = []
     for node in nodes.values():
         if node["info"].type == "link_node":
             continue
@@ -199,55 +177,53 @@ async def update_responses_lines(nodes: dict, responses_lines: list, index: Inde
         logger.debug("response type: %s", response.type)
         if response.type == "python":
             response.data = response.data[0]
-            if response.name not in (rsp_names := index.index):
-                logger.debug("Adding response: %s", response.name)
-                rsp_lineno = len(responses_lines)
-                responses_lines = _append(response, responses_lines)
-                await index.indexit(response.name, "response", rsp_lineno + 1)
-            else:
-                logger.debug("Replacing response: %s", response.name)
-                responses_lines = await _replace(response, responses_lines, rsp_names[response.name]["lineno"], index)
-            node["info"].data.response = f"custom_dir.responses.{response.name}"
+            logger.info("Adding response: %s", response)
+
+            responses_list.append(response.data.python.action)
+            node["info"].data.response = {f"custom.responses.{response.name}": None}
         elif response.type == "text":
             response.data = response.data[0]
             logger.debug("Adding response: %s", response.data.text)
-            node["info"].data.response = {"dff.Message": {"text": response.data.text}}
+            node["info"].data.response = {"chatsky.Message": {"text": response.data.text}}
         elif response.type == "choice":
             # logger.debug("Adding response: %s", )
-            dff_responses = []
+            chatsky_responses = []
             for message in response.data:
                 if "text" in message:
-                    dff_responses.append({"dff.Message": {"text": message["text"]}})
-                else:
+                    chatsky_responses.append({"chatsky.Message": {"text": message["text"]}})
+                else:  # TODO: check: are you sure that you can use only "text" type inside a choice?
                     raise ValueError("Unknown response type. There must be a 'text' field in each message.")
-            node["info"].data.response = {"dff.rsp.choice": dff_responses.copy()}
+            node["info"].data.response = {"chatsky.rsp.choice": chatsky_responses.copy()}
         else:
             raise ValueError(f"Unknown response type: {response.type}")
-    return nodes, responses_lines
+    return nodes, responses_list
 
 
 async def converter(build_id: int) -> None:
-    """Translate frontend flow script into dff script."""
-    index = get_index()
-    await index.load()
-    index.logger.debug("Loaded index '%s'", index.index)
-
+    """Translate frontend flow script into chatsky script."""
     frontend_graph_path, script_path, custom_conditions_file, custom_responses_file = _get_db_paths(build_id)
 
-    script = {
-        "CONFIG": {"custom_dir": str("/" / settings.custom_dir)},
-    }
+    script = {"script": {}}
     flow_graph: DictConfig = await read_conf(frontend_graph_path)  # type: ignore
 
-    nodes = _organize_graph_according_to_nodes(flow_graph, script)
+    nodes, script = _organize_graph_according_to_nodes(flow_graph, script)
 
     with open(custom_responses_file, "r", encoding="UTF-8") as file:
-        responses_lines = file.readlines()
+        responses_tree = ast.parse(file.read())
 
-    nodes, responses_lines = await update_responses_lines(nodes, responses_lines, index)
+    nodes, responses_list = await update_responses_lines(nodes)
+
+    logger.info("Responses list: %s", responses_list)
+    replacer = ServiceReplacer(responses_list)
+    replacer.visit(responses_tree)
+
+    with open(custom_responses_file, "w") as file:
+        file.write(ast.unparse(responses_tree))
 
     with open(custom_conditions_file, "r", encoding="UTF-8") as file:
-        conditions_lines = file.readlines()
+        conditions_tree = ast.parse(file.read())
+
+    conditions_list = []
 
     for flow in flow_graph["flows"]:
         for edge in flow.data.edges:
@@ -261,24 +237,19 @@ async def converter(build_id: int) -> None:
                         edge.sourceHandle,
                     )
                     continue
+                if condition.type == "python":
+                    conditions_list.append(condition.data.python.action)
 
-                if condition.name not in (cnd_names := index.index):
-                    logger.debug("Adding condition: %s", condition.name)
-                    cnd_lineno = len(conditions_lines)
-                    conditions_lines = _append(condition, conditions_lines)
-                    await index.indexit(condition.name, "condition", cnd_lineno + 1)
-                else:
-                    logger.debug("Replacing condition: %s", condition.name)
-                    conditions_lines = await _replace(
-                        condition, conditions_lines, cnd_names[condition.name]["lineno"], index
-                    )
-
-                _add_transitions(nodes, edge, condition)
+                _add_transitions(nodes, edge, condition, flow_graph["slots"])
             else:
                 logger.error("A node of edge '%s-%s' is not found in nodes", edge.source, edge.target)
 
+    replacer = ServiceReplacer(conditions_list)
+    replacer.visit(conditions_tree)
+
+    with open(custom_conditions_file, "w") as file:
+        file.write(ast.unparse(conditions_tree))
+
     _fill_nodes_into_script(nodes, script)
 
-    _write_list_to_file(conditions_lines, custom_conditions_file)
-    _write_list_to_file(responses_lines, custom_responses_file)
     await write_conf(script, script_path)

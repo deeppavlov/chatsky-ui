@@ -10,7 +10,7 @@ import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
 
-# Patch nest_asyncio before importing DFF
+# Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
@@ -179,6 +179,7 @@ def init(
             "https://github.com/Ramimashkouk/df_d_template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="feat/add-slots2"
         )
     finally:
         os.chdir(original_dir)
