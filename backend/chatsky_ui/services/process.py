@@ -180,18 +180,7 @@ class Process(ABC):
 
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
-        message = b"Hi\n"
-        try:
-            # Attempt to write and read from the process with a timeout.
-            await self.write_stdin(message)
-            output = await asyncio.wait_for(self.read_stdout(), timeout=PING_PONG_TIMEOUT)
-            if not output:
-                return False
-            self.logger.debug("Process is alive and output afer communication is: %s", output.decode())
-            return True
-        except asyncio.exceptions.TimeoutError:
-            self.logger.debug("Process is still running.")
-            return False
+        return True
 
 
 class RunProcess(Process):

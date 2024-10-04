@@ -103,6 +103,7 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
                     value: slot.name,
                   }))}
                   placeholder="Choose slot"
+                  onValueChange={(value) => setSelectedSlot(value)}
               />
             </TableCell>
           </TableRow>
