@@ -126,7 +126,11 @@ def run_scenario(
     script_path = settings.scripts_dir / f"build_{build_id}.yaml"
 
     command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
-    asyncio.run(_execute_command(command_to_run))
+    try:
+        asyncio.run(_execute_command(command_to_run))
+    except FileNotFoundError:
+        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path}"
+        asyncio.run(_execute_command(command_to_run))
 
 
 @cli.command("run_app")
