@@ -32,3 +32,23 @@ class ScriptConverter(BaseConverter):
                 mapped_flows[flow["name"]][node["id"]] = node
         return mapped_flows
 
+    def extract_start_fallback_labels(self): #TODO: refactor this huge method
+        start_label, fallback_label = None, None
+        
+        for flow in self.script.flows:
+            for node in flow["data"]["nodes"]:
+                flags = node["data"]["flags"]
+                
+                if "start" in flags:
+                    if start_label:
+                        raise ValueError("Multiple start nodes found")
+                    start_label = [flow["name"], node["data"]["name"]]
+                if "fallback" in flags:
+                    if fallback_label:
+                        raise ValueError("Multiple fallback nodes found")
+                    fallback_label = [flow["name"], node["data"]["name"]]
+                
+                if start_label and fallback_label:
+                    return start_label, fallback_label
+        
+        return None, None

@@ -9,7 +9,7 @@ class Slot(BaseComponent):
 class RegexpSlot(Slot):
     id: str
     regexp: str
-    match_group_idx: Optional[int]
+    match_group_idx: int
 
 
 class GroupSlot(Slot):

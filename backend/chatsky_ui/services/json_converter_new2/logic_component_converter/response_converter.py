@@ -3,6 +3,8 @@ import ast
 from ..base_converter import BaseConverter
 from ....schemas.front_graph_components.info_holders.response import TextResponse, CustomResponse
 from ..consts import CUSTOM_FILE, RESPONSES_FILE
+from ....core.config import settings
+from .service_replacer import store_custom_service
 
 
 class ResponseConverter(BaseConverter):
@@ -26,21 +28,13 @@ class TextResponseConverter(ResponseConverter):
 
 class CustomResponseConverter(ResponseConverter):
     def __init__(self, response: dict):
-        # self.code = 
         self.response = CustomResponse(
             name=response["name"],
             code=next(iter(response["data"]))["python"]["action"],
         )
 
-    def _parse_code(self):
-        response_code = next(iter(ast.parse(self.response.code).body))
-
-        if not isinstance(response_code, ast.ClassDef):
-            raise ValueError("Response python code is not a ClassDef")
-        return response_code
-    
     def _convert(self):
+        store_custom_service(settings.responses_path, [self.response.code])
         return {
             f"{CUSTOM_FILE}.{RESPONSES_FILE}.{self.response.name}": None
         }
-

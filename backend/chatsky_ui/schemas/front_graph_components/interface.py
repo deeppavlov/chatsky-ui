@@ -1,21 +1,22 @@
-from pydantic import model_validator, RootModel
+from pydantic import Field, model_validator
 from typing import Any
 
 from .base_component import BaseComponent
+from typing import Optional, Dict
 
+class Interface(BaseComponent):
+    telegram: Optional[Dict[str, Any]] = Field(default=None)
+    cli: Optional[Dict[str, Any]] = Field(default=None)
 
-class Interface(BaseComponent, RootModel):
-    @model_validator(mode="before")
-    def validate_interface(cls, v):
-        if not isinstance(v, dict):
-            raise ValueError('interface must be a dictionary')
-        if "telegram" in v:
-            if not isinstance(v['telegram'], dict):
-                raise ValueError('telegram must be a dictionary')
-            if 'token' not in v['telegram'] or not isinstance(v['telegram']['token'], str):
-                raise ValueError('telegram dictionary must contain a string token')
-        elif "cli" in v:
-            pass
-        else:
-            raise ValueError('interface must contain either telegram or cli')
-        return v
+    @model_validator(mode='after')
+    def check_one_not_none(cls, values):
+        telegram, cli = values.telegram, values.cli
+        if (telegram is None) == (cli is None):
+            raise ValueError('Exactly one of "telegram" or "cli" must be provided.')
+        return values
+    
+    @model_validator(mode='after')
+    def check_telegram_token(cls, values):
+        if values.telegram is not None and 'token' not in values.telegram:
+            raise ValueError('Telegram token must be provided.')
+        return values

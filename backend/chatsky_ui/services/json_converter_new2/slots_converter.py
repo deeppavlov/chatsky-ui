@@ -40,13 +40,13 @@ class RegexpSlotConverter(SlotsConverter):
             id=slot["id"],
             name=slot["name"],
             regexp=slot["value"],
-            match_group_idx=slot.get("match_group_idx", None),
+            match_group_idx=slot.get("match_group_idx", 1),
         )
 
     def _convert(self):
         return {
             self.slot.name: {
-                "chatksy.slots.RegexpSlot": {
+                "chatsky.slots.RegexpSlot": {
                     "regexp": self.slot.regexp,
                     "match_group_idx": self.slot.match_group_idx,
                 }

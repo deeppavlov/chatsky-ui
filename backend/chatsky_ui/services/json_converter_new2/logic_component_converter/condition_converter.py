@@ -4,6 +4,8 @@ import ast
 from ..consts import CUSTOM_FILE, CONDITIONS_FILE
 from ..base_converter import BaseConverter
 from ....schemas.front_graph_components.info_holders.condition import CustomCondition, SlotCondition
+from ....core.config import settings
+from .service_replacer import store_custom_service
 
 
 class ConditionConverter(BaseConverter, ABC):
@@ -19,14 +21,8 @@ class CustomConditionConverter(ConditionConverter):
             code=condition["data"]["python"]["action"],
         )
 
-    def _parse_code(self):
-        condition_code = next(iter(ast.parse(self.condition.code).body))
-
-        if not isinstance(condition_code, ast.ClassDef):
-            raise ValueError("Condition python code is not a ClassDef")
-        return condition_code
-
     def _convert(self):
+        store_custom_service(settings.conditions_path, [self.condition.code])
         custom_cnd = {
             f"{CUSTOM_FILE}.{CONDITIONS_FILE}.{self.condition.name}": None
         }

@@ -1,6 +1,7 @@
 import ast
 from ast import NodeTransformer
 from typing import Dict, List
+from pathlib import Path
 
 from chatsky_ui.core.logger_config import get_logger
 
@@ -13,17 +14,18 @@ class ServiceReplacer(NodeTransformer):
 
     def _get_classes_def(self, services_code: List[str]) -> Dict[str, ast.ClassDef]:
         parsed_codes = [ast.parse(service_code) for service_code in services_code]
-        result_nodes = {}
         for idx, parsed_code in enumerate(parsed_codes):
-            self._extract_class_defs(parsed_code, result_nodes, services_code[idx])
-        return result_nodes
+            classes = self._extract_class_defs(parsed_code, services_code[idx])
+        return classes
 
-    def _extract_class_defs(self, parsed_code: ast.Module, result_nodes: Dict[str, ast.ClassDef], service_code: str):
+    def _extract_class_defs(self, parsed_code: ast.Module, service_code: str):
+        classes = {}
         for node in parsed_code.body:
             if isinstance(node, ast.ClassDef):
-                result_nodes[node.name] = node
+                classes[node.name] = node
             else:
                 logger.error("No class definition found in new_service: %s", service_code)
+        return classes
 
     def visit_ClassDef(self, node: ast.ClassDef) -> ast.ClassDef:
         logger.debug("Visiting class '%s' and comparing with: %s", node.name, self.new_services_classes.keys())
@@ -46,3 +48,14 @@ class ServiceReplacer(NodeTransformer):
         logger.info("Services not found, appending new services: %s", list(self.new_services_classes.keys()))
         for _, service in self.new_services_classes.items():
             node.body.append(service)
+
+
+def store_custom_service(services_path: Path, services: List[str]):
+    with open(services_path, "r", encoding="UTF-8") as file:
+        conditions_tree = ast.parse(file.read())
+    
+    replacer = ServiceReplacer(services)
+    replacer.visit(conditions_tree)
+
+    with open(services_path, "w") as file:
+        file.write(ast.unparse(conditions_tree))
