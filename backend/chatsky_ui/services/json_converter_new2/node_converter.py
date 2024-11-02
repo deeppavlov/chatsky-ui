@@ -73,22 +73,22 @@ class LinkNodeConverter(NodeConverter):
         ]
 
 
-class ConfNodeConverter(NodeConverter):
-    def __init__(self, config: dict):
-        super().__init__(config)
+# class ConfNodeConverter(NodeConverter):
+#     def __init__(self, config: dict):
+#         super().__init__(config)
         
 
-    def _convert(self):
-        return {
-            # node.name: node._convert() for node in self.nodes
-        }
+#     def _convert(self):
+#         return {
+#             # node.name: node._convert() for node in self.nodes
+#         }
 
 
-class SlotsNodeConverter(ConfNodeConverter):
-    def __init__(self, config: List[dict]):
-        self.slots = config
+# class SlotsNodeConverter(ConfNodeConverter):
+#     def __init__(self, config: List[dict]):
+#         self.slots = config
 
-    def _convert(self):
-        return {
-            # node.name: node._convert() for node in self.nodes
-        }
+#     def _convert(self):
+#         return {
+#             # node.name: node._convert() for node in self.nodes
+#         }

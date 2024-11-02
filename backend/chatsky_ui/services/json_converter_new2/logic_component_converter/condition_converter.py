@@ -8,6 +8,10 @@ from ....core.config import settings
 from .service_replacer import store_custom_service
 
 
+class BadConditionException(Exception):
+    pass
+
+
 class ConditionConverter(BaseConverter, ABC):
     @abstractmethod
     def get_pre_transitions():
@@ -16,10 +20,14 @@ class ConditionConverter(BaseConverter, ABC):
 
 class CustomConditionConverter(ConditionConverter):
     def __init__(self, condition: dict):
-        self.condition = CustomCondition(
-            name=condition["name"],
-            code=condition["data"]["python"]["action"],
-        )
+        self.condition = None
+        try:
+            self.condition = CustomCondition(
+                name=condition["name"],
+                code=condition["data"]["python"]["action"],
+            )
+        except KeyError as missing_key:
+            raise BadConditionException("Missing key in custom condition data") from missing_key
 
     def _convert(self):
         store_custom_service(settings.conditions_path, [self.condition.code])
@@ -34,10 +42,14 @@ class CustomConditionConverter(ConditionConverter):
 
 class SlotConditionConverter(ConditionConverter):
     def __init__(self, condition: dict):
-        self.condition = SlotCondition(
-            slot_id=condition["data"]["slot"],
-            name=condition["name"]
-        )
+        self.condition = None
+        try:
+            self.condition = SlotCondition(
+                slot_id=condition["data"]["slot"],
+                name=condition["name"]
+            )
+        except KeyError as missing_key:
+            raise BadConditionException("Missing key in slot condition data") from missing_key
 
     def __call__(self, *args, **kwargs):
         self.slots_conf = kwargs["slots_conf"]
@@ -47,7 +59,7 @@ class SlotConditionConverter(ConditionConverter):
         return {"chatsky.conditions.slots.SlotsExtracted": self.slots_conf[self.condition.slot_id]}
 
     def get_pre_transitions(self):
-        slot_path = self.slots_conf[self.condition.slot_id]
+        slot_path = self.slots_conf[self.condition.slot_id] # type: ignore
         return {
             slot_path: {
                 "chatsky.processing.slots.Extract": slot_path

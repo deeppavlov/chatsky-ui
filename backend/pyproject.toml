@@ -30,6 +30,7 @@ httpx-ws = "^0.6.0"
 pylint = "^3.2.3"
 sphinx = "*"
 sphinx-rtd-theme = "*"
+pytest-cov = "^5.0.0"
 
 [tool.poetry.scripts]
 "chatsky.ui" = "chatsky_ui.cli:cli"

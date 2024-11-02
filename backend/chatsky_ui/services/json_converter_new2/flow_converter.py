@@ -54,7 +54,6 @@ class FlowConverter(BaseConverter):
         edges = self.flow.edges.copy()
         for edge in edges:
             target_id = edge["target"]
-            # target_node = _find_node_by_id(target_id, self.flow.nodes)
             target_node = self.mapped_flows[self.flow.name].get(target_id)
             if target_node:
                 edge["target"] = _get_flow_and_node_names(target_node)

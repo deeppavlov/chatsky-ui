@@ -37,7 +37,7 @@ class ScriptConverter(BaseConverter):
         
         for flow in self.script.flows:
             for node in flow["data"]["nodes"]:
-                flags = node["data"]["flags"]
+                flags = node["data"].get("flags", [])
                 
                 if "start" in flags:
                     if start_label:
@@ -51,4 +51,4 @@ class ScriptConverter(BaseConverter):
                 if start_label and fallback_label:
                     return start_label, fallback_label
         
-        return None, None
+        return start_label, fallback_label#return None, None
