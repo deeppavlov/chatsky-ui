@@ -1,5 +1,4 @@
 from chatsky_ui.core.config import settings
-from chatsky_ui.services.index import Index
 from chatsky_ui.services.process_manager import BuildManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
 
@@ -25,12 +24,3 @@ websocket_manager = WebSocketManager()
 def get_websocket_manager() -> WebSocketManager:
     websocket_manager.set_logger()
     return websocket_manager
-
-
-index = Index()
-
-
-def get_index() -> Index:
-    index.set_logger()
-    index.set_path(settings.index_path)
-    return index

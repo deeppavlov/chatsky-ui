@@ -1,14 +1,6 @@
 chatsky_ui.services package
 ====================
 
-chatsky_ui.services.index module
--------------------------
-
-.. automodule:: chatsky_ui.services.index
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 chatsky_ui.services.json\_converter module
 -----------------------------------
 

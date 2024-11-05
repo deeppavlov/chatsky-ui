@@ -7,7 +7,6 @@ from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.services.index import Index
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
 
@@ -45,7 +44,6 @@ async def start_build(
     preset: Preset,
     background_tasks: BackgroundTasks,
     build_manager: BuildManager = Depends(deps.get_build_manager),
-    index: Index = Depends(deps.get_index),
 ) -> Dict[str, Union[str, int]]:
 
     """Starts a `build` process with the given preset.
@@ -61,7 +59,7 @@ async def start_build(
 
     await asyncio.sleep(preset.wait_time)
     build_id = await build_manager.start(preset)
-    background_tasks.add_task(build_manager.check_status, build_id, index)
+    background_tasks.add_task(build_manager.check_status, build_id)
     build_manager.logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
 

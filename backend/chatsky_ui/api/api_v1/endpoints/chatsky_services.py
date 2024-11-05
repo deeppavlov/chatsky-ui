@@ -1,3 +1,4 @@
+import ast
 import re
 from io import StringIO
 from typing import Dict, Optional, Union
@@ -7,24 +8,28 @@ from fastapi import APIRouter, Depends
 from pylint.lint import Run, pylinter
 from pylint.reporters.text import TextReporter
 
-from chatsky_ui.api.deps import get_index
 from chatsky_ui.clients.chatsky_client import get_chatsky_conditions
 from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.code_snippet import CodeSnippet
-from chatsky_ui.services.index import Index
+from chatsky_ui.services.json_converter_new2.logic_component_converter.service_replacer import get_all_classes
 from chatsky_ui.utils.ast_utils import get_imports_from_file
 
 router = APIRouter()
 
 
-@router.get("/search/{service_name}", status_code=200)
-async def search_service(service_name: str, index: Index = Depends(get_index)) -> Dict[str, Optional[Union[str, list]]]:
-    """Searches for a custom service by name and returns its code.
-
-    A service could be a condition, reponse, or pre/postservice.
-    """
-    response = await index.search_service(service_name)
+@router.get("/search/condition/{condition_name}", status_code=200)
+async def search_condition(condition_name: str) -> Dict[str, Union[str, list]]:
+    """Searches for a custom condition by name and returns its code."""
+    custom_classes = get_all_classes(settings.conditions_path)
+    response = [custom_class["body"] for custom_class in custom_classes if custom_class["name"] == condition_name]
     return {"status": "ok", "data": response}
+
+
+@router.get("/get_all_custom_conditions", status_code=200)
+async def get_all_custom_conditions_names() -> Dict[str, Union[str, list]]:
+    all_classes = get_all_classes(settings.conditions_path)
+    custom_classes = [custom_class["body"] for custom_class in all_classes]
+    return {"status": "ok", "data": custom_classes}
 
 
 @router.post("/lint_snippet", status_code=200)

@@ -49,7 +49,6 @@ class Settings:
         self.snippet2lint_path = self.work_directory / "chatsky_ui/.snippet2lint.py"
 
         self.custom_dir = self.work_directory / "bot/custom"
-        self.index_path = self.custom_dir / ".services_index.yaml"
         self.conditions_path = self.custom_dir / "conditions.py"
         self.responses_path = self.custom_dir / "responses.py"
         self.scripts_dir = self.work_directory / "bot/scripts"

@@ -6,10 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from chatsky_ui import __version__
 from chatsky_ui.api.api_v1.api import api_router
-from chatsky_ui.api.deps import get_index
 from chatsky_ui.core.config import settings
-
-index_dict = {}
 
 
 @asynccontextmanager
@@ -17,8 +14,6 @@ async def lifespan(app: FastAPI):
     if settings.temp_conf.exists():
         settings.refresh_work_dir()
 
-    index_dict["instance"] = get_index()
-    await index_dict["instance"].load()
     yield
 
     # settings.temp_conf.unlink(missing_ok=True)

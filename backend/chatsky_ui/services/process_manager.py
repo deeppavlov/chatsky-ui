@@ -186,15 +186,13 @@ class BuildManager(ProcessManager):
 
         return self.last_id
 
-    async def check_status(self, id_, index, *args, **kwargs):
+    async def check_status(self, id_, *args, **kwargs):
         """Checks the build "id_" process status by calling the `periodically_check_status`
         method of the process.
 
         This updates the process status in the database every 2 seconds.
-        The index is refreshed after the build is done/failed.
         """
         await self.processes[id_].periodically_check_status()
-        await index.load()
 
     async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
         """Returns metadata of a specific build process identified by its unique ID.
