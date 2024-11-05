@@ -12,7 +12,7 @@ class SlotsConverter(BaseConverter):
                 for flow in flows
                 for node in flow["data"]["nodes"]
                 if node["type"] == "slots_node"
-            ]))
+            ]), {"id": "999999", "data": {"groups": []}})
 
         slots_node = _get_slots_node(flows)
         self.slots_node = SlotsNode(
