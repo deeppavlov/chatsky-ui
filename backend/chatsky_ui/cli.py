@@ -184,9 +184,10 @@ def init(
     try:
         os.chdir(destination)
         cookiecutter(
-            "https://github.com/Ramimashkouk/df_d_template.git",
+            "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="add-test"
         )
     finally:
         os.chdir(original_dir)

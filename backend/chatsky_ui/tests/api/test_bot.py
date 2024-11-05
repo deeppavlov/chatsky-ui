@@ -16,8 +16,8 @@ from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process_manager import RunManager
 
 PROCESS_ID = 0
-RUN_ID = 42
-BUILD_ID = 43
+RUN_ID = 0
+BUILD_ID = 0
 
 
 @pytest.mark.asyncio
