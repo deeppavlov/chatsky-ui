@@ -101,11 +101,10 @@ def build_scenario(
     # TODO: add custom_dir - maybe the same way like project_dir
 ):
     """Builds the bot with preset `success`"""
-    logger = get_logger(__name__)
-    
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
+    logger = get_logger(__name__)
 
     bot_repo = get_repo(Path(project_dir) / "bot")
     chatsky_ui_repo = get_repo(settings.frontend_flows_path.parent)
