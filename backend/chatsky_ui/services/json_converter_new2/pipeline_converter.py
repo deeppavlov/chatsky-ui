@@ -7,11 +7,8 @@ except ImportError:
     from yaml import Loader, Dumper
 
 from ...schemas.front_graph_components.pipeline import Pipeline
-from ...schemas.front_graph_components.interface import Interface
-from ...schemas.front_graph_components.flow import Flow
 
 from .base_converter import BaseConverter
-from .flow_converter import FlowConverter
 from .script_converter import ScriptConverter
 from .interface_converter import InterfaceConverter
 from .slots_converter import SlotsConverter

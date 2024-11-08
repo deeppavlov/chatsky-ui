@@ -1,4 +1,3 @@
-from chatsky_ui.core.config import settings
 from chatsky_ui.services.process_manager import BuildManager, RunManager
 from chatsky_ui.services.websocket_manager import WebSocketManager
 

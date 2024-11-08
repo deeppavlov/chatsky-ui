@@ -1,5 +1,3 @@
-import ast
-
 from ..base_converter import BaseConverter
 from ....schemas.front_graph_components.info_holders.response import TextResponse, CustomResponse
 from ..consts import CUSTOM_FILE, RESPONSES_FILE

@@ -1,5 +1,3 @@
-import pytest
-
 from chatsky_ui.services.json_converter_new2.node_converter import InfoNodeConverter, LinkNodeConverter
 
 

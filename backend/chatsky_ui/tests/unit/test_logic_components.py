@@ -66,8 +66,8 @@ class TestResponseConverter:
 
 def test_store_custom_service():
     current_file_path = Path(__file__).resolve()
-    service_code = """class test_service(BaseService):\n    async def call(self, ctx: 
-    Context) -> Message:\n        return Message('Hello')"""
+    service_code = """class test_service(BaseService):\n    async def call(self, ctx:
+     Context) -> Message:\n        return Message('Hello')"""
     test_file_path = current_file_path.parent / "store_service_test.py"
     test_file_path.touch(exist_ok=True)
 

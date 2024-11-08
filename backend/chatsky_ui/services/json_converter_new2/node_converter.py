@@ -1,5 +1,3 @@
-from typing import List
-
 from .base_converter import BaseConverter
 from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .logic_component_converter.response_converter import TextResponseConverter, CustomResponseConverter

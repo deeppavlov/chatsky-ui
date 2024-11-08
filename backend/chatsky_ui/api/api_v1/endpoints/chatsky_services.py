@@ -1,10 +1,9 @@
-import ast
 import re
 from io import StringIO
-from typing import Dict, Optional, Union
+from typing import Dict, Union
 
 import aiofiles
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pylint.lint import Run, pylinter
 from pylint.reporters.text import TextReporter
 

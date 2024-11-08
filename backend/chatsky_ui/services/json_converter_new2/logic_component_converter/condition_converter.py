@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import ast
 
 from ..consts import CUSTOM_FILE, CONDITIONS_FILE
 from ..base_converter import BaseConverter

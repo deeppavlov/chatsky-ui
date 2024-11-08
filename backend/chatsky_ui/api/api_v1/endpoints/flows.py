@@ -2,7 +2,6 @@ from typing import Dict, Union, Optional
 
 from fastapi import APIRouter, status, HTTPException
 from omegaconf import OmegaConf
-from git import Repo
 from git.exc import GitCommandError
 
 from chatsky_ui.core.config import settings

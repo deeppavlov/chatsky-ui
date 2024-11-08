@@ -11,8 +11,8 @@ def custom_condition():
             "priority": 1,
             "transition_type": "manual",
             "python": {
-                "action": """class test_condition(BaseCondition):\n    async def call(self, ctx: 
-                Context) -> bool:\n        return True"""
+                "action": """class test_condition(BaseCondition):\n    async def call(self, ctx:
+                 Context) -> bool:\n        return True"""
             },
         },
         "dst": "dst_test_node",
@@ -32,8 +32,8 @@ def custom_response():
         "data": [
             {
                 "python": {
-                    "action": """class test_response(BaseResponse):\n    async def call(self, ctx: 
-                    Context) -> Message:\n        return Message('Hello')"""
+                    "action": """class test_response(BaseResponse):\n    async def call(self, ctx:
+                     Context) -> Message:\n        return Message('Hello')"""
                 }
             }
         ],

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 
 from .base_component import BaseComponent
 
