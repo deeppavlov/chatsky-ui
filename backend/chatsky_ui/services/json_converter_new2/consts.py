@@ -1,3 +1,3 @@
-RESPONSES_FILE="responses"
-CONDITIONS_FILE="conditions"
-CUSTOM_FILE="custom"
+RESPONSES_FILE = "responses"
+CONDITIONS_FILE = "conditions"
+CUSTOM_FILE = "custom"

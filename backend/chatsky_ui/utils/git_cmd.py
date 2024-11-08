@@ -37,7 +37,7 @@ def save_frontend_graph_to_git(build_id: int, chatsky_ui_repo: Repo):
         diff = chatsky_ui_repo.git.diff(previous_tag.commit, current_tag.commit)
         logger.debug("Git diff: %s", diff)
         is_changed = bool(diff)
-    
+
     logger.debug("Is changed: %s", is_changed)
     return is_changed
 

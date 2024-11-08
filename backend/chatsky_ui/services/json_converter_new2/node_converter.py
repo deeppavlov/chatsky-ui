@@ -29,6 +29,7 @@ class InfoNodeConverter(NodeConverter):
         "previous": "dst.Previous",
         "repeat": "dst.Current",
     }
+
     def __init__(self, node: dict):
         self.node = InfoNode(
             id=node["id"],
@@ -36,13 +37,15 @@ class InfoNodeConverter(NodeConverter):
             response=node["data"]["response"],
             conditions=node["data"]["conditions"],
         )
-    
+
     def __call__(self, *args, **kwargs):
         self.slots_conf = kwargs["slots_conf"]
         return super().__call__(*args, **kwargs)
-    
+
     def _convert(self):
-        condition_converters = [self.CONDITION_CONVERTER[condition["type"]](condition) for condition in self.node.conditions]
+        condition_converters = [
+            self.CONDITION_CONVERTER[condition["type"]](condition) for condition in self.node.conditions
+        ]
         return {
             RESPONSE: self.RESPONSE_CONVERTER[self.node.response["type"]](self.node.response)(),
             TRANSITIONS: [
@@ -59,7 +62,7 @@ class InfoNodeConverter(NodeConverter):
                 key: value
                 for converter in condition_converters
                 for key, value in converter.get_pre_transitions().items()
-            }
+            },
         }
 
 
@@ -85,7 +88,7 @@ class LinkNodeConverter(NodeConverter):
 # class ConfNodeConverter(NodeConverter):
 #     def __init__(self, config: dict):
 #         super().__init__(config)
-        
+
 
 #     def _convert(self):
 #         return {

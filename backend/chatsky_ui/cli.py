@@ -17,7 +17,12 @@ nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
-from chatsky_ui.utils.git_cmd import commit_changes, get_repo, save_built_script_to_git, save_frontend_graph_to_git  # noqa: E402
+from chatsky_ui.utils.git_cmd import (
+    commit_changes,
+    get_repo,
+    save_built_script_to_git,
+    save_frontend_graph_to_git,
+)  # noqa: E402
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -115,17 +120,19 @@ def build_scenario(
 
     is_changed = save_frontend_graph_to_git(build_id, chatsky_ui_repo)
     if is_changed:
-        from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter  # pylint: disable=C0415
+        from chatsky_ui.services.json_converter_new2.pipeline_converter import (
+            PipelineConverter,
+        )  # pylint: disable=C0415
 
         pipeline_converter = PipelineConverter()
         pipeline_converter(
             input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
-        ) #TODO: rename to frontend_graph_path
+        )  # TODO: rename to frontend_graph_path
         logger.info("Graph is changed. Gonna build")
     else:
         logger.info("Graph isn't changed. Ain't gonna build")
-    
-    # Save the project anyway to keep a gradual number of builds   
+
+    # Save the project anyway to keep a gradual number of builds
     save_built_script_to_git(build_id, bot_repo)
 
 
@@ -218,7 +225,7 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="add-test"
+            checkout="add-test",
         )
     finally:
         os.chdir(original_dir)

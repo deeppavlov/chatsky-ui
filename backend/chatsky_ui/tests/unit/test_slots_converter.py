@@ -1,4 +1,8 @@
-from chatsky_ui.services.json_converter_new2.slots_converter import SlotsConverter, RegexpSlotConverter, GroupSlotConverter
+from chatsky_ui.services.json_converter_new2.slots_converter import (
+    SlotsConverter,
+    RegexpSlotConverter,
+    GroupSlotConverter,
+)
 
 
 class TestSlotsConverter:

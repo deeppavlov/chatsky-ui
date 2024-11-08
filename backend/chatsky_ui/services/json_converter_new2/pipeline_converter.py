@@ -1,5 +1,6 @@
 from pathlib import Path
 import yaml
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:

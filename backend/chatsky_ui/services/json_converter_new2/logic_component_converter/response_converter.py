@@ -26,11 +26,7 @@ class TextResponseConverter(ResponseConverter):
             raise BadResponseException("Missing key in custom condition data") from e
 
     def _convert(self):
-        return {
-            "chatsky.Message": {
-                "text": self.response.text
-            }
-        }
+        return {"chatsky.Message": {"text": self.response.text}}
 
 
 class CustomResponseConverter(ResponseConverter):
@@ -45,6 +41,4 @@ class CustomResponseConverter(ResponseConverter):
 
     def _convert(self):
         store_custom_service(settings.responses_path, [self.response.code])
-        return {
-            f"{CUSTOM_FILE}.{RESPONSES_FILE}.{self.response.name}": None
-        }
+        return {f"{CUSTOM_FILE}.{RESPONSES_FILE}.{self.response.name}": None}

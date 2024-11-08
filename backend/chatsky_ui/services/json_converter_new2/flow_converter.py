@@ -23,13 +23,15 @@ class FlowConverter(BaseConverter):
         self.slots_conf = kwargs["slots_conf"]
         self._integrate_edges_into_nodes()
         return super().__call__(*args, **kwargs)
-        
+
     def _validate_flow(self, flow: Dict[str, Any]):
         if "data" not in flow or "nodes" not in flow["data"] or "edges" not in flow["data"]:
             raise ValueError("Invalid flow structure")
 
     def _integrate_edges_into_nodes(self):
-        def _insert_dst_into_condition(node: Dict[str, Any], condition_id: str, target_node: Tuple[str, str]) -> Dict[str, Any]:
+        def _insert_dst_into_condition(
+            node: Dict[str, Any], condition_id: str, target_node: Tuple[str, str]
+        ) -> Dict[str, Any]:
             for condition in node["data"]["conditions"]:
                 if condition["id"] == condition_id:
                     condition["dst"] = target_node
@@ -46,7 +48,7 @@ class FlowConverter(BaseConverter):
     def _map_edges(self) -> List[Dict[str, Any]]:
         def _get_flow_and_node_names(target_node):
             node_type = target_node["type"]
-            if node_type == "link_node": #TODO: WHY CONVERTING HERE?
+            if node_type == "link_node":  # TODO: WHY CONVERTING HERE?
                 return LinkNodeConverter(target_node)(mapped_flows=self.mapped_flows)
             elif node_type == "default_node":
                 return [self.flow.name, target_node["data"]["name"]]
@@ -63,5 +65,7 @@ class FlowConverter(BaseConverter):
         converted_flow = {self.flow.name: {}}
         for node in self.flow.nodes:
             if node["type"] == "default_node":
-                converted_flow[self.flow.name].update({node["data"]["name"]: InfoNodeConverter(node)(slots_conf=self.slots_conf)})
+                converted_flow[self.flow.name].update(
+                    {node["data"]["name"]: InfoNodeConverter(node)(slots_conf=self.slots_conf)}
+                )
         return converted_flow

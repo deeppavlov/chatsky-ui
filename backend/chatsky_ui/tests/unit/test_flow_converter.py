@@ -8,20 +8,15 @@ from chatsky_ui.services.json_converter_new2.interface_converter import Interfac
 from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter
 
 
-
 @pytest.fixture
 def chatsky_flow():
     return {
         "test_flow": {
             "test_node": {
-                "RESPONSE": {
-                    "custom.responses.test_response": None
-                },
+                "RESPONSE": {"custom.responses.test_response": None},
                 "TRANSITIONS": [
                     {
-                        "cnd": {
-                            "custom.conditions.test_condition": None
-                        },
+                        "cnd": {"custom.conditions.test_condition": None},
                         "dst": "dst_test_node",
                         "priority": 1,
                     }
@@ -37,7 +32,6 @@ class TestFlowConverter:
         converted_flow = FlowConverter(flow)(mapped_flows=mapped_flow, slots_conf=slots_conf)
 
         assert converted_flow == chatsky_flow
-
 
     def test_flow_converter_fail_no_nodes(self, flow, mapped_flow, slots_conf):
         del flow["data"]["nodes"]
@@ -85,6 +79,7 @@ class TestScriptConverter:
         with pytest.raises(ValueError):
             converter.extract_start_fallback_labels()
 
+
 class TestInterfaceConverter:
     def test_interface_converter(self, telegram_interface):
         interface = telegram_interface
@@ -98,19 +93,13 @@ class TestInterfaceConverter:
         }
 
     def test_interface_fail_no_token(self):
-        interface = {
-            "telegram": {}
-        }
+        interface = {"telegram": {}}
 
         with pytest.raises(ValueError):
             InterfaceConverter(interface)()
 
-
     def test_interface_fail_multiple_interfaces(self, telegram_interface):
-        interface = {
-            **telegram_interface,
-            "cli": {}
-        }
+        interface = {**telegram_interface, "cli": {}}
 
         with pytest.raises(ValueError):
             InterfaceConverter(interface)()
@@ -118,10 +107,7 @@ class TestInterfaceConverter:
 
 class TestPipelineConverter:
     def test_pipeline_converter(self, flow, telegram_interface, converted_group_slot, chatsky_flow):
-        pipeline = {
-            "flows": [flow],
-            "interface": telegram_interface
-        }
+        pipeline = {"flows": [flow], "interface": telegram_interface}
         pipeline_path = Path(__file__).parent / "test_pipeline.yaml"
         with open(pipeline_path, "w") as file:
             yaml.dump(pipeline, file)

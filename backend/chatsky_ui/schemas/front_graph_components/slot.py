@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from .base_component import BaseComponent
 
+
 class Slot(BaseComponent):
     name: str
 

@@ -31,11 +31,9 @@ class CustomConditionConverter(ConditionConverter):
 
     def _convert(self):
         store_custom_service(settings.conditions_path, [self.condition.code])
-        custom_cnd = {
-            f"{CUSTOM_FILE}.{CONDITIONS_FILE}.{self.condition.name}": None
-        }
+        custom_cnd = {f"{CUSTOM_FILE}.{CONDITIONS_FILE}.{self.condition.name}": None}
         return custom_cnd
-    
+
     def get_pre_transitions(self):
         return {}
 
@@ -44,10 +42,7 @@ class SlotConditionConverter(ConditionConverter):
     def __init__(self, condition: dict):
         self.condition = None
         try:
-            self.condition = SlotCondition(
-                slot_id=condition["data"]["slot"],
-                name=condition["name"]
-            )
+            self.condition = SlotCondition(slot_id=condition["data"]["slot"], name=condition["name"])
         except KeyError as missing_key:
             raise BadConditionException("Missing key in slot condition data") from missing_key
 
@@ -59,9 +54,5 @@ class SlotConditionConverter(ConditionConverter):
         return {"chatsky.conditions.slots.SlotsExtracted": self.slots_conf[self.condition.slot_id]}
 
     def get_pre_transitions(self):
-        slot_path = self.slots_conf[self.condition.slot_id] # type: ignore
-        return {
-            slot_path: {
-                "chatsky.processing.slots.Extract": slot_path
-            }
-        }
+        slot_path = self.slots_conf[self.condition.slot_id]  # type: ignore
+        return {slot_path: {"chatsky.processing.slots.Extract": slot_path}}

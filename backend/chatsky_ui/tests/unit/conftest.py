@@ -13,7 +13,7 @@ def custom_condition():
             "python": {
                 "action": """class test_condition(BaseCondition):\n    async def call(self, ctx: 
                 Context) -> bool:\n        return True"""
-            }
+            },
         },
         "dst": "dst_test_node",
     }
@@ -21,9 +21,7 @@ def custom_condition():
 
 @pytest.fixture
 def converted_custom_condition():
-    return {
-        "custom.conditions.test_condition": None
-    }
+    return {"custom.conditions.test_condition": None}
 
 
 @pytest.fixture
@@ -38,22 +36,18 @@ def custom_response():
                     Context) -> Message:\n        return Message('Hello')"""
                 }
             }
-        ]
+        ],
     }
 
 
 @pytest.fixture
 def converted_custom_response():
-    return {
-        "custom.responses.test_response": None
-    }
+    return {"custom.responses.test_response": None}
 
 
 @pytest.fixture
 def slots_conf():
-    return {
-        "test_slot": "test_slot"
-    }
+    return {"test_slot": "test_slot"}
 
 
 # @pytest.fixture
@@ -90,17 +84,12 @@ def converted_regexp_slot():
 
 @pytest.fixture
 def group_slot(regexp_slot):
-    return {
-        "name": "group_slot",
-        "slots": [regexp_slot]
-    }
+    return {"name": "group_slot", "slots": [regexp_slot]}
 
 
 @pytest.fixture
 def converted_group_slot(converted_regexp_slot):
-    return {
-        "group_slot": converted_regexp_slot
-    }
+    return {"group_slot": converted_regexp_slot}
 
 
 @pytest.fixture
@@ -111,11 +100,9 @@ def info_node(custom_response, custom_condition):
         "data": {
             "name": "test_node",
             "response": custom_response,
-            "conditions": [
-                custom_condition
-            ],
+            "conditions": [custom_condition],
             "flags": ["start", "fallback"],
-        }
+        },
     }
 
 
@@ -126,38 +113,22 @@ def flow(info_node, group_slot):
         "data": {
             "nodes": [
                 info_node,
-                {
-                    "type": "slots_node",
-                    "id": "test_slots_node_id",
-                    "data": {
-                        "groups": [group_slot]
-                    }
-                },
+                {"type": "slots_node", "id": "test_slots_node_id", "data": {"groups": [group_slot]}},
             ],
-            "edges": [
-                {
-                    "source": "1",
-                    "sourceHandle": "1",
-                    "target": "1"
-                }
-            ]
-        }
+            "edges": [{"source": "1", "sourceHandle": "1", "target": "1"}],
+        },
     }
 
 
 @pytest.fixture
 def mapped_flow(info_node):
-    return {
-        "test_flow": {
-            "1": info_node
-        }
-    }
+    return {"test_flow": {"1": info_node}}
 
 
 @pytest.fixture
 def telegram_interface():
     return {
-            "telegram": {
-                "token": "test_token",
-            }
+        "telegram": {
+            "token": "test_token",
         }
+    }

@@ -53,7 +53,7 @@ class ServiceReplacer(NodeTransformer):
 def store_custom_service(services_path: Path, services: List[str]):
     with open(services_path, "r", encoding="UTF-8") as file:
         conditions_tree = ast.parse(file.read())
-    
+
     replacer = ServiceReplacer(services)
     replacer.visit(conditions_tree)
 
@@ -67,5 +67,6 @@ def get_all_classes(services_path):
 
     return [
         {"name": node.name, "body": ast.unparse(node)}
-        for node in conditions_tree.body if isinstance(node, ast.ClassDef)
+        for node in conditions_tree.body
+        if isinstance(node, ast.ClassDef)
     ]
