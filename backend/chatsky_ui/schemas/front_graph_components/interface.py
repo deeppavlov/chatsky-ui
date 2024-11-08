@@ -3,6 +3,10 @@ from typing import Any
 
 from .base_component import BaseComponent
 from typing import Optional, Dict
+from dotenv import load_dotenv
+import os
+
+from chatsky_ui.core.config import settings
 
 class Interface(BaseComponent):
     telegram: Optional[Dict[str, Any]] = Field(default=None)
@@ -17,6 +21,8 @@ class Interface(BaseComponent):
     
     @model_validator(mode='after')
     def check_telegram_token(cls, values):
-        if values.telegram is not None and 'token' not in values.telegram:
+        load_dotenv(os.path.join(settings.work_directory, '.env'))
+        tg_bot_token = os.getenv('TG_BOT_TOKEN')
+        if values.telegram is not None and not tg_bot_token:
             raise ValueError('Telegram token must be provided.')
         return values

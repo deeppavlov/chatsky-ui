@@ -10,5 +10,9 @@ class InterfaceConverter(BaseConverter):
             return {"chatsky.messengers.console.CLIMessengerInterface": {}}
         elif self.interface.telegram is not None:
             return {
-                "chatsky.messengers.telegram.LongpollingInterface": {"token": self.interface.telegram["token"]}
+                "chatsky.messengers.telegram.LongpollingInterface": {
+                    "token": {
+                        "external:os.getenv": "TG_BOT_TOKEN"
+                    }
+                }
             }

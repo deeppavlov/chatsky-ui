@@ -30,7 +30,7 @@ def save_frontend_graph_to_git(build_id: int, chatsky_ui_repo: Repo):
     tags = sorted(chatsky_ui_repo.tags, key=lambda t: t.commit.committed_datetime)
     if len(tags) < 2:
         logger.debug("Only one tag found")
-        is_changed = False
+        is_changed = True
     else:
         current_tag = tags[-1]
         previous_tag = tags[-2]

@@ -9,6 +9,8 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.utils.git_cmd import commit_changes, get_repo
 from chatsky_ui.core.logger_config import get_logger
+from pathlib import Path
+from dotenv import set_key
 
 
 router = APIRouter()
@@ -51,3 +53,12 @@ async def flows_post(flows: Dict[str, Union[list, dict]]) -> Dict[str, str]:
     commit_changes(repo, "Save frontend flows")
 
     return {"status": "ok"}
+
+
+@router.post("/tg_token")
+async def post_tg_token(token: str):
+    dotenv_path = Path(settings.work_directory) / ".env"
+    dotenv_path.touch(exist_ok=True)
+
+    set_key(dotenv_path, "TG_BOT_TOKEN", token)
+    return {"status": "ok", "message": "Token saved successfully"}
