@@ -10,12 +10,14 @@ import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
 import yaml
+from git import Repo
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
+from chatsky_ui.utils.git_cmd import commit_changes, get_repo, save_built_script_to_git, save_frontend_graph_to_git  # noqa: E402
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -23,6 +25,15 @@ cli = typer.Typer(
     "1. `init` - Initializes a new Chatsky-UI project.\n\n"
     "2. `run_app` - Runs the UI for your project.\n"
 )
+
+
+def init_new_repo(git_path: Path, tag_name: str):
+    repo = Repo.init(git_path)
+    repo.git.checkout(b="dev")
+    commit_changes(repo, "Init frontend flows")
+    repo.create_tag(tag_name)
+
+    print("Repo initialized with tag %s", tag_name)
 
 
 async def _execute_command(command_to_run):
@@ -94,12 +105,24 @@ def build_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter  # pylint: disable=C0415
+    bot_repo = get_repo(Path(project_dir) / "bot")
+    chatsky_ui_repo = get_repo(settings.frontend_flows_path.parent)
+    # check that there's no already existing tag {build_id}
+    for tag in bot_repo.tags:
+        if tag.name == str(build_id):
+            raise ValueError(f"Tag {build_id} already exists")
 
-    pipeline_converter = PipelineConverter(pipeline_id=build_id)
-    pipeline_converter(
-        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
-    ) #TODO: rename to frontend_graph_path
+    is_changed = save_frontend_graph_to_git(build_id, chatsky_ui_repo)
+    if is_changed:
+        from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter  # pylint: disable=C0415
+
+        pipeline_converter = PipelineConverter()
+        pipeline_converter(
+            input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
+        ) #TODO: rename to frontend_graph_path
+    
+    # Save the project anyway to keep a gradual number of builds   
+    save_built_script_to_git(build_id, bot_repo)
 
 
 @cli.command("run_bot")
@@ -124,10 +147,14 @@ def run_scenario(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
 ):
     """Runs the bot with preset `success`"""
+    # checkout the commit and then run the build
+    bot_repo = Repo.init(Path(project_dir) / "bot")
+    bot_repo.git.checkout(build_id, "scripts/build.yaml")
+
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
-    script_path = settings.scripts_dir / f"build_{build_id}.yaml"
+    script_path = settings.scripts_dir / f"build.yaml"
 
     command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
     try:
@@ -183,7 +210,7 @@ def init(
     original_dir = os.getcwd()
     try:
         os.chdir(destination)
-        cookiecutter(
+        proj_path = cookiecutter(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
@@ -191,3 +218,6 @@ def init(
         )
     finally:
         os.chdir(original_dir)
+
+    init_new_repo(Path(proj_path) / "bot", tag_name="0")
+    init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")
