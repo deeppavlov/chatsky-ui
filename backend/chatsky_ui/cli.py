@@ -101,6 +101,8 @@ def build_scenario(
     # TODO: add custom_dir - maybe the same way like project_dir
 ):
     """Builds the bot with preset `success`"""
+    logger = get_logger(__name__)
+    
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
@@ -120,6 +122,9 @@ def build_scenario(
         pipeline_converter(
             input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
         ) #TODO: rename to frontend_graph_path
+        logger.info("Graph is changed. Gonna build")
+    else:
+        logger.info("Graph isn't changed. Ain't gonna build")
     
     # Save the project anyway to keep a gradual number of builds   
     save_built_script_to_git(build_id, bot_repo)
