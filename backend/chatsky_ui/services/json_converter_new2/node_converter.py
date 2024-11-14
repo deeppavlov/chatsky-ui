@@ -3,7 +3,7 @@ from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .logic_component_converter.response_converter import TextResponseConverter, CustomResponseConverter
 from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter
 
-from chatsky import RESPONSE, TRANSITIONS, PRE_TRANSITION
+from chatsky import RESPONSE, TRANSITIONS, PRE_TRANSITION, PRE_RESPONSE
 
 
 class NodeConverter(BaseConverter):
@@ -61,6 +61,7 @@ class InfoNodeConverter(NodeConverter):
                 for converter in condition_converters
                 for key, value in converter.get_pre_transitions().items()
             },
+            PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
         }
 
 
