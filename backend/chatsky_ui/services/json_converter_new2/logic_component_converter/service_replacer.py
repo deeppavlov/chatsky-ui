@@ -36,6 +36,7 @@ class ServiceReplacer(NodeTransformer):
     def _get_class_def(self, node: ast.ClassDef) -> ast.ClassDef:
         service = self.new_services_classes[node.name]
         del self.new_services_classes[node.name]
+        logger.info("Updating class '%s'", node.name)
         return service
 
     def generic_visit(self, node: ast.AST):
