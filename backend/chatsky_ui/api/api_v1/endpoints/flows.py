@@ -22,15 +22,21 @@ async def flows_get(build_id: Optional[int] = None) -> Dict[str, Union[str, Dict
 
     if build_id is not None:
         tag = int(build_id)
+        try:
+            repo.git.checkout(tag, settings.frontend_flows_path.name)
+        except GitCommandError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Build_id {tag} not found",
+            ) from e
     else:
-        tag = sorted(repo.tags, key=lambda t: t.commit.committed_datetime)[-1]
-    try:
-        repo.git.checkout(tag, settings.frontend_flows_path.name)
-    except GitCommandError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Build_id {tag} not found",
-        ) from e
+        try:
+            repo.git.checkout("HEAD", settings.frontend_flows_path.name)
+        except GitCommandError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Failed to checkout the latest commit",
+            ) from e
 
     omega_flows = await read_conf(settings.frontend_flows_path)
     dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
