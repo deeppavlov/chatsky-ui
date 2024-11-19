@@ -12,7 +12,7 @@ readme = "README.md"
 packages = [{include = "chatsky_ui"}]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.9,!=3.9.7"
 fastapi = "^0.110.0"
 uvicorn = {extras = ["standard"], version = "^0.28.0"}
 pydantic = "^2.6.3"
@@ -20,7 +20,7 @@ typer = "^0.9.0"
 pydantic-settings = "^2.2.1"
 aiofiles = "^23.2.1"
 cookiecutter = "^2.6.0"
-chatsky = {version = "1.0.0rc1", extras = ["yaml", "telegram"]}
+chatsky = {extras = ["yaml", "telegram"], git = "https://github.com/deeppavlov/chatsky.git", branch = "feat/add-docker-image"}
 omegaconf = "^2.3.0"
 httpx = "^0.27.0"
 httpx-ws = "^0.6.0"

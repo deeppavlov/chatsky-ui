@@ -11,13 +11,13 @@ from chatsky_ui.core.config import settings
 
 class Interface(BaseComponent):
     telegram: Optional[Dict[str, Any]] = Field(default=None)
-    cli: Optional[Dict[str, Any]] = Field(default=None)
+    http: Optional[Dict[str, Any]] = Field(default=None)
 
     @model_validator(mode="after")
     def check_one_not_none(cls, values):
-        telegram, cli = values.telegram, values.cli
-        if (telegram is None) == (cli is None):
-            raise ValueError('Exactly one of "telegram" or "cli" must be provided.')
+        non_none_values = [x for x in [values.telegram, values.http] if x is not None]
+        if len(non_none_values) != 1:
+            raise ValueError('Exactly one of "telegram", or "http" must be provided.')
         return values
 
     @model_validator(mode="after")

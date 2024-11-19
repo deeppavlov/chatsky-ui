@@ -7,9 +7,9 @@ class InterfaceConverter(BaseConverter):
         self.interface = Interface(**interface)
 
     def _convert(self):
-        if self.interface.cli is not None:
-            return {"chatsky.messengers.console.CLIMessengerInterface": {}}
+        if self.interface.http is not None:
+            return {"chatsky.messengers.HTTPMessengerInterface": {}}
         elif self.interface.telegram is not None:
             return {
-                "chatsky.messengers.telegram.LongpollingInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}
+                "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}
             }

@@ -2,13 +2,14 @@ import asyncio
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketException, status
+from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 
 from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
-from chatsky_ui.services.websocket_manager import WebSocketManager
+from httpx import AsyncClient
 
 router = APIRouter()
 
@@ -234,47 +235,20 @@ async def get_run_logs(
         return await run_manager.fetch_run_logs(run_id, pagination.offset(), pagination.limit)
 
 
-@router.websocket("/run/connect")
-async def connect(
-    websocket: WebSocket,
-    websocket_manager: WebSocketManager = Depends(deps.get_websocket_manager),
-    run_manager: RunManager = Depends(deps.get_run_manager),
-) -> None:
-    """Establishes a WebSocket connection to communicate with an alive run process identified by its 'run_id'.
-
-    The WebSocket URL should adhere to the format: /bot/run/connect?run_id=<run_id>.
-    """
-
-    run_manager.logger.debug("Connecting to websocket")
-    run_id = websocket.query_params.get("run_id")
-
-    # Validate run_id
-    if run_id is None:
-        run_manager.logger.error("No run_id provided")
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    if not run_id.isdigit():
-        run_manager.logger.error("A non-digit run run_id provided")
-        raise WebSocketException(code=status.WS_1003_UNSUPPORTED_DATA)
-    run_id = int(run_id)
-    if run_id not in run_manager.processes:
-        run_manager.logger.error("process with run_id '%s' exited or never existed", run_id)
-        raise WebSocketException(code=status.WS_1014_BAD_GATEWAY)
-
-    await websocket_manager.connect(websocket)
-    run_manager.logger.info("Websocket for run process '%s' has been opened", run_id)
-
-    output_task = asyncio.create_task(
-        websocket_manager.send_process_output_to_websocket(run_id, run_manager, websocket)
-    )
-    input_task = asyncio.create_task(
-        websocket_manager.forward_websocket_messages_to_process(run_id, run_manager, websocket)
-    )
-
-    # Wait for either task to finish
-    _, websocket_manager.pending_tasks[websocket] = await asyncio.wait(
-        [output_task, input_task],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
-    websocket_manager.disconnect(websocket)
-    if await run_manager.get_status(run_id) in [Status.ALIVE, Status.RUNNING]:
-        await run_manager.stop(run_id)
+@router.post("/chat", status_code=201)
+async def respond(
+    user_id: str,
+    user_message: str,
+):
+    async with AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"http://localhost:{HTTP_INTERFACE_PORT}/chat",
+                params={"user_id": user_id, "user_message": user_message},
+            )
+            return response.json()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Please check that service's up and running on the port '{HTTP_INTERFACE_PORT}' that you're trying to reach.",
+            ) from e
