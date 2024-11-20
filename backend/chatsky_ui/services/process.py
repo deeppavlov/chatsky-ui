@@ -123,7 +123,7 @@ class Process(ABC):
             )
             self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
-        if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE, Status.STOPPED]:
+        if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
             stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")
