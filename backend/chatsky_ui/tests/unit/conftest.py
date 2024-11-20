@@ -1,5 +1,6 @@
 import pytest
 
+from chatsky import PRE_RESPONSE, RESPONSE, TRANSITIONS, PRE_TRANSITION
 
 @pytest.fixture
 def custom_condition():
@@ -121,6 +122,16 @@ def flow(info_node, group_slot):
 
 
 @pytest.fixture
+def chatsky_node(converted_custom_response, converted_custom_condition):
+    return {
+        PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
+        RESPONSE: converted_custom_response,
+        TRANSITIONS: [{"dst": "dst_test_node", "priority": 1, "cnd": converted_custom_condition}],
+        PRE_TRANSITION: {},
+    }
+
+
+@pytest.fixture
 def mapped_flow(info_node):
     return {"test_flow": {"1": info_node}}
 
@@ -128,7 +139,12 @@ def mapped_flow(info_node):
 @pytest.fixture
 def telegram_interface():
     return {
-        "telegram": {
-            "token": "test_token",
-        }
+        "telegram": {}
+    }
+
+
+@pytest.fixture
+def chatsky_telegram_interface():
+    return {
+        "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}
     }

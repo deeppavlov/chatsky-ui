@@ -2,14 +2,10 @@ from chatsky_ui.services.json_converter_new2.node_converter import InfoNodeConve
 
 
 class TestNodeConverter:
-    def test_info_node_converter(self, info_node, slots_conf, converted_custom_response, converted_custom_condition):
+    def test_info_node_converter(self, info_node, slots_conf, chatsky_node):
         converted_node = InfoNodeConverter(info_node)(slots_conf=slots_conf)
 
-        assert converted_node == {
-            "RESPONSE": converted_custom_response,
-            "TRANSITIONS": [{"dst": "dst_test_node", "priority": 1, "cnd": converted_custom_condition}],
-            "PRE_TRANSITION": {},
-        }
+        assert converted_node == chatsky_node
 
     def test_link_node_converter(self):
         link_node = {

@@ -17,7 +17,7 @@ from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.process import RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
-from chatsky_ui.services.websocket_manager import WebSocketManager
+
 
 DUMMY_BUILD_ID = -1
 
@@ -83,9 +83,3 @@ def run_manager():
 def build_manager():
     return BuildManager()
 
-
-@pytest.fixture
-def websocket_manager():
-    manager = WebSocketManager()
-    manager.set_logger()
-    return manager

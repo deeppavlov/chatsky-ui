@@ -1,5 +1,6 @@
 import pytest
 from pathlib import Path
+import os
 import yaml
 
 from chatsky_ui.services.json_converter_new2.flow_converter import FlowConverter
@@ -9,20 +10,10 @@ from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineC
 
 
 @pytest.fixture
-def chatsky_flow():
+def chatsky_flow(chatsky_node):
     return {
         "test_flow": {
-            "test_node": {
-                "RESPONSE": {"custom.responses.test_response": None},
-                "TRANSITIONS": [
-                    {
-                        "cnd": {"custom.conditions.test_condition": None},
-                        "dst": "dst_test_node",
-                        "priority": 1,
-                    }
-                ],
-                "PRE_TRANSITION": {},
-            }
+            "test_node": chatsky_node
         }
     }
 
@@ -81,51 +72,46 @@ class TestScriptConverter:
 
 
 class TestInterfaceConverter:
-    def test_interface_converter(self, telegram_interface):
-        interface = telegram_interface
+    def test_interface_converter(self, telegram_interface, chatsky_telegram_interface):
+        os.environ["TG_BOT_TOKEN"] = "some_token"
 
-        converted_interface = InterfaceConverter(interface)()
+        converted_interface = InterfaceConverter(telegram_interface)()
 
-        assert converted_interface == {
-            "chatsky.messengers.telegram.LongpollingInterface": {
-                "token": "test_token",
-            }
-        }
+        assert converted_interface == chatsky_telegram_interface
 
-    def test_interface_fail_no_token(self):
-        interface = {"telegram": {}}
-
+    def test_interface_fail_no_token(self, telegram_interface):
+        os.environ.pop("TG_BOT_TOKEN", None)
         with pytest.raises(ValueError):
-            InterfaceConverter(interface)()
+            InterfaceConverter(telegram_interface)()
 
     def test_interface_fail_multiple_interfaces(self, telegram_interface):
-        interface = {**telegram_interface, "cli": {}}
+        interface = {**telegram_interface, "http": {}}
 
         with pytest.raises(ValueError):
             InterfaceConverter(interface)()
 
 
 class TestPipelineConverter:
-    def test_pipeline_converter(self, flow, telegram_interface, converted_group_slot, chatsky_flow):
+    def test_pipeline_converter(
+        self, flow, telegram_interface, chatsky_telegram_interface, converted_group_slot, chatsky_flow
+    ):
         pipeline = {"flows": [flow], "interface": telegram_interface}
         pipeline_path = Path(__file__).parent / "test_pipeline.yaml"
         with open(pipeline_path, "w") as file:
             yaml.dump(pipeline, file)
+        os.environ["TG_BOT_TOKEN"] = "some_token"
 
-        PipelineConverter(pipeline_id=1)(pipeline_path, Path(__file__).parent)
+        PipelineConverter()(pipeline_path, Path(__file__).parent)
 
-        output_file = Path(__file__).parent / "build_1.yaml"
+        output_file = Path(__file__).parent / "build.yaml"
         with open(output_file) as file:
             converted_pipeline = yaml.load(file, Loader=yaml.Loader)
         output_file.unlink()
+        pipeline_path.unlink()
 
         assert converted_pipeline == {
             "script": chatsky_flow,
-            "messenger_interface": {
-                "chatsky.messengers.telegram.LongpollingInterface": {
-                    "token": "test_token",
-                }
-            },
+            "messenger_interface": chatsky_telegram_interface,
             "slots": converted_group_slot,
             "start_label": ["test_flow", "test_node"],
             "fallback_label": ["test_flow", "test_node"],

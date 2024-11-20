@@ -10,6 +10,10 @@ from chatsky_ui.core.config import settings
 
 
 class Interface(BaseComponent):
+    model_config = {
+        "extra": "forbid"
+    }
+
     telegram: Optional[Dict[str, Any]] = Field(default=None)
     http: Optional[Dict[str, Any]] = Field(default=None)
 
