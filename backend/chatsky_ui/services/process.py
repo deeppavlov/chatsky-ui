@@ -11,6 +11,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from httpx import AsyncClient
+from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 
 from dotenv import load_dotenv
 
@@ -23,14 +25,6 @@ load_dotenv()
 
 GRACEFUL_TERMINATION_TIMEOUT = float(os.getenv("GRACEFUL_TERMINATION_TIMEOUT", 2))
 PING_PONG_TIMEOUT = float(os.getenv("PING_PONG_TIMEOUT", 0.5))
-
-
-def _map_to_str(params: Dict[str, Any]):
-    for k, v in params.items():
-        if isinstance(v, datetime):
-            params[k] = v.strftime("%Y-%m-%dT%H:%M:%S")
-        elif isinstance(v, Path):
-            params[k] = str(v)
 
 
 class Process(ABC):
@@ -65,12 +59,20 @@ class Process(ABC):
         Returns:
             dict: A dictionary containing the values of the attributes mentioned in the list.
         """
+        def _map_to_str(params: Dict[str, Any]):
+            for k, v in params.copy().items():
+                if isinstance(v, datetime):
+                    params[k] = v.strftime("%Y-%m-%dT%H:%M:%S")
+                elif isinstance(v, Path):
+                    params[k] = str(v)
+            return params
+
         await self.check_status()
         info = {key: getattr(self, key) for key in self.__dict__ if key in attributes}
         if "status" in attributes:
             info["status"] = self.status.value
 
-        return info
+        return _map_to_str(info)
 
     @abstractmethod
     async def update_db_info(self):
@@ -123,12 +125,12 @@ class Process(ABC):
             )
             self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
-        if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
-            stdout, stderr = await self.process.communicate()
-            if stdout:
-                self.logger.info(f"[stdout]\n{stdout.decode()}")
-            if stderr:
-                self.logger.error(f"[stderr]\n{stderr.decode()}")
+        # if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
+        #     stdout, stderr = await self.process.communicate()
+        #     if stdout:
+        #         self.logger.info(f"[stdout]\n{stdout.decode()}")
+        #     if stderr:
+        #         self.logger.error(f"[stderr]\n{stderr.decode()}")
 
         return self.status
 
@@ -158,29 +160,57 @@ class Process(ABC):
             self.logger.error("Process '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
-    async def read_stdout(self) -> bytes:
-        """Reads the stdout of the process for communication."""
-        async with self.lock:
-            if self.process is None:
-                self.logger.error("Cannot read stdout from a process '%s' that has not started yet.", self.id)
-                raise RuntimeError
-            if self.process.stdout is None:
-                raise RuntimeError(f"The process '{self.id}' stdout is None. It might be still running.")
-            return await self.process.stdout.readline()
-
-    async def write_stdin(self, message: bytes) -> None:
-        """Writes a message to the stdin of the process for communication."""
-        if self.process is None:
-            self.logger.error("Cannot write into stdin of a process '%s' that has not started yet.", self.id)
-            raise RuntimeError
-        if self.process.stdin is None:
-            raise RuntimeError(f"The process '{self.id}' stdin is None. It might be still running.")
-        self.process.stdin.write(message)
-        await self.process.stdin.drain()
-
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
-        return True
+        async def check_telegram_readiness(stream, name):
+            async for line in stream:
+                decoded_line = line.decode().strip()
+                self.logger.info(f"[{name}] {decoded_line}")
+
+                if "telegram.ext.Application:Application started" in decoded_line:
+                    self.logger.info("The application is ready for use!")
+                    return True
+            return False
+
+        async with AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"http://localhost:{HTTP_INTERFACE_PORT}/health",
+                )
+                return response.json()["status"] == "ok"
+            except Exception as e:
+                self.logger.info(
+                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}'. "
+                    f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
+                )
+
+        done, pending = await asyncio.wait(
+            [
+                asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
+                asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
+            ],
+            return_when=asyncio.FIRST_COMPLETED,
+            timeout=PING_PONG_TIMEOUT,
+        )
+
+        for task in pending:
+            task.cancel()
+
+        for task in done:
+            result = task.result()
+            if result:
+                return result
+        
+    def add_new_conf(self, conf: list, params: dict) -> list:  #TODO: rename conf everywhere to metadata/meta
+        for run in conf:
+            if run.id == params["id"]:  # type: ignore
+                for key, value in params.items():
+                    setattr(run, key, value)
+                break
+        else:
+            conf.append(params)
+
+        return conf
 
 
 class RunProcess(Process):
@@ -202,17 +232,9 @@ class RunProcess(Process):
         # save current run info into runs_path
         self.logger.debug("Updating db run info")
         runs_conf = await read_conf(settings.runs_path)
-
         run_params = await self.get_full_info()
-        _map_to_str(run_params)
 
-        for run in runs_conf:
-            if run.id == run_params["id"]:  # type: ignore
-                for key, value in run_params.items():
-                    setattr(run, key, value)
-                break
-        else:
-            runs_conf.append(run_params)
+        runs_conf = self.add_new_conf(runs_conf, run_params) # type: ignore
 
         await write_conf(runs_conf, settings.runs_path)
 
@@ -243,18 +265,10 @@ class BuildProcess(Process):
         return await super().get_full_info(attributes)
 
     async def update_db_info(self) -> None:
-        # save current build info into builds_path
+        """Saves current build info into builds_path"""
         builds_conf = await read_conf(settings.builds_path)
-
         build_params = await self.get_full_info()
-        _map_to_str(build_params)
 
-        for build in builds_conf:
-            if build.id == build_params["id"]:  # type: ignore
-                for key, value in build_params.items():
-                    setattr(build, key, value)
-                break
-        else:
-            builds_conf.append(build_params)
+        builds_conf = self.add_new_conf(builds_conf, build_params) # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)

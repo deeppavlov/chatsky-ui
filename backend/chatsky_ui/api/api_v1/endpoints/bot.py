@@ -250,5 +250,5 @@ async def respond(
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Please check that service's up and running on the port '{HTTP_INTERFACE_PORT}' that you're trying to reach.",
+                detail=f"Please check that service's up and running on the port '{HTTP_INTERFACE_PORT}'.",
             ) from e
