@@ -10,6 +10,7 @@ import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
 from git import Repo
+from typing import Optional
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -62,7 +63,7 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(build_id: int, project_dir: Path, command_file: str, preset: str):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str, build_id: Optional[int] = None):
     logger = get_logger(__name__)
 
     presets_build_path = settings.presets / command_file
@@ -84,7 +85,6 @@ def _execute_command_file(build_id: int, project_dir: Path, command_file: str, p
 
 @cli.command("build_bot")
 def build_bot(
-    build_id: Annotated[int, typer.Option(help="Id to save the build with")] = None,
     project_dir: Path = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
@@ -95,12 +95,11 @@ def build_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(build_id, project_dir, "build.json", preset)
+    _execute_command_file(project_dir, "build.json", preset)
 
 
 @cli.command("build_scenario")
 def build_scenario(
-    build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
     # TODO: add custom_dir - maybe the same way like project_dir
 ):
@@ -108,31 +107,15 @@ def build_scenario(
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
-    logger = get_logger(__name__)
 
-    bot_repo = get_repo(Path(project_dir) / "bot")
-    chatsky_ui_repo = get_repo(settings.frontend_flows_path.parent)
-    # check that there's no already existing tag {build_id}
-    for tag in bot_repo.tags:
-        if tag.name == str(build_id):
-            raise ValueError(f"Tag {build_id} already exists")
+    from chatsky_ui.services.json_converter_new2.pipeline_converter import (
+        PipelineConverter,
+    )  # pylint: disable=C0415
 
-    is_changed = save_frontend_graph_to_git(build_id, chatsky_ui_repo)
-    if is_changed:
-        from chatsky_ui.services.json_converter_new2.pipeline_converter import (
-            PipelineConverter,
-        )  # pylint: disable=C0415
-
-        pipeline_converter = PipelineConverter()
-        pipeline_converter(
-            input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
-        )  # TODO: rename to frontend_graph_path
-        logger.info("Graph is changed. Gonna build")
-    else:
-        logger.info("Graph isn't changed. Ain't gonna build")
-
-    # Save the project anyway to keep a gradual number of builds
-    save_built_script_to_git(build_id, bot_repo)
+    pipeline_converter = PipelineConverter()
+    pipeline_converter(
+        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
+    )  # TODO: rename to frontend_graph_path
 
 
 @cli.command("run_bot")
@@ -148,7 +131,7 @@ def run_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(build_id, project_dir, "run.json", preset)
+    _execute_command_file(project_dir, "run.json", preset, build_id)
 
 
 @cli.command("run_scenario")

@@ -37,7 +37,7 @@ class Process(ABC):
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
         self.lock: asyncio.Lock = asyncio.Lock()
-        self.process: asyncio.subprocess.Process  # pylint: disable=no-member #TODO: is naming ok?
+        self.process: Optional[asyncio.subprocess.Process] = None
         self.logger: logging.Logger
 
     async def start(self, cmd_to_run: str) -> None:
@@ -83,7 +83,7 @@ class Process(ABC):
         while True:
             await self.update_db_info()  # check status and update db
             self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in [Status.STOPPED, Status.COMPLETED, Status.FAILED]:
+            if self.status in [Status.NULL, Status.STOPPED, Status.COMPLETED, Status.FAILED]:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
@@ -102,6 +102,7 @@ class Process(ABC):
         """
         if self.process is None:
             self.status = Status.NULL
+            return self.status
         # if process is already alive, don't interrupt potential open channels by checking status periodically.
         elif self.process.returncode is None:
             if self.status == Status.ALIVE:
@@ -125,12 +126,12 @@ class Process(ABC):
             )
             self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
-        # if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
-        #     stdout, stderr = await self.process.communicate()
-        #     if stdout:
-        #         self.logger.info(f"[stdout]\n{stdout.decode()}")
-        #     if stderr:
-        #         self.logger.error(f"[stderr]\n{stderr.decode()}")
+        if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
+            stdout, stderr = await self.process.communicate()
+            if stdout:
+                self.logger.info(f"[stdout]\n{stdout.decode()}")
+            if stderr:
+                self.logger.error(f"[stderr]\n{stderr.decode()}")
 
         return self.status
 
