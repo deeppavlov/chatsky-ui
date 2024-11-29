@@ -175,17 +175,17 @@ class Process(ABC):
                     return True
             return False
 
-        # async with AsyncClient() as client:
-        #     try:
-        #         response = await client.get(
-        #             f"http://localhost:{HTTP_INTERFACE_PORT}/health",
-        #         )
-        #         return response.json()["status"] == "ok"
-        #     except Exception as e:
-        #         self.logger.info(
-        #             f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}'. "
-        #             f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
-        #         )
+        async with AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"http://localhost:{HTTP_INTERFACE_PORT}/health",
+                )
+                return response.json()["status"] == "ok"
+            except Exception as e:
+                self.logger.info(
+                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}'. "
+                    f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
+                )
 
         done, pending = await asyncio.wait(
             [
