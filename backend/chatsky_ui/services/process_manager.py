@@ -17,7 +17,7 @@ from chatsky_ui.db.base import read_conf, read_logs
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
-from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git, save_built_script_to_git
+from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git
 
 
 class ProcessManager:
@@ -190,9 +190,6 @@ class BuildManager(ProcessManager):
             await process.start(cmd_to_run)
         self.processes[id_] = process
         
-        # Save the project anyway to keep a gradual number of builds
-        self.save_built_script_to_git(id_)
-
         return self.last_id
 
     async def check_status(self, id_, *args, **kwargs):
@@ -220,10 +217,6 @@ class BuildManager(ProcessManager):
         else:
             self.logger.info("Graph isn't changed. Ain't gonna build")
             return False
-
-    def save_built_script_to_git(self, id_: int) -> None:
-        bot_repo = get_repo(settings.custom_dir.parent)
-        save_built_script_to_git(id_, bot_repo)
 
     async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
         """Returns metadata of a specific build process identified by its unique ID.

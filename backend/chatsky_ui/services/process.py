@@ -20,6 +20,8 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.schemas.process_status import Status
+from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git, save_built_script_to_git
+
 
 load_dotenv()
 
@@ -173,17 +175,17 @@ class Process(ABC):
                     return True
             return False
 
-        async with AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"http://localhost:{HTTP_INTERFACE_PORT}/health",
-                )
-                return response.json()["status"] == "ok"
-            except Exception as e:
-                self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}'. "
-                    f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
-                )
+        # async with AsyncClient() as client:
+        #     try:
+        #         response = await client.get(
+        #             f"http://localhost:{HTTP_INTERFACE_PORT}/health",
+        #         )
+        #         return response.json()["status"] == "ok"
+        #     except Exception as e:
+        #         self.logger.info(
+        #             f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}'. "
+        #             f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
+        #         )
 
         done, pending = await asyncio.wait(
             [
@@ -273,3 +275,13 @@ class BuildProcess(Process):
         builds_conf = self.add_new_conf(builds_conf, build_params) # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)
+
+    def save_built_script_to_git(self, id_: int) -> None:
+        bot_repo = get_repo(settings.custom_dir.parent)
+        save_built_script_to_git(id_, bot_repo)
+
+    async def check_status(self) -> Status:
+        status = await super().check_status()
+        if status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:            
+            # Save the project anyway to keep a gradual number of builds
+            self.save_built_script_to_git(self.id)
