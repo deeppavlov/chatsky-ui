@@ -11,6 +11,8 @@ from chatsky_ui.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.temp_conf.exists():
+        settings.refresh_work_dir()
     yield
 
 

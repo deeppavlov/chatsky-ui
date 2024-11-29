@@ -5,6 +5,7 @@ import uvicorn
 from dotenv import load_dotenv
 import logging
 from typing import Dict
+from omegaconf import DictConfig, OmegaConf
 
 
 LOG_LEVELS: Dict[str, int] = {
@@ -64,6 +65,32 @@ class Settings:
         self.conditions_path = self.custom_dir / "conditions.py"
         self.responses_path = self.custom_dir / "responses.py"
         self.scripts_dir = self.work_directory / "bot/scripts"
+
+    def save_config(self):
+        if not self.temp_conf.exists():
+            self.temp_conf.touch()
+        OmegaConf.save(
+            OmegaConf.create(
+                {
+                    "work_directory": str(self.work_directory),
+                    "host": self.host,
+                    "port": self.port,
+                    "log_level": self.log_level,
+                    "conf_reload": self.conf_reload,
+                }
+            ),  # type: ignore
+            self.temp_conf,
+        )
+
+    def _load_temp_config(self) -> DictConfig:
+        if not self.temp_conf.exists():
+            raise FileNotFoundError(f"{self.temp_conf} not found.")
+
+        return OmegaConf.load(self.temp_conf)  # type: ignore
+
+    def refresh_work_dir(self):
+        config = self._load_temp_config()
+        self.set_config(**config)
 
 
 class AppRunner:
