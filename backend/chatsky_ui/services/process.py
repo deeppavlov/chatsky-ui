@@ -183,7 +183,7 @@ class Process(ABC):
                 return response.json()["status"] == "ok"
             except Exception as e:
                 self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}'. "
+                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}' yet. "
                     f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
                 )
 

@@ -2,15 +2,23 @@ import ast
 from ast import NodeTransformer
 from typing import Dict, List
 from pathlib import Path
-
+import logging
 from chatsky_ui.core.logger_config import get_logger
-
-logger = get_logger(__name__)
 
 
 class ServiceReplacer(NodeTransformer):
     def __init__(self, new_services: List[str]):
         self.new_services_classes = self._get_classes_def(new_services)
+        self._logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            raise ValueError("Logger has not been configured. Call set_logger() first.")
+        return self._logger
+
+    def set_logger(self):
+        self._logger = get_logger(__name__)
 
     def _get_classes_def(self, services_code: List[str]) -> Dict[str, ast.ClassDef]:
         parsed_codes = [ast.parse(service_code) for service_code in services_code]
@@ -24,11 +32,11 @@ class ServiceReplacer(NodeTransformer):
             if isinstance(node, ast.ClassDef):
                 classes[node.name] = node
             else:
-                logger.error("No class definition found in new_service: %s", service_code)
+                self.logger.error("No class definition found in new_service: %s", service_code)
         return classes
 
     def visit_ClassDef(self, node: ast.ClassDef) -> ast.ClassDef:
-        logger.debug("Visiting class '%s' and comparing with: %s", node.name, self.new_services_classes.keys())
+        self.logger.debug("Visiting class '%s' and comparing with: %s", node.name, self.new_services_classes.keys())
         if node.name in self.new_services_classes:
             return self._get_class_def(node)
         return node
@@ -36,7 +44,7 @@ class ServiceReplacer(NodeTransformer):
     def _get_class_def(self, node: ast.ClassDef) -> ast.ClassDef:
         service = self.new_services_classes[node.name]
         del self.new_services_classes[node.name]
-        logger.info("Updating class '%s'", node.name)
+        self.logger.info("Updating class '%s'", node.name)
         return service
 
     def generic_visit(self, node: ast.AST):
@@ -46,7 +54,7 @@ class ServiceReplacer(NodeTransformer):
         return node
 
     def _append_new_services(self, node: ast.Module):
-        logger.info("Services not found, appending new services: %s", list(self.new_services_classes.keys()))
+        self.logger.info("Services not found, appending new services: %s", list(self.new_services_classes.keys()))
         for _, service in self.new_services_classes.items():
             node.body.append(service)
 
@@ -56,6 +64,7 @@ def store_custom_service(services_path: Path, services: List[str]):
         conditions_tree = ast.parse(file.read())
 
     replacer = ServiceReplacer(services)
+    replacer.set_logger()
     replacer.visit(conditions_tree)
 
     with open(services_path, "w") as file:
