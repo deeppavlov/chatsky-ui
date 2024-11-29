@@ -3,8 +3,19 @@ from pathlib import Path
 
 import uvicorn
 from dotenv import load_dotenv
-from omegaconf import DictConfig, OmegaConf
+import logging
+from typing import Dict
 
+
+LOG_LEVELS: Dict[str, int] = {
+    "critical": logging.CRITICAL,
+    "error": logging.ERROR,
+    "warning": logging.WARNING,
+    "info": logging.INFO,
+    "debug": logging.DEBUG,
+}
+
+logging.basicConfig(level=LOG_LEVELS[os.getenv("LOG_LEVEL", "info")])
 load_dotenv()
 
 
@@ -38,6 +49,7 @@ class Settings:
             setattr(self, key, value)
 
         if "work_directory" in kwargs:
+            logging.debug("Setting work directory to %s", self.work_directory)
             self._set_user_proj_paths()
 
     def _set_user_proj_paths(self):
@@ -52,32 +64,6 @@ class Settings:
         self.conditions_path = self.custom_dir / "conditions.py"
         self.responses_path = self.custom_dir / "responses.py"
         self.scripts_dir = self.work_directory / "bot/scripts"
-
-    def save_config(self):
-        if not self.temp_conf.exists():
-            self.temp_conf.touch()
-        OmegaConf.save(
-            OmegaConf.create(
-                {
-                    "work_directory": str(self.work_directory),
-                    "host": self.host,
-                    "port": self.port,
-                    "log_level": self.log_level,
-                    "conf_reload": self.conf_reload,
-                }
-            ),  # type: ignore
-            self.temp_conf,
-        )
-
-    def _load_temp_config(self) -> DictConfig:
-        if not self.temp_conf.exists():
-            raise FileNotFoundError(f"{self.temp_conf} not found.")
-
-        return OmegaConf.load(self.temp_conf)  # type: ignore
-
-    def refresh_work_dir(self):
-        config = self._load_temp_config()
-        self.set_config(**config)
 
 
 class AppRunner:

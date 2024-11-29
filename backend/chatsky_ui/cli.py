@@ -181,8 +181,6 @@ def run_app(
         conf_reload=str(conf_reload).lower() in ["true", "yes", "t", "y", "1"],
         work_directory=project_dir,
     )
-    if conf_reload:
-        settings.save_config()  # this is for the sake of maintaining the state of the settings
 
     app_runner.set_settings(settings)
     app_runner.run()
