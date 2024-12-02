@@ -174,7 +174,7 @@ export const CONDITION_LABELS: {
   manual: "manual",
   forward: "forward",
   backward: "backward",
-  repeat: "repeat",
+  current: "current",
   fallback: "fallback",
   start: "start",
   previous: "previous",
