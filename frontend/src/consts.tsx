@@ -124,7 +124,7 @@ export const NODES = {
     global_conditions: [],
     local_conditions: [],
     response: {
-      name: "default_response",
+      name: "DefaultResponse",
       type: "text",
       data: [{ text: "I am a bot and here is my quote ", priority: 1 }],
     },

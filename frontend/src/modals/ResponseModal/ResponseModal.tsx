@@ -173,7 +173,9 @@ const ResponseModal = ({
               placeholder="Enter response's name here"
               value={currentResponse.name}
               isRequired
-              onChange={(e) => setCurrentResponse({ ...currentResponse, name: e.target.value })}
+              onChange={(e) =>
+                setCurrentResponse({ ...currentResponse, name: e.target.value.replace(/\s/g, "") })
+              }
             />
           </div>
           <div>{bodyItems[selected]}</div>

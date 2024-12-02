@@ -400,7 +400,7 @@ const ConditionModal = ({
             labelPlacement='outside'
             placeholder="Enter condition's name here"
             value={currentCondition.name}
-            onChange={(e) => setCurrentCondition({ ...currentCondition, name: e.target.value })}
+            onChange={(e) => setCurrentCondition({ ...currentCondition, name: e.target.value.replace(/\s/g, '') })}
           />
           <DefInput
             label='Priority'
