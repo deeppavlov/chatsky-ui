@@ -17,9 +17,7 @@ export const save_flows = async (
   const _i =
     _interface.interface === "tg"
       ? {
-          telegram: {
-            token: _interface.token,
-          },
+          telegram: {},
         }
       : {
           http: {},
@@ -34,4 +32,21 @@ export const save_flows = async (
   }
 
   return (await $v1.post("/flows", json)).data
+}
+
+export const set_tg_token = async (token: string) => {
+  try {
+    await $v1.post(
+      "/flows/tg_token",
+      {},
+      {
+        params: {
+          token,
+        },
+      }
+    )
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
 }
