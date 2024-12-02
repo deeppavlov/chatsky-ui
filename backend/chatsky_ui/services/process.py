@@ -7,6 +7,7 @@ Classes for build and run processes.
 import asyncio
 import logging
 import os
+import signal
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
@@ -49,6 +50,7 @@ class Process(ABC):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.PIPE,
+            preexec_fn=os.setsid,
         )
 
     async def get_full_info(self, attributes: list) -> Dict[str, Any]:
@@ -148,19 +150,17 @@ class Process(ABC):
             self.logger.error("Cannot stop a process '%s' that has not started yet.", self.id)
             raise RuntimeError
         try:
-            self.logger.debug("Terminating process '%s'", self.id)
-            self.process.terminate()
+            self.logger.debug("Terminating process '%s' with group process pid of '%s'", self.id, self.process.pid)
+            os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
             try:
                 await asyncio.wait_for(self.process.wait(), timeout=GRACEFUL_TERMINATION_TIMEOUT)
                 self.logger.debug("Process '%s' was gracefully terminated.", self.id)
             except asyncio.TimeoutError:
-                self.process.kill()
-                await self.process.wait()
+                os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
                 self.logger.debug("Process '%s' was forcefully killed.", self.id)
             self.logger.debug("Process returencode '%s' ", self.process.returncode)
-
         except ProcessLookupError as exc:
-            self.logger.error("Process '%s' not found. It may have already exited.", self.id)
+            self.logger.error("Process group '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
     def add_new_conf(self, conf: list, params: dict) -> list:  #TODO: rename conf everywhere to metadata/meta
