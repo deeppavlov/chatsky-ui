@@ -121,6 +121,11 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
             flag = false
             setRunPending(false)
             setRunStatus("alive")
+            n.add({
+              message: "",
+              title: "Run started!",
+              type: "success",
+            })
           }
           if (status === "failed") {
             flag = false
@@ -186,7 +191,8 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         setRuns,
         setRunStatus,
         setRunsHandler,
-      }}>
+      }}
+    >
       {children}
     </runContext.Provider>
   )
