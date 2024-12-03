@@ -8,8 +8,10 @@ are stored in the `processes` dictionary of process managers.
 """
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+import os
 
 from omegaconf import OmegaConf
+from dotenv import load_dotenv
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
@@ -135,6 +137,8 @@ class RunManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = RunProcess(id_, build_id, preset.end_status)
+
+        load_dotenv(os.path.join(settings.work_directory, ".env"))
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process
