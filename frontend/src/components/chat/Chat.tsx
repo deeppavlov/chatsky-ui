@@ -5,10 +5,8 @@ import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
 import { memo, useContext, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { chatContext } from "../../contexts/chatContext"
-import { NotificationsContext } from "../../contexts/notificationsContext"
 import { runContext } from "../../contexts/runContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
-import { DEV } from "../../env.consts"
 import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import { parseSearchParams } from "../../utils"
 import EmojiPicker, { EmojiType } from "./EmojiPicker"
@@ -19,7 +17,6 @@ const Chat = memo(() => {
   const { run, runStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const { setMouseOnPane } = useContext(workspaceContext)
-  const { notification: n } = useContext(NotificationsContext)
 
   const [isEmoji, setIsEmoji] = useState(false)
 
@@ -71,7 +68,7 @@ const Chat = memo(() => {
       },
     ])
 
-    const { response } = await send_message(messageValue)
+    const { response } = await send_message(0, messageValue) // user_id is hardcoded; it will need to be fixed later
     setTimeout(() => {
       setMessages((prev) => [...prev, { message: response.text, type: "bot" }])
     }, 500)
@@ -123,6 +120,10 @@ const Chat = memo(() => {
       setMessages((prev) => prev.filter((message) => message.type != "system"))
     }
   }, [runStatus, setMessages])
+
+  useEffect(() => {
+    setMessages([])
+  }, [run?.id, setMessages])
 
   return (
     <div

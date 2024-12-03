@@ -208,14 +208,14 @@ export const run_status = async (run_id: number) => {
   }
 }
 
-export const send_message = async (user_message: string) => {
+export const send_message = async (user_id: number, user_message: string) => {
   try {
     const { data }: { data: botMessage } = await $v1.post(
       "/bot/chat",
       {},
       {
         params: {
-          user_id: "any",
+          user_id,
           user_message,
         },
       }
