@@ -59,9 +59,8 @@ class ProcessManager:
             raise
 
     async def stop_all(self) -> None:
-        self.logger.info("Stopping all process %s", self.processes)
         for id_, process in self.processes.items():
-            if process.process.returncode is None:
+            if await process.check_status() in [Status.ALIVE, Status.RUNNING]:
                 await self.stop(id_)
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:

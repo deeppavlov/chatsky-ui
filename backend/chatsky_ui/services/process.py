@@ -42,6 +42,7 @@ class Process(ABC):
         self.lock: asyncio.Lock = asyncio.Lock()
         self.process: Optional[asyncio.subprocess.Process] = None
         self.logger: logging.Logger
+        self.to_be_terminated = False
 
     async def start(self, cmd_to_run: str) -> None:
         """Starts an asyncronous process with the given command."""
@@ -84,10 +85,10 @@ class Process(ABC):
 
     async def periodically_check_status(self) -> None:
         """Periodically checks the process status and updates the database."""
-        while True:
+        while not self.to_be_terminated:
             await self.update_db_info()  # check status and update db
             self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in [Status.NULL, Status.STOPPED, Status.COMPLETED, Status.FAILED]:
+            if self.status in [Status.NULL, Status.STOPPED, Status.COMPLETED, Status.FAILED, Status.FAILED_WITH_UNEXPECTED_CODE]:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
