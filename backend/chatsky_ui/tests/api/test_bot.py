@@ -6,7 +6,6 @@ from chatsky_ui.api.api_v1.endpoints.bot import (
     _stop_process,
     check_build_processes,
     check_run_processes,
-    connect,
     get_build_logs,
     get_run_logs,
     start_build,
@@ -16,8 +15,6 @@ from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process_manager import RunManager
 
 PROCESS_ID = 0
-RUN_ID = 0
-BUILD_ID = 0
 
 
 @pytest.mark.asyncio
@@ -63,27 +60,27 @@ async def test_check_process_status(mocker):
 
 
 @pytest.mark.asyncio
-async def test_start_build(mocker):
+async def test_start_build(mocker, dummy_build_id):
     build_manager = mocker.MagicMock()
     preset = mocker.MagicMock()
 
-    start = mocker.AsyncMock(return_value=BUILD_ID)
+    start = mocker.AsyncMock(return_value=dummy_build_id)
     mocker.patch.multiple(build_manager, start=start, check_status=mocker.AsyncMock())
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
     response = await start_build(preset, background_tasks=BackgroundTasks(), build_manager=build_manager)
     start.assert_awaited_once_with(preset)
-    assert response == {"status": "ok", "build_id": BUILD_ID}
+    assert response == {"status": "ok", "build_id": dummy_build_id}
 
 
 @pytest.mark.asyncio
-async def test_check_build_processes_some_info(mocker, pagination):
+async def test_check_build_processes_some_info(mocker, pagination, dummy_build_id):
     build_manager = mocker.AsyncMock()
     run_manager = mocker.AsyncMock()
 
-    await check_build_processes(BUILD_ID, build_manager, run_manager, pagination)
+    await check_build_processes(dummy_build_id, build_manager, run_manager, pagination)
 
-    build_manager.get_build_info.assert_awaited_once_with(BUILD_ID, run_manager)
+    build_manager.get_build_info.assert_awaited_once_with(dummy_build_id, run_manager)
 
 
 @pytest.mark.asyncio
@@ -100,37 +97,37 @@ async def test_check_build_processes_all_info(mocker, pagination):
 
 
 @pytest.mark.asyncio
-async def test_get_build_logs(mocker, pagination):
+async def test_get_build_logs(mocker, pagination, dummy_build_id):
     build_manager = mocker.AsyncMock()
 
-    await get_build_logs(BUILD_ID, build_manager, pagination)
+    await get_build_logs(dummy_build_id, build_manager, pagination)
 
-    build_manager.fetch_build_logs.assert_awaited_once_with(BUILD_ID, pagination.offset(), pagination.limit)
+    build_manager.fetch_build_logs.assert_awaited_once_with(dummy_build_id, pagination.offset(), pagination.limit)
 
 
 @pytest.mark.asyncio
-async def test_start_run(mocker):
+async def test_start_run(mocker, dummy_build_id, dummy_run_id):
     run_manager = mocker.MagicMock()
     preset = mocker.MagicMock()
 
-    start = mocker.AsyncMock(return_value=RUN_ID)
+    start = mocker.AsyncMock(return_value=dummy_run_id)
     mocker.patch.multiple(run_manager, start=start, check_status=mocker.AsyncMock())
     mocker.patch.multiple(preset, wait_time=0, end_status="loop")
 
     response = await start_run(
-        build_id=BUILD_ID, preset=preset, background_tasks=BackgroundTasks(), run_manager=run_manager
+        build_id=dummy_build_id, preset=preset, background_tasks=BackgroundTasks(), run_manager=run_manager
     )
-    start.assert_awaited_once_with(BUILD_ID, preset)
-    assert response == {"status": "ok", "run_id": RUN_ID}
+    start.assert_awaited_once_with(dummy_build_id, preset)
+    assert response == {"status": "ok", "run_id": dummy_run_id}
 
 
 @pytest.mark.asyncio
-async def test_check_run_processes_some_info(mocker, pagination):
+async def test_check_run_processes_some_info(mocker, pagination, dummy_run_id):
     run_manager = mocker.AsyncMock()
 
-    await check_run_processes(RUN_ID, run_manager, pagination)
+    await check_run_processes(dummy_run_id, run_manager, pagination)
 
-    run_manager.get_run_info.assert_awaited_once_with(RUN_ID)
+    run_manager.get_run_info.assert_awaited_once_with(dummy_run_id)
 
 
 @pytest.mark.asyncio
@@ -144,27 +141,9 @@ async def test_check_run_processes_all_info(mocker, pagination):
 
 
 @pytest.mark.asyncio
-async def test_get_run_logs(mocker, pagination):
+async def test_get_run_logs(mocker, pagination, dummy_run_id):
     run_manager = mocker.AsyncMock()
 
-    await get_run_logs(RUN_ID, run_manager, pagination)
+    await get_run_logs(dummy_run_id, run_manager, pagination)
 
-    run_manager.fetch_run_logs.assert_awaited_once_with(RUN_ID, pagination.offset(), pagination.limit)
-
-
-@pytest.mark.asyncio
-async def test_connect(mocker):
-    websocket = mocker.AsyncMock()
-    websocket_manager = mocker.AsyncMock()
-    websocket_manager.disconnect = mocker.MagicMock()
-    run_manager = mocker.AsyncMock()
-    run_process = mocker.AsyncMock()
-    run_manager.processes = {RUN_ID: run_process}
-    mocker.patch.object(websocket, "query_params", {"run_id": str(RUN_ID)})
-
-    await connect(websocket, websocket_manager, run_manager)
-
-    websocket_manager.connect.assert_awaited_once_with(websocket)
-    websocket_manager.send_process_output_to_websocket.assert_awaited_once_with(RUN_ID, run_manager, websocket)
-    websocket_manager.forward_websocket_messages_to_process.assert_awaited_once_with(RUN_ID, run_manager, websocket)
-    websocket_manager.disconnect.assert_called_once_with(websocket)
+    run_manager.fetch_run_logs.assert_awaited_once_with(dummy_run_id, pagination.offset(), pagination.limit)

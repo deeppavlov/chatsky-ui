@@ -26,7 +26,6 @@ class Interface(BaseComponent):
 
     @model_validator(mode="after")
     def check_telegram_token(cls, values):
-        load_dotenv(os.path.join(settings.work_directory, ".env"))
         tg_bot_token = os.getenv("TG_BOT_TOKEN")
         if values.telegram is not None and not tg_bot_token:
             raise ValueError("Telegram token must be provided.")
