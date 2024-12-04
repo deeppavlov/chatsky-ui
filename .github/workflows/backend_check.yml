@@ -82,6 +82,6 @@ jobs:
 
       - name: run tests
         run: |
-          python -m poetry install --no-root
+          python -m poetry install --no-root --with dev
           python -m poetry run pytest ../backend/chatsky_ui/tests/ --verbose
         working-directory: my_project

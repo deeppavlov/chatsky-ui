@@ -449,7 +449,7 @@ ydb = ["six", "ydb"]
 type = "git"
 url = "https://github.com/deeppavlov/chatsky.git"
 reference = "feat/add-docker-image"
-resolved_reference = "584d06b233c0ebf068533a6afb7103d26eb73dfe"
+resolved_reference = "7e8f2615337d2308b71e256f469fc58ce52f6156"
 
 [[package]]
 name = "click"
