@@ -9,6 +9,7 @@ import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
+import yaml
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -93,9 +94,12 @@ def build_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    from chatsky_ui.services.json_converter import converter  # pylint: disable=C0415
+    from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter  # pylint: disable=C0415
 
-    asyncio.run(converter(build_id=build_id))
+    pipeline_converter = PipelineConverter(pipeline_id=build_id)
+    pipeline_converter(
+        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
+    ) #TODO: rename to frontend_graph_path
 
 
 @cli.command("run_bot")
