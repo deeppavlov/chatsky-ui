@@ -285,7 +285,7 @@ class BuildProcess(Process):
 
     async def periodically_check_status(self) -> None:
         """Periodically checks the process status and updates the database."""
-        while True:
+        while not self.to_be_terminated:
             await self.update_db_info()  # check status and update db
             self.logger.info("Status of process '%s': %s", self.id, self.status)
             if self.status in [Status.NULL, Status.STOPPED, Status.COMPLETED, Status.FAILED]:

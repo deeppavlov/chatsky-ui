@@ -62,6 +62,7 @@ class ProcessManager:
         for id_, process in self.processes.items():
             if await process.check_status() in [Status.ALIVE, Status.RUNNING]:
                 await self.stop(id_)
+                await process.update_db_info()
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:
         """Checks the status of the process with the given id by calling the `periodically_check_status`
