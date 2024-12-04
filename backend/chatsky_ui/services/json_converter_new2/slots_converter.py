@@ -1,8 +1,8 @@
 from typing import List
 
-from .base_converter import BaseConverter
-from ...schemas.front_graph_components.slot import GroupSlot, RegexpSlot
 from ...schemas.front_graph_components.node import SlotsNode
+from ...schemas.front_graph_components.slot import GroupSlot, RegexpSlot
+from .base_converter import BaseConverter
 
 
 class SlotsConverter(BaseConverter):

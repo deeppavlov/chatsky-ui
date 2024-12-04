@@ -6,12 +6,12 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-import os
 
-from omegaconf import OmegaConf
 from dotenv import load_dotenv
+from omegaconf import OmegaConf
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
@@ -182,18 +182,16 @@ class BuildManager(ProcessManager):
         id_ = self.last_id
 
         if self.is_repeated_id(id_):
-            raise ValueError(f"Build id '{id_}' already exists in the database") 
+            raise ValueError(f"Build id '{id_}' already exists in the database")
 
         process = BuildProcess(id_, preset.end_status)
         if self.is_changed_graph(id_):
             cmd_to_run = (
-                f"chatsky.ui build_bot "
-                f"--preset {preset.end_status} "
-                f"--project-dir {settings.work_directory}"
+                f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
             )
             await process.start(cmd_to_run)
         self.processes[id_] = process
-        
+
         return self.last_id
 
     async def check_status(self, id_, *args, **kwargs):

@@ -1,7 +1,8 @@
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
+
 from ...schemas.front_graph_components.flow import Flow
-from .node_converter import InfoNodeConverter, LinkNodeConverter
 from .base_converter import BaseConverter
+from .node_converter import InfoNodeConverter, LinkNodeConverter
 
 
 class FlowConverter(BaseConverter):

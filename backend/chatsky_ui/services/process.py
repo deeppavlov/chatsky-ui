@@ -12,17 +12,16 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from httpx import AsyncClient
-from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 
+from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 from dotenv import load_dotenv
+from httpx import AsyncClient
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git, save_built_script_to_git
-
+from chatsky_ui.utils.git_cmd import get_repo, save_built_script_to_git
 
 load_dotenv()
 
@@ -64,6 +63,7 @@ class Process(ABC):
         Returns:
             dict: A dictionary containing the values of the attributes mentioned in the list.
         """
+
         def _map_to_str(params: Dict[str, Any]):
             for k, v in params.copy().items():
                 if isinstance(v, datetime):
@@ -88,7 +88,13 @@ class Process(ABC):
         while not self.to_be_terminated:
             await self.update_db_info()  # check status and update db
             self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in [Status.NULL, Status.STOPPED, Status.COMPLETED, Status.FAILED, Status.FAILED_WITH_UNEXPECTED_CODE]:
+            if self.status in [
+                Status.NULL,
+                Status.STOPPED,
+                Status.COMPLETED,
+                Status.FAILED,
+                Status.FAILED_WITH_UNEXPECTED_CODE,
+            ]:
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
@@ -164,7 +170,7 @@ class Process(ABC):
             self.logger.error("Process group '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
-    def add_new_conf(self, conf: list, params: dict) -> list:  #TODO: rename conf everywhere to metadata/meta
+    def add_new_conf(self, conf: list, params: dict) -> list:  # TODO: rename conf everywhere to metadata/meta
         for run in conf:
             if run.id == params["id"]:  # type: ignore
                 for key, value in params.items():
@@ -197,7 +203,7 @@ class RunProcess(Process):
         runs_conf = await read_conf(settings.runs_path)
         run_params = await self.get_full_info()
 
-        runs_conf = self.add_new_conf(runs_conf, run_params) # type: ignore
+        runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
 
         await write_conf(runs_conf, settings.runs_path)
 
@@ -210,9 +216,10 @@ class RunProcess(Process):
                     break
 
         await write_conf(builds_conf, settings.builds_path)
-    
+
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
+
         async def check_telegram_readiness(stream, name):
             async for line in stream:
                 decoded_line = line.decode().strip()
@@ -275,7 +282,7 @@ class BuildProcess(Process):
         builds_conf = await read_conf(settings.builds_path)
         build_params = await self.get_full_info()
 
-        builds_conf = self.add_new_conf(builds_conf, build_params) # type: ignore
+        builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)
 

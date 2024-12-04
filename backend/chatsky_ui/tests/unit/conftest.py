@@ -1,6 +1,6 @@
 import pytest
+from chatsky import PRE_RESPONSE, PRE_TRANSITION, RESPONSE, TRANSITIONS
 
-from chatsky import PRE_RESPONSE, RESPONSE, TRANSITIONS, PRE_TRANSITION
 
 @pytest.fixture
 def custom_condition():
@@ -138,13 +138,9 @@ def mapped_flow(info_node):
 
 @pytest.fixture
 def telegram_interface():
-    return {
-        "telegram": {}
-    }
+    return {"telegram": {}}
 
 
 @pytest.fixture
 def chatsky_telegram_interface():
-    return {
-        "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}
-    }
+    return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}}

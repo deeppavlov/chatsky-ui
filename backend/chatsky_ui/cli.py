@@ -4,25 +4,20 @@ import os
 import string
 import sys
 from pathlib import Path
+from typing import Optional
 
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
-from typing_extensions import Annotated
 from git import Repo
-from typing import Optional
+from typing_extensions import Annotated
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
-from chatsky_ui.utils.git_cmd import (  # noqa: E402
-    commit_changes,
-    get_repo,
-    save_built_script_to_git,
-    save_frontend_graph_to_git,
-)  # noqa: E402
+from chatsky_ui.utils.git_cmd import commit_changes  # noqa: E402
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -108,9 +103,7 @@ def build_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    from chatsky_ui.services.json_converter_new2.pipeline_converter import (
-        PipelineConverter,
-    )  # pylint: disable=C0415
+    from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter  # pylint: disable=C0415
 
     pipeline_converter = PipelineConverter()
     pipeline_converter(

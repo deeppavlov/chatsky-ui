@@ -1,21 +1,18 @@
-import pytest
-from pathlib import Path
 import os
+from pathlib import Path
+
+import pytest
 import yaml
 
 from chatsky_ui.services.json_converter_new2.flow_converter import FlowConverter
-from chatsky_ui.services.json_converter_new2.script_converter import ScriptConverter
 from chatsky_ui.services.json_converter_new2.interface_converter import InterfaceConverter
 from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter
+from chatsky_ui.services.json_converter_new2.script_converter import ScriptConverter
 
 
 @pytest.fixture
 def chatsky_flow(chatsky_node):
-    return {
-        "test_flow": {
-            "test_node": chatsky_node
-        }
-    }
+    return {"test_flow": {"test_node": chatsky_node}}
 
 
 class TestFlowConverter:

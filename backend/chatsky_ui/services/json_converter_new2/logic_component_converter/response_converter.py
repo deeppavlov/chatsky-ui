@@ -1,7 +1,7 @@
-from ..base_converter import BaseConverter
-from ....schemas.front_graph_components.info_holders.response import TextResponse, CustomResponse
-from ..consts import CUSTOM_FILE, RESPONSES_FILE
 from ....core.config import settings
+from ....schemas.front_graph_components.info_holders.response import CustomResponse, TextResponse
+from ..base_converter import BaseConverter
+from ..consts import CUSTOM_FILE, RESPONSES_FILE
 from .service_replacer import store_custom_service
 
 

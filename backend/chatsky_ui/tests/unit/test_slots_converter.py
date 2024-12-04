@@ -1,7 +1,7 @@
 from chatsky_ui.services.json_converter_new2.slots_converter import (
-    SlotsConverter,
-    RegexpSlotConverter,
     GroupSlotConverter,
+    RegexpSlotConverter,
+    SlotsConverter,
 )
 
 

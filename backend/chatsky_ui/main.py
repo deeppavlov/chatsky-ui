@@ -1,3 +1,4 @@
+import signal
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI, Response
@@ -6,9 +7,8 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from chatsky_ui import __version__
 from chatsky_ui.api.api_v1.api import api_router
-from chatsky_ui.core.config import settings
 from chatsky_ui.api.deps import run_manager
-import signal
+from chatsky_ui.core.config import settings
 
 
 def signal_handler(self, signum):
@@ -16,6 +16,7 @@ def signal_handler(self, signum):
     print("Caught termination signal, shutting down gracefully...")
     for process in run_manager.processes.values():
         process.to_be_terminated = True
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +27,7 @@ async def lifespan(app: FastAPI):
 
     settings.temp_conf.unlink(missing_ok=True)
     await run_manager.stop_all()
+
 
 app = FastAPI(title="DF Designer", version=__version__, lifespan=lifespan)
 

@@ -1,15 +1,14 @@
 import asyncio
 from typing import Any, Dict, List, Optional, Union
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, WebSocket, WebSocketException, status
 from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from httpx import AsyncClient
 
 from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
-from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
-from httpx import AsyncClient
 
 router = APIRouter()
 
@@ -144,7 +143,7 @@ async def start_run(
     build_id: int,
     preset: Preset,
     background_tasks: BackgroundTasks,
-    run_manager: RunManager = Depends(deps.get_run_manager)
+    run_manager: RunManager = Depends(deps.get_run_manager),
 ) -> Dict[str, Union[str, int]]:
     """Starts a `run` process with the given preset.
 

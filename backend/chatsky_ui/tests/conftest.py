@@ -18,7 +18,6 @@ from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.process import RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
 
-
 DUMMY_BUILD_ID = -1
 
 
@@ -82,4 +81,3 @@ def run_manager():
 @pytest.fixture()
 def build_manager():
     return BuildManager()
-

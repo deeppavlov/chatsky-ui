@@ -1,16 +1,17 @@
 from pathlib import Path
+
 import yaml
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader, Dumper
 
 from ...schemas.front_graph_components.pipeline import Pipeline
-
 from .base_converter import BaseConverter
-from .script_converter import ScriptConverter
 from .interface_converter import InterfaceConverter
+from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
 
 
