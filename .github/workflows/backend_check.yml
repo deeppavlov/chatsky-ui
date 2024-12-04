@@ -77,9 +77,7 @@ jobs:
 
       - name: run tests
         run: |
-          cd ../backend && \
-          poetry install --with dev && \
-          cd ../my_project &&\
-          . `poetry env info --path`/bin/activate && \
-          pytest ../backend/chatsky_ui/tests/ --verbose
+          poetry install --with dev -C ../backend
+          POETRY_ENV=$(poetry env info --path)
+          $POETRY_ENV/bin/pytest ../backend/chatsky_ui/tests/ --verbose
         working-directory: my_project
