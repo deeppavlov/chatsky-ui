@@ -2,9 +2,9 @@ import asyncio
 
 import pytest
 
-from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf
+from chatsky_ui.schemas.process_status import Status
 
 
 class TestRunProcess:
@@ -39,9 +39,9 @@ class TestRunProcess:
     async def test_update_db_info(self, run_process, dummy_run_id):
         process = await run_process("echo Hello")
         await process.update_db_info()
-        
+
         runs_conf = await read_conf(settings.runs_path)
-        assert dummy_run_id in [conf["id"] for conf in runs_conf] # type: ignore
+        assert dummy_run_id in [conf["id"] for conf in runs_conf]  # type: ignore
 
 
 class TestBuildProcess:
@@ -49,6 +49,6 @@ class TestBuildProcess:
     async def test_update_db_info(self, build_process, dummy_build_id):
         process = await build_process("echo Hello")
         await process.update_db_info()
-        
+
         builds_conf = await read_conf(settings.builds_path)
-        assert dummy_build_id in [conf["id"] for conf in builds_conf] # type: ignore
+        assert dummy_build_id in [conf["id"] for conf in builds_conf]  # type: ignore

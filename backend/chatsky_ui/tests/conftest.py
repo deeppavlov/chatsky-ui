@@ -15,7 +15,7 @@ nest_asyncio.apply = lambda: None
 from chatsky_ui.main import app
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
-from chatsky_ui.services.process import RunProcess, BuildProcess
+from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
 
 
@@ -50,6 +50,7 @@ def override_dependency(mocker):
                 if process.process.returncode is None:
                     await process.stop()
             app.dependency_overrides = {}
+
     return _override_dependency
 
 

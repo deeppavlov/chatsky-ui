@@ -1,15 +1,15 @@
 import asyncio
-import pytest
-from httpx import AsyncClient
-from httpx._transports.asgi import ASGITransport
-from dotenv import load_dotenv
 import os
 
-from chatsky_ui.main import app
-from chatsky_ui.schemas.process_status import Status
+import pytest
+from dotenv import load_dotenv
+from httpx import AsyncClient
+from httpx._transports.asgi import ASGITransport
+
 from chatsky_ui.api.deps import get_build_manager, get_run_manager
 from chatsky_ui.core.logger_config import get_logger
-
+from chatsky_ui.main import app
+from chatsky_ui.schemas.process_status import Status
 
 load_dotenv()
 
@@ -18,9 +18,11 @@ RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
 
 logger = get_logger(__name__)
 
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "preset_status, expected_status", [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.COMPLETED)]
+    "preset_status, expected_status",
+    [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.COMPLETED)],
 )
 async def test_start_build(mocker, override_dependency, preset_status, expected_status):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
@@ -48,11 +50,14 @@ async def test_start_build(mocker, override_dependency, preset_status, expected_
                     return
                 else:
                     raise Exception(
-                        f"Process with expected end status '{preset_status}' timed out with return code '{process.process.returncode}'."
+                        f"Process with expected end status '{preset_status}' timed out with "
+                        f"return code '{process.process.returncode}'."
                     ) from exc
 
             current_status = await process_manager.get_status(process_id)
-            assert current_status == expected_status, f"Current process status '{current_status}' did not match the expected '{expected_status}'"
+            assert (
+                current_status == expected_status
+            ), f"Current process status '{current_status}' did not match the expected '{expected_status}'"
 
 
 @pytest.mark.asyncio
@@ -82,8 +87,11 @@ async def test_start_run(override_dependency, preset_status, expected_status, du
                     return
                 else:
                     raise Exception(
-                        f"Process with expected end status '{preset_status}' timed out with return code '{process.process.returncode}'."
+                        f"Process with expected end status '{preset_status}' timed out with "
+                        f"return code '{process.process.returncode}'."
                     ) from exc
 
             current_status = await process_manager.get_status(process_id)
-            assert current_status == expected_status, f"Current process status '{current_status}' did not match the expected '{expected_status}'"
+            assert (
+                current_status == expected_status
+            ), f"Current process status '{current_status}' did not match the expected '{expected_status}'"
