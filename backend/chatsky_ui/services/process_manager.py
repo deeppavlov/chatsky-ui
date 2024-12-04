@@ -137,7 +137,7 @@ class RunManager(ProcessManager):
         id_ = self.last_id
         process = RunProcess(id_, build_id, preset.end_status)
 
-        load_dotenv(os.path.join(settings.work_directory, ".env"))
+        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process

@@ -9,7 +9,7 @@ import os
 from chatsky_ui.core.config import settings
 
 
-load_dotenv(os.path.join(settings.work_directory, ".env"))
+load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
 
 class Interface(BaseComponent):
     model_config = {
