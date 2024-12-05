@@ -2,17 +2,17 @@ from pathlib import Path
 
 import pytest
 
-from chatsky_ui.services.json_converter_new2.logic_component_converter.condition_converter import (
+from chatsky_ui.services.json_converter.logic_component_converter.condition_converter import (
     BadConditionException,
     CustomConditionConverter,
     SlotConditionConverter,
 )
-from chatsky_ui.services.json_converter_new2.logic_component_converter.response_converter import (
+from chatsky_ui.services.json_converter.logic_component_converter.response_converter import (
     BadResponseException,
     CustomResponseConverter,
     TextResponseConverter,
 )
-from chatsky_ui.services.json_converter_new2.logic_component_converter.service_replacer import store_custom_service
+from chatsky_ui.services.json_converter.logic_component_converter.service_replacer import store_custom_service
 
 
 @pytest.fixture

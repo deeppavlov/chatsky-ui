@@ -103,7 +103,7 @@ def build_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    from chatsky_ui.services.json_converter_new2.pipeline_converter import PipelineConverter  # pylint: disable=C0415
+    from chatsky_ui.services.json_converter.pipeline_converter import PipelineConverter  # pylint: disable=C0415
 
     pipeline_converter = PipelineConverter()
     pipeline_converter(
