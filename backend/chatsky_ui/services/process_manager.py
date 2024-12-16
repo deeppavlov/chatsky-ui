@@ -6,9 +6,11 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from dotenv import load_dotenv
 from omegaconf import OmegaConf
 
 from chatsky_ui.core.config import settings
@@ -57,10 +59,10 @@ class ProcessManager:
             raise
 
     async def stop_all(self) -> None:
-        self.logger.info("Stopping all process %s", self.processes)
         for id_, process in self.processes.items():
-            if process.process.returncode is None:
+            if await process.check_status() in [Status.ALIVE, Status.RUNNING]:
                 await self.stop(id_)
+                await process.update_db_info()
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:
         """Checks the status of the process with the given id by calling the `periodically_check_status`
@@ -135,6 +137,8 @@ class RunManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = RunProcess(id_, build_id, preset.end_status)
+
+        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process
@@ -178,18 +182,16 @@ class BuildManager(ProcessManager):
         id_ = self.last_id
 
         if self.is_repeated_id(id_):
-            raise ValueError(f"Build id '{id_}' already exists in the database") 
+            raise ValueError(f"Build id '{id_}' already exists in the database")
 
         process = BuildProcess(id_, preset.end_status)
         if self.is_changed_graph(id_):
             cmd_to_run = (
-                f"chatsky.ui build_bot "
-                f"--preset {preset.end_status} "
-                f"--project-dir {settings.work_directory}"
+                f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
             )
             await process.start(cmd_to_run)
         self.processes[id_] = process
-        
+
         return self.last_id
 
     async def check_status(self, id_, *args, **kwargs):

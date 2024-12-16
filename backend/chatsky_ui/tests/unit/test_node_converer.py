@@ -1,4 +1,4 @@
-from chatsky_ui.services.json_converter_new2.node_converter import InfoNodeConverter, LinkNodeConverter
+from chatsky_ui.services.json_converter.node_converter import InfoNodeConverter, LinkNodeConverter
 
 
 class TestNodeConverter:

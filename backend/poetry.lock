@@ -413,12 +413,14 @@ files = [
 
 [[package]]
 name = "chatsky"
-version = "0.9.0"
+version = "0.9.0.dev1"
 description = "Chatsky is a free and open-source software stack for creating chatbots, released under the terms of Apache License 2.0."
 optional = false
-python-versions = "^3.9,!=3.9.7"
-files = []
-develop = false
+python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,!=3.8.*,>=3.9"
+files = [
+    {file = "chatsky-0.9.0.dev1-py3-none-any.whl", hash = "sha256:b49acf9abaf5e12fcdd1f03fd47d8f1b9dc373a4fa2e8ece19961be03152b2e2"},
+    {file = "chatsky-0.9.0.dev1.tar.gz", hash = "sha256:a5f7ac9e810095d34788f39f35825799da2857c7698caad1cd12a1c70ef7061c"},
+]
 
 [package.dependencies]
 colorama = "*"
@@ -1530,13 +1532,13 @@ unidecode = ["Unidecode (>=1.1.1)"]
 
 [[package]]
 name = "python-telegram-bot"
-version = "21.8"
+version = "21.7"
 description = "We have made you a wrapper you can't refuse"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "python_telegram_bot-21.8-py3-none-any.whl", hash = "sha256:2fea8e65d97e593f47666e7de81fb15bd517100504e98ca7cb399ee6ce4f3838"},
-    {file = "python_telegram_bot-21.8.tar.gz", hash = "sha256:114437f194e32eee0651f25fb1ab1664b605e877ca33adf58547a599afe73b72"},
+    {file = "python_telegram_bot-21.7-py3-none-any.whl", hash = "sha256:aff1d7245f1b0d4d12d41c9acff74e86d7100713c2204cd02ff17f8d80d18846"},
+    {file = "python_telegram_bot-21.7.tar.gz", hash = "sha256:bc8537b77ae02531fc2ad440caafc023fd13f13cf19e592dfa1a9ff84988a012"},
 ]
 
 [package.dependencies]
@@ -2393,4 +2395,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,!=3.9.7"
-content-hash = "8539df9b57bdf437aebcc0ea06e63d3da12180a44a64282f95a5f903e7d0ab54"
+content-hash = "a676df6948689fe5ff0e011484f12ecdde34add2dd2dfca1d290f1d8f8203674"

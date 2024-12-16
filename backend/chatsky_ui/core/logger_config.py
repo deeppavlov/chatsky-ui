@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal, Optional
 
-from chatsky_ui.core.config import settings, LOG_LEVELS
+from chatsky_ui.core.config import LOG_LEVELS, settings
 
 
 def setup_logging(log_type: Literal["builds", "runs"], id_: int, timestamp: datetime) -> Path:

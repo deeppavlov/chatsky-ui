@@ -10,7 +10,7 @@ from pylint.reporters.text import TextReporter
 from chatsky_ui.clients.chatsky_client import get_chatsky_conditions
 from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.code_snippet import CodeSnippet
-from chatsky_ui.services.json_converter_new2.logic_component_converter.service_replacer import get_all_classes
+from chatsky_ui.services.json_converter.logic_component_converter.service_replacer import get_all_classes
 from chatsky_ui.utils.ast_utils import get_imports_from_file
 
 router = APIRouter()

@@ -1,16 +1,15 @@
-from typing import Dict, Union, Optional
+from pathlib import Path
+from typing import Dict, Optional, Union
 
-from fastapi import APIRouter, status, HTTPException
-from omegaconf import OmegaConf
+from dotenv import set_key
+from fastapi import APIRouter, HTTPException, status
 from git.exc import GitCommandError
+from omegaconf import OmegaConf
 
 from chatsky_ui.core.config import settings
+from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.utils.git_cmd import commit_changes, get_repo
-from chatsky_ui.core.logger_config import get_logger
-from pathlib import Path
-from dotenv import set_key
-
 
 router = APIRouter()
 
