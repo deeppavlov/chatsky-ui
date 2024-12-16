@@ -1,5 +1,6 @@
 from ...schemas.front_graph_components.interface import Interface
 from .base_converter import BaseConverter
+from chatsky_ui.core.config import settings
 
 
 class InterfaceConverter(BaseConverter):
@@ -8,6 +9,6 @@ class InterfaceConverter(BaseConverter):
 
     def _convert(self):
         if self.interface.http is not None:
-            return {"chatsky.messengers.HTTPMessengerInterface": {}}
+            return {"chatsky.messengers.HTTPMessengerInterface": {"port": settings.chatsky_port}}
         elif self.interface.telegram is not None:
             return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}}

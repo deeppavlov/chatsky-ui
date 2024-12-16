@@ -82,24 +82,3 @@ class LinkNodeConverter(NodeConverter):
             self.node.target_flow_name,
             self.mapped_flows[self.node.target_flow_name][self.node.target_node_id]["data"]["name"],
         ]
-
-
-# class ConfNodeConverter(NodeConverter):
-#     def __init__(self, config: dict):
-#         super().__init__(config)
-
-
-#     def _convert(self):
-#         return {
-#             # node.name: node._convert() for node in self.nodes
-#         }
-
-
-# class SlotsNodeConverter(ConfNodeConverter):
-#     def __init__(self, config: List[dict]):
-#         self.slots = config
-
-#     def _convert(self):
-#         return {
-#             # node.name: node._convert() for node in self.nodes
-#         }

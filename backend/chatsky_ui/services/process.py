@@ -13,7 +13,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 from dotenv import load_dotenv
 from httpx import AsyncClient
 
@@ -233,12 +232,12 @@ class RunProcess(Process):
         async with AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"http://localhost:{HTTP_INTERFACE_PORT}/health",
+                    f"http://localhost:{settings.chatsky_port}/health",
                 )
                 return response.json()["status"] == "ok"
             except Exception as e:
                 self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}' yet. "
+                    f"Process '{self.id}' isn't alive on port '{settings.chatsky_port}' yet. "
                     f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
                 )
 

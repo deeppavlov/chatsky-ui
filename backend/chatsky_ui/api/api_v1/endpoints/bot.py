@@ -1,7 +1,6 @@
 import asyncio
 from typing import Any, Dict, List, Optional, Union
 
-from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from httpx import AsyncClient
 
@@ -9,6 +8,7 @@ from chatsky_ui.api import deps
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
+from chatsky_ui.core.config import settings
 
 router = APIRouter()
 
@@ -242,12 +242,12 @@ async def respond(
     async with AsyncClient() as client:
         try:
             response = await client.post(
-                f"http://localhost:{HTTP_INTERFACE_PORT}/chat",
+                f"http://localhost:{settings.chatsky_port}/chat",
                 params={"user_id": user_id, "user_message": user_message},
             )
             return response.json()
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Please check that service's up and running on the port '{HTTP_INTERFACE_PORT}'.",
+                detail=f"Please check that service's up and running on the port '{settings.chatsky_port}'.",
             ) from e
