@@ -4,7 +4,7 @@ import pytest
 from omegaconf import OmegaConf
 
 RUN_ID = 42
-BUILD_ID = 43
+BUILD_ID = 0
 
 
 class TestRunManager:

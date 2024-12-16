@@ -2,10 +2,19 @@ import asyncio
 
 import pytest
 
+from chatsky_ui.core.config import settings
+from chatsky_ui.db.base import read_conf
 from chatsky_ui.schemas.process_status import Status
 
 
 class TestRunProcess:
+    @pytest.mark.asyncio
+    async def test_get_full_info(self, run_process):
+        process = await run_process("sleep 10000")
+        await asyncio.sleep(2)
+        info = await process.get_full_info(["status", "timestamp"])
+        assert info["status"] == Status.RUNNING.value
+
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "cmd_to_run, status",
@@ -20,10 +29,6 @@ class TestRunProcess:
         await asyncio.sleep(2)
         assert await process.check_status() == status
 
-    # def test_periodically_check_status(self, run_process):
-    #     process = await run_process("sleep 10000")
-    #     run_process.periodically_check_status()
-
     @pytest.mark.asyncio
     async def test_stop(self, run_process):
         process = await run_process("sleep 10000")
@@ -31,18 +36,19 @@ class TestRunProcess:
         assert process.process.returncode == -15
 
     @pytest.mark.asyncio
-    async def test_read_stdout(self, run_process):
+    async def test_update_db_info(self, run_process, dummy_run_id):
         process = await run_process("echo Hello")
-        output = await process.read_stdout()
-        assert output.strip().decode() == "Hello"
+        await process.update_db_info()
 
+        runs_conf = await read_conf(settings.runs_path)
+        assert dummy_run_id in [conf["id"] for conf in runs_conf]  # type: ignore
+
+
+class TestBuildProcess:
     @pytest.mark.asyncio
-    async def test_write_stdout(self, run_process):
-        process = await run_process("cat")
-        await process.write_stdin(b"Chatsky-UI team welcome you.\n")
-        output = await process.process.stdout.readline()
-        assert output.decode().strip() == "Chatsky-UI team welcome you."
+    async def test_update_db_info(self, build_process, dummy_build_id):
+        process = await build_process("echo Hello")
+        await process.update_db_info()
 
-
-# class TestBuildProcess:
-#     pass
+        builds_conf = await read_conf(settings.builds_path)
+        assert dummy_build_id in [conf["id"] for conf in builds_conf]  # type: ignore

@@ -33,7 +33,6 @@ ENV PATH="${PATH}:${POETRY_VENV}/bin"
 COPY ./backend /temp/backend
 COPY --from=frontend-builder /temp/frontend/dist /temp/backend/chatsky_ui/static
 
-
 # Build the wheel
 WORKDIR /temp/backend
 RUN poetry build
@@ -46,6 +45,9 @@ ARG PROJECT_DIR
 
 # Install pip and upgrade
 RUN pip install --upgrade pip
+
+# Install Git
+RUN apt-get update && apt-get install -y git
 
 # Copy only the necessary files
 COPY --from=backend-builder /temp/backend/dist /src/dist

@@ -33,7 +33,7 @@ export type conditionLabelType =
   | "manual"
   | "forward"
   | "backward"
-  | "repeat"
+  | "current"
   | "fallback"
   | "start"
   | "previous"

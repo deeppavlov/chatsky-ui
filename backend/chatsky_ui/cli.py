@@ -4,10 +4,12 @@ import os
 import string
 import sys
 from pathlib import Path
+from typing import Optional
 
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
+from git import Repo
 from typing_extensions import Annotated
 
 # Patch nest_asyncio before importing Chatsky
@@ -15,6 +17,7 @@ nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
+from chatsky_ui.utils.git_cmd import commit_changes  # noqa: E402
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -22,6 +25,15 @@ cli = typer.Typer(
     "1. `init` - Initializes a new Chatsky-UI project.\n\n"
     "2. `run_app` - Runs the UI for your project.\n"
 )
+
+
+def init_new_repo(git_path: Path, tag_name: str):
+    repo = Repo.init(git_path)
+    repo.git.checkout(b="dev")
+    commit_changes(repo, "Init frontend flows")
+    repo.create_tag(tag_name)
+
+    print("Repo initialized with tag %s", tag_name)
 
 
 async def _execute_command(command_to_run):
@@ -46,7 +58,7 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(build_id: int, project_dir: Path, command_file: str, preset: str):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str, build_id: Optional[int] = None):
     logger = get_logger(__name__)
 
     presets_build_path = settings.presets / command_file
@@ -68,7 +80,6 @@ def _execute_command_file(build_id: int, project_dir: Path, command_file: str, p
 
 @cli.command("build_bot")
 def build_bot(
-    build_id: Annotated[int, typer.Option(help="Id to save the build with")] = None,
     project_dir: Path = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
@@ -79,12 +90,11 @@ def build_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(build_id, project_dir, "build.json", preset)
+    _execute_command_file(project_dir, "build.json", preset)
 
 
 @cli.command("build_scenario")
 def build_scenario(
-    build_id: Annotated[int, typer.Argument(help="Id to save the build with")],
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
     # TODO: add custom_dir - maybe the same way like project_dir
 ):
@@ -93,9 +103,12 @@ def build_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    from chatsky_ui.services.json_converter import converter  # pylint: disable=C0415
+    from chatsky_ui.services.json_converter.pipeline_converter import PipelineConverter  # pylint: disable=C0415
 
-    asyncio.run(converter(build_id=build_id))
+    pipeline_converter = PipelineConverter()
+    pipeline_converter(
+        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
+    )  # TODO: rename to frontend_graph_path
 
 
 @cli.command("run_bot")
@@ -111,7 +124,7 @@ def run_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(build_id, project_dir, "run.json", preset)
+    _execute_command_file(project_dir, "run.json", preset, build_id)
 
 
 @cli.command("run_scenario")
@@ -120,13 +133,21 @@ def run_scenario(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
 ):
     """Runs the bot with preset `success`"""
+    # checkout the commit and then run the build
+    bot_repo = Repo.init(Path(project_dir) / "bot")
+    bot_repo.git.checkout(build_id, "scripts/build.yaml")
+
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
-    script_path = settings.scripts_dir / f"build_{build_id}.yaml"
+    script_path = settings.scripts_dir / "build.yaml"
 
     command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
-    asyncio.run(_execute_command(command_to_run))
+    try:
+        asyncio.run(_execute_command(command_to_run))
+    except FileNotFoundError:
+        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path}"
+        asyncio.run(_execute_command(command_to_run))
 
 
 @cli.command("run_app")
@@ -175,10 +196,13 @@ def init(
     original_dir = os.getcwd()
     try:
         os.chdir(destination)
-        cookiecutter(
-            "https://github.com/Ramimashkouk/df_d_template.git",
+        proj_path = cookiecutter(
+            "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
         )
     finally:
         os.chdir(original_dir)
+
+    init_new_repo(Path(proj_path) / "bot", tag_name="0")
+    init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")

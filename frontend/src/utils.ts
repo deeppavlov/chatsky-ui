@@ -55,7 +55,7 @@ export const parseSearchParams = (
 export const generateNewConditionBase = (): conditionType => {
   return {
     id: "condition_" + v4(),
-    name: "new_cnd",
+    name: "NewCnd",
     type: "python",
     data: {
       priority: 1,

@@ -153,7 +153,7 @@ init_proj: install_backend_env ## Initiates a new project using chatsky-ui
 
 .PHONY: init_with_cc
 init_with_cc: ## Initiates a new project using cookiecutter
-	cookiecutter https://github.com/Ramimashkouk/df_d_template.git
+	cookiecutter https://github.com/deeppavlov/chatsky-ui-template.git
 
 
 .PHONY: build_docs

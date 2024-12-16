@@ -96,6 +96,14 @@ type buildStatusResponseType = {
   status: buildApiStatusType
 }
 
+type botMessage = {
+  user_id: string
+  response: {
+    text: string
+    [key: string]: unknown
+  }
+}
+
 export const build_start = async (preset?: buildPresetType) => {
   try {
     const { data }: { data: buildStartResponseType } = await $v1.post("/bot/build/start", preset)
@@ -193,6 +201,25 @@ export const run_stop = async (run_id: number) => {
 export const run_status = async (run_id: number) => {
   try {
     const { data }: { data: buildStatusResponseType } = await $v1.get(`/bot/run/status/${run_id}`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const send_message = async (user_id: number, user_message: string) => {
+  try {
+    const { data }: { data: botMessage } = await $v1.post(
+      "/bot/chat",
+      {},
+      {
+        params: {
+          user_id,
+          user_message,
+        },
+      }
+    )
     return data
   } catch (error) {
     console.log(error)

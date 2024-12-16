@@ -99,12 +99,12 @@ async def _test_stop_inexistent_process(mocker, get_manager_func, start_endpoint
 
 # Test flows endpoints and interaction with db (read and write conf)
 def test_flows(client):  # noqa: F811
-    get_response = client.get("/api/v1/flows")
+    get_response = client.get("/api/v1/flows/43")
     assert get_response.status_code == 200
     data = get_response.json()["data"]
     assert "flows" in data
 
-    response = client.post("/api/v1/flows", json=data)
+    response = client.post("/api/v1/flows/test_save1", json=data)
     assert response.status_code == 200
 
 
@@ -151,7 +151,7 @@ async def test_stop_build_bad_id(mocker):
     "end_status, process_status", [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.ALIVE)]
 )
 async def test_start_run(mocker, end_status, process_status):
-    build_id = 43
+    build_id = 0
     await _test_start_process(
         mocker,
         get_run_manager,
@@ -164,7 +164,7 @@ async def test_start_run(mocker, end_status, process_status):
 
 @pytest.mark.asyncio
 async def test_stop_run(mocker):
-    build_id = 43
+    build_id = 0
     await _test_stop_process(
         mocker,
         get_run_manager,
@@ -175,7 +175,7 @@ async def test_stop_run(mocker):
 
 @pytest.mark.asyncio
 async def test_stop_run_bad_id(mocker):
-    build_id = 43
+    build_id = 0
     await _test_stop_inexistent_process(
         mocker,
         get_run_manager,
@@ -186,7 +186,7 @@ async def test_stop_run_bad_id(mocker):
 
 @pytest.mark.asyncio
 async def test_connect_to_ws(mocker):
-    build_id = 43
+    build_id = 0
 
     async with httpx.AsyncClient(transport=ASGIWebSocketTransport(app)) as client:
         async with override_dependency(mocker, get_run_manager) as process_manager:
