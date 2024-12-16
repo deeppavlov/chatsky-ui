@@ -1,6 +1,7 @@
+from chatsky_ui.core.config import settings
+
 from ...schemas.front_graph_components.interface import Interface
 from .base_converter import BaseConverter
-from chatsky_ui.core.config import settings
 
 
 class InterfaceConverter(BaseConverter):
