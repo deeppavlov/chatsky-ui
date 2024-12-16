@@ -1,8 +1,8 @@
 from typing import List
 
+from ...schemas.front_graph_components.script import Script
 from .base_converter import BaseConverter
 from .flow_converter import FlowConverter
-from ...schemas.front_graph_components.script import Script
 
 
 class ScriptConverter(BaseConverter):
