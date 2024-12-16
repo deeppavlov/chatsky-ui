@@ -78,6 +78,6 @@ jobs:
       - name: run tests
         run: |
           poetry install --with dev -C ../backend
-          POETRY_ENV=$(poetry env info --path)
+          POETRY_ENV=$(poetry env info --path -C ../backend)
           $POETRY_ENV/bin/pytest ../backend/chatsky_ui/tests/ --verbose
         working-directory: my_project
