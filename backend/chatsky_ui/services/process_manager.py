@@ -6,9 +6,11 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from dotenv import load_dotenv
 from omegaconf import OmegaConf
 
 from chatsky_ui.core.config import settings
@@ -17,6 +19,7 @@ from chatsky_ui.db.base import read_conf, read_logs
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
+from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git
 
 
 class ProcessManager:
@@ -56,10 +59,10 @@ class ProcessManager:
             raise
 
     async def stop_all(self) -> None:
-        self.logger.info("Stopping all process %s", self.processes)
         for id_, process in self.processes.items():
-            if process.process.returncode is None:
+            if await process.check_status() in [Status.ALIVE, Status.RUNNING]:
                 await self.stop(id_)
+                await process.update_db_info()
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:
         """Checks the status of the process with the given id by calling the `periodically_check_status`
@@ -134,6 +137,8 @@ class RunManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
         process = RunProcess(id_, build_id, preset.end_status)
+
+        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.processes[id_] = process
@@ -175,26 +180,45 @@ class BuildManager(ProcessManager):
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
+
+        if self.is_repeated_id(id_):
+            raise ValueError(f"Build id '{id_}' already exists in the database")
+
         process = BuildProcess(id_, preset.end_status)
-        cmd_to_run = (
-            f"chatsky.ui build_bot --build-id {id_} "
-            f"--preset {preset.end_status} "
-            f"--project-dir {settings.work_directory}"
-        )
-        await process.start(cmd_to_run)
+        if self.is_changed_graph(id_):
+            cmd_to_run = (
+                f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+            )
+            await process.start(cmd_to_run)
         self.processes[id_] = process
 
         return self.last_id
 
-    async def check_status(self, id_, index, *args, **kwargs):
+    async def check_status(self, id_, *args, **kwargs):
         """Checks the build "id_" process status by calling the `periodically_check_status`
         method of the process.
 
         This updates the process status in the database every 2 seconds.
-        The index is refreshed after the build is done/failed.
         """
         await self.processes[id_].periodically_check_status()
-        await index.load()
+
+    def is_repeated_id(self, id_: int) -> bool:
+        bot_repo = get_repo(settings.custom_dir.parent)
+
+        for tag in bot_repo.tags:
+            if tag.name == str(id_):
+                return True
+        return False
+
+    def is_changed_graph(self, id_: int) -> bool:
+        chatsky_ui_repo = get_repo(settings.frontend_flows_path.parent)
+        is_changed = save_frontend_graph_to_git(id_, chatsky_ui_repo)
+        if is_changed:
+            self.logger.info("Graph is changed. Gonna build")
+            return True
+        else:
+            self.logger.info("Graph isn't changed. Ain't gonna build")
+            return False
 
     async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
         """Returns metadata of a specific build process identified by its unique ID.

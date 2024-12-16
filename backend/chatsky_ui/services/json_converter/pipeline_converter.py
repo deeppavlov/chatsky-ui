@@ -1,25 +1,21 @@
 from pathlib import Path
+
 import yaml
+
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
     from yaml import Loader, Dumper
 
 from ...schemas.front_graph_components.pipeline import Pipeline
-from ...schemas.front_graph_components.interface import Interface
-from ...schemas.front_graph_components.flow import Flow
-
 from .base_converter import BaseConverter
-from .flow_converter import FlowConverter
-from .script_converter import ScriptConverter
 from .interface_converter import InterfaceConverter
+from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
 
 
 class PipelineConverter(BaseConverter):
-    def __init__(self, pipeline_id: int):
-        self.pipeline_id = pipeline_id
-
     def __call__(self, input_file: Path, output_dir: Path):
         self.from_yaml(file_path=input_file)
 
@@ -33,7 +29,7 @@ class PipelineConverter(BaseConverter):
             self.graph = yaml.load(file, Loader=Loader)
 
     def to_yaml(self, dir_path: Path):
-        with open(f"{dir_path}/build_{self.pipeline_id}.yaml", "w", encoding="UTF-8") as file:
+        with open(f"{dir_path}/build.yaml", "w", encoding="UTF-8") as file:
             yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False)
 
     def _convert(self):

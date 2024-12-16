@@ -1,9 +1,9 @@
 # Quick Start
 ## System Requirements
-Ensure you have Python version 3.8.1 or higher installed.
+Ensure you have Python version 3.9 or higher installed (Excluding 3.9.7).
 
 ## Installation
-To install the necessary package, run the following command:
+To install the package and necessary dependencies, run the following command:
 ```bash
 pip install chatsky-ui
 ```

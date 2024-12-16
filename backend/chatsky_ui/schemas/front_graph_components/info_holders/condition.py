@@ -10,4 +10,4 @@ class CustomCondition(Condition):
 
 
 class SlotCondition(Condition):
-    slot_id: str # not the condition id
+    slot_id: str  # not the condition id

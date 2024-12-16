@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class BaseConverter(ABC):
     def __call__(self, *args, **kwargs):
         return self._convert()
