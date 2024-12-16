@@ -6,6 +6,7 @@ import DefInput from "@/UI/Input/DefInput"
 import { Button } from "@nextui-org/react"
 import React, { useContext, useState } from "react"
 import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "./ModalComponents"
+import { set_tg_token } from "@/api/flows"
 
 type LaunchModalProps = CustomModalProps & {
   title?: React.ReactNode
@@ -33,8 +34,9 @@ const LaunchModal = ({
 
   const onActionHandler = async () => {
     try {
-      saveFlows(flows, { interface: "tg", token })
       onCloseHandler()
+      await saveFlows(flows, { interface: "tg" })
+      await set_tg_token(token)
       await buildStart({ wait_time: 0, end_status: "success" })
       await runStart({ end_status: "success", wait_time: 0 })
     } catch (error) {

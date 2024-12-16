@@ -42,7 +42,7 @@ function generateLineContent(type: "condition" | "response", line: "first" | "se
     return `<span style="color: #999;">class</span> <span style="color: #999;">${name}</span>(<span style="color: #999;">${baseType}</span>):`
   }
   const returnType = type === "condition" ? "bool" : "Message"
-  return `    <span style="color: #999;">def call</span>(<span style="color: #999;">self, ctx: Context</span>)<span style="color: #999;"> -> ${returnType}</span>:`
+  return `    <span style="color: #999;">async def call</span>(<span style="color: #999;">self, ctx: Context</span>)<span style="color: #999;"> -> ${returnType}</span>:`
 }
 
 // Метод для обработки первой и второй строк
