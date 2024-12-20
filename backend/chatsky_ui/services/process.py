@@ -20,7 +20,6 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.utils.git_cmd import get_repo, save_built_script_to_git
 
 load_dotenv()
 
@@ -81,21 +80,6 @@ class Process(ABC):
     @abstractmethod
     async def update_db_info(self):
         raise NotImplementedError
-
-    async def periodically_check_status(self) -> None:
-        """Periodically checks the process status and updates the database."""
-        while not self.to_be_terminated:
-            await self.update_db_info()  # check status and update db
-            self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in [
-                Status.NULL,
-                Status.STOPPED,
-                Status.COMPLETED,
-                Status.FAILED,
-                Status.FAILED_WITH_UNEXPECTED_CODE,
-            ]:
-                break
-            await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def check_status(self) -> Status:
         """Returns the process current status.
@@ -284,20 +268,6 @@ class BuildProcess(Process):
         builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)
-
-    def save_built_script_to_git(self, id_: int) -> None:
-        bot_repo = get_repo(settings.custom_dir.parent)
-        save_built_script_to_git(id_, bot_repo)
-
-    async def periodically_check_status(self) -> None:
-        """Periodically checks the process status and updates the database."""
-        while not self.to_be_terminated:
-            await self.update_db_info()  # check status and update db
-            self.logger.info("Status of process '%s': %s", self.id, self.status)
-            if self.status in [Status.NULL, Status.STOPPED, Status.COMPLETED, Status.FAILED]:
-                self.save_built_script_to_git(self.id)
-                break
-            await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def is_alive(self) -> bool:
         return False

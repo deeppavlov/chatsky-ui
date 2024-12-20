@@ -6,6 +6,7 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
+import asyncio
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -19,7 +20,7 @@ from chatsky_ui.db.base import read_conf, read_logs
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
-from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git
+from chatsky_ui.utils.repo_manager import RepoManager
 
 
 class ProcessManager:
@@ -65,12 +66,24 @@ class ProcessManager:
                 await process.update_db_info()
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:
-        """Checks the status of the process with the given id by calling the `periodically_check_status`
-        method of the process.
+        """Checks the status of the process with the given id by periodically checking status`
+        of the process.
 
         This updates the process status in the database every 2 seconds.
         """
-        await self.processes[id_].periodically_check_status()
+        process = self.processes[id_]
+        while not process.to_be_terminated:
+            await process.update_db_info()  # check status and update db
+            process.logger.info("Status of process '%s': %s", process.id, process.status)
+            if process.status in [
+                Status.NULL,
+                Status.STOPPED,
+                Status.COMPLETED,
+                Status.FAILED,
+                Status.FAILED_WITH_UNEXPECTED_CODE,
+            ]:
+                break
+            await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def get_status(self, id_: int) -> Status:
         """Checks the status of the process with the given id by calling the `check_status` method of the process."""
@@ -164,6 +177,32 @@ class RunManager(ProcessManager):
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
+    def __init__(self):
+        super().__init__()
+        self._bot_repo_manager = None
+        self._graph_repo_manager = None
+
+    @property
+    def bot_repo_manager(self):
+        if self._bot_repo_manager is None:
+            raise ValueError("Bot repo manager has not been set. Call set_bot_repo_manager() first.")
+        return self._bot_repo_manager
+
+    @property
+    def graph_repo_manager(self):
+        if self._graph_repo_manager is None:
+            raise ValueError("Graph repo manager has not been set. Call set_graph_repo_manager() first.")
+        return self._graph_repo_manager
+
+    def set_bot_repo_manager(self):
+        self._bot_repo_manager = RepoManager(settings.custom_dir.parent)
+        print("settings.custom_dir.parent: ", settings.custom_dir.parent)
+        self.bot_repo_manager.set_logger()
+
+    def set_graph_repo_manager(self):
+        self._graph_repo_manager = RepoManager(settings.frontend_flows_path.parent)
+        print("settings.frontend_flows_path.parent", settings.frontend_flows_path.parent)
+        self.graph_repo_manager.set_logger()
 
     async def start(self, preset: Preset) -> int:
         """Starts a new build process.
@@ -181,44 +220,39 @@ class BuildManager(ProcessManager):
         self.last_id += 1
         id_ = self.last_id
 
-        if self.is_repeated_id(id_):
+        if self.bot_repo_manager.is_repeated_tag(id_):
             raise ValueError(f"Build id '{id_}' already exists in the database")
 
         process = BuildProcess(id_, preset.end_status)
-        if self.is_changed_graph(id_):
-            cmd_to_run = (
-                f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-            )
-            await process.start(cmd_to_run)
+        cmd_to_run = (
+            f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+        )
+        await process.start(cmd_to_run)
         self.processes[id_] = process
 
-        return self.last_id
+        return id_
 
-    async def check_status(self, id_, *args, **kwargs):
-        """Checks the build "id_" process status by calling the `periodically_check_status`
-        method of the process.
+    async def check_status(self, id_: int, *args, **kwargs) -> None:
+        """Checks the status of the process with the given id by periodically checking status`
+        of the process.
 
         This updates the process status in the database every 2 seconds.
         """
-        await self.processes[id_].periodically_check_status()
-
-    def is_repeated_id(self, id_: int) -> bool:
-        bot_repo = get_repo(settings.custom_dir.parent)
-
-        for tag in bot_repo.tags:
-            if tag.name == str(id_):
-                return True
-        return False
-
-    def is_changed_graph(self, id_: int) -> bool:
-        chatsky_ui_repo = get_repo(settings.frontend_flows_path.parent)
-        is_changed = save_frontend_graph_to_git(id_, chatsky_ui_repo)
-        if is_changed:
-            self.logger.info("Graph is changed. Gonna build")
-            return True
-        else:
-            self.logger.info("Graph isn't changed. Ain't gonna build")
-            return False
+        process = self.processes[id_]
+        while not process.to_be_terminated:
+            await process.update_db_info()  # check status and update db
+            process.logger.info("Status of process '%s': %s", process.id, process.status)
+            if process.status in [
+                Status.NULL,
+                Status.STOPPED,
+                Status.COMPLETED,
+                Status.FAILED,
+                Status.FAILED_WITH_UNEXPECTED_CODE,
+            ]:
+                self.bot_repo_manager.commit_with_tag(process.id)
+                self.graph_repo_manager.commit_with_tag(process.id)
+                break
+            await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
         """Returns metadata of a specific build process identified by its unique ID.

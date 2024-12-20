@@ -17,7 +17,7 @@ nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
-from chatsky_ui.utils.git_cmd import commit_changes  # noqa: E402
+from chatsky_ui.utils.repo_manager import RepoManager
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -25,16 +25,6 @@ cli = typer.Typer(
     "1. `init` - Initializes a new Chatsky-UI project.\n\n"
     "2. `run_app` - Runs the UI for your project.\n"
 )
-
-
-def init_new_repo(git_path: Path, tag_name: str):
-    repo = Repo.init(git_path)
-    repo.git.checkout(b="dev")
-    commit_changes(repo, "Init frontend flows")
-    repo.create_tag(tag_name)
-
-    print("Repo initialized with tag %s", tag_name)
-
 
 async def _execute_command(command_to_run):
     logger = get_logger(__name__)
@@ -204,5 +194,6 @@ def init(
     finally:
         os.chdir(original_dir)
 
-    init_new_repo(Path(proj_path) / "bot", tag_name="0")
-    init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")
+    
+    RepoManager.init_new_repo(Path(proj_path) / "bot", tag_name="0")
+    RepoManager.init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")

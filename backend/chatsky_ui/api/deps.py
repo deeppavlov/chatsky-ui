@@ -5,6 +5,8 @@ build_manager = BuildManager()
 
 def get_build_manager() -> BuildManager:
     build_manager.set_logger()
+    build_manager.set_bot_repo_manager()
+    build_manager.set_graph_repo_manager()
     return build_manager
 
 
