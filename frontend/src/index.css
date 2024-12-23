@@ -397,3 +397,11 @@ table thead tr:nth-child(2) {
 .zoom-out {
   animation: zoom-out 0.2s ease-in forwards;
 }
+
+.pCustom {
+  padding: 0px !important;
+}
+
+.w-auto {
+  width: auto !important;
+}
