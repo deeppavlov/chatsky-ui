@@ -30,6 +30,8 @@ class ProcessManager:
         self.processes: Dict[int, Union[BuildProcess, RunProcess]] = {}
         self.last_id: int
         self._logger = None
+        self._bot_repo_manager = None
+        self._graph_repo_manager = None
 
     @property
     def logger(self):
@@ -39,6 +41,28 @@ class ProcessManager:
 
     def set_logger(self):
         self._logger = get_logger(__name__)
+
+    @property
+    def bot_repo_manager(self):
+        if self._bot_repo_manager is None:
+            raise ValueError("Bot repo manager has not been set. Call set_bot_repo_manager() first.")
+        return self._bot_repo_manager
+
+    @property
+    def graph_repo_manager(self):
+        if self._graph_repo_manager is None:
+            raise ValueError("Graph repo manager has not been set. Call set_graph_repo_manager() first.")
+        return self._graph_repo_manager
+
+    def set_bot_repo_manager(self):
+        self._bot_repo_manager = RepoManager(settings.custom_dir.parent)
+        self.logger.debug("settings.custom_dir.parent: ", settings.custom_dir.parent)
+        self.bot_repo_manager.set_logger()
+
+    def set_graph_repo_manager(self):
+        self._graph_repo_manager = RepoManager(settings.frontend_flows_path.parent)
+        self.logger.debug("settings.frontend_flows_path.parent", settings.frontend_flows_path.parent)
+        self.graph_repo_manager.set_logger()
 
     def get_last_id(self):
         """Gets the maximum id among processes of type BuildProcess or RunProcess."""
@@ -141,8 +165,9 @@ class RunManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
+        self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = (
-            f"chatsky.ui run_bot --build-id {build_id} "
+            f"chatsky.ui run_bot "
             f"--preset {preset.end_status} "
             f"--project-dir {settings.work_directory}"
         )
@@ -177,33 +202,6 @@ class RunManager(ProcessManager):
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
-    def __init__(self):
-        super().__init__()
-        self._bot_repo_manager = None
-        self._graph_repo_manager = None
-
-    @property
-    def bot_repo_manager(self):
-        if self._bot_repo_manager is None:
-            raise ValueError("Bot repo manager has not been set. Call set_bot_repo_manager() first.")
-        return self._bot_repo_manager
-
-    @property
-    def graph_repo_manager(self):
-        if self._graph_repo_manager is None:
-            raise ValueError("Graph repo manager has not been set. Call set_graph_repo_manager() first.")
-        return self._graph_repo_manager
-
-    def set_bot_repo_manager(self):
-        self._bot_repo_manager = RepoManager(settings.custom_dir.parent)
-        print("settings.custom_dir.parent: ", settings.custom_dir.parent)
-        self.bot_repo_manager.set_logger()
-
-    def set_graph_repo_manager(self):
-        self._graph_repo_manager = RepoManager(settings.frontend_flows_path.parent)
-        print("settings.frontend_flows_path.parent", settings.frontend_flows_path.parent)
-        self.graph_repo_manager.set_logger()
-
     async def start(self, preset: Preset) -> int:
         """Starts a new build process.
 
