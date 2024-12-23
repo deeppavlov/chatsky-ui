@@ -56,12 +56,12 @@ class ProcessManager:
 
     def set_bot_repo_manager(self):
         self._bot_repo_manager = RepoManager(settings.custom_dir.parent)
-        self.logger.debug("settings.custom_dir.parent: ", settings.custom_dir.parent)
+        self.logger.debug("settings.custom_dir.parent: %s", str(settings.custom_dir.parent))
         self.bot_repo_manager.set_logger()
 
     def set_graph_repo_manager(self):
         self._graph_repo_manager = RepoManager(settings.frontend_flows_path.parent)
-        self.logger.debug("settings.frontend_flows_path.parent", settings.frontend_flows_path.parent)
+        self.logger.debug("settings.frontend_flows_path.parent: %s", str(settings.frontend_flows_path.parent))
         self.graph_repo_manager.set_logger()
 
     def get_last_id(self):
