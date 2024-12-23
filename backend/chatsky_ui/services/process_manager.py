@@ -166,11 +166,7 @@ class RunManager(ProcessManager):
             int: the id of the new started process
         """
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
-        cmd_to_run = (
-            f"chatsky.ui run_bot "
-            f"--preset {preset.end_status} "
-            f"--project-dir {settings.work_directory}"
-        )
+        cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
         self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
@@ -202,6 +198,7 @@ class RunManager(ProcessManager):
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
+
     async def start(self, preset: Preset) -> int:
         """Starts a new build process.
 

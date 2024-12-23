@@ -1,7 +1,7 @@
 from pathlib import Path
+from typing import Union
 
 from git import Repo
-from typing import Union
 
 from chatsky_ui.core.logger_config import get_logger
 
@@ -44,11 +44,11 @@ class RepoManager:
     def commit_with_tag(self, build_id: int):
         self.commit_changes(f"Save script: {build_id}")
         self.repo.create_tag(str(build_id))
-        # self.logger.info("Repo '%s' is saved to git with tag %s", self.project_dir, build_id)
-    
+        self.logger.info("Repo '%s' is saved to git with tag %s", self.project_dir, build_id)
+
     def delete_tag(self, tag_name: str):
         self.repo.git.tag("-d", tag_name)
-    
+
     def checkout_tag(self, tag_name: Union[int, str], file_name: str):
         self.repo.git.checkout(tag_name, file_name)
 

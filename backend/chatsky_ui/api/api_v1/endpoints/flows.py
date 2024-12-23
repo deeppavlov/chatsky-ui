@@ -2,20 +2,22 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from dotenv import set_key
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from git.exc import GitCommandError
 from omegaconf import OmegaConf
 
+from chatsky_ui.api.deps import get_build_manager
 from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.services.process_manager import BuildManager
-from chatsky_ui.api.deps import get_build_manager
 
 router = APIRouter()
 
 
 @router.get("/")
-async def flows_get(build_id: Optional[int] = None, build_manager: BuildManager = Depends(get_build_manager)) -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
+async def flows_get(
+    build_id: Optional[int] = None, build_manager: BuildManager = Depends(get_build_manager)
+) -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
     """Get the flows by reading the frontend_flows.yaml file."""
     if build_id is not None:
         tag = int(build_id)
@@ -41,7 +43,9 @@ async def flows_get(build_id: Optional[int] = None, build_manager: BuildManager 
 
 
 @router.post("/")
-async def flows_post(flows: Dict[str, Union[list, dict]], build_manager: BuildManager = Depends(get_build_manager)) -> Dict[str, str]:
+async def flows_post(
+    flows: Dict[str, Union[list, dict]], build_manager: BuildManager = Depends(get_build_manager)
+) -> Dict[str, str]:
     """Write the flows to the frontend_flows.yaml file."""
 
     tags = sorted(build_manager.graph_repo_manager.repo.tags, key=lambda t: t.commit.committed_datetime)

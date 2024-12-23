@@ -15,7 +15,7 @@ nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
-from chatsky_ui.utils.repo_manager import RepoManager
+from chatsky_ui.utils.repo_manager import RepoManager  # noqa: E402
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -23,6 +23,7 @@ cli = typer.Typer(
     "1. `init` - Initializes a new Chatsky-UI project.\n\n"
     "2. `run_app` - Runs the UI for your project.\n"
 )
+
 
 async def _execute_command(command_to_run):
     logger = get_logger(__name__)
@@ -187,6 +188,5 @@ def init(
     finally:
         os.chdir(original_dir)
 
-    
     RepoManager.init_new_repo(Path(proj_path) / "bot", tag_name="0")
     RepoManager.init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")
