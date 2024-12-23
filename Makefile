@@ -161,3 +161,10 @@ build_docs: install_backend_env ## Builds the docs
 	cd ${BACKEND_DIR} && \
 	. `poetry env info --path`/bin/activate && \
 	cd ../docs && make html && cd ../
+
+.PHONY: style
+style: ## Formats code using black and checks with flake8 and isort
+	cd ${BACKEND_DIR} && poetry install --with lint
+	cd ${BACKEND_DIR} && isort . --line-length=120 && \
+	black --line-length=120 . && \
+	flake8 --ignore=E203 --statistics --count --max-line-length 120 .
