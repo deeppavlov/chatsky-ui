@@ -153,6 +153,10 @@ init_proj: install_backend_env ## Initiates a new project using chatsky-ui
 
 .PHONY: init_with_cc
 init_with_cc: ## Initiates a new project using cookiecutter
+	@if ! command -v cookiecutter &> /dev/null; then \
+		echo "cookiecutter could not be found, installing..."; \
+		pip install cookiecutter; \
+	fi
 	cookiecutter https://github.com/deeppavlov/chatsky-ui-template.git
 
 
