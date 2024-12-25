@@ -31,8 +31,8 @@ const RebuildModal = ({ id = "alert-modal", onRebuild, onNewRun }: RebuildModalP
       </ModalHeader>
       <ModalBody>
         <p className='text-sm leading-relaxed'>
-          The skill has not changed since the last build. Would you like to rebuild it or to run on
-          the current build?
+          The project has not changed since the last build. Would you like to rebuild it or to run
+          on the current build?
         </p>
       </ModalBody>
       <ModalFooter className='justify-center gap-4'>
