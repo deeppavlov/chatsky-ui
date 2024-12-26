@@ -14,6 +14,14 @@ from chatsky_ui.services.process_manager import BuildManager
 router = APIRouter()
 
 
+def _save_token(key: str, token: str) -> Dict[str, str]:
+    dotenv_path = Path(settings.work_directory) / ".env"
+    dotenv_path.touch(exist_ok=True)
+
+    set_key(dotenv_path, key, token)
+    return {"status": "ok", "message": "Token saved successfully"}
+
+
 @router.get("/")
 async def flows_get(
     build_id: Optional[int] = None, build_manager: BuildManager = Depends(get_build_manager)
@@ -58,8 +66,8 @@ async def flows_post(
 
 @router.post("/tg_token")
 async def post_tg_token(token: str):
-    dotenv_path = Path(settings.work_directory) / ".env"
-    dotenv_path.touch(exist_ok=True)
+    _save_token("TG_BOT_TOKEN", token)
 
-    set_key(dotenv_path, "TG_BOT_TOKEN", token)
-    return {"status": "ok", "message": "Token saved successfully"}
+@router.post("/chatgpt_token")
+async def post_chatgpt_token(token: str):
+    _save_token("CHATGPT_API_KEY", token)

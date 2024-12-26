@@ -2,18 +2,20 @@ from chatsky import PRE_RESPONSE, PRE_TRANSITION, RESPONSE, TRANSITIONS
 
 from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .base_converter import BaseConverter
-from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter
-from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter
+from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter, LLMConditionConverter
+from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter, LLMResponseConverter
 
 
 class NodeConverter(BaseConverter):
     RESPONSE_CONVERTER = {
         "text": TextResponseConverter,
         "python": CustomResponseConverter,
+        "llm": LLMResponseConverter,
     }
     CONDITION_CONVERTER = {
         "python": CustomConditionConverter,
         "slot": SlotConditionConverter,
+        "llm": LLMConditionConverter,
     }
 
     def __init__(self, config: dict):

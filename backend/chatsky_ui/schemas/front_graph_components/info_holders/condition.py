@@ -11,3 +11,8 @@ class CustomCondition(Condition):
 
 class SlotCondition(Condition):
     slot_id: str  # not the condition id
+
+
+class LLMCondition(Condition):
+    model_name: str
+    prompt: str
