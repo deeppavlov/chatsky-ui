@@ -21,12 +21,12 @@ from chatsky_ui.services.process_manager import BuildManager, RunManager
 
 @pytest.fixture(scope="session")
 def dummy_build_id() -> int:
-    return 999999
+    return 0
 
 
 @pytest.fixture(scope="session")
 def dummy_run_id() -> int:
-    return 999999
+    return 0
 
 
 async def start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:

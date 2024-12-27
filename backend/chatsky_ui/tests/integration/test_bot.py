@@ -80,18 +80,20 @@ async def test_start_run(override_dependency, preset_status, expected_status, du
             try:
                 await asyncio.wait_for(process.process.wait(), timeout=RUN_RUNNING_TIMEOUT)
             except asyncio.exceptions.TimeoutError as exc:
-                if preset_status == "loop":
+                if preset_status == "success":
+                    logger.debug("Success run process timed out. Expected behavior.")
+                    
+                    current_status = await process_manager.get_status(process_id)
+                    assert (
+                        current_status == expected_status
+                    ), f"Current process status '{current_status}' did not match the expected '{expected_status}'"
+                    await process.stop()
+                elif preset_status == "loop":
                     logger.debug("Loop process timed out. Expected behavior.")
                     assert True
                     await process.stop()
-                    return
                 else:
                     raise Exception(
                         f"Process with expected end status '{preset_status}' timed out with "
                         f"return code '{process.process.returncode}'."
                     ) from exc
-
-            current_status = await process_manager.get_status(process_id)
-            assert (
-                current_status == expected_status
-            ), f"Current process status '{current_status}' did not match the expected '{expected_status}'"
