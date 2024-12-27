@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.condition import CustomCondition, SlotCondition, LLMCondition
+from ....schemas.front_graph_components.info_holders.condition import CustomCondition, LLMCondition, SlotCondition
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
@@ -70,7 +70,11 @@ class LLMConditionConverter(ConditionConverter):
     def __init__(self, condition: dict):
         super().__init__()
         try:
-            self.condition = LLMCondition(name=condition["data"]["name"], model_name=condition["data"]["model_name"], prompt=condition["data"]["prompt"])
+            self.condition = LLMCondition(
+                name=condition["data"]["name"],
+                model_name=condition["data"]["model_name"],
+                prompt=condition["data"]["prompt"],
+            )
         except KeyError as missing_key:
             raise BadConditionException("Missing key in LLM condition data") from missing_key
 
@@ -78,11 +82,13 @@ class LLMConditionConverter(ConditionConverter):
         super()._convert()
 
         condition_data = self.condition.model_dump()
-        condition_data.update({
-            "method": {
-            "chatsky.llm.methods.Contains": {
-                "pattern": '"TRUE"',
+        condition_data.update(
+            {
+                "method": {
+                    "chatsky.llm.methods.Contains": {
+                        "pattern": '"TRUE"',
+                    }
+                }
             }
-            }
-        })
+        )
         return {"chatsky.conditions.llm.LLMCondition": condition_data}

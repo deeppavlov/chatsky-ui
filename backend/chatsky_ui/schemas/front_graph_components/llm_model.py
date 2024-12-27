@@ -1,5 +1,5 @@
 import os
-from typing import Optional, ClassVar
+from typing import ClassVar, Optional
 
 from dotenv import load_dotenv
 from pydantic import Field, model_validator
@@ -19,11 +19,7 @@ class LLMModel(BaseComponent):
         },
     }
 
-    MODEL_TO_KEY: ClassVar = {
-        model: config["api_key"]
-        for _, config in PROVIDERS.items()
-        for model in config["models"]
-    }
+    MODEL_TO_KEY: ClassVar = {model: config["api_key"] for _, config in PROVIDERS.items() for model in config["models"]}
 
     name: str
     llm: str

@@ -1,5 +1,5 @@
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.response import CustomResponse, TextResponse, LLMResponse
+from ....schemas.front_graph_components.info_holders.response import CustomResponse, LLMResponse, TextResponse
 from ..base_converter import BaseConverter
 from ..consts import CUSTOM_FILE, RESPONSES_FILE
 from .service_replacer import store_custom_service
@@ -53,6 +53,6 @@ class LLMResponseConverter(ResponseConverter):
             )
         except KeyError as e:
             raise BadResponseException("Missing key in LLM response data") from e
-        
+
     def _convert(self):
         return {"chatsky.responses.llm.LLMResponse": self.response.model_dump()}

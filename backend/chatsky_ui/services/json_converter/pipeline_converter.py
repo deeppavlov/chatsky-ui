@@ -11,9 +11,9 @@ except ImportError:
 from ...schemas.front_graph_components.pipeline import Pipeline
 from .base_converter import BaseConverter
 from .interface_converter import InterfaceConverter
+from .llm_converter import LLMModelsConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
-from .llm_converter import LLMModelsConverter
 
 
 class PipelineConverter(BaseConverter):

@@ -9,9 +9,8 @@ from omegaconf import OmegaConf
 from chatsky_ui.api.deps import get_build_manager
 from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
-from chatsky_ui.services.process_manager import BuildManager
 from chatsky_ui.schemas.front_graph_components.llm_model import LLMModel
-
+from chatsky_ui.services.process_manager import BuildManager
 
 router = APIRouter()
 

@@ -14,6 +14,7 @@ class TextResponse(Response):
 class CustomResponse(Response):
     code: str
 
+
 class LLMResponse(Response):
     model_name: str
     prompt: Optional[str] = None
