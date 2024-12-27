@@ -13,6 +13,7 @@ from .base_converter import BaseConverter
 from .interface_converter import InterfaceConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
+from .llm_converter import LLMModelsConverter
 
 
 class PipelineConverter(BaseConverter):
@@ -42,6 +43,7 @@ class PipelineConverter(BaseConverter):
         return {
             "script": script_converter(slots_conf=slots_conf),
             "messenger_interface": InterfaceConverter(self.pipeline.interface)(),
+            "models": LLMModelsConverter(self.pipeline.llmConfigurations)(),
             "slots": slots_converter(),
             "start_label": start_label,
             "fallback_label": fallback_label,

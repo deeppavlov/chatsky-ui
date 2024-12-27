@@ -10,6 +10,8 @@ from chatsky_ui.api.deps import get_build_manager
 from chatsky_ui.core.config import settings
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.services.process_manager import BuildManager
+from chatsky_ui.schemas.front_graph_components.llm_model import LLMModel
+
 
 router = APIRouter()
 
@@ -66,8 +68,22 @@ async def flows_post(
 
 @router.post("/tg_token")
 async def post_tg_token(token: str):
-    _save_token("TG_BOT_TOKEN", token)
+    return _save_token("TG_BOT_TOKEN", token)
 
-@router.post("/chatgpt_token")
-async def post_chatgpt_token(token: str):
-    _save_token("CHATGPT_API_KEY", token)
+
+@router.post("/llm_token")
+async def post_llm_token(provider: str, token: str):
+    return _save_token(LLMModel.PROVIDERS[provider]["api_key"], token)
+
+
+@router.get("/llm_models/{provider}")
+async def get_llm_models(provider: str) -> Dict[str, Union[list, str]]:
+    if provider not in LLMModel.PROVIDERS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{provider}' not found. Available providers: {', '.join(LLMModel.PROVIDERS.keys())}",
+        )
+    return {
+        "status": "ok",
+        "data": LLMModel.PROVIDERS[provider]["models"],
+    }
