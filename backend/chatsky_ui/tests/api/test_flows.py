@@ -5,16 +5,12 @@ from omegaconf import OmegaConf
 from chatsky_ui.api.api_v1.endpoints.flows import flows_get, flows_post
 
 
-@pytest.mark.asyncio
-async def test_flows_get(mocker):
-    mocker.patch("chatsky_ui.api.api_v1.endpoints.flows.read_conf", return_value=OmegaConf.create({"foo": "bar"}))
-    response = await flows_get()
-    assert response["status"] == "ok"
-    assert response["data"] == {"foo": "bar"}
+# Test flows endpoints and interaction with db (read and write conf)
+def test_flows(client, dummy_build_id):  # noqa: F811
+    get_response = client.get("/api/v1/flows", params={"build_id": dummy_build_id})
+    assert get_response.status_code == 200
+    data = get_response.json()["data"]
+    assert "flows" in data
 
-
-@pytest.mark.asyncio
-async def test_flows_post(mocker):
-    mocker.patch("chatsky_ui.api.api_v1.endpoints.flows.write_conf", return_value={})
-    response = await flows_post({"foo": "bar"})
-    assert response["status"] == "ok"
+    response = client.post("/api/v1/flows", json=data)
+    assert response.status_code == 200

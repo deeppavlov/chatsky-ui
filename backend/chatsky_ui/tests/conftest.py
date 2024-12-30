@@ -29,12 +29,33 @@ def dummy_run_id() -> int:
     return 0
 
 
-async def start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:
-    return await async_client.post(
-        endpoint,
-        json={"wait_time": 0.1, "end_status": preset_end_status},
-    )
+@pytest.fixture(scope="session")
+def inexistent_id() -> int:
+    return 9999
 
+
+@pytest.fixture(scope="session")
+def start_build_endpoint() -> str:
+    return "/api/v1/bot/build/start"
+
+
+@pytest.fixture(scope="session")
+def stop_build_endpoint():
+    def wrapper(build_id: int) -> str:
+        return f"/api/v1/bot/build/stop/{build_id}"
+    return wrapper
+
+
+@pytest.fixture(scope="session")
+def start_run_endpoint():
+    def wrapper(build_id: int) -> str:
+        return f"/api/v1/bot/run/start/{build_id}"
+    return wrapper
+
+
+@pytest.fixture(scope="session")
+def stop_run_endpoint() -> str:
+    return f"/api/v1/bot/run/stop"
 
 @pytest.fixture
 def override_dependency(mocker):

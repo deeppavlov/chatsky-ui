@@ -1,4 +1,5 @@
 import signal
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI, Response
@@ -22,7 +23,8 @@ def signal_handler(self, signum):
 async def lifespan(app: FastAPI):
     if settings.temp_conf.exists():
         settings.refresh_work_dir()
-    signal.signal(signal.SIGINT, signal_handler)
+    if threading.current_thread() is threading.main_thread():
+        signal.signal(signal.SIGINT, signal_handler)
     yield
 
     settings.temp_conf.unlink(missing_ok=True)
