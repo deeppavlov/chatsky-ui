@@ -3,6 +3,7 @@
 
 from contextlib import asynccontextmanager
 from typing import Generator
+import os
 
 import httpx
 import nest_asyncio
@@ -17,6 +18,13 @@ from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
+from pathlib import Path
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_working_directory():
+    project_root = Path(__file__).resolve().parents[3] / "my_project"
+    os.chdir(project_root)
 
 
 @pytest.fixture(scope="session")

@@ -17,8 +17,6 @@ load_dotenv()
 BUILD_COMPLETION_TIMEOUT = float(os.getenv("BUILD_COMPLETION_TIMEOUT", 10))
 RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
 
-logger = get_logger(__name__)
-
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -26,6 +24,7 @@ logger = get_logger(__name__)
     [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.COMPLETED)],
 )
 async def test_start_build(mocker, override_dependency, preset_status, expected_status, start_build_endpoint):
+    logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as process_manager:
             process_manager.save_built_script_to_git = mocker.MagicMock()
@@ -63,6 +62,7 @@ async def test_start_build(mocker, override_dependency, preset_status, expected_
 
 @pytest.mark.asyncio
 async def test_stop_build(override_dependency, start_build_endpoint, stop_build_endpoint):
+    logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as manager:
             response = await async_client.post(
@@ -83,7 +83,8 @@ async def test_stop_build(override_dependency, start_build_endpoint, stop_build_
 
 
 @pytest.mark.asyncio
-async def test_stop_build_bad_id(override_dependency, start_run_endpoint, dummy_build_id, stop_build_endpoint, inexistent_id):
+async def test_stop_build_bad_id(override_dependency, start_run_endpoint, set_working_directory, dummy_build_id, stop_build_endpoint, inexistent_id):
+    logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_run_manager) as manager:
             response = await async_client.post(
@@ -106,6 +107,7 @@ async def test_stop_build_bad_id(override_dependency, start_run_endpoint, dummy_
     "preset_status, expected_status", [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.ALIVE)]
 )
 async def test_start_run(override_dependency, preset_status, expected_status, start_run_endpoint, dummy_build_id):
+    logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_run_manager) as process_manager:
             response = await async_client.post(
