@@ -73,7 +73,7 @@ async def test_stop_build(override_dependency, start_build_endpoint, stop_build_
             assert response.status_code == 201
             logger.debug("Processes: %s", manager.processes)
 
-            last_id = (manager.get_last_id())
+            last_id = manager.get_last_id()
             logger.debug("Last id: %s, type: %s", last_id, type(last_id))
             logger.debug("Process status %s", await manager.get_status(last_id))
 
@@ -83,7 +83,9 @@ async def test_stop_build(override_dependency, start_build_endpoint, stop_build_
 
 
 @pytest.mark.asyncio
-async def test_stop_build_bad_id(override_dependency, start_run_endpoint, set_working_directory, dummy_build_id, stop_build_endpoint, inexistent_id):
+async def test_stop_build_bad_id(
+    override_dependency, start_run_endpoint, set_working_directory, dummy_build_id, stop_build_endpoint, inexistent_id
+):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_run_manager) as manager:
@@ -125,7 +127,7 @@ async def test_start_run(override_dependency, preset_status, expected_status, st
             except asyncio.exceptions.TimeoutError as exc:
                 if preset_status == "success":
                     logger.debug("Success run process timed out. Expected behavior.")
-                    
+
                     current_status = await process_manager.get_status(process_id)
                     assert (
                         current_status == expected_status

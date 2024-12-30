@@ -1,9 +1,10 @@
 # import asyncio
 
-import pytest
+# import pytest
 
-from chatsky_ui.core.config import settings
-from chatsky_ui.db.base import read_conf
+# from chatsky_ui.core.config import settings
+# from chatsky_ui.db.base import read_conf
+
 # from chatsky_ui.schemas.process_status import Status
 
 

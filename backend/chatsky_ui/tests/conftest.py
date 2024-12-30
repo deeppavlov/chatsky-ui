@@ -1,9 +1,9 @@
 # pylint: disable=C0413
 # flake8: noqa: E402
 
+import os
 from contextlib import asynccontextmanager
 from typing import Generator
-import os
 
 import httpx
 import nest_asyncio
@@ -13,12 +13,13 @@ from httpx import AsyncClient
 
 nest_asyncio.apply = lambda: None
 
+from pathlib import Path
+
 from chatsky_ui.main import app
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
-from pathlib import Path
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -51,6 +52,7 @@ def start_build_endpoint() -> str:
 def stop_build_endpoint():
     def wrapper(build_id: int) -> str:
         return f"/api/v1/bot/build/stop/{build_id}"
+
     return wrapper
 
 
@@ -58,12 +60,14 @@ def stop_build_endpoint():
 def start_run_endpoint():
     def wrapper(build_id: int) -> str:
         return f"/api/v1/bot/run/start/{build_id}"
+
     return wrapper
 
 
 @pytest.fixture(scope="session")
 def stop_run_endpoint() -> str:
     return f"/api/v1/bot/run/stop"
+
 
 @pytest.fixture
 def override_dependency(mocker):
