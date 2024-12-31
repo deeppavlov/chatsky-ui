@@ -247,7 +247,6 @@ class BuildManager(ProcessManager):
                 self.bot_repo_manager.commit_with_tag(process.id)
                 self.graph_repo_manager.commit_with_tag(process.id)
                 break
-            # await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
         """Returns metadata of a specific build process identified by its unique ID.
