@@ -1,20 +1,20 @@
-# create test flows function here
 import pytest
-from omegaconf import OmegaConf
+from httpx import AsyncClient
+from httpx._transports.asgi import ASGITransport
 
-from chatsky_ui.api.api_v1.endpoints.flows import flows_get, flows_post
-
-
-@pytest.mark.asyncio
-async def test_flows_get(mocker):
-    mocker.patch("chatsky_ui.api.api_v1.endpoints.flows.read_conf", return_value=OmegaConf.create({"foo": "bar"}))
-    response = await flows_get()
-    assert response["status"] == "ok"
-    assert response["data"] == {"foo": "bar"}
+from chatsky_ui.main import app
 
 
 @pytest.mark.asyncio
-async def test_flows_post(mocker):
-    mocker.patch("chatsky_ui.api.api_v1.endpoints.flows.write_conf", return_value={})
-    response = await flows_post({"foo": "bar"})
-    assert response["status"] == "ok"
+async def test_flows(dummy_build_id):  # noqa: F811
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test", follow_redirects=True
+    ) as async_client:
+        get_response = await async_client.get("/api/v1/flows", params={"build_id": dummy_build_id})
+        print("gettttt", get_response)
+        assert get_response.status_code == 200
+        data = get_response.json()["data"]
+        assert "flows" in data
+
+        response = await async_client.post("/api/v1/flows", json=data)
+        assert response.status_code == 200
