@@ -11,21 +11,51 @@ import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import PlayIcon from "../../icons/buildmenu/PlayIcon"
 import StopIcon from "../../icons/buildmenu/StopIcon"
 import { parseSearchParams } from "../../utils"
+import { PopUpContext } from "@/contexts/popUpContext"
+import { checkBuildIsChanged } from "@/api/bot"
+import RebuildModal from "@/modals/RebuildModal/RebuildModal"
 
 const BuildMenu = () => {
   const { saveFlows, flows } = useContext(flowContext)
-  const { buildStart, buildPending, buildStatus, setBuildStatus, buildStop } =
-    useContext(buildContext)
+  const { buildStart, buildPending, buildStatus, buildStop } = useContext(buildContext)
   const { chat, setChat } = useContext(chatContext)
-  const { runStart, runPending, runStatus, runStop, run, setRunStatus } = useContext(runContext)
+  const { runStart, runPending, runStatus, runStop, run } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
+  const { openPopUp } = useContext(PopUpContext)
+
+  const handleConfirmRebuild = () => {
+    openPopUp(
+      <RebuildModal
+        id='rebuild'
+        onRebuild={async () => {
+          const status = await buildStart({ wait_time: 1, end_status: "success" })
+          if (status === "completed") {
+            await runStart({ end_status: "success", wait_time: 0 })
+          }
+        }}
+        onNewRun={async () => {
+          await runStart({ end_status: "success", wait_time: 0 })
+        }}
+      />,
+      "rebuild"
+    )
+  }
 
   const buttonClickHandler = async () => {
     if (runStatus !== "alive" && runStatus !== "running") {
       saveFlows(flows, { interface: "ui" })
-      setRunStatus(() => "running")
-      await buildStart({ wait_time: 1, end_status: "success" })
-      await runStart({ end_status: "success", wait_time: 0 })
+
+      const flowUpdated = await checkBuildIsChanged()
+
+      if (!flowUpdated) {
+        handleConfirmRebuild()
+        return
+      }
+
+      const status = await buildStart({ wait_time: 1, end_status: "success" })
+      if (status === "completed") {
+        await runStart({ end_status: "success", wait_time: 0 })
+      }
     } else if ((runStatus === "alive" || runStatus === "running") && run) {
       runStop(run?.id)
     } else if (buildStatus === "running") {
@@ -35,9 +65,7 @@ const BuildMenu = () => {
 
   return (
     <div className='flex items-center justify-start gap-1.5'>
-      <Tooltip
-        content='Start build and run script process'
-        radius='sm'>
+      <Tooltip content='Start build and run script process' radius='sm'>
         <button
           data-testid='run-btn'
           onClick={buttonClickHandler}
@@ -46,11 +74,12 @@ const BuildMenu = () => {
             runStatus === "alive"
               ? "border-emerald-500"
               : runStatus === "stopped"
-                ? "border-border"
-                : runStatus === "running"
-                  ? "border-amber-600"
-                  : "border-red-500"
-          )}>
+              ? "border-border"
+              : runStatus === "running"
+              ? "border-amber-600"
+              : "border-red-500"
+          )}
+        >
           {(runPending || buildPending) && (
             <div className='absolute bg-background rounded-full -bottom-1.5 -right-1.5 w-5 h-5 transition animate-fade-in'>
               <Loader className='!border-danger border-2 !w-4 !h-4' />
@@ -100,9 +129,7 @@ const BuildMenu = () => {
           )}
         />
       </Button> */}
-      <Tooltip
-        content='Open the chat window'
-        radius='sm'>
+      <Tooltip content='Open the chat window' radius='sm'>
         <Button
           data-testid='chat-btn'
           onClick={() => {
@@ -117,7 +144,8 @@ const BuildMenu = () => {
           className={classNames(
             "bg-background hover:bg-overlay border border-border rounded-small",
             chat ? "bg-overlay border-border-darker" : ""
-          )}>
+          )}
+        >
           <ChatIcon className='w-5 h-5' />
         </Button>
       </Tooltip>
