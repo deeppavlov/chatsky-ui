@@ -1,4 +1,6 @@
-from typing import List
+from typing import List, Optional
+
+from pydantic import Field
 
 from .base_component import BaseComponent
 
@@ -6,4 +8,4 @@ from .base_component import BaseComponent
 class Pipeline(BaseComponent):
     flows: List[dict]
     interface: dict
-    llmConfigurations: List[dict]
+    llmConfigurations: Optional[List[dict]] = Field(default=None)

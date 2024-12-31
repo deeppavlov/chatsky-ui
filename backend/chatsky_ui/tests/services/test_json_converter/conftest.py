@@ -144,3 +144,32 @@ def telegram_interface():
 @pytest.fixture
 def chatsky_telegram_interface():
     return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}}
+
+
+@pytest.fixture
+def llm_models_config():
+    return [
+        {
+            "name": "test_model",
+            "modelName": "gpt-4o-mini",
+            "systemPrompt": "test_system_prompt",
+        }
+    ]
+
+
+@pytest.fixture
+def chatsky_llm_models():
+    return {
+        "test_model": {
+            "chatsky.llm.LLM_API": {
+                "model": {
+                    "external:langchain_openai.ChatOpenAI": {
+                        "model": "gpt-4o-mini",
+                        "api_key": {"external:os.getenv": "OPENAI_API_KEY"},
+                        "base_url": {"external:os.getenv": "LLM_API_BASE_URL"},
+                    }
+                },
+                "system_prompt": "test_system_prompt",
+            }
+        }
+    }

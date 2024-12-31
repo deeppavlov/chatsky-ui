@@ -90,13 +90,21 @@ class TestInterfaceConverter:
 
 class TestPipelineConverter:
     def test_pipeline_converter(
-        self, flow, telegram_interface, chatsky_telegram_interface, converted_group_slot, chatsky_flow
+        self,
+        flow,
+        telegram_interface,
+        chatsky_telegram_interface,
+        converted_group_slot,
+        chatsky_flow,
+        llm_models_config,
+        chatsky_llm_models,
     ):
-        pipeline = {"flows": [flow], "interface": telegram_interface}
+        pipeline = {"flows": [flow], "interface": telegram_interface, "llmConfigurations": llm_models_config}
         pipeline_path = Path(__file__).parent / "test_pipeline.yaml"
         with open(pipeline_path, "w") as file:
             yaml.dump(pipeline, file)
         os.environ["TG_BOT_TOKEN"] = "some_token"
+        os.environ["OPENAI_API_KEY"] = "some_token"
 
         PipelineConverter()(pipeline_path, Path(__file__).parent)
 
@@ -112,4 +120,5 @@ class TestPipelineConverter:
             "slots": converted_group_slot,
             "start_label": ["test_flow", "test_node"],
             "fallback_label": ["test_flow", "test_node"],
+            "models": chatsky_llm_models,
         }

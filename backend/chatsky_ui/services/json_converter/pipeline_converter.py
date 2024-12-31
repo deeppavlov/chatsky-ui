@@ -43,7 +43,7 @@ class PipelineConverter(BaseConverter):
         return {
             "script": script_converter(slots_conf=slots_conf),
             "messenger_interface": InterfaceConverter(self.pipeline.interface)(),
-            "models": LLMModelsConverter(self.pipeline.llmConfigurations)(),
+            "models": LLMModelsConverter(self.pipeline.llmConfigurations)() if self.pipeline.llmConfigurations else {},
             "slots": slots_converter(),
             "start_label": start_label,
             "fallback_label": fallback_label,

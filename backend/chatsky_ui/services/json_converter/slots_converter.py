@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from ...schemas.front_graph_components.node import SlotsNode
 from ...schemas.front_graph_components.slot import GroupSlot, RegexpSlot
@@ -10,16 +10,22 @@ class SlotsConverter(BaseConverter):
         def _get_slots_node(flows):
             return next(
                 iter([node for flow in flows for node in flow["data"]["nodes"] if node["type"] == "slots_node"]),
-                {"id": "999999", "data": {"groups": []}},
+                {},
             )
 
         slots_node = _get_slots_node(flows)
-        self.slots_node = SlotsNode(
-            id=slots_node["id"],
-            groups=slots_node["data"]["groups"],
+        self.slots_node = (
+            SlotsNode(
+                id=slots_node["id"],
+                groups=slots_node["data"]["groups"],
+            )
+            if slots_node
+            else None
         )
 
-    def map_slots(self):
+    def map_slots(self) -> Dict[str, str]:
+        if self.slots_node is None:
+            return {}
         mapped_slots = {}
         for group in self.slots_node.groups.copy():
             for slot in group["slots"]:
@@ -27,6 +33,8 @@ class SlotsConverter(BaseConverter):
         return mapped_slots
 
     def _convert(self):
+        if self.slots_node is None:
+            return {}
         return {key: value for group in self.slots_node.groups for key, value in GroupSlotConverter(group)().items()}
 
 
