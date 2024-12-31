@@ -226,3 +226,16 @@ export const send_message = async (user_id: number, user_message: string) => {
     throw error
   }
 }
+
+export const checkBuildIsChanged = async () => {
+  try {
+    const {
+      data: { data },
+    } = await $v1.get("/bot/build/is_changed")
+
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
