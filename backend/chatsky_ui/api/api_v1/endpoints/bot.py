@@ -103,6 +103,13 @@ async def check_build_status(
     return await _check_process_status(build_id, build_manager)
 
 
+@router.get("/build/is_changed", status_code=200)
+async def check_graph_changes(*, build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, Any]:
+    if build_manager.graph_repo_manager.is_changed():
+        return {"status": "ok", "data": True}
+    return {"status": "ok", "data": False}
+
+
 @router.get("/builds", response_model=Optional[Union[list, dict]], status_code=200)
 async def check_build_processes(
     build_id: Optional[int] = None,
