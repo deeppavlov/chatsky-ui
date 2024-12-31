@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
         os: [macOS-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
@@ -61,13 +61,7 @@ jobs:
       - name: setup poetry and install dependencies
         run: |
           python -m pip install --upgrade pip poetry
-          python -m poetry lock --no-update
-          python -m poetry install --with lint --no-interaction
-        working-directory: backend
-
-      - name: build wheel
-        run: |
-          python -m poetry build
+          python -m poetry install --with dev --no-interaction
         working-directory: backend
 
       - name: Create new project
@@ -77,7 +71,5 @@ jobs:
 
       - name: run tests
         run: |
-          poetry install --with dev -C ../backend
-          POETRY_ENV=$(poetry env info --path -C ../backend)
-          $POETRY_ENV/bin/pytest ../backend/chatsky_ui/tests/ --verbose
-        working-directory: my_project
+          python -m poetry run pytest chatsky_ui/tests/ --verbose
+        working-directory: backend
