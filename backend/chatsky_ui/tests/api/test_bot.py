@@ -145,12 +145,13 @@ async def test_start_run(override_dependency, preset_status, expected_status, st
 
 
 @pytest.mark.asyncio
-async def test_get_run_logs(client, run_process, dummy_run_id):
+async def test_get_run_logs(run_process, dummy_run_id):
     process = await run_process("echo Hello")
     process.logger.info("test log")
     await process.update_db_info()
 
-    get_response = client.get(f"/api/v1/bot/runs/logs/{dummy_run_id}")
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+        get_response = await async_client.get(f"/api/v1/bot/runs/logs/{dummy_run_id}")
 
-    assert get_response.status_code == 200
-    assert any(["test log" in log for log in get_response.json()])
+        assert get_response.status_code == 200
+        assert any(["test log" in log for log in get_response.json()])

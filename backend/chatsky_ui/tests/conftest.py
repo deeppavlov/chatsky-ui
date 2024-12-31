@@ -87,25 +87,6 @@ def override_dependency(mocker):
     return _override_dependency
 
 
-@pytest.fixture
-def client() -> Generator:
-    with TestClient(app=app) as client:
-        yield client
-
-
-@pytest.fixture(scope="session")
-def preset() -> Preset:
-    return Preset(
-        wait_time=0,
-        end_status="loop",
-    )
-
-
-@pytest.fixture
-def pagination() -> Pagination:
-    return Pagination()
-
-
 @pytest.fixture()
 def run_process(dummy_build_id, dummy_run_id):
     async def _run_process(cmd_to_run) -> RunProcess:
