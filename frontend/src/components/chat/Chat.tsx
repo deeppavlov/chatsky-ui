@@ -5,21 +5,18 @@ import { Paperclip, RefreshCcw, Send, Smile, X } from "lucide-react"
 import { memo, useContext, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { chatContext } from "../../contexts/chatContext"
-import { NotificationsContext } from "../../contexts/notificationsContext"
 import { runContext } from "../../contexts/runContext"
 import { workspaceContext } from "../../contexts/workspaceContext"
-import { DEV } from "../../env.consts"
 import ChatIcon from "../../icons/buildmenu/ChatIcon"
 import { parseSearchParams } from "../../utils"
 import EmojiPicker, { EmojiType } from "./EmojiPicker"
+import { send_message } from "@/api/bot"
 
 const Chat = memo(() => {
   const { chat, setChat, messages, setMessages } = useContext(chatContext)
   const { run, runStatus } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
-  const ws = useRef<WebSocket | null>(null)
   const { setMouseOnPane } = useContext(workspaceContext)
-  const { notification: n } = useContext(NotificationsContext)
 
   const [isEmoji, setIsEmoji] = useState(false)
 
@@ -46,33 +43,35 @@ const Chat = memo(() => {
 
   const [messageValue, setMessageValue] = useState("")
 
-  const handleMessage = () => {
-    if (messageValue) {
-      if (ws.current && ws.current.readyState === 1) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ws.current.send(messageValue)
-        setMessages([
-          ...messages,
-          {
-            message: messageValue,
-            type: "user",
-          },
-        ])
-        setMessageValue("")
-        setIsEmoji(false)
-      } else {
-        setMessages([
-          ...messages,
-          {
-            message: "WS connection is not opened! Try to start any run!",
-            type: "system",
-          },
-        ])
-        setMessageValue("")
-        setIsEmoji(false)
-      }
+  const handleMessage = async () => {
+    setMessageValue("")
+    setIsEmoji(false)
+
+    if (runStatus !== "alive" || !run) {
+      setMessages([
+        ...messages,
+        {
+          message: "Chat was not connected! Try to start any run!",
+          type: "system",
+        },
+      ])
+      setMessageValue("")
+      setIsEmoji(false)
+      return
     }
+
+    setMessages([
+      ...messages,
+      {
+        message: messageValue,
+        type: "user",
+      },
+    ])
+
+    const { response } = await send_message(0, messageValue) // user_id is hardcoded; it will need to be fixed later
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { message: response.text, type: "bot" }])
+    }, 500)
   }
 
   useEffect(() => {
@@ -116,42 +115,23 @@ const Chat = memo(() => {
     },
   })
 
+  useEffect(() => {
+    if (runStatus === "alive") {
+      setMessages((prev) => prev.filter((message) => message.type != "system"))
+    }
+  }, [runStatus, setMessages])
 
   useEffect(() => {
-    if (runStatus === "alive" && run) {
-      const socket = new WebSocket(
-        `ws://${DEV ? "localhost:8000" : window.location.host}/api/v1/bot/run/connect?run_id=${run.id}`
-      )
-      socket.onopen = () => {
-        n.add({ message: "Chat was successfully connected!", title: "Success", type: "success" })
-      }
-      socket.onmessage = (event: MessageEvent) => {
-        console.log(event)
-        if (event.data) {
-          const data = event.data
-          setTimeout(() => {
-            setMessages((prev) => [...prev, { message: data, type: "bot" }])
-          }, 500)
-        }
-        socket.onclose = (event) => {
-          socket.close()
-          console.log("websocket closed", event)
-        }
-      }
-      ws.current = socket
-    }
-    return () => {
-      ws.current?.close()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [run, runStatus])
+    setMessages([])
+  }, [run?.id, setMessages])
 
   return (
     <div
       className='pt-14 absolute top-0 right-0 transition-transform duration-300 w-[320px] h-screen max-h-screen bg-background border-l border-border overflow-hidden'
       style={{
         transform: chat ? "translateX(0%)" : "translateX(100%)",
-      }}>
+      }}
+    >
       <div>
         <div className='flex items-center justify-between pl-3 pr-1.5 py-1.5 border-b border-border'>
           <div className='flex items-center gap-1'>
@@ -166,7 +146,8 @@ const Chat = memo(() => {
                 size='sm'
                 onClick={() => {
                   setMessages([])
-                }}>
+                }}
+              >
                 <RefreshCcw strokeWidth={1.2} />
               </Button>
             </Tooltip>
@@ -180,14 +161,16 @@ const Chat = memo(() => {
               }}
               size='sm'
               variant='light'
-              isIconOnly>
+              isIconOnly
+            >
               <X strokeWidth={1.5} />
             </Button>
           </div>
         </div>
         <div
           ref={chatWindowRef}
-          className='h-[60vh] bg-chat border-b border-border px-2 py-2 overflow-y-scroll scrollbar-hide flex flex-col gap-2'>
+          className='h-[60vh] bg-chat border-b border-border px-2 py-2 overflow-y-scroll scrollbar-hide flex flex-col gap-2'
+        >
           {messagesT((style, m) => (
             <a.div
               data-testid={`${m.type}-message`}
@@ -195,13 +178,15 @@ const Chat = memo(() => {
               key={m.message + m.type + Math.random()}
               className={`flex items-center ${
                 m.type === "user" ? "justify-end" : "justify-start"
-              } `}>
+              } `}
+            >
               <div
                 className={`p-2 bg-background shadow-md ${m.type === "system" && "bg-warning"}`}
                 style={{
                   borderRadius:
                     m.type !== "user" ? "0 0.5rem 0.5rem 0.5rem" : "0.5rem 0 0.5rem 0.5rem",
-                }}>
+                }}
+              >
                 {m.message}
               </div>
             </a.div>

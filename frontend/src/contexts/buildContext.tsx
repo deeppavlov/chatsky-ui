@@ -20,7 +20,7 @@ type BuildContextType = {
   setBuilds: React.Dispatch<React.SetStateAction<localBuildType[]>>
   buildPending: boolean
   setBuildPending: React.Dispatch<React.SetStateAction<boolean>>
-  buildStart: (options: buildPresetType) => void
+  buildStart: (options: buildPresetType) => Promise<buildApiStatusType>
   buildStop: () => void
   buildStatus: string
   setBuildStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
@@ -36,7 +36,7 @@ export const buildContext = createContext({
   setBuilds: () => {},
   buildPending: false,
   setBuildPending: () => {},
-  buildStart: () => {},
+  buildStart: async () => "failed",
   buildStop: () => {},
   buildStatus: "",
   setBuildStatus: () => {},
@@ -79,69 +79,78 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     getBuildInitial()
   }, [])
 
-  const buildStart = async ({ end_status = "completed", wait_time = 0 }: buildPresetType) => {
-    setBuildPending(() => true)
+  const buildStart = async ({
+    end_status = "completed",
+    wait_time = 0,
+  }: buildPresetType): Promise<buildApiStatusType> => {
+    setBuildPending(true)
     setBuildStatus("running")
+
     try {
       const start_res = await build_start({ end_status, wait_time })
       const started_builds = await get_builds()
-      // const started_build = started_builds.find((build) => build.id === start_res.build_id)
       setBuildsHandler(started_builds)
+
+      const timerId = setTimeout(async () => {
+        setBuild(false)
+        setBuildStatus("failed")
+        n.add({
+          title: "Build timeout error!",
+          message: "",
+          type: "error",
+        })
+        await build_stop(start_res.build_id)
+        setBuildPending(false)
+        return "failed"
+      }, 15000)
+
       let flag = true
-      let timer = 0
-      const timerId = setInterval(() => timer++, 1000)
       while (flag) {
-        if (timer > 15) {
-          setBuild(() => false)
-          setBuildStatus("failed")
-          n.add({
-            title: "Build timeout error!",
-            message: "",
-            type: "error",
-          })
-          await build_stop(start_res.build_id)
-          return (flag = false)
-        }
         const status_res = await build_status(start_res.build_id)
-        const status = status_res.status.toLowerCase()
+        const status = status_res.status
+
         if (status !== "running" && status !== "alive") {
           flag = false
-          setTimeout(async () => {
-            const build = await get_builds()
-            setBuilds(() =>
-              build.map((build) => ({
-                ...build,
-                type: "build",
-              }))
-            )
-          }, 1000)
-          if (status === "completed") {
-            setBuildStatus("completed")
-            setBuild(() => true)
-            n.add({
-              title: "Build successfully!",
-              message: "",
-              type: "success",
-            })
-          } else if (status === "failed") {
-            setBuildStatus("failed")
-            setBuild(() => false)
-            n.add({
-              title: "Build failed!",
-              message: "Unknown build error. Please check your script.",
-              type: "error",
-            })
-          }
+          clearTimeout(timerId)
+
+          await handleBuildCompletion(status)
+          return status
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
-      clearInterval(timerId)
     } catch (error) {
-      console.log(error)
+      console.error("Build start error:", error)
+      return "failed"
     } finally {
-      setBuildPending(() => false)
+      setBuildPending(false)
+    }
+    return "failed"
+  }
+
+  const handleBuildCompletion = async (status: string) => {
+    const builds = await get_builds()
+
+    setBuilds(builds.map((build) => ({ ...build, type: "build" })))
+
+    if (status === "completed") {
+      setBuildStatus("completed")
+      setBuild(true)
+      n.add({
+        title: "Build successfully!",
+        message: "",
+        type: "success",
+      })
+    } else if (status === "failed") {
+      setBuildStatus("failed")
+      setBuild(false)
+      n.add({
+        title: "Build failed!",
+        message: "Unknown build error. Please check your script.",
+        type: "error",
+      })
     }
   }
+
   const buildStop = async () => {
     try {
       await build_stop(builds[0].id + 1)
@@ -173,7 +182,8 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         logsPage,
         setLogsPage,
         setBuildsHandler,
-      }}>
+      }}
+    >
       {children}
     </buildContext.Provider>
   )

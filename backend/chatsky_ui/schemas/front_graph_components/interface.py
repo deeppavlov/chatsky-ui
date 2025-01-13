@@ -1,20 +1,18 @@
-from pydantic import Field, model_validator
-from typing import Any
-
-from .base_component import BaseComponent
-from typing import Optional, Dict
-from dotenv import load_dotenv
 import os
+from typing import Any, Dict, Optional
+
+from dotenv import load_dotenv
+from pydantic import Field, model_validator
 
 from chatsky_ui.core.config import settings
 
+from .base_component import BaseComponent
 
-load_dotenv(os.path.join(settings.work_directory, ".env"))
+load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
+
 
 class Interface(BaseComponent):
-    model_config = {
-        "extra": "forbid"
-    }
+    model_config = {"extra": "forbid"}
 
     telegram: Optional[Dict[str, Any]] = Field(default=None)
     http: Optional[Dict[str, Any]] = Field(default=None)

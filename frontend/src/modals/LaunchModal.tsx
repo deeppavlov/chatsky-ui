@@ -6,6 +6,9 @@ import DefInput from "@/UI/Input/DefInput"
 import { Button } from "@nextui-org/react"
 import React, { useContext, useState } from "react"
 import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "./ModalComponents"
+import { set_tg_token } from "@/api/flows"
+import RebuildModal from "./RebuildModal/RebuildModal"
+import { checkBuildIsChanged } from "@/api/bot"
 
 type LaunchModalProps = CustomModalProps & {
   title?: React.ReactNode
@@ -21,11 +24,29 @@ const LaunchModal = ({
   interface_description = "Please follow the instructions below to set up your bot interface.",
   actionText = "Launch",
 }: LaunchModalProps) => {
-  const { closePopUp } = useContext(PopUpContext)
+  const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { flows, saveFlows } = useContext(flowContext)
   const { buildStart, buildStatus, setBuildStatus } = useContext(buildContext)
   const { runStart } = useContext(runContext)
   const [token, setToken] = useState("")
+
+  const handleConfirmRebuild = () => {
+    openPopUp(
+      <RebuildModal
+        id='rebuild'
+        onRebuild={async () => {
+          const status = await buildStart({ wait_time: 1, end_status: "success" })
+          if (status === "completed") {
+            await runStart({ end_status: "success", wait_time: 0 })
+          }
+        }}
+        onNewRun={async () => {
+          await runStart({ end_status: "success", wait_time: 0 })
+        }}
+      />,
+      "rebuild"
+    )
+  }
 
   const onCloseHandler = () => {
     closePopUp(id)
@@ -33,20 +54,26 @@ const LaunchModal = ({
 
   const onActionHandler = async () => {
     try {
-      saveFlows(flows, { interface: "tg", token })
       onCloseHandler()
-      await buildStart({ wait_time: 0, end_status: "success" })
-      await runStart({ end_status: "success", wait_time: 0 })
+      await saveFlows(flows, { interface: "tg" })
+      await set_tg_token(token)
+      const flowUpdated = await checkBuildIsChanged()
+      if (!flowUpdated) {
+        handleConfirmRebuild()
+        return
+      }
+
+      const status = await buildStart({ wait_time: 0, end_status: "success" })
+      if (status === "completed") {
+        await runStart({ end_status: "success", wait_time: 0 })
+      }
     } catch (error) {
       console.error(error)
     }
   }
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onCloseHandler}
-      size='2xl'>
+    <Modal isOpen={true} onClose={onCloseHandler} size='2xl'>
       <ModalHeader>
         <div className='text-xl font-bold'>{title}</div>
       </ModalHeader>

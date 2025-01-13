@@ -17,12 +17,7 @@ nest_asyncio.apply = lambda: None
 
 from chatsky_ui.core.config import app_runner, settings  # noqa: E402
 from chatsky_ui.core.logger_config import get_logger  # noqa: E402
-from chatsky_ui.utils.git_cmd import (  # noqa: E402
-    commit_changes,
-    get_repo,
-    save_built_script_to_git,
-    save_frontend_graph_to_git,
-)  # noqa: E402
+from chatsky_ui.utils.repo_manager import RepoManager  # noqa: E402
 
 cli = typer.Typer(
     help="🚀 Welcome to Chatsky-UI!\n\n"
@@ -63,7 +58,7 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(project_dir: Path, command_file: str, preset: str, build_id: Optional[int] = None):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str):
     logger = get_logger(__name__)
 
     presets_build_path = settings.presets / command_file
@@ -71,7 +66,7 @@ def _execute_command_file(project_dir: Path, command_file: str, preset: str, bui
         file_content = file.read()
 
     template = string.Template(file_content)
-    substituted_content = template.substitute(work_directory=project_dir, build_id=build_id)
+    substituted_content = template.substitute(work_directory=project_dir)
 
     presets_build_file = json.loads(substituted_content)
     if preset in presets_build_file:
@@ -108,9 +103,7 @@ def build_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    from chatsky_ui.services.json_converter_new2.pipeline_converter import (
-        PipelineConverter,
-    )  # pylint: disable=C0415
+    from chatsky_ui.services.json_converter.pipeline_converter import PipelineConverter  # pylint: disable=C0415
 
     pipeline_converter = PipelineConverter()
     pipeline_converter(
@@ -120,7 +113,6 @@ def build_scenario(
 
 @cli.command("run_bot")
 def run_bot(
-    build_id: Annotated[int, typer.Option(help="Id of the build to run")] = None,
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
@@ -131,12 +123,11 @@ def run_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(project_dir, "run.json", preset, build_id)
+    _execute_command_file(project_dir, "run.json", preset)
 
 
 @cli.command("run_scenario")
 def run_scenario(
-    build_id: Annotated[int, typer.Argument(help="Id of the build to run")],
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
 ):
     """Runs the bot with preset `success`"""
@@ -207,10 +198,10 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="add-test",
+            checkout="remove-build-id",
         )
     finally:
         os.chdir(original_dir)
 
-    init_new_repo(Path(proj_path) / "bot", tag_name="0")
-    init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")
+    RepoManager.init_new_repo(Path(proj_path) / "bot", tag_name="0")
+    RepoManager.init_new_repo(Path(proj_path) / "chatsky_ui/app_data", tag_name="0")
