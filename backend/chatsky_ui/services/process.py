@@ -12,8 +12,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from httpx import AsyncClient
-from chatsky.messengers.http_interface import HTTP_INTERFACE_PORT
 
 from dotenv import load_dotenv
 from httpx import AsyncClient
@@ -22,8 +20,6 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.utils.git_cmd import get_repo, save_frontend_graph_to_git, save_built_script_to_git
-
 
 load_dotenv()
 
@@ -65,6 +61,7 @@ class Process(ABC):
         Returns:
             dict: A dictionary containing the values of the attributes mentioned in the list.
         """
+
         def _map_to_str(params: Dict[str, Any]):
             for k, v in params.copy().items():
                 if isinstance(v, datetime):
@@ -202,49 +199,6 @@ class RunProcess(Process):
                     break
 
         await write_conf(builds_conf, settings.builds_path)
-    
-    async def is_alive(self) -> bool:
-        """Checks if the process is alive by writing to stdin andreading its stdout."""
-        async def check_telegram_readiness(stream, name):
-            async for line in stream:
-                decoded_line = line.decode().strip()
-                self.logger.info(f"[{name}] {decoded_line}")
-
-                if "telegram.ext.Application:Application started" in decoded_line:
-                    self.logger.info("The application is ready for use!")
-                    return True
-            return False
-
-        async with AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"http://localhost:{HTTP_INTERFACE_PORT}/health",
-                )
-                return response.json()["status"] == "ok"
-            except Exception as e:
-                self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{HTTP_INTERFACE_PORT}' yet. "
-                    f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
-                )
-
-        done, pending = await asyncio.wait(
-            [
-                asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
-                asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
-            ],
-            return_when=asyncio.FIRST_COMPLETED,
-            timeout=PING_PONG_TIMEOUT,
-        )
-
-        for task in pending:
-            task.cancel()
-
-        for task in done:
-            result = task.result()
-            if result:
-                return result
-
-        return False
 
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""

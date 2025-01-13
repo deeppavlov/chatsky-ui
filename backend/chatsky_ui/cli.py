@@ -9,8 +9,6 @@ import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
-from git import Repo
-from typing import Optional
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -25,15 +23,6 @@ cli = typer.Typer(
     "1. `init` - Initializes a new Chatsky-UI project.\n\n"
     "2. `run_app` - Runs the UI for your project.\n"
 )
-
-
-def init_new_repo(git_path: Path, tag_name: str):
-    repo = Repo.init(git_path)
-    repo.git.checkout(b="dev")
-    commit_changes(repo, "Init frontend flows")
-    repo.create_tag(tag_name)
-
-    print("Repo initialized with tag %s", tag_name)
 
 
 async def _execute_command(command_to_run):
@@ -131,10 +120,6 @@ def run_scenario(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
 ):
     """Runs the bot with preset `success`"""
-    # checkout the commit and then run the build
-    bot_repo = Repo.init(Path(project_dir) / "bot")
-    bot_repo.git.checkout(build_id, "scripts/build.yaml")
-
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)

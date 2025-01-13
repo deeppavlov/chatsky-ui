@@ -5,8 +5,6 @@ from typing import Dict
 
 import uvicorn
 from dotenv import load_dotenv
-import logging
-from typing import Dict
 from omegaconf import DictConfig, OmegaConf
 
 LOG_LEVELS: Dict[str, int] = {
