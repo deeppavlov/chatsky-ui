@@ -24,8 +24,6 @@ type BuildContextType = {
   buildStop: () => void
   buildStatus: string
   setBuildStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
-  logsPage: boolean
-  setLogsPage: React.Dispatch<React.SetStateAction<boolean>>
   setBuildsHandler: (builds: buildMinifyApiType[]) => void
 }
 
@@ -40,8 +38,6 @@ export const buildContext = createContext({
   buildStop: () => {},
   buildStatus: "",
   setBuildStatus: () => {},
-  logsPage: false,
-  setLogsPage: () => {},
   setBuildsHandler: () => {},
 } as BuildContextType)
 
@@ -51,7 +47,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   const [buildStatus, setBuildStatus] = useState<buildApiStatusType>("stopped")
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams()
-  const [logsPage, setLogsPage] = useState(searchParams.get("logs_page") === "opened")
   const [builds, setBuilds] = useState<localBuildType[]>([])
   const { notification: n } = useContext(NotificationsContext)
 
@@ -179,8 +174,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         setBuildStatus,
         builds,
         setBuilds,
-        logsPage,
-        setLogsPage,
         setBuildsHandler,
       }}
     >

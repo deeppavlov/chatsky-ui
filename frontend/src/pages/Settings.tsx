@@ -5,49 +5,51 @@ import { themeContext } from "../contexts/themeContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 
 const Settings = memo(() => {
-  const { settingsPage } = useContext(workspaceContext)
+  const { currentPage } = useContext(workspaceContext)
   const { theme, toggleTheme } = useContext(themeContext)
 
   return (
     <>
       <div
         style={{
-          transform: settingsPage ? "translateX(0)" : "translateX(100%)",
+          transform: currentPage === "settings" ? "translateX(0)" : "translateX(100%)",
           // display: settingsPage ? "block" : "none",
         }}
-        className='absolute top-0 left-0 transition-all duration-300 pt-24 pb-14 px-12 w-screen h-screen bg-background'>
+        className='absolute top-0 left-0 transition-all duration-300 pt-24 pb-14 px-12 w-screen h-screen bg-background'
+      >
         <h2 className='text-2xl font-semibold mb-4'>Settings</h2>
         <div className='grid grid-cols-6 gap-8 h-full pb-14'>
           <div className='col-span-1 w-full flex gap-4'>
             <div className='flex flex-col items-start justify-start gap-1 w-full'>
               <Button
                 className='flex items-center justify-start w-full font-semibold'
-                variant='flat'>
+                variant='flat'
+              >
                 Appearance
               </Button>
               <Button
                 isDisabled
                 className='flex items-center justify-start w-full font-semibold'
-                variant='light'>
+                variant='light'
+              >
                 Pipeline
               </Button>
               <Button
                 isDisabled
                 className='flex items-center justify-start w-full font-semibold'
-                variant='light'>
+                variant='light'
+              >
                 Build & Run
               </Button>
               <Button
                 isDisabled
                 className='flex items-center justify-start w-full font-semibold'
-                variant='light'>
+                variant='light'
+              >
                 Advanced
               </Button>
             </div>
-            <Divider
-              orientation='vertical'
-              className='h-full'
-            />
+            <Divider orientation='vertical' className='h-full' />
           </div>
           <div className='col-span-5'>
             <section className='mb-8'>
@@ -62,7 +64,8 @@ const Settings = memo(() => {
                   onChange={toggleTheme}
                   color='primary'
                   startContent={<SunIcon />}
-                  endContent={<MoonIcon />}></Switch>
+                  endContent={<MoonIcon />}
+                ></Switch>
                 {/* <span>Dark</span> */}
               </div>
             </section>
@@ -74,15 +77,12 @@ const Settings = memo(() => {
                 disabledKeys={["ru"]}
                 defaultSelectedKeys={["en"]}
                 className='w-48'
-                size='sm'>
-                <SelectItem
-                  key={"en"}
-                  value='en'>
+                size='sm'
+              >
+                <SelectItem key={"en"} value='en'>
                   English
                 </SelectItem>
-                <SelectItem
-                  key={"ru"}
-                  value='ru'>
+                <SelectItem key={"ru"} value='ru'>
                   Russian soon...
                 </SelectItem>
               </Select>

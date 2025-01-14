@@ -5,7 +5,8 @@ import { FlowType } from "../types/FlowTypes"
 import { AppNode } from "../types/NodeTypes"
 import { flowContext } from "./flowContext"
 import { NotificationsContext } from "./notificationsContext"
-import { PopUpContext } from "./popUpContext"
+
+export type PageType = "edit" | "deliver" | "inspect" | "settings"
 
 type WorkspaceContextType = {
   workspaceMode: boolean
@@ -14,8 +15,6 @@ type WorkspaceContextType = {
   nodesLayoutMode: boolean
   setNodesLayoutMode: React.Dispatch<React.SetStateAction<boolean>>
   toggleNodesLayoutMode: () => void
-  settingsPage: boolean
-  setSettingsPage: React.Dispatch<React.SetStateAction<boolean>>
   selectedNode: string
   setSelectedNode: React.Dispatch<React.SetStateAction<string>>
   handleNodeFlags: (
@@ -31,6 +30,8 @@ type WorkspaceContextType = {
   managerMode: boolean
   setManagerMode: React.Dispatch<React.SetStateAction<boolean>>
   toggleManagerMode: () => void
+  currentPage: PageType
+  setCurrentPage: React.Dispatch<React.SetStateAction<PageType>>
 }
 
 export const workspaceContext = createContext<WorkspaceContextType>({
@@ -42,8 +43,6 @@ export const workspaceContext = createContext<WorkspaceContextType>({
   setNodesLayoutMode: () => {},
   toggleNodesLayoutMode: () => {},
   nodesLayoutMode: false,
-  setSettingsPage: () => {},
-  settingsPage: false,
   selectedNode: "",
   setSelectedNode: () => {},
   handleNodeFlags: () => {},
@@ -54,21 +53,26 @@ export const workspaceContext = createContext<WorkspaceContextType>({
   managerMode: false,
   setManagerMode: () => {},
   toggleManagerMode: () => {},
+  currentPage: "edit",
+  setCurrentPage: () => {},
 } as WorkspaceContextType)
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
-  const { popUpElements } = useContext(PopUpContext)
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [managerMode, setManagerMode] = useState(false)
   const [searchParams] = useSearchParams()
-  const [settingsPage, setSettingsPage] = useState(searchParams.get("settings") === "opened")
   const [selectedNode, setSelectedNode] = useState("")
   const { flows, quietSaveFlows, setFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
   const [modalsOpened, setModalsOpened] = useState(0)
   const { notification: n } = useContext(NotificationsContext)
 
+  const pageTypes: PageType[] = ["edit", "deliver", "inspect", "settings"]
+  const pageType = searchParams.get("page")?.toLowerCase() as PageType
+  const [currentPage, setCurrentPage] = useState<PageType>(
+    pageTypes.includes(pageType) ? pageType : "edit"
+  )
 
   /**
    * Count opened modals for correct shortcuts work
@@ -84,7 +88,6 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [modalsOpened])
 
-  
   const toggleWorkspaceMode = useCallback(() => {
     setWorkspaceMode(() => !workspaceMode)
     n.add({
@@ -172,8 +175,6 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         nodesLayoutMode,
         setNodesLayoutMode,
         toggleNodesLayoutMode,
-        settingsPage,
-        setSettingsPage,
         selectedNode,
         setSelectedNode,
         handleNodeFlags,
@@ -184,7 +185,10 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         managerMode,
         setManagerMode,
         toggleManagerMode,
-      }}>
+        currentPage,
+        setCurrentPage,
+      }}
+    >
       {children}
     </workspaceContext.Provider>
   )
