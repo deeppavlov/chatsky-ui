@@ -29,32 +29,33 @@ const SlotItem = ({ slot, setSlots, onDelete, is_create_modal }: SlotItemType) =
   }, [name, type, method, value])
 
   return (
-    <div className='my-1'>
-      <div className='flex items-center justify-between mb-1'>
-        <div className='flex items-center gap-2 mb-2'>
-          <EditPenIcon />
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className='bg-transparent focus:outline-none focus:placeholder:text-transparent'
-            type='text'
-            placeholder='New slot'
-          />
-        </div>
-        {!is_create_modal && (
-          <Button
-            onClick={() => onDelete(slot.id)}
-            isIconOnly
-            variant='ghost'
-            className='border-none min-w-8 min-h-8 w-8 h-8 cursor-pointer'
-            radius='sm'
-            color='danger'>
-            <TrashIcon className='stroke-foreground' />
-          </Button>
-        )}
-      </div>
-      <div className='grid grid-cols-2 gap-2'>
-        {/* <DefSelect
+   <div className="my-1">
+    <div className="flex items-center justify-between mb-1">
+     <div className="flex items-center gap-2 mb-2">
+      <EditPenIcon />
+      <input
+       value={name}
+       onChange={(e) => setName(e.target.value)}
+       className="bg-transparent focus:outline-none focus:placeholder:text-transparent"
+       type="text"
+       placeholder="New slot"
+      />
+     </div>
+     {!is_create_modal && (
+      <Button
+       onClick={() => onDelete(slot.id)}
+       isIconOnly
+       variant="ghost"
+       className="border-none min-w-8 min-h-8 w-8 h-8 cursor-pointer"
+       radius="sm"
+       color="danger"
+      >
+       <TrashIcon className="stroke-foreground" />
+      </Button>
+     )}
+    </div>
+    <div className="grid grid-cols-2 gap-2">
+     {/* <DefSelect
           defaultValue={type}
           onValueChange={(value) => setType(value as "RegexpSlot" | "")}
           items={[{ value: "RegexpSlot", key: "RegexpSlot" }]}
@@ -66,17 +67,17 @@ const SlotItem = ({ slot, setSlots, onDelete, is_create_modal }: SlotItemType) =
           items={[{ value: "Method1", key: "Method1" }]}
           placeholder='Select slot method'
         /> */}
-        <DefTextarea
-          value={value}
-          onValueChange={setValue}
-          className='col-span-2'
-          isMultiline
-          label='Slot value'
-          placeholder='Enter slot regexp'
-        />
-      </div>
+     <DefTextarea
+      value={value}
+      onValueChange={setValue}
+      className="col-span-2"
+      isMultiline
+      label="Slot value"
+      placeholder={`Enter slot regexp\ne.g. ([a-zA-Z]+)`}
+     />
     </div>
-  )
+   </div>
+  );
 }
 
 export default SlotItem
