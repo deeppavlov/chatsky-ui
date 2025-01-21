@@ -108,7 +108,15 @@ async def check_build_status(
 
 @router.get("/build/is_changed", status_code=200)
 async def check_graph_changes(*, build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, Any]:
-    """Checks if the graph"""
+    """Checks if the graph was changed since last build/run (???)
+
+    Args:
+        build_manager (BuildManager): The process manager dependency to check the graph with.
+
+    Returns:
+        {"status": "ok", "data": True}: in case the graph was changed.
+        {"status": "ok", "data": False}: in case the graph wasn't changed.
+    """
     if build_manager.graph_repo_manager.is_changed():
         return {"status": "ok", "data": True}
     return {"status": "ok", "data": False}
@@ -126,7 +134,14 @@ async def check_build_processes(
     The offset and limit parameters can be used to paginate the results.
 
     Args:
-        build_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.
+        build_id (Optional[int]): The id of the process to check. If not specified, all processes will be checked.
+        build_manager (BuildManager): The `build` process manager to check the processes with.
+        run_manager (RunManager): The `run` process manager to use for getting all runs of this build.
+        pagination (Pagination): An object containing the offset and limit parameters for paginating results.
+
+    Returns:
+        In case `build_id` is specified, the build info for that process is returned.
+        Otherwise, a list containing statuses of all `build` processes along with their runs info.
     """
     if build_id is not None:
         return await build_manager.get_build_info(build_id, run_manager)
@@ -143,6 +158,11 @@ async def get_build_logs(
     """Gets the logs of a specific `build` process.
 
     The offset and limit parameters can be used to paginate the results.
+
+    Args:
+        build_id (Optional[int]): The id of the process to get the logs from.
+        build_manager (BuildManager): The `build` process manager containing the `build_id` process.
+        pagination (Pagination): An object containing the offset and limit parameters for paginating results.
     """
     if build_id is not None:
         return await build_manager.fetch_build_logs(build_id, pagination.offset(), pagination.limit)
@@ -163,6 +183,9 @@ async def start_run(
     Args:
         build_id (int): The id of the build process to start running.
         preset (Preset): The preset to set the build process for. Must be among ("success", "failure", "loop")
+        background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that checks the
+            status of the run process.
+        run_manager (RunManager): The `run` process manager to start the process with.
 
     Returns:
         {"status": "ok", "build_id": run_id}: in case of **starting** the run process successfully.
@@ -198,7 +221,7 @@ async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(dep
     """Checks the status of a `run` process with the given id.
 
     Args:
-        build_id (int): The id of the process to check.
+        run_id (int): The id of the process to check.
         run_manager (RunManager): The process manager dependency to check the process with.
 
     Raises:
@@ -225,6 +248,12 @@ async def check_run_processes(
 
     Args:
         run_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.
+        run_manager (RunManager): The `run` process manager to check the process with.
+        pagination (Pagination): An object containing the offset and limit parameters for paginating results.
+
+    Returns:
+        In case `run_id` is specified, the run info for that process is returned.
+        Otherwise, a list with run info of all `run` processes is returned.
     """
 
     if run_id is not None:
@@ -240,6 +269,11 @@ async def get_run_logs(
     """Gets the logs of a specific `run` process.
 
     The offset and limit parameters can be used to paginate the results.
+
+    Args:
+        run_id (Optional[int]): The id of the process to get the logs from.
+        run_manager (RunManager): The `run` process manager containing the `build_id` process.
+        pagination (Pagination): An object containing the offset and limit parameters for paginating results.
     """
     if run_id is not None:
         return await run_manager.fetch_run_logs(run_id, pagination.offset(), pagination.limit)
