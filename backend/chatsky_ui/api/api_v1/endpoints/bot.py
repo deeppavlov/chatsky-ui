@@ -52,6 +52,9 @@ async def start_build(
 
     Args:
         preset (Preset): The preset to set the build process for. Must be among ("success", "failure", "loop")
+        background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that checks the
+            status of the build process.
+        build_manager (BuildManager): The process manager dependency to start the process with.
 
     Returns:
         {"status": "ok", "build_id": build_id}: in case of **starting** the build process successfully.
@@ -70,7 +73,7 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
 
     Args:
         build_id (int): The id of the process to stop.
-        build_id (BuildManager): The process manager dependency to stop the process with.
+        build_manager (BuildManager): The process manager dependency to stop the process with.
 
     Raises:
         HTTPException: With status code 404 if the process is not found.
@@ -105,6 +108,7 @@ async def check_build_status(
 
 @router.get("/build/is_changed", status_code=200)
 async def check_graph_changes(*, build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, Any]:
+    """Checks if the graph"""
     if build_manager.graph_repo_manager.is_changed():
         return {"status": "ok", "data": True}
     return {"status": "ok", "data": False}
