@@ -62,7 +62,7 @@ const LocalStorage = ({
   // </Modal>
 
   <Modal
-   className={"min-h-[208px] pCustom w-auto"}
+   className={"min-h-[208px] px-0 py-0 w-min"}
    isOpen={isOpen}
    onClose={onClose}
   >
