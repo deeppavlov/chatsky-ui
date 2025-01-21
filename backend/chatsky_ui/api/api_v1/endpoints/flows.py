@@ -18,7 +18,16 @@ router = APIRouter()
 async def flows_get(
     build_id: Optional[int] = None, build_manager: BuildManager = Depends(get_build_manager)
 ) -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
-    """Get the flows by reading the frontend_flows.yaml file."""
+    """Get the flows by reading the frontend_flows.yaml file.
+
+    Args:
+        build_id (Optional[int]): The id of the process to get the flows from.
+        build_manager (BuildManager): The `build` process manager containing the `build_id` process.
+
+    Returns:
+        {"status": "ok", "data": dict_flows}: in case of reading the frontend_flows.yaml file successfully,
+        where `data` contains the flows obtained from the file.
+    """
     if build_id is not None:
         tag = int(build_id)
         try:
@@ -46,7 +55,15 @@ async def flows_get(
 async def flows_post(
     flows: Dict[str, Union[list, dict]], build_manager: BuildManager = Depends(get_build_manager)
 ) -> Dict[str, str]:
-    """Write the flows to the frontend_flows.yaml file."""
+    """Write the flows to the frontend_flows.yaml file.
+
+    Args:
+        flows (dict): The flows to write into the frontend_flows.yaml file.
+        build_manager (BuildManager): The `build` process manager used in the current context.
+
+    Returns:
+        {"status": "ok"}: in case of writing the flows into the file successfully.
+    """
 
     tags = sorted(build_manager.graph_repo_manager.repo.tags, key=lambda t: t.commit.committed_datetime)
     build_manager.graph_repo_manager.checkout_tag(tags[-1], settings.frontend_flows_path.name)
@@ -57,7 +74,15 @@ async def flows_post(
 
 
 @router.post("/tg_token")
-async def post_tg_token(token: str):
+async def post_tg_token(token: str) -> Dict[str, str]:
+    """Write the `TG_BOT_TOKEN` into the .env file for later use.
+
+    Args:
+        token (str): The token to write into the .env file.
+
+    Returns:
+        {"status": "ok"}: in case of writing the token into the file successfully.
+    """
     dotenv_path = Path(settings.work_directory) / ".env"
     dotenv_path.touch(exist_ok=True)
 
