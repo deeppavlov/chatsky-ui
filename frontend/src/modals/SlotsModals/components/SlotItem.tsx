@@ -35,9 +35,6 @@ const SlotItem = ({
   })
  }, [name, type, method, value])
 
-
- console.log(value.length)
-
  return (
   <div className="my-1">
    <div className="flex items-center justify-between mb-1">
