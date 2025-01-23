@@ -14,7 +14,18 @@ router = APIRouter()
 
 
 async def _stop_process(id_: int, process_manager: ProcessManager, process="run") -> Dict[str, str]:
-    """Stops a `build` or `run` process with the given id."""
+    """Stops a `build` or `run` process with the given id.
+
+    Args:
+        id_ (int): The id of the process to stop.
+        process_manager (ProcessManager): The process manager containing the process with the given id.
+
+    Raises:
+        HTTPException: With status code 404 if the process with the given id is not found.
+
+    Returns:
+        {"status": "ok"}: in case of stopping a process successfully.
+    """
 
     try:
         await process_manager.stop(id_)
@@ -29,7 +40,18 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
 
 
 async def _check_process_status(id_: int, process_manager: ProcessManager) -> Dict[str, str]:
-    """Checks the status of a `build` or `run` process with the given id."""
+    """Checks the status of a `build` or `run` process with the given id.
+
+    Args:
+        id_ (int): The id of the process to check.
+        process_manager (ProcessManager): The process manager containing the process with the given id.
+
+    Raises:
+        HTTPException: With status code 404 if the process is not found.
+
+    Returns:
+        {"status": response}: with `response` being the status of the given process.
+    """
     if id_ not in process_manager.processes:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -108,13 +130,13 @@ async def check_build_status(
 
 @router.get("/build/is_changed", status_code=200)
 async def check_graph_changes(*, build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, Any]:
-    """Checks if the graph was changed since last build/run (???)
+    """Checks if the graph was changed since last build.
 
     Args:
         build_manager (BuildManager): The process manager dependency to check the graph with.
 
     Returns:
-        {"status": "ok", "data": True}: in case the graph was changed.
+        {"status": "ok", "data": True}: in case the graph was changed since last build.
         {"status": "ok", "data": False}: in case the graph wasn't changed.
     """
     if build_manager.graph_repo_manager.is_changed():
@@ -284,6 +306,11 @@ async def respond(
     user_id: str,
     user_message: str,
 ):
+    """Sends a response to "http://localhost:chatsky_port/chat".
+
+    Raises:
+        HTTPException: With status code 503 if the service is unavailable.
+    """
     async with AsyncClient() as client:
         try:
             response = await client.post(
