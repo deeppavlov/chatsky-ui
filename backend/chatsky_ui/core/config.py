@@ -58,7 +58,7 @@ class Settings:
         self.runs_path = self.work_directory / "chatsky_ui/app_data/runs.yaml"
         self.frontend_flows_path = self.work_directory / "chatsky_ui/app_data/frontend_flows.yaml"
         self.dir_logs = self.work_directory / "chatsky_ui/logs"
-        self.presets = self.work_directory / "chatsky_ui/presets"
+        self.presets_path = self.work_directory / "chatsky_ui/presets"
         self.snippet2lint_path = self.work_directory / "chatsky_ui/.snippet2lint.py"
 
         self.custom_dir = self.work_directory / "bot/custom"

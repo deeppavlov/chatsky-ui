@@ -9,6 +9,7 @@ import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
+from typing import Optional
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -47,14 +48,18 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(project_dir: Path, command_file: str, preset: str):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str, chatsky_port: Optional[int] = None):
     logger = get_logger(__name__)
 
-    presets_build_path = settings.presets / command_file
+    presets_build_path = settings.presets_path / command_file
     with open(presets_build_path, encoding="UTF-8") as file:
         file_content = file.read()
 
     template = string.Template(file_content)
+    if chatsky_port is not None:
+        os.environ["chatsky_port"] = str(chatsky_port)
+    elif "chatsky_port" in os.environ:
+        os.environ["chatsky_port"] = ""
     substituted_content = template.substitute(work_directory=project_dir)
 
     presets_build_file = json.loads(substituted_content)
@@ -69,7 +74,8 @@ def _execute_command_file(project_dir: Path, command_file: str, preset: str):
 
 @cli.command("build_bot")
 def build_bot(
-    project_dir: Path = None,
+    chatsky_port: Optional[int] = typer.Option(None, help="Port for the HTTP server"),
+    project_dir: Optional[Path] = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
     """Builds the bot with one of three various presets."""
@@ -79,12 +85,13 @@ def build_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(project_dir, "build.json", preset)
+    _execute_command_file(project_dir, "build.json", preset, chatsky_port)
 
 
 @cli.command("build_scenario")
 def build_scenario(
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    chatsky_port: int = typer.Option(None, help="Port for the HTTP server"),
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = Path("."),
     # TODO: add custom_dir - maybe the same way like project_dir
 ):
     """Builds the bot with preset `success`"""
@@ -96,7 +103,7 @@ def build_scenario(
 
     pipeline_converter = PipelineConverter()
     pipeline_converter(
-        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
+        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir, chatsky_port=chatsky_port
     )  # TODO: rename to frontend_graph_path
 
 

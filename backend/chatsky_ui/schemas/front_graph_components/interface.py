@@ -16,17 +16,27 @@ class Interface(BaseComponent):
 
     telegram: Optional[Dict[str, Any]] = Field(default=None)
     http: Optional[Dict[str, Any]] = Field(default=None)
+    chatsky_port: Optional[int] = Field(default=None)
 
     @model_validator(mode="after")
-    def check_one_not_none(cls, values):
-        non_none_values = [x for x in [values.telegram, values.http] if x is not None]
+    def check_one_not_none(self):
+        non_none_values = [x for x in [self.telegram, self.http] if x is not None]
         if len(non_none_values) != 1:
             raise ValueError('Exactly one of "telegram", or "http" must be provided.')
-        return values
+        return self
 
     @model_validator(mode="after")
-    def check_telegram_token(cls, values):
+    def check_telegram_token(self):
         tg_bot_token = os.getenv("TG_BOT_TOKEN")
-        if values.telegram is not None and not tg_bot_token:
+        if self.telegram is not None and not tg_bot_token:
             raise ValueError("Telegram token must be provided.")
-        return values
+        return self
+
+    @model_validator(mode="after")
+    def check_chatsky_port(self):
+        if self.http is None and self.chatsky_port is not None:
+            raise ValueError("The 'chatsky_port' must be provided when using 'web' interface.")
+        elif self.http is not None and self.chatsky_port is None:
+            raise ValueError("The 'chatsky_port' must be provided when using 'web' interface.")
+        return self
+    

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import yaml
+from typing import Optional
 
 try:
     from yaml import CDumper as Dumper
@@ -16,10 +17,12 @@ from .slots_converter import SlotsConverter
 
 
 class PipelineConverter(BaseConverter):
-    def __call__(self, input_file: Path, output_dir: Path):
+    def __call__(self, input_file: Path, output_dir: Path, chatsky_port: Optional[int]):
         self.from_yaml(file_path=input_file)
 
         self.pipeline = Pipeline(**self.graph)
+        self.pipeline.interface["chatsky_port"] = chatsky_port
+
         self.converted_pipeline = super().__call__()
 
         self.to_yaml(dir_path=output_dir)

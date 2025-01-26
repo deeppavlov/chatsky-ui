@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from chatsky_ui.api import deps
 from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.pagination import Pagination
-from chatsky_ui.schemas.preset import Preset
+from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 
 router = APIRouter()
@@ -41,7 +41,7 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> Di
 
 @router.post("/build/start", status_code=201)
 async def start_build(
-    preset: Preset,
+    preset: BuildPreset,
     background_tasks: BackgroundTasks,
     build_manager: BuildManager = Depends(deps.get_build_manager),
 ) -> Dict[str, Union[str, int]]:
@@ -56,8 +56,6 @@ async def start_build(
     Returns:
         {"status": "ok", "build_id": build_id}: in case of **starting** the build process successfully.
     """
-
-    await asyncio.sleep(preset.wait_time)
     build_id = await build_manager.start(preset)
     background_tasks.add_task(build_manager.check_status, build_id)
     build_manager.logger.info("Build process '%s' has started", build_id)
@@ -148,7 +146,7 @@ async def get_build_logs(
 async def start_run(
     *,
     build_id: int,
-    preset: Preset,
+    preset: RunPreset,
     background_tasks: BackgroundTasks,
     run_manager: RunManager = Depends(deps.get_run_manager),
 ) -> Dict[str, Union[str, int]]:
@@ -163,8 +161,6 @@ async def start_run(
     Returns:
         {"status": "ok", "build_id": run_id}: in case of **starting** the run process successfully.
     """
-
-    await asyncio.sleep(preset.wait_time)
     run_id = await run_manager.start(build_id, preset)
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)

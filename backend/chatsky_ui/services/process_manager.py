@@ -10,6 +10,7 @@ import asyncio
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+import socket
 
 from dotenv import load_dotenv
 from omegaconf import OmegaConf
@@ -17,7 +18,7 @@ from omegaconf import OmegaConf
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, read_logs
-from chatsky_ui.schemas.preset import Preset
+from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.utils.repo_manager import RepoManager
@@ -152,7 +153,7 @@ class ProcessManager:
 class RunManager(ProcessManager):
     """Process manager for running a Chatsky pipeline."""
 
-    async def start(self, build_id: int, preset: Preset) -> int:
+    async def start(self, build_id: int, preset: RunPreset) -> int:
         """Starts a new run process.
 
         Increases the maximum existing id by 1 and assigns it to the new process.
@@ -170,7 +171,7 @@ class RunManager(ProcessManager):
         self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
-        process = RunProcess(id_, build_id, preset.end_status)
+        process = RunProcess(id_, build_id, preset)
 
         load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
@@ -199,7 +200,26 @@ class RunManager(ProcessManager):
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
 
-    async def start(self, preset: Preset) -> int:
+    async def _get_available_port(self) -> int:
+        def _is_available_port(port):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                return s.connect_ex(("localhost", port)) != 0
+
+        async def _get_busy_ports():
+            builds_metadata = await self.get_full_info(0, 10000)
+            return [build["port"] for build in builds_metadata if build["port"] is not None]
+
+        busy_ports = await _get_busy_ports()
+        if busy_ports:
+            port = max(busy_ports) + 1
+        else:
+            port = 8001
+
+        while not _is_available_port(port):
+            port += 1
+        return port
+
+    async def start(self, preset: BuildPreset) -> int:
         """Starts a new build process.
 
         Increases the maximum existing id by 1 and assigns it to the new process.
@@ -218,10 +238,18 @@ class BuildManager(ProcessManager):
         if self.bot_repo_manager.is_repeated_tag(id_):
             raise ValueError(f"Build id '{id_}' already exists in the database")
 
-        process = BuildProcess(id_, preset.end_status)
+        if preset.messanger == "web":
+            port = await self._get_available_port()
+            self.logger.debug("Available port: %s", port)
+        else:
+            port = None
+        process = BuildProcess(id_, port, preset)
         cmd_to_run = (
             f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
         )
+        if port is not None:
+            cmd_to_run += f" --chatsky-port {port}"
+
         await process.start(cmd_to_run)
         self.processes[id_] = process
 

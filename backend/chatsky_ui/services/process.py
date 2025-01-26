@@ -20,6 +20,7 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
 from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.schemas.process_status import Status
+from chatsky_ui.schemas.preset import BuildPreset, RunPreset, BasePreset
 
 load_dotenv()
 
@@ -30,9 +31,9 @@ PING_PONG_TIMEOUT = float(os.getenv("PING_PONG_TIMEOUT", 0.5))
 class Process(ABC):
     """Base for build and run processes."""
 
-    def __init__(self, id_: int, preset_end_status: str = ""):
+    def __init__(self, id_: int, preset: BasePreset):
         self.id: int = id_
-        self.preset_end_status: str = preset_end_status
+        self.preset = preset
         self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
@@ -68,6 +69,8 @@ class Process(ABC):
                     params[k] = v.strftime("%Y-%m-%dT%H:%M:%S")
                 elif isinstance(v, Path):
                     params[k] = str(v)
+                elif isinstance(v, BasePreset):
+                    params[k] = v.model_dump()
             return params
 
         await self.check_status()
@@ -154,10 +157,10 @@ class Process(ABC):
             raise ProcessLookupError from exc
 
     def add_new_conf(self, conf: list, params: dict) -> list:  # TODO: rename conf everywhere to metadata/meta
-        for run in conf:
-            if run.id == params["id"]:  # type: ignore
+        for element in conf:
+            if element.id == params["id"]:  # type: ignore
                 for key, value in params.items():
-                    setattr(run, key, value)
+                    setattr(element, key, value)
                 break
         else:
             conf.append(params)
@@ -168,8 +171,8 @@ class Process(ABC):
 class RunProcess(Process):
     """Process for running a Chatsky pipeline."""
 
-    def __init__(self, id_: int, build_id: int, preset_end_status: str = ""):
-        super().__init__(id_, preset_end_status)
+    def __init__(self, id_: int, build_id: int, preset: RunPreset):
+        super().__init__(id_, preset)
         self.build_id: int = build_id
 
         self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
@@ -177,7 +180,7 @@ class RunProcess(Process):
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "build_id"]
+            attributes = ["id", "preset", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
 
     async def update_db_info(self) -> None:
@@ -248,16 +251,17 @@ class RunProcess(Process):
 class BuildProcess(Process):
     """Process for converting a frontned graph to a Chatsky script."""
 
-    def __init__(self, id_: int, preset_end_status: str = ""):
-        super().__init__(id_, preset_end_status)
+    def __init__(self, id_: int, port: Optional[int], preset: BuildPreset):
+        super().__init__(id_, preset)
         self.run_ids: List[int] = []
+        self.port = port
 
         self.log_path: Path = setup_logging("builds", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "run_ids"]
+            attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "run_ids"]
         return await super().get_full_info(attributes)
 
     async def update_db_info(self) -> None:
