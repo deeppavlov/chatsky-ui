@@ -67,7 +67,6 @@ async def start_build(
     background_tasks: BackgroundTasks,
     build_manager: BuildManager = Depends(deps.get_build_manager),
 ) -> Dict[str, Union[str, int]]:
-
     """Starts a `build` process with the given preset.
 
     This runs a background task to check the status of the process every 2 seconds.
