@@ -25,7 +25,6 @@ export const save_flows = async (
 
   const json = {
     flows,
-    slots: slots ?? {},
     interface: {
       ..._i,
     },

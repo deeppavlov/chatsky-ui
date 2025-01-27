@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Any, Dict, List, Tuple
 
 from ...schemas.front_graph_components.flow import Flow
@@ -18,6 +19,13 @@ class FlowConverter(BaseConverter):
             nodes=flow["data"]["nodes"],
             edges=flow["data"]["edges"],
         )
+        self._logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = getLogger(__name__)
+        return self._logger
 
     def __call__(self, *args, **kwargs):
         self.mapped_flows = kwargs["mapped_flows"]
@@ -36,6 +44,7 @@ class FlowConverter(BaseConverter):
             for condition in node["data"]["conditions"]:
                 if condition["id"] == condition_id:
                     condition["dst"] = target_node
+                    self.logger.debug(f"Inserted 'dst:{target_node}' pair into {condition_id}")
             return node
 
         maped_edges = self._map_edges()
