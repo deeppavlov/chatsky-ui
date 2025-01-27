@@ -122,12 +122,33 @@ async def check_build_processes(
     Args:
         build_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.
     """
+
+    async def _get_builds_info_with_runs_info(
+        build_manager: BuildManager, run_manager: RunManager, offset: int, limit: int
+    ) -> List[Dict[str, Any]]:
+        """Returns metadata of ``limit`` number of processes, starting from the ``offset``th process.
+
+        Args:
+            run_manager (RunManager): the run manager to use for getting all runs of this build
+        """
+        builds_info = await build_manager.get_full_info(offset=offset, limit=limit)
+        runs_info = await run_manager.get_full_info(offset=0, limit=10**5)
+        for build in builds_info:
+            del build["run_ids"]
+            build["runs"] = [
+                {k: v for k, v in run.items() if k != "build_id"}
+                for run in runs_info if run["build_id"] == build["id"]
+            ]
+
+        return builds_info
+
+    builds_info = await _get_builds_info_with_runs_info(
+        build_manager, run_manager, offset=pagination.offset(), limit=pagination.limit
+    )
     if build_id is not None:
-        return await build_manager.get_build_info(build_id, run_manager)
+        return next((build for build in builds_info if build["id"] == build_id), None)
     else:
-        return await build_manager.get_full_info_with_runs_info(
-            run_manager, offset=pagination.offset(), limit=pagination.limit
-        )
+        return builds_info
 
 
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
@@ -239,18 +260,27 @@ async def get_run_logs(
 
 @router.post("/chat", status_code=201)
 async def respond(
-    user_id: str,
+    run_id: int,
     user_message: str,
+    user_id: Optional[str] = None,
+    run_manager: RunManager = Depends(deps.get_run_manager),
 ):
+    build_port = run_manager.get_port(run_id)
+    if build_port is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Build process of id '{run_id}' doesn't have a messanger of type 'web'. Check the build port and messanger in metadata.",
+        )
+
     async with AsyncClient() as client:
         try:
             response = await client.post(
-                f"http://localhost:{settings.chatsky_port}/chat",
+                f"http://localhost:{build_port}/chat",
                 params={"user_id": user_id, "user_message": user_message},
             )
             return response.json()
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Please check that service's up and running on the port '{settings.chatsky_port}'.",
+                detail=f"Please check that service's up and running on the port '{build_port}'.",
             ) from e

@@ -33,7 +33,6 @@ class Settings:
         self.set_config(
             host=os.getenv("HOST", "0.0.0.0"),
             port=os.getenv("PORT", "8000"),
-            chatsky_port=os.getenv("CHATSKY_PORT", "8020"),
             log_level=os.getenv("LOG_LEVEL", "info"),
             conf_reload=os.getenv("CONF_RELOAD", "false"),
             work_directory=".",
@@ -45,7 +44,7 @@ class Settings:
                 value = Path(value)
             elif key == "conf_reload":
                 value = str(value).lower() in ["true", "yes", "t", "y", "1"]
-            elif key in ["port", "CHATSKY_PORT"]:
+            elif key in ["port"]:
                 value = int(value)
             setattr(self, key, value)
 
@@ -75,7 +74,6 @@ class Settings:
                     "work_directory": str(self.work_directory),
                     "host": self.host,
                     "port": self.port,
-                    "chatsky_port": self.chatsky_port,
                     "log_level": self.log_level,
                     "conf_reload": self.conf_reload,
                 }

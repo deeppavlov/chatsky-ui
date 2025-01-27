@@ -166,17 +166,23 @@ class RunManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
+        async def _get_new_id():
+            return max([run["id"] for run in await self.get_full_info(0, 10000)]) + 1
+
+        async def _get_build_port(build_id):
+            build_info = await self.get_process_info(build_id, settings.builds_path) or {}
+            return build_info.get("port")
+
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-        self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
-        self.last_id += 1
-        id_ = self.last_id
-        process = RunProcess(id_, build_id, preset)
+        self.last_id = await _get_new_id()
+
+        process = RunProcess(self.last_id, build_id, await _get_build_port(build_id), preset)
 
         load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
-        self.processes[id_] = process
+        self.processes[self.last_id] = process
 
         return self.last_id
 
@@ -195,6 +201,9 @@ class RunManager(ProcessManager):
         Number of loglines returned is based on `offset` as the start line and limited by `limit` lines.
         """
         return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path)
+
+    def get_port(self, run_id: int) -> Optional[int]:
+        return self.processes[run_id].port
 
 
 class BuildManager(ProcessManager):
@@ -276,40 +285,10 @@ class BuildManager(ProcessManager):
                 self.graph_repo_manager.commit_with_tag(process.id)
                 break
 
-    async def get_build_info(self, id_: int, run_manager: RunManager) -> Optional[Dict[str, Any]]:
-        """Returns metadata of a specific build process identified by its unique ID.
-
-        Args:
-            ``id_`` (int): the id of the build
-            ``run_manager`` (RunManager): the run manager to use for getting all runs of this build
-        """
-        builds_info = await self.get_full_info_with_runs_info(run_manager, offset=0, limit=10**5)
-        return next((build for build in builds_info if build["id"] == id_), None)
-
     async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
         """Returns metadata of ``limit`` number of processes, starting from the ``offset`` process."""
         path = path or settings.builds_path
         return await super().get_full_info(offset, limit, path)
-
-    async def get_full_info_with_runs_info(
-        self, run_manager: RunManager, offset: int, limit: int
-    ) -> List[Dict[str, Any]]:
-        """Returns metadata of ``limit`` number of processes, starting from the ``offset``th process.
-
-        Args:
-            run_manager (RunManager): the run manager to use for getting all runs of this build
-        """
-        builds_info = await self.get_full_info(offset=offset, limit=limit)
-        runs_info = await run_manager.get_full_info(offset=0, limit=10**5)
-        for build in builds_info:
-            del build["run_ids"]
-            build["runs"] = []
-            for run in runs_info:
-                if build["id"] == run["build_id"]:
-                    run_without_build_id = {k: v for k, v in run.items() if k != "build_id"}
-                    build["runs"].append(run_without_build_id)
-
-        return builds_info
 
     async def fetch_build_logs(self, build_id: int, offset: int, limit: int) -> Optional[List[str]]:
         """Returns the logs of one build according to its id.

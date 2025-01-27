@@ -171,16 +171,17 @@ class Process(ABC):
 class RunProcess(Process):
     """Process for running a Chatsky pipeline."""
 
-    def __init__(self, id_: int, build_id: int, preset: RunPreset):
+    def __init__(self, id_: int, build_id: int, port: Optional[int], preset: RunPreset):
         super().__init__(id_, preset)
         self.build_id: int = build_id
+        self.port = port
 
         self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset", "status", "timestamp", "log_path", "build_id"]
+            attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
 
     async def update_db_info(self) -> None:
@@ -219,12 +220,12 @@ class RunProcess(Process):
         async with AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"http://localhost:{settings.chatsky_port}/health",
+                    f"http://localhost:{self.port}/health",
                 )
                 return response.json()["status"] == "ok"
             except Exception as e:
                 self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{settings.chatsky_port}' yet. "
+                    f"Process '{self.id}' isn't alive on port '{self.port}' yet. "
                     f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
                 )
 
