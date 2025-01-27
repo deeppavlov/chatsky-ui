@@ -52,6 +52,7 @@ async def flows_post(
     build_manager.graph_repo_manager.checkout_tag(tags[-1], settings.frontend_flows_path.name)
 
     await write_conf(flows, settings.frontend_flows_path)
+    build_manager.graph_repo_manager.commit_changes("Save frontend flows")
 
     return {"status": "ok"}
 

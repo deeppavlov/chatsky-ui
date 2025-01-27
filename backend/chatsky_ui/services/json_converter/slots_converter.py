@@ -8,8 +8,11 @@ from .base_converter import BaseConverter
 class SlotsConverter(BaseConverter):
     def __init__(self, flows: List[dict]):
         def _get_slots_node(flows):
+            slots_nodes = [node for flow in flows for node in flow["data"]["nodes"] if node["type"] == "slots_node"]
+            if len(slots_nodes) > 1:
+                raise ValueError("Only one slots_node is allowed")
             return next(
-                iter([node for flow in flows for node in flow["data"]["nodes"] if node["type"] == "slots_node"]),
+                iter(slots_nodes),
                 {"id": "999999", "data": {"groups": []}},
             )
 
