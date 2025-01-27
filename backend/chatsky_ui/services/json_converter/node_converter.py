@@ -54,7 +54,8 @@ class InfoNodeConverter(NodeConverter):
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }
-                for condition, converter in zip(self.node.conditions, condition_converters) if  "dst" in condition
+                for condition, converter in zip(self.node.conditions, condition_converters)
+                if "dst" in condition
             ],
             PRE_TRANSITION: {
                 key: value

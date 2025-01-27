@@ -23,7 +23,6 @@ jobs:
       - name: setup poetry and install dependencies
         run: |
           python -m pip install --upgrade pip poetry
-          python -m poetry lock --no-update
           python -m poetry install --with lint --no-interaction
         working-directory: backend
 
