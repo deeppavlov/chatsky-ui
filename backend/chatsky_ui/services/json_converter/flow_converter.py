@@ -6,6 +6,7 @@ from .node_converter import InfoNodeConverter, LinkNodeConverter
 
 
 class FlowConverter(BaseConverter):
+    """A class made for converting frontend's `Flow` into a Chatsky `Flow`"""
     NODE_CONVERTERS = {
         "default_node": InfoNodeConverter,
         "link_node": LinkNodeConverter,
