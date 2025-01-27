@@ -35,7 +35,7 @@ class Interface(BaseComponent):
     @model_validator(mode="after")
     def check_chatsky_port(self):
         if self.http is None and self.chatsky_port is not None:
-            raise ValueError("The 'chatsky_port' must be provided when using 'web' interface.")
+            raise ValueError("The 'chatsky_port' must not be provided when not using 'web' interface.")
         elif self.http is not None and self.chatsky_port is None:
             raise ValueError("The 'chatsky_port' must be provided when using 'web' interface.")
         return self

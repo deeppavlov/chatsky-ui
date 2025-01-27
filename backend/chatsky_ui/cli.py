@@ -190,7 +190,7 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="remove-build-id",
+            checkout="fix/port",
         )
     finally:
         os.chdir(original_dir)
