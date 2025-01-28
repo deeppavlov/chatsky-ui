@@ -7,6 +7,7 @@ from .node_converter import InfoNodeConverter, LinkNodeConverter
 
 class FlowConverter(BaseConverter):
     """Converts frontend's `Flow` into a Chatsky `Flow`"""
+
     NODE_CONVERTERS = {
         "default_node": InfoNodeConverter,
         "link_node": LinkNodeConverter,
@@ -85,6 +86,9 @@ class FlowConverter(BaseConverter):
         return edges
 
     def _convert(self) -> Dict[str, Any]:
+        """Converts the received flow into a Chatsky `Flow` then returns it.
+        Passes `slots_conf` to `InfoNodeConverter` for use in `SlotConditionConverter`.
+        """
         converted_flow = {self.flow.name: {}}
         for node in self.flow.nodes:
             if node["type"] == "default_node":

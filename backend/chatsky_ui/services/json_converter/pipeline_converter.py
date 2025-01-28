@@ -17,6 +17,7 @@ from .slots_converter import SlotsConverter
 
 class PipelineConverter(BaseConverter):
     """A class made for converting frontend's `Pipeline` into a Chatsky `Pipeline`"""
+
     def __call__(self, input_file: Path, output_dir: Path):
         self.from_yaml(file_path=input_file)
 
