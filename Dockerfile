@@ -1,4 +1,4 @@
-FROM oven/bun:1 as frontend-base
+FROM oven/bun:latest as frontend-base
 FROM frontend-base AS frontend-builder
 
 WORKDIR /temp
