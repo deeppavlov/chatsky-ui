@@ -45,14 +45,16 @@ RELEASE_CHECKLIST = """It appears this PR is a release PR (change its base from 
 
 Here's a release checklist:
 
-- [ ] Update package version
-- [ ] Update `poetry.lock`
-- [ ] Change PR merge option
-- [ ] Update template repo
-- [ ] Search for objects to be deprecated
-- [ ] Test parts not covered with pytest:
-    - [ ] web_api tutorials
-    - [ ] Test integrations with external services (telegram; stats)
+- [ ]  Changed version in pyproject.toml
+- [ ]  Changed version in cli `init` command
+- [ ]  Update `poetry.lock`
+- [ ]  Change PR merge option
+- [ ]  Search for objects to be deprecated
+---
+- [ ]  Check that the version written in `Choose a tag` is the +1 version from last on PyPI
+- [ ]  Did a dry run
+---
+- [ ]  Write the version with `v`
 """
 
 
