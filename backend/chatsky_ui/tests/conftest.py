@@ -1,6 +1,7 @@
 # pylint: disable=C0413
 # flake8: noqa: E402
 
+import os
 from contextlib import asynccontextmanager
 from typing import Generator
 
@@ -12,6 +13,8 @@ from httpx import AsyncClient
 
 nest_asyncio.apply = lambda: None
 
+from pathlib import Path
+
 from chatsky_ui.main import app
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
@@ -19,21 +22,51 @@ from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
 
 
+@pytest.fixture(scope="session", autouse=True)
+def set_working_directory():
+    project_root = Path(__file__).resolve().parents[3] / "my_project"
+    os.chdir(project_root)
+
+
 @pytest.fixture(scope="session")
 def dummy_build_id() -> int:
-    return 999999
+    return 0
 
 
 @pytest.fixture(scope="session")
 def dummy_run_id() -> int:
-    return 999999
+    return 0
 
 
-async def start_process(async_client: AsyncClient, endpoint, preset_end_status) -> httpx.Response:
-    return await async_client.post(
-        endpoint,
-        json={"wait_time": 0.1, "end_status": preset_end_status},
-    )
+@pytest.fixture(scope="session")
+def inexistent_id() -> int:
+    return 9999
+
+
+@pytest.fixture(scope="session")
+def start_build_endpoint() -> str:
+    return "/api/v1/bot/build/start"
+
+
+@pytest.fixture(scope="session")
+def stop_build_endpoint():
+    def wrapper(build_id: int) -> str:
+        return f"/api/v1/bot/build/stop/{build_id}"
+
+    return wrapper
+
+
+@pytest.fixture(scope="session")
+def start_run_endpoint():
+    def wrapper(build_id: int) -> str:
+        return f"/api/v1/bot/run/start/{build_id}"
+
+    return wrapper
+
+
+@pytest.fixture(scope="session")
+def stop_run_endpoint() -> str:
+    return f"/api/v1/bot/run/stop"
 
 
 @pytest.fixture
@@ -52,25 +85,6 @@ def override_dependency(mocker):
             app.dependency_overrides = {}
 
     return _override_dependency
-
-
-@pytest.fixture
-def client() -> Generator:
-    with TestClient(app=app) as client:
-        yield client
-
-
-@pytest.fixture(scope="session")
-def preset() -> Preset:
-    return Preset(
-        wait_time=0,
-        end_status="loop",
-    )
-
-
-@pytest.fixture
-def pagination() -> Pagination:
-    return Pagination()
 
 
 @pytest.fixture()
