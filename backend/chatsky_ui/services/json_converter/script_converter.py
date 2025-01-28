@@ -21,16 +21,18 @@ class ScriptConverter(BaseConverter):
 
         Keyword Arguments:
             slots_conf: A dictionary with slot ids as keys and respective slot paths as values.
-                It's passed for use in SlotConditionConverter.
+                It's passed for use in `SlotConditionConverter`.
 
         Returns:
-            A converted Chatsky `Script`
+            A converted Chatsky `Script`.
         """
         self.slots_conf = kwargs["slots_conf"]
         return super().__call__(*args, **kwargs)
 
     def _convert(self):
-        """Converts saved data into a Chatsky `Script` then returns it."""
+        """Converts saved flows into a Chatsky `Script` then returns it.
+        Passes `mapped_flows` and `slots_conf` to `FlowConverter` for use in other converters.
+        """
         return {
             key: value
             for flow in self.script.flows
@@ -38,7 +40,10 @@ class ScriptConverter(BaseConverter):
         }
 
     def _map_flows(self):
-        """Returns a map (dictionary) of nodes with flows' names and nodes' ids as its keys."""
+        """Returns a map (dictionary) of nodes with flows' names and nodes' ids as its keys.
+        This is later passed to `FlowConverter` to use in `LinkNodeConverter`, because it needs access to the
+        entire `Script` to work.
+        """
         mapped_flows = {}
         for flow in self.script.flows:
             mapped_flows[flow["name"]] = {}

@@ -6,13 +6,18 @@ from .node_converter import InfoNodeConverter, LinkNodeConverter
 
 
 class FlowConverter(BaseConverter):
-    """A class made for converting frontend's `Flow` into a Chatsky `Flow`"""
+    """Converts frontend's `Flow` into a Chatsky `Flow`"""
     NODE_CONVERTERS = {
         "default_node": InfoNodeConverter,
         "link_node": LinkNodeConverter,
     }
 
     def __init__(self, flow: Dict[str, Any]):
+        """Creates a `FlowConverter` object. Validates received flow's structure.
+
+        Args:
+            flow (Dict[str, Any]): The `Flow` that will be converted.
+        """
         self._validate_flow(flow)
         self.flow = Flow(
             name=flow["name"],
@@ -21,12 +26,28 @@ class FlowConverter(BaseConverter):
         )
 
     def __call__(self, *args, **kwargs):
+        """Converts saved data into a Chatsky `Flow` then returns it.
+
+        Keyword Arguments:
+            slots_conf: A dictionary with slot ids as keys and respective slot paths as values.
+                It's passed for use in `SlotConditionConverter`.
+            mapped_flows: A map (dict) of nodes with flows' names and nodes' ids as its keys.
+                It's passed for use in `LinkNodeConverter`.
+
+        Returns:
+            A converted Chatsky `Script`
+        """
         self.mapped_flows = kwargs["mapped_flows"]
         self.slots_conf = kwargs["slots_conf"]
         self._integrate_edges_into_nodes()
         return super().__call__(*args, **kwargs)
 
     def _validate_flow(self, flow: Dict[str, Any]):
+        """Checks that the received `Flow` matches the `Flow` schema.
+
+        Raises:
+            ValueError: In case the flow doesn't match the schema.
+        """
         if "data" not in flow or "nodes" not in flow["data"] or "edges" not in flow["data"]:
             raise ValueError("Invalid flow structure")
 
