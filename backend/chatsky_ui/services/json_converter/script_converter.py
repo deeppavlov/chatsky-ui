@@ -8,15 +8,29 @@ from .flow_converter import FlowConverter
 class ScriptConverter(BaseConverter):
     """Converts frontend's `Script` into a Chatsky `Script`"""
     def __init__(self, flows: List[dict]):
+        """Creates a `ScriptConverter` object. Also makes a map of the flows by name, then nodes by ids.
+
+        Args:
+            flows (List[dict]): A list of all the flows that the `Script` will contain.
+        """
         self.script = Script(flows=flows)
         self.mapped_flows = self._map_flows()  # TODO: think about storing this in a temp file
 
     def __call__(self, *args, **kwargs):
-        """Converts saved data into a dictionary equivalent to a Chatsky `Script` then returns it."""
+        """Converts saved data into a Chatsky `Script` then returns it.
+
+        Keyword Arguments:
+            slots_conf: A dictionary with slot ids as keys and respective slot paths as values.
+                It's passed for use in SlotConditionConverter.
+
+        Returns:
+            A converted Chatsky `Script`
+        """
         self.slots_conf = kwargs["slots_conf"]
         return super().__call__(*args, **kwargs)
 
     def _convert(self):
+        """Converts saved data into a Chatsky `Script` then returns it."""
         return {
             key: value
             for flow in self.script.flows
@@ -24,7 +38,7 @@ class ScriptConverter(BaseConverter):
         }
 
     def _map_flows(self):
-        """Creates a map (dictionary) of nodes with flows' names and nodes' ids as its keys."""
+        """Returns a map (dictionary) of nodes with flows' names and nodes' ids as its keys."""
         mapped_flows = {}
         for flow in self.script.flows:
             mapped_flows[flow["name"]] = {}
