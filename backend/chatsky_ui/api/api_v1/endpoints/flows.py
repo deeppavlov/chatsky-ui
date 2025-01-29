@@ -18,7 +18,8 @@ router = APIRouter()
 async def flows_get(
     build_id: Optional[int] = None, build_manager: BuildManager = Depends(get_build_manager)
 ) -> Dict[str, Union[str, Dict[str, Union[list, dict]]]]:
-    """Get the flows by reading the frontend_flows.yaml file.
+    """Gets the flows by reading the frontend_flows.yaml file. If the build_id isn't passed
+    then it will return the last saved (committed) flow.
 
     Args:
         build_id (Optional[int]): The id of the process to get the flows from.
@@ -55,7 +56,7 @@ async def flows_get(
 async def flows_post(
     flows: Dict[str, Union[str, Dict[str, Union[list, dict]]]], build_manager: BuildManager = Depends(get_build_manager)
 ) -> Dict[str, str]:
-    """Write the flows to the frontend_flows.yaml file.
+    """Writes the flows to the frontend_flows.yaml file. Then commit changes to git without a tag.
 
     Args:
         flows (dict): The flows to write into the frontend_flows.yaml file.
@@ -76,7 +77,7 @@ async def flows_post(
 
 @router.post("/tg_token")
 async def post_tg_token(token: str) -> Dict[str, str]:
-    """Write the `TG_BOT_TOKEN` into the .env file for later use.
+    """Writes the `TG_BOT_TOKEN` into the .env file for later use.
 
     Args:
         token (str): The token to write into the .env file.
