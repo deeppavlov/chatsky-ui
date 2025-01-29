@@ -7,6 +7,7 @@ from .base_converter import BaseConverter
 
 class SlotsConverter(BaseConverter):
     """Converts frontend's `Slot` into a Chatsky `Slot`."""
+
     def __init__(self, flows: List[dict]):
         """Creates a `SlotsConverter` object. Finds the 'slots_node' in the `Flows` provided.
         (It's a node that contains all the slots)
@@ -14,6 +15,7 @@ class SlotsConverter(BaseConverter):
         Args:
             flows (List[dict]): The `Flow` containing the `Slots` to be converted.
         """
+
         def _get_slots_node(flows):
             """Looks through the frontend's `Flows` to find the 'slots_node', then returns it.
             (It's a node that contains all the slots)
@@ -63,6 +65,7 @@ class SlotsConverter(BaseConverter):
 
 class RegexpSlotConverter(SlotsConverter):
     """Converts frontend's `RegexpSlot` into a Chatsky `RegexpSlot`."""
+
     def __init__(self, slot: dict):
         """Creates a `RegexpSlotConverter` object.
 
@@ -91,6 +94,7 @@ class RegexpSlotConverter(SlotsConverter):
 
 class GroupSlotConverter(SlotsConverter):
     """Converts frontend's implementation of `GroupSlot` into a Chatsky `GroupSlot`."""
+
     SLOTS_CONVERTER_TYPES = {
         "GroupSlot": "self",  # Placeholder, will be replaced in __init__
         "RegexpSlot": RegexpSlotConverter,

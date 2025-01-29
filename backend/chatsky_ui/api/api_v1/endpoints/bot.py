@@ -73,8 +73,8 @@ async def start_build(
 
     Args:
         preset (Preset): The preset to set the build process for. Must be among ("success", "failure", "loop")
-        background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that checks the
-            status of the build process.
+        background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that keeps checking
+            the status of the build process in the background after returning a response.
         build_manager (BuildManager): The process manager dependency to start the process with.
 
     Returns:
@@ -204,8 +204,8 @@ async def start_run(
     Args:
         build_id (int): The id of the build process to start running.
         preset (Preset): The preset to set the build process for. Must be among ("success", "failure", "loop")
-        background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that checks the
-            status of the run process.
+        background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that keeps checking
+            the status of the run process in the background after returning a response.
         run_manager (RunManager): The `run` process manager to start the process with.
 
     Returns:

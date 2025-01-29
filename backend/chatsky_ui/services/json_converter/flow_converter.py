@@ -65,6 +65,7 @@ class FlowConverter(BaseConverter):
 
     def _integrate_edges_into_nodes(self):
         """Converts frontend's `edges` into `TRANSITIONS` in a Chatsky `Flow`"""
+
         def _insert_dst_into_condition(
             node: Dict[str, Any], condition_id: str, target_node: Tuple[str, str]
         ) -> Dict[str, Any]:
@@ -97,6 +98,7 @@ class FlowConverter(BaseConverter):
         """Maps the edges of this flow, meaning it changes every edge's `target` from just a node_id to the
         target_node's flow and node name. Doesn't change the original flow's `edges`, returns a modified copy.
         """
+
         def _get_flow_and_node_names(target_node):
             """Fetches the received node's original flow and node names.
             In case it's a `LinkNode`, it fetches this data from the node the link is pointing to.
