@@ -36,7 +36,7 @@ class FlowConverter(BaseConverter):
                 It's passed for use in `LinkNodeConverter`.
 
         Returns:
-            A converted Chatsky `Script`
+            A converted Chatsky `Flow`
         """
         self.mapped_flows = kwargs["mapped_flows"]
         self.slots_conf = kwargs["slots_conf"]
@@ -70,7 +70,19 @@ class FlowConverter(BaseConverter):
         self.flow.nodes = nodes
 
     def _map_edges(self) -> List[Dict[str, Any]]:
+        """Returns mapped edges of this flow, meaning it 
+        """
         def _get_flow_and_node_names(target_node):
+            """Fetches the received node's original flow and node names.
+            In case it's a LinkNode, it fetches this data from the node the link is pointing to.
+            That's because, unlike the frontend, Chatsky doesn't have `LinkNode`s.
+
+            Args:
+                target_node: a `Node` schema object.
+
+            Returns:
+                [flow_name, node_name] - a list.
+            """
             node_type = target_node["type"]
             if node_type == "link_node":  # TODO: WHY CONVERTING HERE?
                 return LinkNodeConverter(target_node)(mapped_flows=self.mapped_flows)
