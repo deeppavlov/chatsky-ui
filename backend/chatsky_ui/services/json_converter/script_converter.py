@@ -6,7 +6,7 @@ from .flow_converter import FlowConverter
 
 
 class ScriptConverter(BaseConverter):
-    """Converts frontend's `Script` into a Chatsky `Script`"""
+    """Converts frontend's `Script` into a Chatsky `Script`."""
 
     def __init__(self, flows: List[dict]):
         """Creates a `ScriptConverter` object. Also makes a map of the flows by name, then nodes by ids.
