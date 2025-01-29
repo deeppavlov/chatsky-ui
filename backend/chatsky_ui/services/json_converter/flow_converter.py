@@ -30,6 +30,9 @@ class FlowConverter(BaseConverter):
 
     @property
     def logger(self):
+        """Returns this FlowConverter's `logger`. Sets `logger` to getLogger(__name__) if
+        `logger` isn't defined in this FlowConverter yet, then returns it.
+        """
         if self._logger is None:
             self._logger = getLogger(__name__)
         return self._logger
@@ -52,7 +55,7 @@ class FlowConverter(BaseConverter):
         return super().__call__(*args, **kwargs)
 
     def _validate_flow(self, flow: Dict[str, Any]):
-        """Checks that the received `Flow` matches the `Flow` schema.
+        """Checks that the received frontend's `Flow` matches the `Flow` schema.
 
         Raises:
             ValueError: In case the flow doesn't match the schema.
@@ -61,9 +64,21 @@ class FlowConverter(BaseConverter):
             raise ValueError("Invalid flow structure")
 
     def _integrate_edges_into_nodes(self):
+        """Converts frontend's `edges` into `TRANSITIONS` in a Chatsky `Flow`"""
         def _insert_dst_into_condition(
             node: Dict[str, Any], condition_id: str, target_node: Tuple[str, str]
         ) -> Dict[str, Any]:
+            """Adds a destination to an existing condition, which is equivalent to
+            adding a `Transition` to a `Flow`.
+
+            Args:
+                node (Dict[str, Any]): The node which contains the condition.
+                condition_id (str): Id of the condition to be modified.
+                target_node (Tuple[str, str]): Destination node of the `Transition`.
+
+            Returns:
+                Dict[str, Any] - The modified node.
+            """
             for condition in node["data"]["conditions"]:
                 if condition["id"] == condition_id:
                     condition["dst"] = target_node
@@ -79,11 +94,12 @@ class FlowConverter(BaseConverter):
         self.flow.nodes = nodes
 
     def _map_edges(self) -> List[Dict[str, Any]]:
-        """Returns mapped edges of this flow, meaning it 
+        """Maps the edges of this flow, meaning it changes every edge's `target` from just a node_id to the
+        target_node's flow and node name. Doesn't change the original flow's `edges`, returns a modified copy.
         """
         def _get_flow_and_node_names(target_node):
             """Fetches the received node's original flow and node names.
-            In case it's a LinkNode, it fetches this data from the node the link is pointing to.
+            In case it's a `LinkNode`, it fetches this data from the node the link is pointing to.
             That's because, unlike the frontend, Chatsky doesn't have `LinkNode`s.
 
             Args:
