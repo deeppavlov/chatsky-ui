@@ -79,6 +79,18 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
     return await _stop_process(build_id, build_manager, process="build")
 
 
+@router.get("/build/stop_all", status_code=200)
+async def stop_all_builds(build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, str]:
+    try:
+        await build_manager.stop_all()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Please check that service's up and running.",
+        ) from e
+    return {"status": "ok"}
+
+
 @router.get("/build/status/{build_id}", status_code=200)
 async def check_build_status(
     *, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)
@@ -204,6 +216,18 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
     """
 
     return await _stop_process(run_id, run_manager, process="run")
+
+
+@router.get("/run/stop_all", status_code=200)
+async def stop_all_runs(run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, str]:
+    try:
+        await run_manager.stop_all()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Please check that service's up and running.",
+        ) from e
+    return {"status": "ok"}
 
 
 @router.get("/run/status/{run_id}", status_code=200)
