@@ -26,8 +26,8 @@ const LaunchModal = ({
 }: LaunchModalProps) => {
   const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { flows, saveFlows } = useContext(flowContext)
-  const { buildStart, buildStatus, setBuildStatus } = useContext(buildContext)
-  const { runStart } = useContext(runContext)
+  const { buildStart, builds } = useContext(buildContext)
+  const { runStart, runs } = useContext(runContext)
   const [token, setToken] = useState("")
 
   const handleConfirmRebuild = () => {
@@ -35,41 +35,63 @@ const LaunchModal = ({
       <RebuildModal
         id='rebuild'
         onRebuild={async () => {
-          const status = await buildStart({ wait_time: 1, end_status: "success" })
+          const newBuildName = `Build ${builds.length}`
+          const newRunName = `Run ${runs.length}`
+          const { status, build_id } = await buildStart({
+            end_status: "success",
+            messenger: "web",
+            preset: "None",
+            name: newBuildName,
+          })
+
           if (status === "completed") {
-            await runStart({ end_status: "success", wait_time: 0 })
+            await runStart(String(build_id), {
+              end_status: "success",
+              preset: "None",
+              name: newRunName,
+              build_name: newBuildName,
+            })
           }
-        }}
-        onNewRun={async () => {
-          await runStart({ end_status: "success", wait_time: 0 })
         }}
       />,
       "rebuild"
     )
   }
 
-  const onCloseHandler = () => {
-    closePopUp(id)
+  const onActionHandler = async () => {
+    onCloseHandler()
+    const newBuildName = `Build ${builds.length}`
+    const newRunName = `Run ${runs.length}`
+
+    await saveFlows(flows, { interface: "tg" })
+    await set_tg_token(token)
+
+    const flowUpdated = await checkBuildIsChanged()
+
+    if (!flowUpdated) {
+      handleConfirmRebuild()
+      return
+    }
+
+    const { status, build_id } = await buildStart({
+      end_status: "success",
+      messenger: "telegram",
+      preset: "None",
+      name: newBuildName,
+    })
+
+    if (status === "completed") {
+      await runStart(String(build_id), {
+        end_status: "success",
+        preset: "None",
+        name: newRunName,
+        build_name: newBuildName,
+      })
+    }
   }
 
-  const onActionHandler = async () => {
-    try {
-      onCloseHandler()
-      await saveFlows(flows, { interface: "tg" })
-      await set_tg_token(token)
-      const flowUpdated = await checkBuildIsChanged()
-      if (!flowUpdated) {
-        handleConfirmRebuild()
-        return
-      }
-
-      const status = await buildStart({ wait_time: 0, end_status: "success" })
-      if (status === "completed") {
-        await runStart({ end_status: "success", wait_time: 0 })
-      }
-    } catch (error) {
-      console.error(error)
-    }
+  const onCloseHandler = () => {
+    closePopUp(id)
   }
 
   return (
