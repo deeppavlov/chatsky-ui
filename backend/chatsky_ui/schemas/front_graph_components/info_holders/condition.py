@@ -1,5 +1,5 @@
 from ..base_component import BaseComponent
-
+from chatsky.conditions import All, Any, ExactMatch, Regexp, HasText, Not
 
 class Condition(BaseComponent):
     name: str
