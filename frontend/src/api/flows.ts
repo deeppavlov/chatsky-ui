@@ -4,8 +4,9 @@ import { FlowType } from "../types/FlowTypes"
 import { ParsedSlot } from "../utils"
 import { GetFlowsResponseType, SaveFlowsResponseType } from "./flows.types"
 
-export const get_flows = async (): Promise<GetFlowsResponseType> => {
-  return (await $v1.get("/flows")).data
+export const get_flows = async (build_id?: number): Promise<GetFlowsResponseType> => {
+  const url = build_id ? `/flows/?build_id${build_id}` : "/flows"
+  return (await $v1.get(url)).data
 }
 
 export const save_flows = async (

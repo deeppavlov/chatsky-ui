@@ -171,7 +171,7 @@ const Logs = memo(() => {
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Preset name:</span>
-                      {currentItem.preset_end_status}
+                      {currentItem.preset.end_status}
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>

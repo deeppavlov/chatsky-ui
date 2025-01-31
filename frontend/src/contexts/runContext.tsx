@@ -1,16 +1,14 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import {
   buildApiStatusType,
-  buildPresetType,
-  get_builds,
   get_runs,
   localRunType,
   runMinifyApiType,
+  runPresetType,
   run_start,
   run_status,
   run_stop,
 } from "../api/bot"
-import { buildContext } from "./buildContext"
 import { NotificationsContext } from "./notificationsContext"
 
 export type runApiType = {
@@ -30,8 +28,9 @@ type RunContextType = {
   setRun: React.Dispatch<React.SetStateAction<localRunType | null>>
   runPending: boolean
   setRunPending: React.Dispatch<React.SetStateAction<boolean>>
-  runStart: (preset: buildPresetType) => void
+  runStart: (build_id: string, preset: runPresetType) => void
   runStop: (run_id: number) => void
+  stopAllRuns: (run_ids: number[]) => void
   runStatus: buildApiStatusType
   setRunStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
   setRunsHandler: (runs: runMinifyApiType[]) => void
@@ -47,6 +46,7 @@ export const runContext = createContext({
   setRunPending: () => {},
   runStart: async () => {},
   runStop: () => {},
+  stopAllRuns: () => {},
   setRunStatus: () => {},
   runStatus: "stopped",
   setRunsHandler: () => {},
@@ -57,7 +57,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [runPending, setRunPending] = useState(false)
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuildsHandler } = useContext(buildContext)
   const { notification: n } = useContext(NotificationsContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
@@ -82,86 +81,146 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     getRunInitial()
   }, [])
 
-  const runStart = async ({ end_status = "success", wait_time = 0 }: buildPresetType) => {
-    setRunPending(() => true)
+  const runStart = async (
+    build_id: string,
+    { end_status = "success", name, preset, build_name }: runPresetType
+  ) => {
+    setRunPending(true)
     setRunStatus("running")
+
     try {
-      const builds = await get_builds()
-      const { run_id } = await run_start({ wait_time, end_status }, builds[builds.length - 1].id)
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      const started_runs = await get_runs()
-      const started_run = started_runs.find((r) => r.id === run_id)
-      if (started_run) {
-        setRun({ ...started_run, type: "run" })
-        setRuns((prev) => [
-          ...prev,
-          {
-            ...started_run,
-            type: "run",
-          },
-        ])
-        const builds = await get_builds()
-        setBuildsHandler(builds)
-        let flag = true
-        let timer = 0
-        const timerId = setInterval(() => timer++, 500)
-        while (flag) {
-          if (timer > 7200) {
-            setRunPending(() => false)
-            setRunStatus("failed")
+      // 1. Запуск рана и получение run_id
+      const { run_id } = await run_start(build_id, {
+        end_status,
+        name,
+        preset,
+        build_name,
+      })
+
+      let started_run
+      let elapsedTime = 0
+      const checkInterval = 500 // Интервал проверки (мс)
+      const initializationTimeout = 5000 // Таймаут на появление рана в списке (5 секунд)
+
+      // 2. Ожидание появления рана в списке ранов
+      while (!started_run) {
+        const started_runs = await get_runs()
+        started_run = started_runs.find((r) => r.id === run_id)
+
+        if (!started_run) {
+          // Если ран не найден, ждём 0.5 секунды и проверяем снова
+          await new Promise((resolve) => setTimeout(resolve, checkInterval))
+          elapsedTime += checkInterval
+
+          // Уведомление, если процесс длится больше 10 секунд
+          if (elapsedTime >= initializationTimeout) {
             n.add({
               title: "Run timeout error!",
               message: "",
-              type: "error",
+              type: "warning",
             })
-            return (flag = false)
+            break
           }
-          const { status } = await run_status(started_run.id)
-          if (status === "alive") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("alive")
-            n.add({
-              message: "",
-              title: "Run started!",
-              type: "success",
-            })
-          }
-          if (status === "failed") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("failed")
-            n.add({
-              message: "Unknown run error. Please check your script.",
-              title: "Run failed!",
-              type: "error",
-            })
-          }
-          if (status === "stopped") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("stopped")
-          }
-          await new Promise((resolve) => setTimeout(resolve, 500))
+        } else {
+          setRunsHandler(started_runs)
+          setRun({ ...started_run, type: "run" })
         }
-        clearInterval(timerId)
+      }
+
+      if (!started_run) {
+        // Если ран так и не появился, завершаем выполнение
+        setRunPending(false)
+        setRunStatus("failed")
+        return
+      }
+
+      // 4. Мониторинг статуса рана
+      let isMonitoring = true
+      elapsedTime = 0 // Сбрасываем таймер для мониторинга статуса
+      const monitoringTimeout = 5000 // Таймаут на мониторинг статуса (5 секунд)
+
+      while (isMonitoring) {
+        const { status } = await run_status(started_run.id)
+
+        if (status !== "running") {
+          // Обновляем состояние, если статус изменился
+          setRuns((prev) => prev.map((r) => (run_id === r.id ? { ...r, status } : r)))
+          setRunPending(false)
+          setRunStatus(status)
+          isMonitoring = false
+
+          // Уведомление в зависимости от статуса
+          switch (status) {
+            case "alive":
+              n.add({
+                title: "Run started!",
+                message: "",
+                type: "success",
+              })
+              break
+
+            case "failed":
+              n.add({
+                title: "Run failed!",
+                message: "Unknown run error. Please check your script.",
+                type: "error",
+              })
+              break
+
+            default:
+              // Продолжаем мониторинг
+              break
+          }
+        }
+
+        // Проверяем таймаут мониторинга
+        elapsedTime += checkInterval
+        if (elapsedTime >= monitoringTimeout) {
+          n.add({
+            title: "Run timeout error!",
+            message: "The run status has not changed for too long.",
+            type: "warning",
+          })
+          isMonitoring = false
+        }
+
+        // Ждём перед следующей проверкой
+        await new Promise((resolve) => setTimeout(resolve, checkInterval))
       }
     } catch (error) {
-      console.log(error)
+      console.error("Error during run start:", error)
+      n.add({
+        title: "Run error!",
+        message: error instanceof Error ? error.message : "An unexpected error occurred.",
+        type: "error",
+      })
     } finally {
-      setRunPending(() => false)
+      setRunPending(false)
     }
   }
 
   async function runStop(run_id: number) {
     setRunPending(() => true)
     try {
-      const res = await run_stop(run_id)
-      if (res.status === "ok") {
-        setTimeout(async () => {
-          const builds = await get_builds()
-          setBuildsHandler(builds)
-          const runs = await get_runs()
+      await run_stop(run_id)
+      let counter = 0
+      const timerId = setInterval(async () => {
+        if (counter > 10) {
+          clearInterval(timerId)
+          setRunPending(() => false)
+          n.add({
+            message: "",
+            title: "Error stopping the run!",
+            type: "error",
+          })
+        }
+        counter += 1
+        const runs = await get_runs()
+        // const { status } = await run_status(run_id)
+        // if (status === "stopped") {
+        // из-за бага статус рана берём из массива со всеми ранами
+        if (runs.find((r) => r.id === run_id)?.status === "stopped") {
+          clearInterval(timerId)
           setRunsHandler(runs)
           setRunStatus("stopped")
           setRunPending(() => false)
@@ -170,11 +229,70 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
             title: "Run stopped!",
             type: "info",
           })
-        }, 500)
-      }
+        }
+      }, 1000)
     } catch (error) {
       console.log(error)
+      setRunPending(false)
+      n.add({
+        message: "",
+        title: "Error stopping the run!",
+        type: "error",
+      })
     }
+  }
+
+  const stopAllRuns = async (run_ids: number[]) => {
+    setRunPending(true)
+
+    for (const id of run_ids) {
+      try {
+        // Ожидание завершения остановки запуска
+        const { status } = await run_stop(id)
+        if (status === "error") {
+          throw Error("Error stopping the run")
+        }
+        let counter = 0
+
+        // Ожидание изменения статуса запуска на "stopped"
+        await new Promise<void>((resolve, reject) => {
+          const timerId = setInterval(async () => {
+            if (counter > 10) {
+              clearInterval(timerId)
+              reject(new Error("Error stopping the run!"))
+              setRunPending(false)
+              return
+            }
+            counter += 1
+
+            const runs = await get_runs()
+            // из-за бага статус рана берём из массива со всеми ранами
+            if (runs.find((r) => r.id === id)?.status === "stopped") {
+              clearInterval(timerId)
+              setRunsHandler(runs)
+              setRunStatus("stopped")
+              setRunPending(false)
+              n.add({
+                message: "",
+                title: "Run stopped!",
+                type: "info",
+              })
+              resolve()
+            }
+          }, 1000)
+        })
+      } catch (error) {
+        console.log(error)
+        setRunPending(false)
+        n.add({
+          message: "",
+          title: "Error stopping the run!",
+          type: "error",
+        })
+      }
+    }
+
+    setRunPending(false)
   }
 
   return (
@@ -186,6 +304,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         setRunPending,
         runStart,
         runStop,
+        stopAllRuns,
         runStatus,
         runs,
         setRuns,

@@ -70,7 +70,7 @@ type TabContextType = {
   quietSaveFlows: () => void
   updateFlow: (flow: FlowType) => void
   getLocaleFlows: () => FlowType[]
-  getFlows: () => void
+  getFlows: (id: number) => void
   deleteNode: (id: string) => void
   deleteEdge: (id: string) => void
   deleteObject: (id: string) => void
@@ -137,10 +137,10 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    * API flows get function
    * @returns {FlowType[]} flows array
    */
-  const getFlows = async () => {
+  const getFlows = async (build_id?: number) => {
     screenLoading.addScreenLoading()
     try {
-      const { data } = await get_flows()
+      const { data } = await get_flows(build_id)
       if (data.flows) {
         const slot_nodes: SlotsNodeType[] = data.flows
           .map((flow) => flow.data.nodes)
@@ -378,7 +378,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         deleteObject,
         validateDeletion,
         validateNodeDeletion,
-      }}>
+      }}
+    >
       {children}
     </flowContext.Provider>
   )

@@ -20,7 +20,9 @@ type BuildContextType = {
   setBuilds: React.Dispatch<React.SetStateAction<localBuildType[]>>
   buildPending: boolean
   setBuildPending: React.Dispatch<React.SetStateAction<boolean>>
-  buildStart: (options: buildPresetType) => Promise<buildApiStatusType>
+  buildStart: (
+    options: buildPresetType
+  ) => Promise<{ status: buildApiStatusType; build_id?: number }>
   buildStop: () => void
   buildStatus: string
   setBuildStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
@@ -34,7 +36,7 @@ export const buildContext = createContext({
   setBuilds: () => {},
   buildPending: false,
   setBuildPending: () => {},
-  buildStart: async () => "failed",
+  buildStart: async () => ({ status: "failed", build_id: 0 }),
   buildStop: () => {},
   buildStatus: "",
   setBuildStatus: () => {},
@@ -76,13 +78,15 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
 
   const buildStart = async ({
     end_status = "completed",
-    wait_time = 0,
-  }: buildPresetType): Promise<buildApiStatusType> => {
+    name,
+    preset,
+    messenger,
+  }: buildPresetType): Promise<{ status: buildApiStatusType; build_id?: number }> => {
     setBuildPending(true)
     setBuildStatus("running")
 
     try {
-      const start_res = await build_start({ end_status, wait_time })
+      const { build_id } = await build_start({ end_status, name, preset, messenger })
       const started_builds = await get_builds()
       setBuildsHandler(started_builds)
 
@@ -94,14 +98,14 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           message: "",
           type: "error",
         })
-        await build_stop(start_res.build_id)
+        await build_stop(build_id)
         setBuildPending(false)
         return "failed"
       }, 15000)
 
       let flag = true
       while (flag) {
-        const status_res = await build_status(start_res.build_id)
+        const status_res = await build_status(build_id)
         const status = status_res.status
 
         if (status !== "running" && status !== "alive") {
@@ -109,17 +113,17 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           clearTimeout(timerId)
 
           await handleBuildCompletion(status)
-          return status
+          return { status, build_id }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     } catch (error) {
       console.error("Build start error:", error)
-      return "failed"
+      return { status: "failed" }
     } finally {
       setBuildPending(false)
     }
-    return "failed"
+    return { status: "failed" }
   }
 
   const handleBuildCompletion = async (status: string) => {

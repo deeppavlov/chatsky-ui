@@ -20,27 +20,50 @@ type runStartResponseType = {
   }
 }
 
+export type messengerType = "web" | "telegram"
+
 export type buildMinifyApiType = {
   id: number
   status: buildApiStatusType
-  preset_end_status: string
-  timestamp: number
+  port: number
+  timestamp: string
   log_path: string
   runs: runMinifyApiType[]
+  preset: {
+    name: string
+    messenger: messengerType
+    preset: string
+    end_status: string
+  }
 }
 
 export type runMinifyApiType = {
   id: number
-  status: buildApiStatusType
-  preset_end_status: string
-  log_path: string
-  timestamp: number
   build_id: number
+  status: buildApiStatusType
+  timestamp: string
+  log_path: string
+  port: number
+  preset: {
+    name: string
+    build_name: string
+    preset: string
+    end_status: string
+  }
 }
 
 export type buildPresetType = {
-  wait_time: number
   end_status: buildApiStatusType
+  name: string
+  messenger: messengerType
+  preset: string
+}
+
+export type runPresetType = {
+  end_status: buildApiStatusType
+  name: string
+  build_name: string
+  preset: string
 }
 
 export type buildResponseType = {
@@ -178,7 +201,7 @@ export const get_run = async (run_id: number) => {
   }
 }
 
-export const run_start = async (preset: buildPresetType, build_id: number) => {
+export const run_start = async (build_id: string, preset: runPresetType) => {
   try {
     const { data }: runStartResponseType = await $v1.post(`/bot/run/start/${build_id}`, preset)
     return data
@@ -190,7 +213,7 @@ export const run_start = async (preset: buildPresetType, build_id: number) => {
 
 export const run_stop = async (run_id: number) => {
   try {
-    const { data }: { data: {status: 'ok' | 'error'} } = await $v1.get(`/bot/run/stop/${run_id}`)
+    const { data }: { data: { status: "ok" | "error" } } = await $v1.get(`/bot/run/stop/${run_id}`)
     return data
   } catch (error) {
     console.log(error)
