@@ -247,7 +247,7 @@ class BuildManager(ProcessManager):
         if self.bot_repo_manager.is_repeated_tag(id_):
             raise ValueError(f"Build id '{id_}' already exists in the database")
 
-        if preset.messanger == "web":
+        if preset.messenger == "web":
             port = await self._get_available_port()
             self.logger.debug("Available port: %s", port)
         else:

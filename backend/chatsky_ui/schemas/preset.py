@@ -10,7 +10,7 @@ class BasePreset(BaseModel):
 
 
 class BuildPreset(BasePreset):
-    messanger: Literal["telegram", "web"]
+    messenger: Literal["telegram", "web"]
 
 
 class RunPreset(BasePreset):
