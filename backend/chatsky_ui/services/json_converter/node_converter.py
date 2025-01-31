@@ -49,12 +49,13 @@ class InfoNodeConverter(NodeConverter):
             TRANSITIONS: [
                 {
                     "dst": condition["dst"]
-                    if "dst" in condition and condition["data"]["transition_type"] == "manual"
+                    if condition["data"]["transition_type"] == "manual"
                     else self.MAP_TR2CHATSKY[condition["data"]["transition_type"]],
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }
                 for condition, converter in zip(self.node.conditions, condition_converters)
+                if "dst" in condition
             ],
             PRE_TRANSITION: {
                 key: value
