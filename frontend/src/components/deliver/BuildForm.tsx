@@ -1,7 +1,7 @@
 import { messengerType } from "@/api/bot"
 import { buildContext } from "@/contexts/buildContext"
 import { Button, Divider, Input, Select, SelectItem } from "@nextui-org/react"
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 
 interface IFormData {
   name: string
@@ -35,6 +35,10 @@ const BuildForm = () => {
       name: `Build ${builds.length + 1}`,
     })
   }
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, name: `Run ${builds.length + 1}` }))
+  }, [builds.length])
 
   return (
     <div className='h-full w-full flex flex-col gap-3'>
