@@ -16,6 +16,7 @@ import { Button, Divider } from "@nextui-org/react"
 import { RefreshCw, SquareArrowOutUpRight, SquareIcon, X } from "lucide-react"
 import { useContext, useState } from "react"
 import CheckIcon from "@/icons/CheckIcon"
+import MicroscopeIcon from "@/icons/MicroscopeIcon"
 
 const BuildManagerPage = () => {
   const { currentPage } = useContext(workspaceContext)
@@ -37,9 +38,9 @@ const BuildManagerPage = () => {
     openPopUp(
       <RestoreBuildModal
         id='restoreBuild'
-        onRestore={() => {
-          getFlows(id)
-          console.log(id)
+        onRestore={async () => {
+          const flows = await getFlows(id)
+          saveFlows(flows)
         }}
       />,
       "restoreBuild"
@@ -139,6 +140,7 @@ const BuildManagerPage = () => {
           </Button>
         </div>
         <Button className='bg-btn-accent rounded-lg flex-shrink-0 flex justify-center items-center gap-2'>
+          <MicroscopeIcon />
           <span className='text-sm font-semibold'>Test panel</span>
         </Button>
       </div>

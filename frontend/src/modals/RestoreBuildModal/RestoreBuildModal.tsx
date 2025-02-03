@@ -31,7 +31,7 @@ const RestoreBuildModal = ({ id = "restore-build-modal", onRestore }: RestoreBui
         </p>
       </ModalBody>
       <ModalFooter className='justify-center gap-4'>
-        <Button className='flex-grow rounded-lg' onClick={() => closePopUp(id)}>
+        <Button className='flex-grow rounded-lg' onClick={onCancelHandler}>
           Cancel
         </Button>
         <Button
