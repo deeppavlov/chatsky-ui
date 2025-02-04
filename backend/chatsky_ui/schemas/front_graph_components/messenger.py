@@ -11,7 +11,7 @@ from .base_component import BaseComponent
 load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
 
 
-class Interface(BaseComponent):
+class Messenger(BaseComponent):
     model_config = {"extra": "forbid"}
 
     telegram: Optional[Dict[str, Any]] = Field(default=None)
@@ -35,8 +35,8 @@ class Interface(BaseComponent):
     @model_validator(mode="after")
     def check_chatsky_port(self):
         if self.web is None and self.chatsky_port is not None:
-            raise ValueError("The 'chatsky_port' must not be provided when not using 'web' interface.")
+            raise ValueError("The 'chatsky_port' must not be provided when not using 'web' messenger.")
         elif self.web is not None and self.chatsky_port is None:
-            raise ValueError("The 'chatsky_port' must be provided when using 'web' interface.")
+            raise ValueError("The 'chatsky_port' must be provided when using 'web' messenger.")
         return self
     

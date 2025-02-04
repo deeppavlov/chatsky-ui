@@ -198,23 +198,23 @@ class RunManager(ProcessManager):
         async def _get_build_port(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
             port = build_info.get("port")
-            interface = build_info["preset"]["messanger"]
+            messenger = build_info["preset"]["messenger"]
             self.logger.debug("Attached build port '%s' for run process '%s'", port, self.last_id)
-            return port, interface
+            return port, messenger
 
         self.last_id = await _get_new_id()
-        build_port, interface = await _get_build_port(build_id)
+        build_port, messenger = await _get_build_port(build_id)
 
-        if not RunManager._is_available_port(build_port):
+        if build_port is not None and not RunManager._is_available_port(build_port):
             raise ValueError(f"Port '{build_port}' is already in use")
         if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-        f" --interface {interface}"
+        f" --messenger {messenger}"
 
-        process = RunProcess(self.last_id, build_id, interface, build_port, preset)
+        process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
         load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
@@ -303,7 +303,7 @@ class BuildManager(ProcessManager):
         if self.bot_repo_manager.is_repeated_tag(id_):
             raise ValueError(f"Build id '{id_}' already exists in the database")
 
-        if preset.messanger == "web":
+        if preset.messenger == "web":
             port = await self._get_available_port()
             self.logger.debug("Available port: %s", port)
         else:
@@ -311,6 +311,7 @@ class BuildManager(ProcessManager):
         process = BuildProcess(id_, port, preset)
         cmd_to_run = (
             f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+            f" --messenger {preset.messenger}"
         )
         if port is not None:
             cmd_to_run += f" --chatsky-port {port}"

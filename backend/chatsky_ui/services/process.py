@@ -162,10 +162,10 @@ class Process(ABC):
 class RunProcess(Process):
     """Process for running a Chatsky pipeline."""
 
-    def __init__(self, id_: int, build_id: int, interface: str, port: Optional[int], preset: RunPreset):
+    def __init__(self, id_: int, build_id: int, messenger: str, port: Optional[int], preset: RunPreset):
         super().__init__(id_, preset)
         self.build_id: int = build_id
-        self.interface = interface
+        self.messenger = messenger
         self.port = port
 
         self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
@@ -173,7 +173,7 @@ class RunProcess(Process):
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset", "interface", "port", "status", "timestamp", "log_path", "build_id"]
+            attributes = ["id", "preset", "messenger", "port", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
 
     async def is_alive(self) -> bool:

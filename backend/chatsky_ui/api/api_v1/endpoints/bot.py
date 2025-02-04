@@ -305,7 +305,7 @@ async def respond(
     if build_port is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Build process of id '{run_id}' doesn't have a messanger of type 'web'. Check the build port and messanger in metadata.",
+            detail="Build process of id '{run_id}' doesn't have a messenger of type 'web'. Check the build port and messenger in metadata.",
         )
 
     async with AsyncClient() as client:
