@@ -37,7 +37,6 @@ class Process(ABC):
         self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
-        self._lock = asyncio.Lock()
         self.process: Optional[asyncio.subprocess.Process] = None
         self.logger: logging.Logger
         self.to_be_terminated = False
@@ -125,8 +124,7 @@ class Process(ABC):
             self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
         if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
-            async with self._lock:
-                stdout, stderr = await self.process.communicate()
+            stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")
             if stderr:
@@ -180,14 +178,13 @@ class RunProcess(Process):
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
         async def check_telegram_readiness(stream, name):
-            async with self._lock:
-                async for line in stream:
-                    decoded_line = line.decode().strip()
-                    self.logger.info(f"[{name}] {decoded_line}")
+            async for line in stream:
+                decoded_line = line.decode().strip()
+                self.logger.info(f"[{name}] {decoded_line}")
 
-                    if "telegram.ext.Application:Application started" in decoded_line:
-                        self.logger.info("The application is ready for use!")
-                        return True
+                if "telegram.ext.Application:Application started" in decoded_line:
+                    self.logger.info("The application is ready for use!")
+                    return True
             return False
 
         if self.port is not None:
