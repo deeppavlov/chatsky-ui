@@ -11,17 +11,22 @@ except ImportError:
 
 from ...schemas.front_graph_components.pipeline import Pipeline
 from .base_converter import BaseConverter
-from .interface_converter import InterfaceConverter
+from .messenger_converter import MessengerConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
 
 
 class PipelineConverter(BaseConverter):
-    def __call__(self, input_file: Path, output_dir: Path, chatsky_port: Optional[int]):
+    def __call__(self, input_file: Path, output_dir: Path, messenger: str, chatsky_port: Optional[int]):
         self.from_yaml(file_path=input_file)
 
-        self.pipeline = Pipeline(**self.graph)
-        self.pipeline.interface["chatsky_port"] = chatsky_port
+        self.pipeline = Pipeline(
+            messenger={
+                messenger: {},
+                "chatsky_port": chatsky_port,
+            },
+            **self.graph,
+        )
 
         self.converted_pipeline = super().__call__()
 
@@ -44,7 +49,7 @@ class PipelineConverter(BaseConverter):
 
         return {
             "script": script_converter(slots_conf=slots_conf),
-            "messenger_interface": InterfaceConverter(self.pipeline.interface)(),
+            "messenger_interface": MessengerConverter(self.pipeline.messenger)(),
             "slots": slots_converter(),
             "start_label": start_label,
             "fallback_label": fallback_label,

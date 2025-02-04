@@ -37,7 +37,6 @@ class Process(ABC):
         self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
-        self._lock = asyncio.Lock()
         self.process: Optional[asyncio.subprocess.Process] = None
         self.logger: logging.Logger
         self.to_be_terminated = False
@@ -125,8 +124,7 @@ class Process(ABC):
             self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
         if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
-            async with self._lock:
-                stdout, stderr = await self.process.communicate()
+            stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")
             if stderr:
@@ -162,9 +160,10 @@ class Process(ABC):
 class RunProcess(Process):
     """Process for running a Chatsky pipeline."""
 
-    def __init__(self, id_: int, build_id: int, port: Optional[int], preset: RunPreset):
+    def __init__(self, id_: int, build_id: int, messenger: str, port: Optional[int], preset: RunPreset):
         super().__init__(id_, preset)
         self.build_id: int = build_id
+        self.messenger = messenger
         self.port = port
 
         self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
@@ -172,21 +171,20 @@ class RunProcess(Process):
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "build_id"]
+            attributes = ["id", "preset", "messenger", "port", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
 
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
         async def check_telegram_readiness(stream, name):
-            async with self._lock:
-                async for line in stream:
-                    decoded_line = line.decode().strip()
-                    self.logger.info(f"[{name}] {decoded_line}")
+            async for line in stream:
+                decoded_line = line.decode().strip()
+                self.logger.info(f"[{name}] {decoded_line}")
 
-                    if "telegram.ext.Application:Application started" in decoded_line:
-                        self.logger.info("The application is ready for use!")
-                        return True
+                if "telegram.ext.Application:Application started" in decoded_line:
+                    self.logger.info("The application is ready for use!")
+                    return True
             return False
 
         if self.port is not None:
