@@ -6,6 +6,7 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
+from datetime import datetime
 import asyncio
 import os
 from pathlib import Path
@@ -34,6 +35,11 @@ class ProcessManager(ABC):
         self._logger = None
         self._bot_repo_manager = None
         self._graph_repo_manager = None
+
+    @staticmethod
+    def _is_available_port(port):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex(("localhost", port)) != 0
 
     @property
     def logger(self):
@@ -169,6 +175,9 @@ class ProcessManager(ABC):
 
 class RunManager(ProcessManager):
     """Process manager for running a Chatsky pipeline."""
+    def __init__(self):
+        super().__init__()
+        self.last_run_time = datetime.now().replace(year=datetime.now().year - 1)
 
     async def start(self, build_id: int, preset: RunPreset) -> int:
         """Starts a new run process.
@@ -188,18 +197,30 @@ class RunManager(ProcessManager):
 
         async def _get_build_port(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
-            return build_info.get("port")
+            port = build_info.get("port")
+            self.logger.debug("Attached build port '%s' for run process '%s'", port, self.last_id)
+            return port
+
+        self.last_id = await _get_new_id()
+        build_port = await _get_build_port(build_id)
+
+        if not RunManager._is_available_port(build_port):
+            raise ValueError(f"Port '{build_port}' is already in use")
+        if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
+            raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-        self.last_id = await _get_new_id()
 
-        process = RunProcess(self.last_id, build_id, await _get_build_port(build_id), preset)
+        process = RunProcess(self.last_id, build_id, build_port, preset)
 
         load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
+        self.last_run_time = datetime.now()
+
         self.processes[self.last_id] = process
+        await self.update_db_info()
 
         return self.last_id
 
@@ -247,10 +268,6 @@ class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
 
     async def _get_available_port(self) -> int:
-        def _is_available_port(port):
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                return s.connect_ex(("localhost", port)) != 0
-
         async def _get_busy_ports():
             builds_metadata = await self.get_full_info(0, 10000)
             return [build["port"] for build in builds_metadata if build["port"] is not None]
@@ -261,7 +278,7 @@ class BuildManager(ProcessManager):
         else:
             port = 8001
 
-        while not _is_available_port(port):
+        while not BuildManager._is_available_port(port):
             port += 1
         return port
 

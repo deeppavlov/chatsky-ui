@@ -194,7 +194,19 @@ async def start_run(
     Returns:
         {"status": "ok", "build_id": run_id}: in case of **starting** the run process successfully.
     """
-    run_id = await run_manager.start(build_id, preset)
+    try:
+        run_id = await run_manager.start(build_id, preset)
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
+        ) from e
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Port conflict error. Please check that the port is not in use.",
+        ) from e
+
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)
     return {"status": "ok", "run_id": run_id}

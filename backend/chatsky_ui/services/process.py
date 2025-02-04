@@ -4,11 +4,12 @@ Process classes.
 
 Classes for build and run processes.
 """
+from datetime import datetime
 import asyncio
 import logging
 import os
 import signal
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -36,7 +37,7 @@ class Process(ABC):
         self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
-        self.lock: asyncio.Lock = asyncio.Lock()
+        self._lock = asyncio.Lock()
         self.process: Optional[asyncio.subprocess.Process] = None
         self.logger: logging.Logger
         self.to_be_terminated = False
@@ -79,6 +80,10 @@ class Process(ABC):
 
         return _map_to_str(info)
 
+    @abstractmethod
+    async def is_alive(self) -> bool:
+        raise NotImplementedError
+
     async def check_status(self) -> Status:
         """Returns the process current status.
 
@@ -95,15 +100,16 @@ class Process(ABC):
         if self.process is None:
             self.status = Status.NULL
             return self.status
+
         # if process is already alive, don't interrupt potential open channels by checking status periodically.
-        elif self.process.returncode is None:
+        if self.process.returncode is None:
             if self.status == Status.ALIVE:
+                pass
+            elif self.status == Status.RUNNING and await self.is_alive():
                 self.status = Status.ALIVE
             else:
-                if await self.is_alive():
-                    self.status = Status.ALIVE
-                else:
-                    self.status = Status.RUNNING
+                self.status = Status.RUNNING
+            return self.status
 
         elif self.process.returncode == 0:
             self.status = Status.COMPLETED
@@ -119,7 +125,8 @@ class Process(ABC):
             self.status = Status.FAILED_WITH_UNEXPECTED_CODE
 
         if self.status not in [Status.NULL, Status.RUNNING, Status.ALIVE]:
-            stdout, stderr = await self.process.communicate()
+            async with self._lock:
+                stdout, stderr = await self.process.communicate()
             if stdout:
                 self.logger.info(f"[stdout]\n{stdout.decode()}")
             if stderr:
@@ -172,45 +179,47 @@ class RunProcess(Process):
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
         async def check_telegram_readiness(stream, name):
-            async for line in stream:
-                decoded_line = line.decode().strip()
-                self.logger.info(f"[{name}] {decoded_line}")
+            async with self._lock:
+                async for line in stream:
+                    decoded_line = line.decode().strip()
+                    self.logger.info(f"[{name}] {decoded_line}")
 
-                if "telegram.ext.Application:Application started" in decoded_line:
-                    self.logger.info("The application is ready for use!")
-                    return True
+                    if "telegram.ext.Application:Application started" in decoded_line:
+                        self.logger.info("The application is ready for use!")
+                        return True
             return False
 
-        async with AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"http://localhost:{self.port}/health",
-                )
-                return response.json()["status"] == "ok"
-            except Exception as e:
-                self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{self.port}' yet. "
-                    f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
-                )
+        if self.port is not None:
+            async with AsyncClient() as client:
+                try:
+                    response = await client.get(
+                        f"http://localhost:{self.port}/health",
+                    )
+                    return response.json()["status"] == "ok"
+                except Exception as e:
+                    self.logger.info(
+                        f"Process '{self.id}' isn't alive on port '{self.port}' yet. "
+                    )
+            return False
+        else:
+            done, pending = await asyncio.wait(
+                [
+                    asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
+                    asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=PING_PONG_TIMEOUT,
+            )
 
-        done, pending = await asyncio.wait(
-            [
-                asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
-                asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
-            ],
-            return_when=asyncio.FIRST_COMPLETED,
-            timeout=PING_PONG_TIMEOUT,
-        )
+            for task in pending:
+                task.cancel()
 
-        for task in pending:
-            task.cancel()
+            for task in done:
+                result = task.result()
+                if result:
+                    return result
 
-        for task in done:
-            result = task.result()
-            if result:
-                return result
-
-        return False
+            return False
 
 
 class BuildProcess(Process):
