@@ -79,6 +79,18 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
     return await _stop_process(build_id, build_manager, process="build")
 
 
+@router.get("/build/stop_all", status_code=200)
+async def stop_all_builds(build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, str]:
+    try:
+        await build_manager.stop_all()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Please check that service's up and running.",
+        ) from e
+    return {"status": "ok"}
+
+
 @router.get("/build/status/{build_id}", status_code=200)
 async def check_build_status(
     *, build_id: int, build_manager: BuildManager = Depends(deps.get_build_manager)
@@ -182,7 +194,19 @@ async def start_run(
     Returns:
         {"status": "ok", "build_id": run_id}: in case of **starting** the run process successfully.
     """
-    run_id = await run_manager.start(build_id, preset)
+    try:
+        run_id = await run_manager.start(build_id, preset)
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
+        ) from e
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Port conflict error. Please check that the port is not in use.",
+        ) from e
+
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)
     return {"status": "ok", "run_id": run_id}
@@ -204,6 +228,18 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
     """
 
     return await _stop_process(run_id, run_manager, process="run")
+
+
+@router.get("/run/stop_all", status_code=200)
+async def stop_all_runs(run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, str]:
+    try:
+        await run_manager.stop_all()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Please check that service's up and running.",
+        ) from e
+    return {"status": "ok"}
 
 
 @router.get("/run/status/{run_id}", status_code=200)
