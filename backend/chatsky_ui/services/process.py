@@ -8,7 +8,7 @@ import asyncio
 import logging
 import os
 import signal
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -18,7 +18,6 @@ from httpx import AsyncClient
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
-from chatsky_ui.db.base import read_conf, write_conf
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.schemas.preset import BuildPreset, RunPreset, BasePreset
 
@@ -79,10 +78,6 @@ class Process(ABC):
             info["status"] = self.status.value
 
         return _map_to_str(info)
-
-    @abstractmethod
-    async def update_db_info(self):
-        raise NotImplementedError
 
     async def check_status(self) -> Status:
         """Returns the process current status.
@@ -156,17 +151,6 @@ class Process(ABC):
             self.logger.error("Process group '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
-    def add_new_conf(self, conf: list, params: dict) -> list:  # TODO: rename conf everywhere to metadata/meta
-        for element in conf:
-            if element.id == params["id"]:  # type: ignore
-                for key, value in params.items():
-                    setattr(element, key, value)
-                break
-        else:
-            conf.append(params)
-
-        return conf
-
 
 class RunProcess(Process):
     """Process for running a Chatsky pipeline."""
@@ -183,26 +167,6 @@ class RunProcess(Process):
         if attributes is None:
             attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
-
-    async def update_db_info(self) -> None:
-        # save current run info into runs_path
-        self.logger.debug("Updating db run info")
-        runs_conf = await read_conf(settings.runs_path)
-        run_params = await self.get_full_info()
-
-        runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
-
-        await write_conf(runs_conf, settings.runs_path)
-
-        # save current run id into the correspoinding build in builds_path
-        builds_conf = await read_conf(settings.builds_path)
-        for build in builds_conf:
-            if build.id == run_params["build_id"]:  # type: ignore
-                if run_params["id"] not in build.run_ids:  # type: ignore
-                    build.run_ids.append(run_params["id"])  # type: ignore
-                    break
-
-        await write_conf(builds_conf, settings.builds_path)
 
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
@@ -264,15 +228,6 @@ class BuildProcess(Process):
         if attributes is None:
             attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "run_ids"]
         return await super().get_full_info(attributes)
-
-    async def update_db_info(self) -> None:
-        """Saves current build info into builds_path"""
-        builds_conf = await read_conf(settings.builds_path)
-        build_params = await self.get_full_info()
-
-        builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
-
-        await write_conf(builds_conf, settings.builds_path)
 
     async def is_alive(self) -> bool:
         return False
