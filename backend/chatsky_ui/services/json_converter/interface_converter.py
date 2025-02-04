@@ -8,6 +8,7 @@ class InterfaceConverter(BaseConverter):
     """Converts frontend's `Interface` to a Chatsky `MessengerInterface`.
     Supports `HTTPMessengerInterface` and `TelegramInterface` at the moment.
     """
+
     def __init__(self, interface: dict):
         """Creates an `InterfaceConverter` object. Makes an `Interface` schema from a given dictionary.
         `TG_BOT_TOKEN` environment variable must be set, if `TelegramInterface` is being used.

@@ -7,16 +7,19 @@ from .service_replacer import store_custom_service
 
 class BadResponseException(Exception):
     """An exception raised when a converter receives a response which doesn't have required fields."""
+
     pass
 
 
 class ResponseConverter(BaseConverter):
     """Converts frontend's `Response` into a Chatsky `Response`. It's a base class for other converters."""
+
     pass
 
 
 class TextResponseConverter(ResponseConverter):
     """Converts a frontend's `TextResponse` into a Chatsky `Response`."""
+
     def __init__(self, response: dict):
         """Creates a `TextResponseConverter` object.
 
@@ -41,6 +44,7 @@ class TextResponseConverter(ResponseConverter):
 
 class CustomResponseConverter(ResponseConverter):
     """Converts a frontend's `CustomResponse` into a Chatsky `Response`."""
+
     def __init__(self, response: dict):
         """Creates a `CustomResponseConverter` object.
 

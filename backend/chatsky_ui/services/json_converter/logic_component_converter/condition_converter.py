@@ -9,11 +9,13 @@ from .service_replacer import store_custom_service
 
 class BadConditionException(Exception):
     """An exception raised when a converter receives a condition which doesn't have required fields."""
+
     pass
 
 
 class ConditionConverter(BaseConverter, ABC):
     """A base class which converts frontend's `Conditions` into respective Chatsky `BaseCondition` derivatives."""
+
     @abstractmethod
     def get_pre_transitions():
         raise NotImplementedError
@@ -21,6 +23,7 @@ class ConditionConverter(BaseConverter, ABC):
 
 class CustomConditionConverter(ConditionConverter):
     """Converts a frontend's custom condition into a Chatsky `BaseCondition`."""
+
     def __init__(self, condition: dict):
         """Creates a `CustomConditionConverter` object.
 
@@ -58,6 +61,7 @@ class CustomConditionConverter(ConditionConverter):
 
 class SlotConditionConverter(ConditionConverter):
     """Converts a frontend's slot condition into a Chatsky `SlotsExtracted` condition."""
+
     def __init__(self, condition: dict):
         """Creates a `SlotConditionConverter` object.
 

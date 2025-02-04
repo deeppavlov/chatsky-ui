@@ -11,6 +11,7 @@ class ServiceReplacer(NodeTransformer):
     code in the UI, the condition's code that is stored in the CUSTOM_FILE.CONDITIONS_FILE becomes outdated and
     needs to be updated. This class can do that.
     """
+
     def __init__(self, new_services: List[str]):
         """Creates an object of `ServiceReplacer` class, parses received service codes and saves them.
         If the code of a service isn't a class definition, logger gets an error and that service is ignored.
