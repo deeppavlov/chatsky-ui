@@ -50,8 +50,8 @@ class ServiceReplacer(NodeTransformer):
 
         Args:
             service_code (str): The code of the service being processed.
-            parsed_code (ast.Module): Same, but it's parsed through `ast.parse` first. If there are nodes which aren't
-                'ast.ClassDef', logger gets an error and the node is ignored.
+            parsed_code (ast.Module): Same, but it must be parsed through `ast.parse` first. If there are nodes which
+                aren't 'ast.ClassDef', logger gets an error and the node is ignored.
         Returns:
             Dict[str, ast.ClassDef]: A dictionary with all found classes' names as keys and respective codes as values.
         """
@@ -64,8 +64,9 @@ class ServiceReplacer(NodeTransformer):
         return classes
 
     def visit_ClassDef(self, node: ast.ClassDef) -> ast.ClassDef:
-        """Checks if this ast.ClassDef node is supposed to be updated and updates it. Otherwise, it returns
-        the node unchanged. Uses a function which deletes the service from the list of services to be updated.
+        """Checks if this ast.ClassDef node is supposed to be updated and, if so, replaces the old service code with
+        the updated version, removing the service from the list of outdated services.
+        Otherwise, it returns the node unchanged.
         """
         self.logger.debug("Visiting class '%s' and comparing with: %s", node.name, self.new_services_classes.keys())
         if node.name in self.new_services_classes:
@@ -74,7 +75,7 @@ class ServiceReplacer(NodeTransformer):
 
     def _get_class_def(self, node: ast.ClassDef) -> ast.ClassDef:
         """Returns the code of the service with the same name as this node.
-        Also deletes the service from the list of services to be updated.
+        Removes the service from the list of outdated services.
         """
         service = self.new_services_classes[node.name]
         del self.new_services_classes[node.name]
@@ -82,9 +83,11 @@ class ServiceReplacer(NodeTransformer):
         return service
 
     def generic_visit(self, node: ast.AST):
-        """Gets called when a node within the AST isn't a ClassDef.
-        Calls the normal generic_visit(), which calls ast.visit() on all child nodes of this node.
-        Then, in case this node is an 'ast.Module', all services to be updated get appended to it.
+        """Gets called for nodes within the AST which aren't `ClassDef`s.
+        Calls super().generic_visit(), which calls ast.visit() on all child nodes of this node.
+        After every other node was processed, the top node ('ast.parse()' always returns ast.Module)
+        will append all new services, which weren't already stored in the file. (When a known service is updated,
+        it is deleted from the list in `_get_class_def`, so there are only unknown services left in that list.)
         """
         super().generic_visit(node)
         if isinstance(node, ast.Module) and self.new_services_classes:
@@ -92,7 +95,7 @@ class ServiceReplacer(NodeTransformer):
         return node
 
     def _append_new_services(self, node: ast.Module):
-        """Appends all services in need of an update (parsed nodes) to the given ast.Module node."""
+        """Appends the new services to the given ast.Module node."""
         self.logger.info("Services not found, appending new services: %s", list(self.new_services_classes.keys()))
         for _, service in self.new_services_classes.items():
             node.body.append(service)
