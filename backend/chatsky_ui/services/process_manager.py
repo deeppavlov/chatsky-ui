@@ -198,11 +198,12 @@ class RunManager(ProcessManager):
         async def _get_build_port(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
             port = build_info.get("port")
+            interface = build_info["preset"]["messanger"]
             self.logger.debug("Attached build port '%s' for run process '%s'", port, self.last_id)
-            return port
+            return port, interface
 
         self.last_id = await _get_new_id()
-        build_port = await _get_build_port(build_id)
+        build_port, interface = await _get_build_port(build_id)
 
         if not RunManager._is_available_port(build_port):
             raise ValueError(f"Port '{build_port}' is already in use")
@@ -211,8 +212,9 @@ class RunManager(ProcessManager):
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+        f" --interface {interface}"
 
-        process = RunProcess(self.last_id, build_id, build_port, preset)
+        process = RunProcess(self.last_id, build_id, interface, build_port, preset)
 
         load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)

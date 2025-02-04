@@ -7,7 +7,7 @@ class InterfaceConverter(BaseConverter):
         self.interface = Interface(**interface)
 
     def _convert(self):
-        if self.interface.http is not None:
+        if self.interface.web is not None:
             return {"chatsky.messengers.HTTPMessengerInterface": {"port": self.interface.chatsky_port}}
         elif self.interface.telegram is not None:
             return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}}

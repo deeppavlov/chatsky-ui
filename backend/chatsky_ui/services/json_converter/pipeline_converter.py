@@ -17,11 +17,16 @@ from .slots_converter import SlotsConverter
 
 
 class PipelineConverter(BaseConverter):
-    def __call__(self, input_file: Path, output_dir: Path, chatsky_port: Optional[int]):
+    def __call__(self, input_file: Path, output_dir: Path, interface: str, chatsky_port: Optional[int]):
         self.from_yaml(file_path=input_file)
 
-        self.pipeline = Pipeline(**self.graph)
-        self.pipeline.interface["chatsky_port"] = chatsky_port
+        self.pipeline = Pipeline(
+            interface={
+                interface: {},
+                "chatsky_port": chatsky_port,
+            },
+            **self.graph,
+        )
 
         self.converted_pipeline = super().__call__()
 

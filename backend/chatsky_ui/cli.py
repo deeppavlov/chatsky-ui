@@ -48,18 +48,19 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(project_dir: Path, command_file: str, preset: str, chatsky_port: Optional[int] = None):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str, interface: Optional[str] = "web", chatsky_port: Optional[int] = None):
     logger = get_logger(__name__)
 
     presets_build_path = settings.presets_path / command_file
     with open(presets_build_path, encoding="UTF-8") as file:
         file_content = file.read()
 
-    template = string.Template(file_content)
     if chatsky_port is not None:
         os.environ["chatsky_port"] = str(chatsky_port)
     elif "chatsky_port" in os.environ:
         os.environ["chatsky_port"] = ""
+    os.environ["interface"] = str(interface)
+    template = string.Template(file_content)
     substituted_content = template.substitute(work_directory=project_dir)
 
     presets_build_file = json.loads(substituted_content)
@@ -74,7 +75,8 @@ def _execute_command_file(project_dir: Path, command_file: str, preset: str, cha
 
 @cli.command("build_bot")
 def build_bot(
-    chatsky_port: Optional[int] = typer.Option(None, help="Port for the HTTP server"),
+    interface: str = typer.Option("web", help="Interface to run chat in"),
+    chatsky_port: Optional[int] = typer.Option(None, help="Port for the HTTP web server"),
     project_dir: Optional[Path] = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
 ):
@@ -85,12 +87,13 @@ def build_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(project_dir, "build.json", preset, chatsky_port)
+    _execute_command_file(project_dir, "build.json", preset, interface, chatsky_port)
 
 
 @cli.command("build_scenario")
 def build_scenario(
-    chatsky_port: int = typer.Option(None, help="Port for the HTTP server"),
+    interface: str = typer.Option("web", help="Interface to run chat in"),
+    chatsky_port: int = typer.Option(None, help="Port for the HTTP web server"),
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = Path("."),
     # TODO: add custom_dir - maybe the same way like project_dir
 ):
@@ -103,7 +106,7 @@ def build_scenario(
 
     pipeline_converter = PipelineConverter()
     pipeline_converter(
-        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir, chatsky_port=chatsky_port
+        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir, interface=interface, chatsky_port=chatsky_port
     )  # TODO: rename to frontend_graph_path
 
 
