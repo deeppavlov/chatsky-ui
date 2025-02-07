@@ -204,7 +204,7 @@ async def start_run(
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Port conflict error. Please check that the port is not in use.",
+            # detail="Port conflict error. Please check that the port is not in use.",
         ) from e
 
     background_tasks.add_task(run_manager.check_status, run_id)

@@ -15,6 +15,7 @@ class Messenger(BaseComponent):
     model_config = {"extra": "forbid"}
 
     telegram: Optional[Dict[str, Any]] = Field(default=None)
+    tg_token_name: Optional[str] = Field(default=None)
     web: Optional[Dict[str, Any]] = Field(default=None)
     chatsky_port: Optional[int] = Field(default=None)
 
@@ -25,12 +26,12 @@ class Messenger(BaseComponent):
             raise ValueError('Exactly one of "telegram", or "web" must be provided.')
         return self
 
-    @model_validator(mode="after")
-    def check_telegram_token(self):
-        tg_bot_token = os.getenv("TG_BOT_TOKEN")
-        if self.telegram is not None and not tg_bot_token:
-            raise ValueError("Telegram token must be provided.")
-        return self
+    # @model_validator(mode="after")
+    # def check_telegram_token(self):
+    #     tg_bot_token = os.getenv("TG_BOT_TOKEN")
+    #     if self.telegram is not None and not tg_bot_token:
+    #         raise ValueError("Telegram token must be provided.")
+    #     return self
 
     @model_validator(mode="after")
     def check_chatsky_port(self):
@@ -39,4 +40,9 @@ class Messenger(BaseComponent):
         elif self.web is not None and self.chatsky_port is None:
             raise ValueError("The 'chatsky_port' must be provided when using 'web' messenger.")
         return self
-    
+
+    @model_validator(mode="after")
+    def check_token_name(self):
+        if self.telegram is not None and self.tg_token_name is None:
+            raise ValueError("The 'tg_token_name' must be provided when using 'telegram' messenger.")
+        return self

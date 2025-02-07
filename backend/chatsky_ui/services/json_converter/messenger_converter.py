@@ -10,4 +10,4 @@ class MessengerConverter(BaseConverter):
         if self.messenger.web is not None:
             return {"chatsky.messengers.HTTPMessengerInterface": {"port": self.messenger.chatsky_port}}
         elif self.messenger.telegram is not None:
-            return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}}
+            return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": self.messenger.tg_token_name}}}
