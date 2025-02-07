@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import socket
+from dotenv import set_key
 
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
@@ -24,6 +25,7 @@ from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.utils.repo_manager import RepoManager
+from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 
 
 class ProcessManager(ABC):
@@ -195,28 +197,45 @@ class RunManager(ProcessManager):
         async def _get_new_id():
             return max([run["id"] for run in await self.get_full_info(0, 10000)]) + 1
 
-        async def _get_build_port(build_id):
+        async def _get_build_info(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
             port = build_info.get("port")
             messenger = build_info["preset"]["messenger"]
             self.logger.debug("Attached build port '%s' for run process '%s'", port, self.last_id)
             return port, messenger
 
-        self.last_id = await _get_new_id()
-        build_port, messenger = await _get_build_port(build_id)
+        async def _insert_token(token_name, build_id):
+            for run in await self.get_full_info(0, 10000):
+                if token_name and token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
+                    raise ValueError(f"Bot with token name '{token_name}' is already in use by another run process with id: '{run['id']}'")
+            dotenv_path = Path(settings.work_directory) / ".env"
+            dotenv_path.touch(exist_ok=True)
+            token = "_".join(["TG", token_name])
+            self.logger.info("Token name: %s", token)
+            token_value = os.getenv(token)
+            self.logger.info("Token value: %s", token_value)
+            if token_value is None:
+                raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
+            set_key(dotenv_path, UNIQUE_BUILD_TOKEN.format(build_id=build_id), token_value)
 
-        if build_port is not None and not RunManager._is_available_port(build_port):
-            raise ValueError(f"Port '{build_port}' is already in use")
         if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
+        self.last_id = await _get_new_id()
+        build_port, messenger = await _get_build_info(build_id)
+
+        if build_port is not None and not RunManager._is_available_port(build_port):
+            raise ValueError(f"Port '{build_port}' is already in use")
+
+        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
+        if messenger == "telegram":
+            await _insert_token(preset.tg_bot_token, build_id)
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
         f" --messenger {messenger}"
 
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
-        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.last_run_time = datetime.now()
@@ -249,20 +268,19 @@ class RunManager(ProcessManager):
         # save current run info into runs_path
         self.logger.debug("Updating db run info")
         runs_conf = await read_conf(settings.runs_path)
+        builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
-            run_params = await process.get_full_info()
+            run_params = await process.get_full_info() #TODO: Try to use the process object instead of having it as dict using get_full_info
             runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
 
+
+            # save current run id into the correspoinding build in builds_path
+            for build in builds_conf:
+                if build.id == run_params["build_id"]:  # type: ignore
+                    if run_params["id"] not in build.run_ids:  # type: ignore
+                        build.run_ids.append(run_params["id"])  # type: ignore
+                        break
         await write_conf(runs_conf, settings.runs_path)
-
-        # save current run id into the correspoinding build in builds_path
-        builds_conf = await read_conf(settings.builds_path)
-        for build in builds_conf:
-            if build.id == run_params["build_id"]:  # type: ignore
-                if run_params["id"] not in build.run_ids:  # type: ignore
-                    build.run_ids.append(run_params["id"])  # type: ignore
-                    break
-
         await write_conf(builds_conf, settings.builds_path)
 
 
@@ -310,7 +328,7 @@ class BuildManager(ProcessManager):
             port = None
         process = BuildProcess(id_, port, preset)
         cmd_to_run = (
-            f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+            f"chatsky.ui build_bot {id_} " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
             f" --messenger {preset.messenger}"
         )
         if port is not None:

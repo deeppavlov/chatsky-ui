@@ -58,9 +58,23 @@ async def flows_post(
 
 
 @router.post("/tg_token")
-async def post_tg_token(token: str):
+async def post_tg_token(token: Dict[str, str]) -> Dict[str, str]:
     dotenv_path = Path(settings.work_directory) / ".env"
     dotenv_path.touch(exist_ok=True)
 
-    set_key(dotenv_path, "TG_BOT_TOKEN", token)
+    for key, value in token.items():
+        set_key(dotenv_path, "_".join(["TG", key]), value)
     return {"status": "ok", "message": "Token saved successfully"}
+
+
+@router.get("/get_tg_tokens")
+async def get_tg_tokens() -> list:
+    dotenv_path = Path(settings.work_directory) / ".env"
+    tg_token = []
+    with open(dotenv_path, "r") as file:
+        for line in file:
+            if line.startswith("TG_"):
+                key, _ = line.strip().split("=")
+                tg_token.append("_".join(key.split("_")[1:]))
+    
+    return tg_token

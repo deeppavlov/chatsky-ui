@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class BasePreset(BaseModel):
@@ -15,3 +15,4 @@ class BuildPreset(BasePreset):
 
 class RunPreset(BasePreset):
     build_name: str
+    tg_bot_token: Optional[str] = Field(default="")
