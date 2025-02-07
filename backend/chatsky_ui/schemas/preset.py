@@ -15,4 +15,4 @@ class BuildPreset(BasePreset):
 
 class RunPreset(BasePreset):
     build_name: str
-    tg_bot_token: Optional[str] = Field(default=None)
+    tg_bot_token: Optional[str] = Field(default="")

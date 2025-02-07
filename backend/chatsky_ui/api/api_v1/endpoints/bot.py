@@ -202,10 +202,21 @@ async def start_run(
             detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
         ) from e
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            # detail="Port conflict error. Please check that the port is not in use.",
-        ) from e
+        if "port conflict" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Port conflict error. Please check that the port is not in use.",
+            ) from e
+        elif "invalid preset" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid preset provided. Please check the preset value.",
+            ) from e
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+            ) from e
 
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)

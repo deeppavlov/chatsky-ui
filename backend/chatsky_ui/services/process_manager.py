@@ -27,7 +27,6 @@ from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.utils.repo_manager import RepoManager
 from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 
-load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
 
 class ProcessManager(ABC):
     """Base for build and run process managers."""
@@ -207,13 +206,12 @@ class RunManager(ProcessManager):
 
         async def _insert_token(token_name, build_id):
             for run in await self.get_full_info(0, 10000):
-                if token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
+                if token_name and token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
                     raise ValueError(f"Bot with token name '{token_name}' is already in use by another run process with id: '{run['id']}'")
             dotenv_path = Path(settings.work_directory) / ".env"
             dotenv_path.touch(exist_ok=True)
             token = "_".join(["TG", token_name])
             self.logger.info("Token name: %s", token)
-            load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
             token_value = os.getenv(token)
             self.logger.info("Token value: %s", token_value)
             if token_value is None:
@@ -229,14 +227,15 @@ class RunManager(ProcessManager):
         if build_port is not None and not RunManager._is_available_port(build_port):
             raise ValueError(f"Port '{build_port}' is already in use")
 
-        await _insert_token(preset.tg_bot_token, build_id)
+        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
+        if messenger == "telegram":
+            await _insert_token(preset.tg_bot_token, build_id)
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
         f" --messenger {messenger}"
 
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
-        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.last_run_time = datetime.now()
