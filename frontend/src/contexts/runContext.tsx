@@ -8,6 +8,7 @@ import {
   run_start,
   run_status,
   run_stop,
+  run_stop_all,
 } from "../api/bot"
 import { NotificationsContext } from "./notificationsContext"
 
@@ -26,8 +27,10 @@ type RunContextType = {
   setRuns: React.Dispatch<React.SetStateAction<localRunType[]>>
   run: localRunType | null
   setRun: React.Dispatch<React.SetStateAction<localRunType | null>>
-  runPending: boolean
-  setRunPending: React.Dispatch<React.SetStateAction<boolean>>
+  startingRunId: number | null
+  setStartingRunId: React.Dispatch<React.SetStateAction<number | null>>
+  runStopping: boolean
+  setRunStopping: React.Dispatch<React.SetStateAction<boolean>>
   runStart: (build_id: string, preset: runPresetType) => void
   runStop: (run_id: number) => void
   stopAllRuns: (run_ids: number[]) => void
@@ -42,8 +45,10 @@ export const runContext = createContext({
   runs: [],
   run: null,
   setRun: () => {},
-  runPending: false,
-  setRunPending: () => {},
+  startingRunId: null,
+  setStartingRunId: () => {},
+  runStopping: false,
+  setRunStopping: () => {},
   runStart: async () => {},
   runStop: () => {},
   stopAllRuns: () => {},
@@ -54,7 +59,8 @@ export const runContext = createContext({
 
 export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [run, setRun] = useState<localRunType | null>(null)
-  const [runPending, setRunPending] = useState(false)
+  const [startingRunId, setStartingRunId] = useState<number | null>(null)
+  const [runStopping, setRunStopping] = useState(false)
   const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
   const { notification: n } = useContext(NotificationsContext)
@@ -83,18 +89,16 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
   const runStart = async (
     build_id: string,
-    { end_status = "success", name, preset, build_name }: runPresetType
+    { end_status = "success", ...restParams }: runPresetType
   ) => {
-    setRunPending(true)
     setRunStatus("running")
+    setStartingRunId(runs.length)
 
     try {
       // 1. Запуск рана и получение run_id
       const { run_id } = await run_start(build_id, {
         end_status,
-        name,
-        preset,
-        build_name,
+        ...restParams,
       })
 
       let started_run
@@ -129,7 +133,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (!started_run) {
         // Если ран так и не появился, завершаем выполнение
-        setRunPending(false)
         setRunStatus("failed")
         return
       }
@@ -140,12 +143,15 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       const monitoringTimeout = 5000 // Таймаут на мониторинг статуса (5 секунд)
 
       while (isMonitoring) {
+        // Ждём перед началом каждой проверки. Без данного ожидания вызов run_status(started_run.id) дла рана, использующего телеграм, может выдать ошибку 500
+        await new Promise((resolve) => setTimeout(resolve, 1000))
         const { status } = await run_status(started_run.id)
 
         if (status !== "running") {
+          // Костыль: бэк позволяет запускать раны не чаще, чем раз в 13 секунд. Поэтому показываем, будто всё это время ран запускается
+          await new Promise((resolve) => setTimeout(resolve, 12000))
           // Обновляем состояние, если статус изменился
           setRuns((prev) => prev.map((r) => (run_id === r.id ? { ...r, status } : r)))
-          setRunPending(false)
           setRunStatus(status)
           isMonitoring = false
 
@@ -183,31 +189,27 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           })
           isMonitoring = false
         }
-
-        // Ждём перед следующей проверкой
-        await new Promise((resolve) => setTimeout(resolve, checkInterval))
       }
     } catch (error) {
       console.error("Error during run start:", error)
+      setStartingRunId(null)
       n.add({
         title: "Run error!",
         message: error instanceof Error ? error.message : "An unexpected error occurred.",
         type: "error",
       })
     } finally {
-      setRunPending(false)
+      setStartingRunId(null)
     }
   }
 
   async function runStop(run_id: number) {
-    setRunPending(() => true)
     try {
       await run_stop(run_id)
       let counter = 0
       const timerId = setInterval(async () => {
         if (counter > 10) {
           clearInterval(timerId)
-          setRunPending(() => false)
           n.add({
             message: "",
             title: "Error stopping the run!",
@@ -223,7 +225,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           clearInterval(timerId)
           setRunsHandler(runs)
           setRunStatus("stopped")
-          setRunPending(() => false)
           n.add({
             message: "",
             title: "Run stopped!",
@@ -233,7 +234,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       }, 1000)
     } catch (error) {
       console.log(error)
-      setRunPending(false)
       n.add({
         message: "",
         title: "Error stopping the run!",
@@ -242,57 +242,43 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const stopAllRuns = async (run_ids: number[]) => {
-    setRunPending(true)
-
-    for (const id of run_ids) {
-      try {
-        // Ожидание завершения остановки запуска
-        const { status } = await run_stop(id)
-        if (status === "error") {
-          throw Error("Error stopping the run")
+  const stopAllRuns = async () => {
+    setRunStopping(true)
+    try {
+      await run_stop_all()
+      let counter = 0
+      const timerId = setInterval(async () => {
+        if (counter > 10) {
+          clearInterval(timerId)
+          n.add({
+            message: "",
+            title: "Error stopping the run!",
+            type: "error",
+          })
         }
-        let counter = 0
-
-        // Ожидание изменения статуса запуска на "stopped"
-        await new Promise<void>((resolve, reject) => {
-          const timerId = setInterval(async () => {
-            if (counter > 10) {
-              clearInterval(timerId)
-              reject(new Error("Error stopping the run!"))
-              setRunPending(false)
-              return
-            }
-            counter += 1
-
-            const runs = await get_runs()
-            // из-за бага статус рана берём из массива со всеми ранами
-            if (runs.find((r) => r.id === id)?.status === "stopped") {
-              clearInterval(timerId)
-              setRunsHandler(runs)
-              setRunStatus("stopped")
-              setRunPending(false)
-              n.add({
-                message: "",
-                title: "Run stopped!",
-                type: "info",
-              })
-              resolve()
-            }
-          }, 1000)
-        })
-      } catch (error) {
-        console.log(error)
-        setRunPending(false)
-        n.add({
-          message: "",
-          title: "Error stopping the run!",
-          type: "error",
-        })
-      }
+        counter += 1
+        const runs = await get_runs()
+        if (runs.every((r) => r.status !== "alive")) {
+          clearInterval(timerId)
+          setRunsHandler(runs)
+          setRunStatus("stopped")
+          n.add({
+            message: "",
+            title: "All runs stopped!",
+            type: "info",
+          })
+        }
+      }, 1000)
+    } catch (error) {
+      console.log(error)
+      n.add({
+        message: "",
+        title: "Error stopping the run!",
+        type: "error",
+      })
+    } finally {
+      setRunStopping(false)
     }
-
-    setRunPending(false)
   }
 
   return (
@@ -300,8 +286,10 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         run,
         setRun,
-        runPending,
-        setRunPending,
+        startingRunId,
+        setStartingRunId,
+        runStopping,
+        setRunStopping,
         runStart,
         runStop,
         stopAllRuns,

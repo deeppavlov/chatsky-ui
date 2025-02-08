@@ -180,7 +180,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    *
    * @param {FlowType[]} flows flows to save array
    */
-  const saveFlows = async (flows: FlowType[], _interface?: interfaceType) => {
+  const saveFlows = async (flows: FlowType[]) => {
     const slot_nodes: SlotsNodeType[] = flows
       .map((flow) => flow.data.nodes)
       .flat()
@@ -191,7 +191,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     setGroups(groups)
     const parsed_groups = await parseGroups(groups)
     try {
-      await save_flows(flows, (_interface = _interface ?? { interface: "ui" }), parsed_groups)
+      await save_flows(flows, parsed_groups)
       setFlows(flows)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
