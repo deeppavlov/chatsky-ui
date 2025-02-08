@@ -21,7 +21,7 @@ const RebuildModal = ({ id = "alert-modal", onRebuild }: RebuildModalProps) => {
   return (
     <Modal className='w-full max-w-[364px]' id={id} isOpen={true} onClose={onCancelHandler}>
       <ModalHeader>
-        <h2 className='text-base font-bold'>You already have active build and run</h2>
+        <div className='text-base font-bold'>You already have active build and run</div>
       </ModalHeader>
       <ModalBody>
         <p className='text-sm leading-relaxed'>
