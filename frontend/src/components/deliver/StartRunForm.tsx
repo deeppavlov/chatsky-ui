@@ -1,9 +1,9 @@
 import { get_tg_tokens, set_tg_token } from "@/api/flows"
 import { buildContext } from "@/contexts/buildContext"
 import { runContext } from "@/contexts/runContext"
-import { Button, Divider, Input, Select, SelectItem } from "@nextui-org/react"
+import { Button, Input, Select, SelectItem } from "@nextui-org/react"
 import { useContext, useEffect, useState } from "react"
-import cn from "classnames"
+import FormControl from "../../UI/FormControl"
 
 interface IFormData {
   name: string
@@ -48,14 +48,14 @@ const StartRunForm = () => {
   const [formData, setFormData] = useState<IFormData>(initialFormData)
   const [tokenState, setTokenState] = useState<ITokenState>(initialTokenState)
   const [fieldErrors, setFieldErrors] = useState<{
-    build: string | null
-    tokenName: string | null
-    tokenValue: string | null
-  }>({
-    build: null,
-    tokenName: null,
-    tokenValue: null,
-  })
+    build?: string
+    tokenName?: string
+    tokenValue?: string
+  }>({})
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, name: e.target.value }))
+  }
 
   const handleBuildChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedBuild = successBuilds.find((b) => String(b.id) === e.target.value)
@@ -77,10 +77,11 @@ const StartRunForm = () => {
     setTokenState((state) => ({
       ...state,
       isTelegram,
+      isTokensAdding: isTelegram ? state.isTokensAdding : false,
     }))
     setFieldErrors((errors) => ({
       ...errors,
-      build: e.target.value.length ? null : "Please select a build",
+      build: e.target.value.length ? undefined : "Please select a build",
     }))
   }
 
@@ -100,14 +101,14 @@ const StartRunForm = () => {
       tokenValue: "",
     }))
 
-    const error = e.target.value.length ? null : "Please select Telegram token"
-    setFieldErrors((errors) => ({ ...errors, tokenValue: null, tokenName: error }))
+    const error = e.target.value.length ? undefined : "Please select Telegram token"
+    setFieldErrors((errors) => ({ ...errors, tokenValue: undefined, tokenName: error }))
   }
 
   const handleTokenNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((data) => ({ ...data, tokenName: e.target.value }))
     setFieldErrors((errors) => {
-      const error = e.target.value.length ? null : "Please enter Telegram token name"
+      const error = e.target.value.length ? undefined : "Please enter Telegram token name"
       return { ...errors, tokenName: error }
     })
   }
@@ -115,30 +116,37 @@ const StartRunForm = () => {
     setFormData((data) => ({ ...data, tokenValue: e.target.value }))
     setFieldErrors((errors) => {
       const error = e.target.value.length
-        ? null
+        ? undefined
         : "Please enter Telegram token to access the HTTP API"
       return { ...errors, tokenValue: error }
     })
   }
 
   const validateFields = () => {
-    const nameError = !formData.tokenName
-      ? "Please enter Telegram token name"
-      : tokenState.isTokensAdding && tokenState.tokens.includes(formData.tokenName)
-      ? "The token with this name already exists"
-      : null
-    const valueError =
+    let tokenNameError: string | undefined
+
+    if (tokenState.isTelegram) {
+      if (!formData.tokenName) {
+        tokenNameError = tokenState.isTokensAdding
+          ? "Please enter Telegram token name"
+          : "Please select Telegram token"
+      } else if (tokenState.isTokensAdding && tokenState.tokens.includes(formData.tokenName)) {
+        tokenNameError = "The token with this name already exists"
+      }
+    }
+
+    const tokenValueError =
       tokenState.isTokensAdding && !formData.tokenValue
         ? "Please enter Telegram token to access the HTTP API"
-        : null
-    const buildError = !formData.buildId ? "Please select a build" : null
+        : undefined
+    const buildError = !formData.buildId ? "Please select a build" : undefined
     setFieldErrors({
-      tokenName: nameError,
-      tokenValue: valueError,
+      tokenName: tokenNameError,
+      tokenValue: tokenValueError,
       build: buildError,
     })
 
-    return !nameError && !valueError && !buildError
+    return !tokenNameError && !tokenValueError && !buildError
   }
 
   const handleStartRun = async () => {
@@ -176,210 +184,124 @@ const StartRunForm = () => {
     <div className='h-full w-full flex flex-col gap-3'>
       <div className='flex-grow flex flex-col'>
         {/* NAME FIELD */}
-        <div className='flex relative'>
-          <div className='flex flex-col min-w-[100px]'>
-            <div className='h-12 flex items-center mr-4'>
-              <span className='text-sm font-semibold text-neutral-500'>Name</span>
-            </div>
-          </div>
-          <div className='flex flex-col basis-full w-0'>
-            <div className='h-12 flex items-center justify-end'>
-              <Input
-                placeholder={`Run ${runs.length}`}
-                value={formData.name}
-                onChange={(e) => {
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }}
-                disableAnimation
-                size='sm'
-                variant='underlined'
-                classNames={inputClassNames}
-              />
-            </div>
-          </div>
-          <Divider className='absolute bottom-0' />
-        </div>
+        <FormControl
+          label='Name'
+          input={
+            <Input
+              placeholder={`Run ${runs.length}`}
+              value={formData.name}
+              onChange={handleNameChange}
+              disableAnimation
+              size='sm'
+              variant='underlined'
+              classNames={inputClassNames}
+            />
+          }
+        />
 
         {/* BUILD FIELD */}
-        <div className='flex flex-col'>
-          <div className='flex'>
-            <div className='flex flex-col min-w-[100px]'>
-              <div className='h-12 flex items-center mr-4'>
-                <span
-                  className={cn(
-                    "text-sm font-semibold",
-                    fieldErrors.build ? "text-danger" : "text-neutral-500"
-                  )}
-                >
-                  Build
-                </span>
-              </div>
-            </div>
-            <div className='flex flex-col basis-full w-0'>
-              <div className='h-12 flex items-center justify-end'>
-                <Select
-                  aria-label='Build'
-                  labelPlacement='outside'
-                  placeholder='Select build'
-                  onChange={handleBuildChange}
-                  radius='sm'
-                  size='sm'
-                >
-                  {buildNames.map((item) => (
-                    <SelectItem key={item.id} textValue={item.name}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </Select>
-              </div>
-            </div>
-          </div>
-          <Divider className={cn(fieldErrors.build && "bg-danger")} />
-          {fieldErrors.build && <div className='text-danger text-xs mt-1'>{fieldErrors.build}</div>}
-        </div>
+        <FormControl
+          label='Build'
+          isError={!!fieldErrors.build}
+          errorMessage={fieldErrors.build}
+          input={
+            <Select
+              aria-label='Build'
+              labelPlacement='outside'
+              placeholder='Select build'
+              onChange={handleBuildChange}
+              radius='sm'
+              size='sm'
+            >
+              {buildNames.map((item) => (
+                <SelectItem key={item.id} textValue={item.name}>
+                  {item.name}
+                </SelectItem>
+              ))}
+            </Select>
+          }
+        />
 
         {/* PRESET FIELD */}
-        <div className='flex flex-col'>
-          <div className='flex '>
-            <div className='flex flex-col min-w-[100px]'>
-              <div className='h-12 flex items-center mr-4'>
-                <span className='text-sm font-semibold text-neutral-500'>Preset</span>
-              </div>
-            </div>
-            <div className='flex flex-col basis-full w-0'>
-              <div className='h-12 flex items-center justify-end'>
+        <FormControl
+          label='Preset'
+          input={
+            <Select
+              aria-label='Preset'
+              labelPlacement='outside'
+              defaultSelectedKeys={["None"]}
+              placeholder='No preset'
+              onChange={handlePresetChange}
+              radius='sm'
+              size='sm'
+            >
+              {[{ key: "None", label: "No preset" }].map((item) => (
+                <SelectItem key={item.key}>{item.label}</SelectItem>
+              ))}
+            </Select>
+          }
+        />
+
+        {tokenState.isTelegram && (
+          <>
+            {/* TOKEN FIELD */}
+            <FormControl
+              label='Token'
+              isError={!tokenState.isTokensAdding && !!fieldErrors.tokenName}
+              errorMessage={fieldErrors.tokenName}
+              input={
                 <Select
-                  aria-label='Preset'
+                  aria-label='Token'
                   labelPlacement='outside'
-                  defaultSelectedKeys={["None"]}
-                  placeholder='No preset'
-                  onChange={handlePresetChange}
+                  placeholder='Select token'
+                  onChange={handleTokenChange}
                   radius='sm'
                   size='sm'
                 >
-                  {[{ key: "None", label: "No preset" }].map((item) => (
-                    <SelectItem key={item.key}>{item.label}</SelectItem>
+                  {["New token", ...tokenState.tokens].map((item) => (
+                    <SelectItem key={item}>{item}</SelectItem>
                   ))}
                 </Select>
-              </div>
-            </div>
-          </div>
-          <Divider />
-        </div>
-
-        {/* TOKEN FIELD */}
-        {tokenState.isTelegram && (
-          <>
-            <div className='flex flex-col'>
-              <div className='flex'>
-                <div className='flex flex-col min-w-[100px]'>
-                  <div className='h-12 flex items-center mr-4'>
-                    <span
-                      className={cn(
-                        "text-sm font-semibold",
-                        !tokenState.isTokensAdding && fieldErrors.tokenName
-                          ? "text-danger"
-                          : "text-neutral-500"
-                      )}
-                    >
-                      Token
-                    </span>
-                  </div>
-                </div>
-                <div className='flex flex-col basis-full w-0'>
-                  <div className='h-12 flex items-center justify-end'>
-                    <Select
-                      aria-label='Token'
-                      labelPlacement='outside'
-                      placeholder='Select token'
-                      onChange={handleTokenChange}
-                      radius='sm'
-                      size='sm'
-                    >
-                      {["New token", ...tokenState.tokens].map((item) => (
-                        <SelectItem key={item}>{item}</SelectItem>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              <Divider
-                className={cn(!tokenState.isTokensAdding && fieldErrors.tokenName && "bg-danger")}
-              />
-              {!tokenState.isTokensAdding && fieldErrors.tokenName && (
-                <div className='text-danger text-xs mt-1'>{fieldErrors.tokenName}</div>
-              )}
-            </div>
+              }
+            />
 
             {tokenState.isTokensAdding && (
               <>
-                <div className='flex flex-col'>
-                  <div className='flex'>
-                    <div className='flex flex-col min-w-[100px]'>
-                      <div className='h-12 flex items-center mr-4'>
-                        <span
-                          className={cn(
-                            "text-sm font-semibold",
-                            fieldErrors.tokenName ? "text-danger" : "text-neutral-500"
-                          )}
-                        >
-                          Token name
-                        </span>
-                      </div>
-                    </div>
-                    <div className='flex flex-col basis-full w-0'>
-                      <div className='h-12 flex items-center justify-end'>
-                        <Input
-                          placeholder='Enter Telegram token name'
-                          value={formData.tokenName}
-                          onChange={handleTokenNameChange}
-                          disableAnimation
-                          size='sm'
-                          variant='underlined'
-                          classNames={inputClassNames}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <Divider className={cn(fieldErrors.tokenName && "bg-danger")} />
-                  {fieldErrors.tokenName && (
-                    <div className='text-danger text-xs mt-1'>{fieldErrors.tokenName}</div>
-                  )}
-                </div>
+                {/* TOKEN_NAME FIELD */}
+                <FormControl
+                  label='Token name'
+                  isError={!!fieldErrors.tokenName}
+                  errorMessage={fieldErrors.tokenName}
+                  input={
+                    <Input
+                      placeholder='Enter Telegram token name'
+                      value={formData.tokenName}
+                      onChange={handleTokenNameChange}
+                      disableAnimation
+                      size='sm'
+                      variant='underlined'
+                      classNames={inputClassNames}
+                    />
+                  }
+                />
 
-                <div className='flex flex-col'>
-                  <div className='flex'>
-                    <div className='flex flex-col min-w-[100px]'>
-                      <div className='h-12 flex items-center mr-4'>
-                        <span
-                          className={cn(
-                            "text-sm font-semibold",
-                            fieldErrors.tokenValue ? "text-danger" : "text-neutral-500"
-                          )}
-                        >
-                          Token value
-                        </span>
-                      </div>
-                    </div>
-                    <div className='flex flex-col basis-full w-0'>
-                      <div className='h-12 flex items-center justify-end'>
-                        <Input
-                          placeholder='Enter Telegram token value'
-                          value={formData.tokenValue}
-                          onChange={handleTokenValueChange}
-                          disableAnimation
-                          size='sm'
-                          variant='underlined'
-                          classNames={inputClassNames}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <Divider />
-                  {fieldErrors.tokenValue && (
-                    <div className='text-danger text-xs mt-1'>{fieldErrors.tokenValue}</div>
-                  )}
-                </div>
+                {/* TOKEN_VALUE FIELD */}
+                <FormControl
+                  label='Token value'
+                  isError={!!fieldErrors.tokenValue}
+                  errorMessage={fieldErrors.tokenValue}
+                  input={
+                    <Input
+                      placeholder='Enter Telegram token value'
+                      value={formData.tokenValue}
+                      onChange={handleTokenValueChange}
+                      disableAnimation
+                      size='sm'
+                      variant='underlined'
+                      classNames={inputClassNames}
+                    />
+                  }
+                />
               </>
             )}
           </>
