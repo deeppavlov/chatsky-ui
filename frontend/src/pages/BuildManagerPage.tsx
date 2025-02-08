@@ -23,7 +23,14 @@ const BuildManagerPage = () => {
   const { saveFlows, flows } = useContext(flowContext)
   const { buildStart, buildPending, builds } = useContext(buildContext)
   const { getFlows } = useContext(flowContext)
-  const { runStart, runStop, stopAllRuns, runPending, runs: reversedRuns } = useContext(runContext)
+  const {
+    runStart,
+    runStop,
+    stopAllRuns,
+    startingRunId,
+    runStopping,
+    runs: reversedRuns,
+  } = useContext(runContext)
   const { openPopUp } = useContext(PopUpContext)
   const runs = [...reversedRuns].reverse()
 
@@ -78,8 +85,8 @@ const BuildManagerPage = () => {
     )
   }
 
-  const buttonClickHandler = async () => {
-    saveFlows(flows, { interface: "ui" })
+  const buildAndRunHandler = async () => {
+    saveFlows(flows)
     const newBuildName = `Build ${builds.length}`
     const newRunName = `Run ${runs.length}`
 
@@ -127,9 +134,9 @@ const BuildManagerPage = () => {
           <h2 className='text-2xl font-semibold'>Deliver</h2>
           <Button
             disableRipple
-            disabled={runPending || buildPending}
+            disabled={startingRunId !== null || buildPending}
             className='bg-foreground text-background rounded-lg'
-            onClick={buttonClickHandler}
+            onClick={buildAndRunHandler}
           >
             {/* АНИМАЦИЯ */}
             {loading && (
@@ -229,7 +236,7 @@ const BuildManagerPage = () => {
                   return (
                     <Accordion
                       key={r.id}
-                      isLoading={r.status === "running"}
+                      isLoading={r.status === "running" || r.id === startingRunId}
                       title={r.preset.name}
                       infoBlock={
                         <button
@@ -253,6 +260,7 @@ const BuildManagerPage = () => {
                 })}
               </ScrolledContainer>
               <Button
+                isDisabled={runStopping || !aliveRuns.length}
                 onClick={handleStopRuns}
                 className='bg-btn-accent rounded-lg w-full flex-shrink-0 flex justify-center items-center gap-2'
               >
@@ -324,6 +332,7 @@ const BuildManagerPage = () => {
                                 preset: r.preset.preset,
                                 name: `Run ${runs.length}`,
                                 build_name: r.preset.build_name,
+                                tg_bot_token: r.preset.tg_bot_token,
                               })
                             }}
                             className='h-6 w-6 flex justify-center items-center active:rotate-12 transition-all'
