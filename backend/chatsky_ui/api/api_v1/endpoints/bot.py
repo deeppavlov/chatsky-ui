@@ -201,19 +201,13 @@ async def start_run(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
         ) from e
+    except ConnectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Port conflict error. Something went wrong. Please check the logs for more details.",
+        ) from e
     except ValueError as e:
-        if "port conflict" in str(e):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Port conflict error. Please check that the port is not in use.",
-            ) from e
-        elif "invalid preset" in str(e):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid preset provided. Please check the preset value.",
-            ) from e
-        else:
-            raise HTTPException(
+        raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e),
             ) from e

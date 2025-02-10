@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict
 
 import uvicorn
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 from omegaconf import DictConfig, OmegaConf
 
 LOG_LEVELS: Dict[str, int] = {
@@ -90,6 +90,19 @@ class Settings:
     def refresh_work_dir(self):
         config = self._load_temp_config()
         self.set_config(**config)
+
+    def add_env_vars(self, env_vars: Dict[str, str]):
+        dotenv_path = settings.work_directory / ".env"
+        dotenv_path.touch(exist_ok=True)
+
+        for key, value in env_vars.items():
+            if key in os.environ:
+                logging.warning(
+                    f"Environment variable '{key}' already exists. "
+                    f"Changing value from '{os.environ[key]}' to '{value}'."
+                )
+            os.environ[key] = value
+            set_key(dotenv_path, key, value)
 
 
 class AppRunner:
