@@ -12,7 +12,6 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import socket
-from dotenv import set_key
 
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
@@ -199,24 +198,25 @@ class RunManager(ProcessManager):
 
         async def _get_build_info(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
+            if not build_info:
+                raise ValueError(f"Build id '{build_id}' not found in the database")
             port = build_info.get("port")
             messenger = build_info["preset"]["messenger"]
             self.logger.debug("Attached build port '%s' for run process '%s'", port, self.last_id)
             return port, messenger
 
-        async def _insert_token(token_name, build_id):
+        async def _check_available_tg_token(token_name):
             for run in await self.get_full_info(0, 10000):
                 if token_name and token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
                     raise ValueError(f"Bot with token name '{token_name}' is already in use by another run process with id: '{run['id']}'")
-            dotenv_path = Path(settings.work_directory) / ".env"
-            dotenv_path.touch(exist_ok=True)
-            token = "_".join(["TG", token_name])
-            self.logger.info("Token name: %s", token)
-            token_value = os.getenv(token)
-            self.logger.info("Token value: %s", token_value)
+
+        def _assign_token_to_key_used_by_build(token_name, unique_build_token):
+            full_token_name = "_".join(["TG", token_name])
+            self.logger.info("Assigning token '%s' to key '%s'", full_token_name, unique_build_token)
+            token_value = os.getenv(full_token_name)
             if token_value is None:
                 raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
-            set_key(dotenv_path, UNIQUE_BUILD_TOKEN.format(build_id=build_id), token_value)
+            settings.add_env_vars({unique_build_token: token_value})
 
         if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
@@ -225,18 +225,19 @@ class RunManager(ProcessManager):
         build_port, messenger = await _get_build_info(build_id)
 
         if build_port is not None and not RunManager._is_available_port(build_port):
-            raise ValueError(f"Port '{build_port}' is already in use")
+            raise ConnectionError(f"Port conflict: port '{build_port}' is already in use")
 
-        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         if messenger == "telegram":
-            await _insert_token(preset.tg_bot_token, build_id)
+            await _check_available_tg_token(preset.tg_bot_token)
+            load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
+            _assign_token_to_key_used_by_build(preset.tg_bot_token, UNIQUE_BUILD_TOKEN.format(build_id=build_id))
+
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-        f" --messenger {messenger}"
 
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
-        await process.start(cmd_to_run)
+        await process.start(cmd_to_run, env=os.environ.copy())
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.last_run_time = datetime.now()
 

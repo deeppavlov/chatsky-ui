@@ -48,24 +48,12 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(project_dir: Path, command_file: str, preset: str, messenger: Optional[str] = "web", chatsky_port: Optional[int] = None, build_id: int = None):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str):
     logger = get_logger(__name__)
 
     presets_build_path = settings.presets_path / command_file
     with open(presets_build_path, encoding="UTF-8") as file:
         file_content = file.read()
-
-
-    if build_id is not None:
-        os.environ["build_id"] = str(build_id)
-    elif "build_id" in os.environ:
-        os.environ["build_id"] = ""
-
-    os.environ["messenger"] = str(messenger)
-    if chatsky_port is not None:
-        os.environ["chatsky_port"] = str(chatsky_port)
-    elif "chatsky_port" in os.environ:
-        os.environ["chatsky_port"] = ""
 
     template = string.Template(file_content)
     substituted_content = template.substitute(work_directory=project_dir)
@@ -95,7 +83,14 @@ def build_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
-    _execute_command_file(project_dir, "build.json", preset, messenger, chatsky_port, build_id)
+    os.environ["build_id"] = str(build_id)
+    os.environ["messenger"] = str(messenger)
+    if chatsky_port is not None:
+        os.environ["chatsky_port"] = str(chatsky_port)
+    else:
+        os.environ.pop("chatsky_port", None)
+
+    _execute_command_file(project_dir, "build.json", preset)
 
 
 @cli.command("build_scenario")

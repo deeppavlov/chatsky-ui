@@ -26,13 +26,6 @@ class Messenger(BaseComponent):
             raise ValueError('Exactly one of "telegram", or "web" must be provided.')
         return self
 
-    # @model_validator(mode="after")
-    # def check_telegram_token(self):
-    #     tg_bot_token = os.getenv("TG_BOT_TOKEN")
-    #     if self.telegram is not None and not tg_bot_token:
-    #         raise ValueError("Telegram token must be provided.")
-    #     return self
-
     @model_validator(mode="after")
     def check_chatsky_port(self):
         if self.web is None and self.chatsky_port is not None:
@@ -43,6 +36,6 @@ class Messenger(BaseComponent):
 
     @model_validator(mode="after")
     def check_token_name(self):
-        if self.telegram is not None and self.tg_token_name is None:
+        if self.telegram is not None and (self.tg_token_name is None or self.tg_token_name == ""):
             raise ValueError("The 'tg_token_name' must be provided when using 'telegram' messenger.")
         return self

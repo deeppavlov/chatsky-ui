@@ -1,7 +1,7 @@
-from pathlib import Path
 from typing import Dict, Optional, Union
+from dotenv import load_dotenv
+import os
 
-from dotenv import set_key
 from fastapi import APIRouter, Depends, HTTPException, status
 from git.exc import GitCommandError
 from omegaconf import OmegaConf
@@ -58,23 +58,19 @@ async def flows_post(
 
 
 @router.post("/tg_token")
-async def post_tg_token(token: Dict[str, str]) -> Dict[str, str]:
-    dotenv_path = Path(settings.work_directory) / ".env"
-    dotenv_path.touch(exist_ok=True)
-
-    for key, value in token.items():
-        set_key(dotenv_path, "_".join(["TG", key]), value)
+async def post_tg_token(tokens: Dict[str, str]) -> Dict[str, str]:
+    sanitized_tokens = {f"TG_{key.replace(' ', '_').upper()}": value for key, value in tokens.items()}
+    settings.add_env_vars(sanitized_tokens)
     return {"status": "ok", "message": "Token saved successfully"}
 
 
 @router.get("/get_tg_tokens")
 async def get_tg_tokens() -> list:
-    dotenv_path = Path(settings.work_directory) / ".env"
+    load_dotenv(settings.work_directory / ".env", override=True)
+
     tg_token = []
-    with open(dotenv_path, "r") as file:
-        for line in file:
-            if line.startswith("TG_"):
-                key, _ = line.strip().split("=")
-                tg_token.append("_".join(key.split("_")[1:]))
+    for key, _ in os.environ.items():
+        if key.startswith("TG_"):
+            tg_token.append("_".join(key.split("_")[1:]))
     
     return tg_token
