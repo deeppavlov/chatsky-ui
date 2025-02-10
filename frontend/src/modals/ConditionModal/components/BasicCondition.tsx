@@ -5,6 +5,7 @@ import DefInput from "@/UI/Input/DefInput"
 import { Checkbox, Button } from "@nextui-org/react"
 import DefTextarea from "@/UI/Input/DefTextarea"
 import _ from "lodash"
+import DeleteBasicConditionIcon from "@/icons/nodes/conditions/deleteBasicConditionIcon"
 
 interface IFlags {
  ignoreCase: boolean
@@ -341,7 +342,9 @@ const mapping: IMapping = {
 
   return (
    <div className={`${padding} flex flex-col gap-[12px] py-[24px]`}>
+    <DeleteBasicConditionIcon />
     <p>Condition</p>
+
     <DefSelect
      mini
      defaultValue={key}
@@ -464,7 +467,11 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
  return (
   <>
    <div className="pt-[24px]">
-    <p className="pb-[12px]">Structure</p>
+    <div className="flex flex items-center justify-between pb-[12px]">
+     <p className="">Structure</p>
+     <DeleteBasicConditionIcon />
+    </div>
+
     <DefSelect
      mini
      className="w-full"
