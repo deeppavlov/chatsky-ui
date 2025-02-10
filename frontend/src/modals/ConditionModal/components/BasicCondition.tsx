@@ -39,7 +39,7 @@ const genDefObject = (key: string): IDefObject | undefined => {
     flags: { ignoreCase: false },
    }
   case "Not":
-   return { structure: "not", not: {} }
+   return { structure: "Not", Not: {} }
   default:
    return undefined
  }
@@ -69,7 +69,7 @@ const getValue = (state: IState, id: string | number): IDefObject => {
   const data: IDefObject = state.data.filter(
    (item: IDefObject) => item.id === id
   )[0]
-  return data.structure === "not" ? data.not : data
+  return data.structure === "Not" ? data.Not : data
  }
  return (state.data as IDefObject) || ""
 }
@@ -86,8 +86,8 @@ const mapping: IMapping = {
       if (state.structure === "Any of" || state.structure === "All of") {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
-         return item.structure === "not"
-          ? { ...item, not: { ...item.not, text: value } }
+         return item.structure === "Not"
+          ? { ...item, Not: { ...item.Not, text: value } }
           : { ...item, text: value }
         }
         return item
@@ -113,8 +113,8 @@ const mapping: IMapping = {
       if (state.structure === "Any of" || state.structure === "All of") {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
-         return item.structure === "not"
-          ? { ...item, not: { ...item.not, text: value } }
+         return item.structure === "Not"
+          ? { ...item, Not: { ...item.Not, text: value } }
           : { ...item, text: value }
         }
         return item
@@ -133,8 +133,8 @@ const mapping: IMapping = {
        if (state.structure === "Any of" || state.structure === "All of") {
         const newData: IDefObject[] = state.data.map((item: IDefObject) => {
          if (item.id === id) {
-          return item.structure === "not"
-           ? { ...item, not: { ...item.not, flags: { ignoreCase: value } } }
+          return item.structure === "Not"
+           ? { ...item, Not: { ...item.Not, flags: { ignoreCase: value } } }
            : { ...item, flags: { ignoreCase: value } }
          }
          return item
@@ -168,8 +168,8 @@ const mapping: IMapping = {
       if (state.structure === "Any of" || state.structure === "All of") {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
-         return item.structure === "not"
-          ? { ...item, not: { ...item.not, pattern: value } }
+         return item.structure === "Not"
+          ? { ...item, Not: { ...item.Not, pattern: value } }
           : { ...item, pattern: value }
         }
         return item
@@ -187,8 +187,8 @@ const mapping: IMapping = {
        if (state.structure === "Any of" || state.structure === "All of") {
         const newData: IDefObject[] = state.data.map((item: IDefObject) => {
          if (item.id === id) {
-          return item.structure === "not"
-           ? { ...item, not: { ...item.not, flags: { ignoreCase: value } } }
+          return item.structure === "Not"
+           ? { ...item, Not: { ...item.Not, flags: { ignoreCase: value } } }
            : { ...item, flags: { ignoreCase: value } }
          }
          return item
@@ -323,16 +323,14 @@ const mapping: IMapping = {
    { id: 3, name: "Regular expression" },
   ]
 
-  const render = () => {
-   const key: string =
-    state.structure === "All of" || state.structure === "Any of"
-     ? (state.data as IDefObject[]).filter(
-        (item: IDefObject) => item.id === id
-       )[0].not.name
-     : (state.data as IDefObject).name
+  const carentCondition: IDefObject = state.data.filter(
+   (data: IDefObject) => data.id === id
+  )[0]
 
-   return <>{mapping[key] && mapping[key](setState, state, id)}</>
-  }
+  const key: string =
+   state.structure === "All of" || state.structure === "Any of"
+    ? carentCondition.Not.name
+    : (state.data as IDefObject).name
 
   const padding =
    state.structure === "Any of" ||
@@ -346,16 +344,17 @@ const mapping: IMapping = {
     <p>Condition</p>
     <DefSelect
      mini
+     defaultValue={key}
      className={`w-full`}
      onValueChange={(value) => {
       const defData = genDefObject(value)
 
       if (state.structure === "Any of" || state.structure === "All of") {
-       const newCondition = { ...defData, name: value, id, test: true }
+       const newCondition = { ...defData, name: value, id }
 
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
-         return { ...item, not: newCondition }
+         return { ...item, Not: newCondition }
         }
         return item
        })
@@ -373,7 +372,7 @@ const mapping: IMapping = {
      }))}
      placeholder="Choose group"
     />
-    {render()}
+    {mapping[key] && mapping[key](setState, state, id)}
    </div>
   )
  },
@@ -437,6 +436,8 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
  }
 
  const [state, setStae] = useState(defaultState)
+
+ console.log(condition)
 
  useEffect(() => {
   const structure = state.structure
