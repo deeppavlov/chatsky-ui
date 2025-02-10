@@ -64,6 +64,12 @@ interface IState {
  priority: number
  transition_type: string
  Title?: string
+ conditionGroups: {
+  id: number
+  name: string
+  key?: string
+  disabled?: boolean
+ }[]
 }
 
 const getValue = (state: IState, id: string | number): IDefObject => {
@@ -210,12 +216,9 @@ const mapping: IMapping = {
   )
  },
  "Any of": (setState, state) => {
-  const arr = [
-   { id: 1, name: "Exact match", disabled: false },
-   { id: 2, name: "Include text" },
-   { id: 3, name: "Regular expression", disabled: false },
-   { id: 6, name: "Not" },
-  ]
+  const arr = state.conditionGroups.filter(
+   (condition) => condition.name !== "Any of" && condition.name !== "All of"
+  )
 
   return (
    <>
@@ -241,14 +244,18 @@ const mapping: IMapping = {
             return item
            })
 
-           const newState = { ...state, data: newData }
-           setState(newState)
+           const conditionGroups = state.conditionGroups.map((condition) => {
+            if (
+             condition.name === value &&
+             condition.hasOwnProperty("disabled")
+            ) {
+             return { ...condition, disabled: true }
+            }
+            return condition
+           })
 
-           if (value === "Exact match" || value === "Regular expression") {
-            arr.map((group) =>
-             group.name === value ? { ...group, disabled: true } : group
-            )
-           }
+           const newState = { ...state, conditionGroups, data: newData }
+           setState(newState)
           }}
           items={arr.map((group) => ({
            value: group.name,
@@ -418,24 +425,27 @@ const InputText: React.FC<{
 }
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
+ const conditionGroups = [
+  { id: 1, name: "Exact match", key: "ExactMatch", disabled: false },
+  { id: 2, name: "Include text", key: "includeText" },
+  { id: 3, name: "Regular expression", key: "Regexp", disabled: false },
+  { id: 4, name: "Any of" },
+  { id: 5, name: "All of" },
+  { id: 6, name: "Not" },
+ ]
+
  const defaultState: IState = {
   priority: 1,
   transition_type: "manual",
   Title: condition.name,
   structure: "",
   data: [],
+  conditionGroups: conditionGroups,
  }
 
  const [state, setStae] = useState(defaultState)
 
- const conditionGroups = [
-  { id: 1, name: "Exact match", key: "ExactMatch" },
-  { id: 2, name: "Include text", key: "includeText" },
-  { id: 3, name: "Regular expression", key: "Regexp" },
-  { id: 4, name: "Any of" },
-  { id: 5, name: "All of" },
-  { id: 6, name: "Not" },
- ]
+ console.log(state, "state")
 
  const TextConditions =
   state.structure === "All of" || state.structure === "Any of" ? (
@@ -443,14 +453,6 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     One of the conditions below has to be fulfilled
    </p>
   ) : null
-
- const isrRepetition = (key: string) => {
-  if (state.structure === "Any of" || state.structure === "All of") {
-   console.log(state.data?.map((item: IDefObject) => item.name).includes(key))
-   return state.data?.map((item: IDefObject) => item.name).includes(key)
-  }
-  return false
- }
 
  return (
   <>
@@ -472,16 +474,15 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
        setStae({ ...state, structure: value, data: defData })
       }
      }}
-     items={conditionGroups.map((group) => ({
+     items={state.conditionGroups.map((group) => ({
       value: group.name,
       key: group.id.toString(),
-      disabled: isrRepetition(group.name),
+      disabled: group.disabled,
      }))}
      placeholder="Choose group"
     />
     {TextConditions}
    </div>
-
    {mapping[state.structure] && mapping[state.structure](setStae, state)}
   </>
  )
