@@ -20,7 +20,7 @@ export type conditionDataType = {
   }
 }
 
-export type conditionTypeType = "llm" | "slot" | "button" | "python" | "custom"
+export type conditionTypeType = "llm" | "slot" | "button" | "python" | "custom" | "basic"
 
 export type conditionType = {
   id: string

@@ -1,5 +1,5 @@
 
-export type responseTypeType = "python" | "llm" | "custom" | "text"
+export type responseTypeType = "python" | "llm" | "custom" | "text"| "basic"
 
 export type responseDataType = {
   priority: number
@@ -17,6 +17,7 @@ export type responseDataType = {
     action: string
     variables: string[]
   }
+
 }
 
 export type responseType = {
