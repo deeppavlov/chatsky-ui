@@ -1,5 +1,5 @@
 import { ConditionModalContentType } from "../ConditionModal"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import DefSelect from "@/UI/Input/DefSelect"
 import DefInput from "@/UI/Input/DefInput"
 import { Checkbox, Button } from "@nextui-org/react"
@@ -16,18 +16,13 @@ interface IDefObject {
  children?: IDefObject[] | IDefObject
  [key: string]: any
  id?: string
+ pattern?: string
 }
 
 const genDefObject = (key: string): IDefObject | undefined => {
- const parameters = {
-  priority: 1,
-  transition_type: "manual",
- }
-
  switch (key) {
   case "Exact match":
    return {
-    parameters,
     structure: "exactMatch",
     text: "",
    }
@@ -40,7 +35,7 @@ const genDefObject = (key: string): IDefObject | undefined => {
   case "Regular expression":
    return {
     structure: "regExp",
-    text: "",
+    pattern: "",
     flags: { ignoreCase: false },
    }
   case "Not":
@@ -61,9 +56,6 @@ interface IMapping {
 interface IState {
  structure: string
  data: IDefObject[] | IDefObject
- priority: number
- transition_type: string
- Title?: string
  conditionGroups: {
   id: number
   name: string
@@ -166,26 +158,26 @@ const mapping: IMapping = {
   return (
    <div className={`flex flex-col gap-[12px] ${pading}`}>
     <TextMasseg
-     title={"Text"}
+     title={"Pattern"}
      text={"Message has to match exactly the text below"}
     />
     <DefTextarea
-     value={getValue(state, id ?? "").text}
+     value={getValue(state, id ?? "").pattern}
      className="pt-[6px] pb-[12px]"
      onValueChange={(value) => {
       if (state.structure === "Any of" || state.structure === "All of") {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
          return item.structure === "not"
-          ? { ...item, not: { ...item.not, text: value } }
-          : { ...item, text: value }
+          ? { ...item, not: { ...item.not, pattern: value } }
+          : { ...item, pattern: value }
         }
         return item
        })
        setState({ ...state, data: newData })
        return
       }
-      setState({ ...state, data: { ...state.data, text: value } })
+      setState({ ...state, data: { ...state.data, pattern: value } })
      }}
     />
     <div className="flex items-center gap-2 px-3 py-3">
@@ -434,18 +426,32 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
   { id: 6, name: "Not" },
  ]
 
+ const key = condition.type
+
+ const isBasis = condition.data[key] !== undefined
+
  const defaultState: IState = {
-  priority: 1,
-  transition_type: "manual",
-  Title: condition.name,
-  structure: "",
-  data: [],
+  structure: isBasis ? condition.data[key].structure : "",
+  data: isBasis ? condition.data[key].data : [],
   conditionGroups: conditionGroups,
  }
 
  const [state, setStae] = useState(defaultState)
 
- console.log(state, "state")
+ useEffect(() => {
+  const structure = state.structure
+  const newData = state.data
+
+  const result = {
+   ...condition,
+   data: {
+    ...condition.data,
+    basic: { structure, data: Array.isArray(newData) ? [...newData] : newData },
+   },
+  }
+
+  setData(result)
+ }, [state])
 
  const TextConditions =
   state.structure === "All of" || state.structure === "Any of" ? (
