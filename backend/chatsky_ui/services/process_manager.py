@@ -217,6 +217,7 @@ class RunManager(ProcessManager):
             if token_value is None:
                 raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
             set_key(dotenv_path, UNIQUE_BUILD_TOKEN.format(build_id=build_id), token_value)
+            os.environ[UNIQUE_BUILD_TOKEN.format(build_id=build_id)] = token_value
 
         if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
@@ -232,11 +233,10 @@ class RunManager(ProcessManager):
             await _insert_token(preset.tg_bot_token, build_id)
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-        f" --messenger {messenger}"
 
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
-        await process.start(cmd_to_run)
+        await process.start(cmd_to_run, env=os.environ.copy())
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.last_run_time = datetime.now()
 

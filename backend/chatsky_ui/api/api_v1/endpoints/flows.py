@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
+import os
 
 from dotenv import set_key
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -64,6 +65,7 @@ async def post_tg_token(token: Dict[str, str]) -> Dict[str, str]:
 
     for key, value in token.items():
         set_key(dotenv_path, "_".join(["TG", key]), value)
+        os.environ["_".join(["TG", key])] = value
     return {"status": "ok", "message": "Token saved successfully"}
 
 

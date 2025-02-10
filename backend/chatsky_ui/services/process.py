@@ -41,7 +41,7 @@ class Process(ABC):
         self.logger: logging.Logger
         self.to_be_terminated = False
 
-    async def start(self, cmd_to_run: str) -> None:
+    async def start(self, cmd_to_run: str, env = None) -> None:
         """Starts an asyncronous process with the given command."""
         self.process = await asyncio.create_subprocess_exec(
             *cmd_to_run.split(),
@@ -49,6 +49,7 @@ class Process(ABC):
             stderr=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.PIPE,
             preexec_fn=os.setsid,
+            env=env,
         )
 
     async def get_full_info(self, attributes: list) -> Dict[str, Any]:
