@@ -65,8 +65,11 @@ interface IState {
  }[]
 }
 
+const isAnyOrAll = (value: string): boolean =>
+ value === "Any of" || value === "All of"
+
 const getValue = (state: IState, id: string | number): IDefObject => {
- if (state.structure === "Any of" || state.structure === "All of") {
+ if (isAnyOrAll(state.structure)) {
   const data: IDefObject = state.data.filter(
    (item: IDefObject) => item.id === id
   )[0]
@@ -74,17 +77,18 @@ const getValue = (state: IState, id: string | number): IDefObject => {
  }
  return (state.data as IDefObject) || ""
 }
+
 const mapping: IMapping = {
  "Exact match": (setState, state, id) => {
-  const pading = id === undefined ? "py-[12px]" : ""
+  const padding = id === undefined ? "py-[12px]" : ""
 
   return (
-   <div className={`flex flex-col gap-[12px] ${pading}`}>
+   <div className={`flex flex-col gap-[12px] ${padding}`}>
     <InputText
      value={getValue(state, id ?? "").text}
      defaultValue={""}
      setState={(value) => {
-      if (state.structure === "Any of" || state.structure === "All of") {
+      if (isAnyOrAll(state.structure)) {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
          return item.structure === "Not"
@@ -103,15 +107,15 @@ const mapping: IMapping = {
   )
  },
  "Include text": (setState, state, id) => {
-  const pading = id === undefined ? "py-[12px]" : ""
+  const padding = id === undefined ? "py-[12px]" : ""
 
   return (
-   <div className={`flex flex-col gap-[12px] ${pading}`}>
+   <div className={`flex flex-col gap-[12px] ${padding}`}>
     <InputText
      value={getValue(state, id ?? "").text}
      defaultValue={""}
      setState={(value) => {
-      if (state.structure === "Any of" || state.structure === "All of") {
+      if (isAnyOrAll(state.structure)) {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
          return item.structure === "Not"
@@ -126,12 +130,12 @@ const mapping: IMapping = {
       setState({ ...state, data: { ...state.data, text: value } })
      }}
     />
-    <div className="flex items-center gap-2 px-3 py-3">
+    <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
       type="checkbox"
       onValueChange={(value: boolean) => {
-       if (state.structure === "Any of" || state.structure === "All of") {
+       if (isAnyOrAll(state.structure)) {
         const newData: IDefObject[] = state.data.map((item: IDefObject) => {
          if (item.id === id) {
           return item.structure === "Not"
@@ -155,18 +159,18 @@ const mapping: IMapping = {
   )
  },
  "Regular expression": (setState, state, id) => {
-  const pading = id === undefined ? "py-[12px]" : ""
+  const padding = id === undefined ? "py-[12px]" : ""
   return (
-   <div className={`flex flex-col gap-[12px] ${pading}`}>
-    <TextMasseg
+   <div className={`flex flex-col gap-[12px] ${padding}`}>
+    <TextMessage
      title={"Pattern"}
      text={"Message has to match exactly the text below"}
     />
     <DefTextarea
      value={getValue(state, id ?? "").pattern}
-     className="pt-[6px] pb-[12px]"
+     className=""
      onValueChange={(value) => {
-      if (state.structure === "Any of" || state.structure === "All of") {
+      if (isAnyOrAll(state.structure)) {
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
         if (item.id === id) {
          return item.structure === "Not"
@@ -181,11 +185,11 @@ const mapping: IMapping = {
       setState({ ...state, data: { ...state.data, pattern: value } })
      }}
     />
-    <div className="flex items-center gap-2 px-3 py-3">
+    <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
       onValueChange={(value) => {
-       if (state.structure === "Any of" || state.structure === "All of") {
+       if (isAnyOrAll(state.structure)) {
         const newData: IDefObject[] = state.data.map((item: IDefObject) => {
          if (item.id === id) {
           return item.structure === "Not"
@@ -220,7 +224,19 @@ const mapping: IMapping = {
       if (el.structure === undefined) {
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
-         <p>Condition</p>
+         <div className="flex flex items-center justify-between">
+          <p>Condition</p>
+          <button
+           onClick={() => {
+            const newData = state.data.filter(
+             (item: IDefObject) => item.id !== el.id
+            )
+            setState({ ...state, data: newData })
+           }}
+          >
+           <DeleteBasicConditionIcon />
+          </button>
+         </div>
          <DefSelect
           key={index}
           mini
@@ -263,7 +279,31 @@ const mapping: IMapping = {
       if (el.structure !== undefined) {
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
-         <p>Condition</p>
+         <div className="flex flex items-center justify-between">
+          <p>Condition</p>
+          <button
+           onClick={() => {
+            console.log(el)
+            const newData = state.data.filter(
+             (item: IDefObject) => item.id !== el.id
+            )
+
+            const conditionGroups = state.conditionGroups.map((condition) => {
+             const isDisabled =
+              condition.name === el.name && condition.hasOwnProperty("disabled")
+             return isDisabled ? { ...condition, disabled: false } : condition
+            })
+
+            setState({
+             ...state,
+             data: newData,
+             conditionGroups,
+            })
+           }}
+          >
+           <DeleteBasicConditionIcon />
+          </button>
+         </div>
          <DefSelect
           key={index}
           defaultValue={el.name}
@@ -287,6 +327,7 @@ const mapping: IMapping = {
           items={arr.map((group) => ({
            value: group.name,
            key: group.id.toString(),
+           disabled: group.disabled,
           }))}
           placeholder="Choose group"
          />
@@ -314,8 +355,8 @@ const mapping: IMapping = {
    </>
   )
  },
- "All of": (setStae, state) => {
-  return mapping["Any of"](setStae, state)
+ "All of": (setState, state) => {
+  return mapping["Any of"](setState, state)
  },
  Not: (setState, state, id) => {
   const arr = [
@@ -324,27 +365,23 @@ const mapping: IMapping = {
    { id: 3, name: "Regular expression" },
   ]
 
-  const carentCondition: IDefObject = state.data.filter(
+  const currentCondition: IDefObject = state.data.filter(
    (data: IDefObject) => data.id === id
   )[0]
 
   const key: string =
    state.structure === "All of" || state.structure === "Any of"
-    ? carentCondition.Not.name
+    ? currentCondition.Not.name
     : (state.data as IDefObject).name
 
   const padding =
-   state.structure === "Any of" ||
-   state.structure === "All of" ||
-   state.structure === "Not"
-    ? "pl-[24px]"
-    : ""
+   isAnyOrAll(state.structure) || state.structure === "Not" ? "pl-[24px]" : ""
 
   return (
-   <div className={`${padding} flex flex-col gap-[12px] py-[24px]`}>
-    <DeleteBasicConditionIcon />
-    <p>Condition</p>
-
+   <div className={`${padding} flex flex-col gap-[12px] pt-[24px]`}>
+    <div className="flex flex items-center justify-between">
+     <p>Condition</p>
+    </div>
     <DefSelect
      mini
      defaultValue={key}
@@ -352,7 +389,7 @@ const mapping: IMapping = {
      onValueChange={(value) => {
       const defData = genDefObject(value)
 
-      if (state.structure === "Any of" || state.structure === "All of") {
+      if (isAnyOrAll(state.structure)) {
        const newCondition = { ...defData, name: value, id }
 
        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
@@ -381,7 +418,7 @@ const mapping: IMapping = {
  },
 }
 
-const TextMasseg: React.FC<{ title: string; text: string }> = ({
+const TextMessage: React.FC<{ title: string; text: string }> = ({
  title,
  text,
 }) => {
@@ -397,18 +434,17 @@ const InputText: React.FC<{
  setState: (value: string) => void
  defaultValue?: string
  value?: string
- className?: string
-}> = ({ setState, value = "", defaultValue = "", className = "" }) => {
+}> = ({ setState, value = "", defaultValue = "" }) => {
  return (
   <div className="flex flex-col gap-[12px]">
-   <TextMasseg
+   <TextMessage
     title={"Text"}
     text={"Message has to match exactly the text below"}
    />
    <DefInput
     value={value}
     defaultValue={defaultValue}
-    className={`col-span-3 ${className}`}
+    className="col-span-3"
     variant="bordered"
     labelPlacement="outside"
     placeholder="Enter text..."
@@ -430,15 +466,15 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
 
  const key = condition.type
 
- const isBasis = condition.data[key] !== undefined
+ const isBasic = condition.data[key] !== undefined
 
  const defaultState: IState = {
-  structure: isBasis ? condition.data[key].structure : "",
-  data: isBasis ? condition.data[key].data : [],
+  structure: isBasic ? condition.data[key].structure : "",
+  data: isBasic ? condition.data[key].data : [],
   conditionGroups: conditionGroups,
  }
 
- const [state, setStae] = useState(defaultState)
+ const [state, setState] = useState(defaultState)
 
  console.log(condition)
 
@@ -453,23 +489,20 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     basic: { structure, data: Array.isArray(newData) ? [...newData] : newData },
    },
   }
-
   setData(result)
  }, [state])
 
- const TextConditions =
-  state.structure === "All of" || state.structure === "Any of" ? (
-   <p className="text-[10px] pt-[12px]">
-    One of the conditions below has to be fulfilled
-   </p>
-  ) : null
+ const TextConditions = isAnyOrAll(state.structure) ? (
+  <p className="text-[10px] pt-[12px]">
+   One of the conditions below has to be fulfilled
+  </p>
+ ) : null
 
  return (
   <>
    <div className="pt-[24px]">
     <div className="flex flex items-center justify-between pb-[12px]">
      <p className="">Structure</p>
-     <DeleteBasicConditionIcon />
     </div>
 
     <DefSelect
@@ -479,13 +512,13 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
      onValueChange={(value) => {
       const defData = genDefObject(value)
 
-      if (value === "All of" || value === "Any of") {
-       setStae({ ...state, structure: value, data: [] })
+      if (isAnyOrAll(value)) {
+       setState({ ...state, structure: value, data: [] })
        return
       }
 
       if (defData) {
-       setStae({ ...state, structure: value, data: defData })
+       setState({ ...state, structure: value, data: defData })
       }
      }}
      items={state.conditionGroups.map((group) => ({
@@ -497,7 +530,7 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     />
     {TextConditions}
    </div>
-   {mapping[state.structure] && mapping[state.structure](setStae, state)}
+   {mapping[state.structure] && mapping[state.structure](setState, state)}
   </>
  )
 }
