@@ -218,7 +218,7 @@ class RunManager(ProcessManager):
                 raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
             settings.add_env_vars({unique_build_token: token_value})
 
-        if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
+        if (datetime.now() - self.last_run_time).seconds < 13 and [process for process in self.processes.values() if process.status == Status.RUNNING]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
         self.last_id = await _get_new_id()
@@ -287,6 +287,9 @@ class RunManager(ProcessManager):
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
+    def __init__(self):
+        super().__init__()
+        self.last_build_time = datetime.now().replace(year=datetime.now().year - 1)
 
     async def _get_available_port(self) -> int:
         async def _get_busy_ports():
@@ -315,6 +318,9 @@ class BuildManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
+        if [process for process in self.processes.values() if process.status == Status.RUNNING] and (datetime.now() - self.last_build_time).seconds < 5:
+            raise RuntimeError("Another process is still using the build.yaml file. Can't commit changes.")
+
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
@@ -336,6 +342,7 @@ class BuildManager(ProcessManager):
             cmd_to_run += f" --chatsky-port {port}"
 
         await process.start(cmd_to_run)
+        self.last_build_time = datetime.now()
         self.processes[id_] = process
 
         return id_
