@@ -56,7 +56,13 @@ async def start_build(
     Returns:
         {"status": "ok", "build_id": build_id}: in case of **starting** the build process successfully.
     """
-    build_id = await build_manager.start(preset)
+    try:
+        build_id = await build_manager.start(preset)
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Several builds were requested in short time. Please wait a bit and try.",
+        ) from e
     background_tasks.add_task(build_manager.check_status, build_id)
     build_manager.logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
