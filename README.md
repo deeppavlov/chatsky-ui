@@ -40,4 +40,4 @@ chatsky.ui run_app --project-dir <PROJECT-SLUG>  # Replace <PROJECT-SLUG> with t
 ```
 
 ## Documentation
-You can refer to the [documentaion](https://deeppavlov.github.io/chatsky-ui/) to dig into the application code understanding.
+You can refer to the [documentation](https://deeppavlov.github.io/chatsky-ui/) to dig into the application code understanding.
