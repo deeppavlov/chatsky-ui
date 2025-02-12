@@ -40,8 +40,9 @@ const genDefObject = (key: string): IDefObject | undefined => {
     flags: { ignoreCase: false },
    }
   case "Any of":
+   return { structure: "anyOf", data: [] }
   case "All of":
-   return { structure: key === "All of" ? "anyOf" : "allOf", data: [] }
+   return { structure: "allOf", data: [] }
   case "Not":
    return { structure: "not", data: {} }
   default:
@@ -315,9 +316,7 @@ const mapping: IMapping = {
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
 
-           const newCondition = { ...defData, name: value, id: el.id }
-
-           console.log(newCondition, "newCondition111111")
+           const newCondition = { ...defData, id: el.id }
 
            const newData = state.data!.map((item: IDefObject) => {
             if (item.id === el.id) {
@@ -331,7 +330,7 @@ const mapping: IMapping = {
              condition.name === el.name && condition.hasOwnProperty("disabled")
             return isDisabled ? { ...condition, disabled: false } : condition
            })
-
+           console.log(value, "dsdasdasdsadas")
            const newState = { ...state, data: newData }
            setState(newState)
           }}
@@ -461,31 +460,38 @@ const InputText: React.FC<{
 }
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
- const key = condition.type
-
- const isBasic = condition.data[key] !== undefined
-
  const defaultState: IState = {
-  structure: isBasic ? condition.data[key].structure : "",
-  data: isBasic ? condition.data[key].data : [],
+  structure: condition.data.structure,
+  data: condition.data.data,
   conditionGroups: conditionGroups,
  }
 
  const [state, setState] = useState(defaultState)
 
- console.log(state, "setState")
-
  useEffect(() => {
-  const structure = state.structure
-  const newData = state.data
+  const { python: pythonIgnored, ...newCondition } = condition.data
 
-  const result = {
-   ...condition,
-   data: {
-    ...condition.data,
-    basic: { structure, data: Array.isArray(newData) ? [...newData] : newData },
-   },
+  if (state.structure === "not") {
+   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
+   const result = { ...condition, data: { ...newCondition, ...newState } }
+   setData(result)
+   return
   }
+
+  if (isAnyOrAll(state.structure)) {
+   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
+   const result = { ...condition, data: { ...newCondition, ...newState } }
+   console.log(result, "result")
+   setData(result)
+   return
+  }
+
+  const {
+   conditionGroups: conditionGroupsIgnored,
+   data: dataIgnored,
+   ...newState
+  } = state
+  const result = { ...condition, data: { ...newCondition, ...newState } }
   setData(result)
  }, [state])
 
