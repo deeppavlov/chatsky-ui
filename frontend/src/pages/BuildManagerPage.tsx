@@ -21,7 +21,7 @@ import MicroscopeIcon from "@/icons/MicroscopeIcon"
 const BuildManagerPage = () => {
   const { currentPage } = useContext(workspaceContext)
   const { saveFlows, flows } = useContext(flowContext)
-  const { buildStart, buildPending, builds } = useContext(buildContext)
+  const { buildStart, buildPending, builds, buildStop } = useContext(buildContext)
   const { getFlows } = useContext(flowContext)
   const {
     runStart,
@@ -201,6 +201,17 @@ const BuildManagerPage = () => {
                               </button>
                             </>
                           )}
+                          {b.status === "running" && (
+                            <button
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation()
+                                buildStop(b.id)
+                              }}
+                              className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
+                            >
+                              <SquareIcon className='size-4 stroke-foreground' />
+                            </button>
+                          )}
                         </div>
                       }
                     >
@@ -335,7 +346,7 @@ const BuildManagerPage = () => {
                                 tg_bot_token: r.preset.tg_bot_token,
                               })
                             }}
-                            className='h-6 w-6 flex justify-center items-center active:rotate-12 transition-all'
+                            className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
                           >
                             <RefreshCw className='size-4 flex-shrink-0 stroke-foreground' />
                           </button>
