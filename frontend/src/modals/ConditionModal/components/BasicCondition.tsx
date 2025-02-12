@@ -150,8 +150,7 @@ const conditionGroups = [
 
 const getNameCondition = (key: string) => {
  const condition = conditionGroups.filter((condition) => condition.key === key)
- //  return condition[0].name
- return ""
+ return condition.length === 0 ? "" : condition[0].name
 }
 
 const mapping: IMapping = {
@@ -310,13 +309,15 @@ const mapping: IMapping = {
          </div>
          <DefSelect
           key={index}
-          defaultValue={el.name}
+          defaultValue={getNameCondition(el.structure)}
           mini
           className="w-full"
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
 
            const newCondition = { ...defData, name: value, id: el.id }
+
+           console.log(newCondition, "newCondition111111")
 
            const newData = state.data!.map((item: IDefObject) => {
             if (item.id === el.id) {
