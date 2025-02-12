@@ -110,7 +110,10 @@ const StartRunForm = () => {
   }
 
   const handleTokenNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((data) => ({ ...data, tokenName: e.target.value }))
+    setFormData((data) => ({
+      ...data,
+      tokenName: e.target.value.replaceAll(" ", "_").toUpperCase(),
+    }))
     setFieldErrors((errors) => {
       const error = e.target.value.length ? undefined : "Please enter Telegram token name"
       return { ...errors, tokenName: error }
