@@ -4,6 +4,7 @@ import { runContext } from "@/contexts/runContext"
 import { Button, Input, Select, SelectItem } from "@nextui-org/react"
 import { useContext, useEffect, useState } from "react"
 import FormControl from "../../UI/FormControl"
+import { Eye, EyeOff } from "lucide-react"
 
 interface IFormData {
   name: string
@@ -47,6 +48,7 @@ const StartRunForm = () => {
 
   const [formData, setFormData] = useState<IFormData>(initialFormData)
   const [tokenState, setTokenState] = useState<ITokenState>(initialTokenState)
+  const [hidePassword, setHidePassword] = useState(true)
   const [fieldErrors, setFieldErrors] = useState<{
     build?: string
     tokenName?: string
@@ -63,7 +65,9 @@ const StartRunForm = () => {
     if (isTelegram) {
       // fetch tokens
       try {
-        const tokens = tokenState.tokens.length ? tokenState.tokens : await get_tg_tokens()
+        const tokens = tokenState.tokens.length
+          ? tokenState.tokens
+          : await (await get_tg_tokens()).reverse()
         setTokenState((state) => ({ ...state, tokens }))
       } catch (error) {
         console.log(error)
@@ -291,15 +295,28 @@ const StartRunForm = () => {
                   isError={!!fieldErrors.tokenValue}
                   errorMessage={fieldErrors.tokenValue}
                   input={
-                    <Input
-                      placeholder='Enter Telegram token value'
-                      value={formData.tokenValue}
-                      onChange={handleTokenValueChange}
-                      disableAnimation
-                      size='sm'
-                      variant='underlined'
-                      classNames={inputClassNames}
-                    />
+                    <>
+                      <Input
+                        type={hidePassword ? "password" : "text"}
+                        placeholder='Enter Telegram token value'
+                        value={formData.tokenValue}
+                        onChange={handleTokenValueChange}
+                        disableAnimation
+                        size='sm'
+                        variant='underlined'
+                        classNames={inputClassNames}
+                      />
+                      <button
+                        className='h-6 w-6 active:scale-95 hover:scale-105'
+                        onClick={() => setHidePassword((prev) => !prev)}
+                      >
+                        {hidePassword ? (
+                          <Eye className='text-base stroke-input-border' size={20} />
+                        ) : (
+                          <EyeOff className='text-base stroke-input-border' size={20} />
+                        )}
+                      </button>
+                    </>
                   }
                 />
               </>
