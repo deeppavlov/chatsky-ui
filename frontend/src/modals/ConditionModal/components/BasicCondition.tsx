@@ -14,10 +14,10 @@ interface IFlags {
 interface IDefObject {
  text?: string
  flags?: IFlags
- children?: IDefObject[] | IDefObject
- [key: string]: any
+ data?: IDefObject[] | IDefObject | {}
  id?: string
  pattern?: string
+ structure: string
 }
 
 const genDefObject = (key: string): IDefObject | undefined => {
@@ -39,8 +39,11 @@ const genDefObject = (key: string): IDefObject | undefined => {
     pattern: "",
     flags: { ignoreCase: false },
    }
+  case "Any of":
+  case "All of":
+   return { structure: key === "All of" ? "anyOf" : "allOf", data: [] }
   case "Not":
-   return { structure: "Not", Not: {} }
+   return { structure: "not", data: {} }
   default:
    return undefined
  }
@@ -50,15 +53,14 @@ interface IMapping {
  [key: string]: (
   setState: (value: IState) => void,
   state: IState,
-  id?: string | number
+  id?: string | undefined
  ) => JSX.Element
 }
 
 interface IState {
  structure: string
- data: IDefObject[] | IDefObject
+ data?: IDefObject[]
  conditionGroups: {
-  id: number
   name: string
   key?: string
   disabled?: boolean
@@ -66,20 +68,94 @@ interface IState {
 }
 
 const isAnyOrAll = (value: string): boolean =>
- value === "Any of" || value === "All of"
+ value === "Any of" ||
+ value === "All of" ||
+ value === "allOf" ||
+ value === "anyOf"
 
-const getValue = (state: IState, id: string | number): IDefObject => {
+const getValue = (state: IState, id: string): IDefObject => {
  if (isAnyOrAll(state.structure)) {
-  const data: IDefObject = state.data.filter(
+  const data: IDefObject = state.data!.filter(
    (item: IDefObject) => item.id === id
   )[0]
-  return data.structure === "Not" ? data.Not : data
+  return data.structure === "not" ? data.data : data
  }
- return (state.data as IDefObject) || ""
+ return state.structure !== "not" ? (state as IDefObject) : state.data
+}
+
+const handleValueChange = (
+ setState: (value: IState) => void,
+ state: IState,
+ id: string | undefined,
+ value: string,
+ field: string
+) => {
+ if (id === undefined) {
+  state.structure === "not"
+   ? setState({ ...state, data: { ...state.data, [field]: value } })
+   : setState({ ...state, [field]: value })
+  return
+ }
+
+ const newData: IDefObject[] = state.data.map((item: IDefObject) => {
+  if (item.id === id) {
+   return item.structure === "not"
+    ? { ...item, data: { ...item.data, [field]: value } }
+    : { ...item, [field]: value }
+  }
+  return item
+ })
+ setState({ ...state, data: newData })
+ return
+}
+
+const handleValueChangeCheckbox = (
+ setState: (value: IState) => void,
+ state: IState,
+ id: string | undefined,
+ value: boolean
+) => {
+ if (id === undefined) {
+  state.structure === "not"
+   ? setState({
+      ...state,
+      data: { ...state.data, flags: { ignoreCase: value } },
+     })
+   : setState({
+      ...state,
+      flags: { ignoreCase: value },
+     })
+  return
+ }
+
+ const newData: IDefObject[] = state.data.map((item: IDefObject) => {
+  if (item.id === id) {
+   return item.structure === "not"
+    ? { ...item, data: { ...item.data, flags: { ignoreCase: value } } }
+    : { ...item, flags: { ignoreCase: value } }
+  }
+  return item
+ })
+ setState({ ...state, data: newData })
+}
+
+const conditionGroups = [
+ { name: "Exact match", key: "exactMatch", disabled: false },
+ { name: "Include text", key: "includeText" },
+ { name: "Regular expression", key: "regExp", disabled: false },
+ { name: "Any of", key: "anyOf" },
+ { name: "All of", key: "allOf" },
+ { name: "Not", key: "not" },
+]
+
+const getNameCondition = (key: string) => {
+ const condition = conditionGroups.filter((condition) => condition.key === key)
+ //  return condition[0].name
+ return ""
 }
 
 const mapping: IMapping = {
- "Exact match": (setState, state, id) => {
+ exactMatch: (setState, state, id = undefined) => {
   const padding = id === undefined ? "py-[12px]" : ""
 
   return (
@@ -87,26 +163,12 @@ const mapping: IMapping = {
     <InputText
      value={getValue(state, id ?? "").text}
      defaultValue={""}
-     setState={(value) => {
-      if (isAnyOrAll(state.structure)) {
-       const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-        if (item.id === id) {
-         return item.structure === "Not"
-          ? { ...item, Not: { ...item.Not, text: value } }
-          : { ...item, text: value }
-        }
-        return item
-       })
-       setState({ ...state, data: newData })
-       return
-      }
-      setState({ ...state, data: { ...state.data, text: value } })
-     }}
+     setState={(value) => handleValueChange(setState, state, id, value, "text")}
     />
    </div>
   )
  },
- "Include text": (setState, state, id) => {
+ includeText: (setState, state, id) => {
   const padding = id === undefined ? "py-[12px]" : ""
 
   return (
@@ -114,51 +176,22 @@ const mapping: IMapping = {
     <InputText
      value={getValue(state, id ?? "").text}
      defaultValue={""}
-     setState={(value) => {
-      if (isAnyOrAll(state.structure)) {
-       const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-        if (item.id === id) {
-         return item.structure === "Not"
-          ? { ...item, Not: { ...item.Not, text: value } }
-          : { ...item, text: value }
-        }
-        return item
-       })
-       setState({ ...state, data: newData })
-       return
-      }
-      setState({ ...state, data: { ...state.data, text: value } })
-     }}
+     setState={(value) => handleValueChange(setState, state, id, value, "text")}
     />
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
       type="checkbox"
-      onValueChange={(value: boolean) => {
-       if (isAnyOrAll(state.structure)) {
-        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-         if (item.id === id) {
-          return item.structure === "Not"
-           ? { ...item, Not: { ...item.Not, flags: { ignoreCase: value } } }
-           : { ...item, flags: { ignoreCase: value } }
-         }
-         return item
-        })
-        setState({ ...state, data: newData })
-        return
-       }
-       setState({
-        ...state,
-        data: { ...state.data, flags: { ignoreCase: value } },
-       })
-      }}
+      onValueChange={(value) =>
+       handleValueChangeCheckbox(setState, state, id, value)
+      }
      />
      <label className="text-sm font-medium"> Case sensitive </label>
     </div>
    </div>
   )
  },
- "Regular expression": (setState, state, id) => {
+ regExp: (setState, state, id) => {
   const padding = id === undefined ? "py-[12px]" : ""
   return (
    <div className={`flex flex-col gap-[12px] ${padding}`}>
@@ -168,59 +201,31 @@ const mapping: IMapping = {
     />
     <DefTextarea
      value={getValue(state, id ?? "").pattern}
-     className=""
-     onValueChange={(value) => {
-      if (isAnyOrAll(state.structure)) {
-       const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-        if (item.id === id) {
-         return item.structure === "Not"
-          ? { ...item, Not: { ...item.Not, pattern: value } }
-          : { ...item, pattern: value }
-        }
-        return item
-       })
-       setState({ ...state, data: newData })
-       return
-      }
-      setState({ ...state, data: { ...state.data, pattern: value } })
-     }}
+     onValueChange={(value) =>
+      handleValueChange(setState, state, id, value, "pattern")
+     }
     />
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
-      onValueChange={(value) => {
-       if (isAnyOrAll(state.structure)) {
-        const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-         if (item.id === id) {
-          return item.structure === "Not"
-           ? { ...item, Not: { ...item.Not, flags: { ignoreCase: value } } }
-           : { ...item, flags: { ignoreCase: value } }
-         }
-         return item
-        })
-        setState({ ...state, data: newData })
-        return
-       }
-       setState({
-        ...state,
-        data: { ...state.data, flags: { ignoreCase: value } },
-       })
-      }}
+      onValueChange={(value) =>
+       handleValueChangeCheckbox(setState, state, id, value)
+      }
      />
      <label className="text-sm font-medium"> Case sensitive </label>
     </div>
    </div>
   )
  },
- "Any of": (setState, state) => {
+ anyOf: (setState, state) => {
   const arr = state.conditionGroups.filter(
-   (condition) => condition.name !== "Any of" && condition.name !== "All of"
+   (condition) => condition.key !== "anyOf" && condition.key !== "allOf"
   )
 
   return (
    <>
     <div className="flex flex-col gap-[24px] pl-[24px] py-[24px]">
-     {state.data.map((el: IDefObject, index: number) => {
+     {state.data!.map((el: IDefObject, index: number) => {
       if (el.structure === undefined) {
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
@@ -228,7 +233,7 @@ const mapping: IMapping = {
           <p>Condition</p>
           <button
            onClick={() => {
-            const newData = state.data.filter(
+            const newData = state.data!.filter(
              (item: IDefObject) => item.id !== el.id
             )
             setState({ ...state, data: newData })
@@ -244,9 +249,9 @@ const mapping: IMapping = {
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
 
-           const newCondition = { ...defData, name: value, id: el.id }
+           const newCondition = { ...defData, id: el.id }
 
-           const newData = state.data.map((item: IDefObject) => {
+           const newData = state.data!.map((item: IDefObject) => {
             if (item.id === el.id) {
              return newCondition
             }
@@ -266,9 +271,9 @@ const mapping: IMapping = {
            const newState = { ...state, conditionGroups, data: newData }
            setState(newState)
           }}
-          items={arr.map((group) => ({
+          items={arr.map((group, index) => ({
            value: group.name,
-           key: group.id.toString(),
+           key: index.toString(),
            disabled: group.disabled,
           }))}
           placeholder="Choose group"
@@ -283,8 +288,7 @@ const mapping: IMapping = {
           <p>Condition</p>
           <button
            onClick={() => {
-            console.log(el)
-            const newData = state.data.filter(
+            const newData = state.data!.filter(
              (item: IDefObject) => item.id !== el.id
             )
 
@@ -314,24 +318,30 @@ const mapping: IMapping = {
 
            const newCondition = { ...defData, name: value, id: el.id }
 
-           const newData = state.data.map((item: IDefObject) => {
+           const newData = state.data!.map((item: IDefObject) => {
             if (item.id === el.id) {
              return newCondition
             }
             return item
            })
 
+           const conditionGroups = state.conditionGroups.map((condition) => {
+            const isDisabled =
+             condition.name === el.name && condition.hasOwnProperty("disabled")
+            return isDisabled ? { ...condition, disabled: false } : condition
+           })
+
            const newState = { ...state, data: newData }
            setState(newState)
           }}
-          items={arr.map((group) => ({
+          items={arr.map((group, index) => ({
            value: group.name,
-           key: group.id.toString(),
+           key: index.toString(),
            disabled: group.disabled,
           }))}
           placeholder="Choose group"
          />
-         {mapping[el.name](setState, state, el.id)}
+         {mapping[el.structure](setState, state, el.id)}
         </div>
        )
       }
@@ -355,27 +365,22 @@ const mapping: IMapping = {
    </>
   )
  },
- "All of": (setState, state) => {
-  return mapping["Any of"](setState, state)
+ allOf: (setState, state) => {
+  return mapping["anyOf"](setState, state)
  },
- Not: (setState, state, id) => {
+ not: (setState, state, id) => {
   const arr = [
    { id: 1, name: "Exact match" },
    { id: 2, name: "Include text" },
    { id: 3, name: "Regular expression" },
   ]
 
-  const currentCondition: IDefObject = state.data.filter(
-   (data: IDefObject) => data.id === id
-  )[0]
-
-  const key: string =
-   state.structure === "All of" || state.structure === "Any of"
-    ? currentCondition.Not.name
-    : (state.data as IDefObject).name
+  const key: string = isAnyOrAll(state.structure)
+   ? state.data!.filter((data: IDefObject) => data.id === id)[0].data.structure
+   : state.data!.structure
 
   const padding =
-   isAnyOrAll(state.structure) || state.structure === "Not" ? "pl-[24px]" : ""
+   isAnyOrAll(state.structure) || state.structure === "not" ? "pl-[24px]" : ""
 
   return (
    <div className={`${padding} flex flex-col gap-[12px] pt-[24px]`}>
@@ -384,17 +389,17 @@ const mapping: IMapping = {
     </div>
     <DefSelect
      mini
-     defaultValue={key}
+     defaultValue={getNameCondition(key)}
      className={`w-full`}
      onValueChange={(value) => {
       const defData = genDefObject(value)
 
       if (isAnyOrAll(state.structure)) {
-       const newCondition = { ...defData, name: value, id }
+       const newCondition = { ...defData, id }
 
-       const newData: IDefObject[] = state.data.map((item: IDefObject) => {
+       const newData: IDefObject[] = state.data!.map((item: IDefObject) => {
         if (item.id === id) {
-         return { ...item, Not: newCondition }
+         return { ...item, data: newCondition }
         }
         return item
        })
@@ -403,7 +408,7 @@ const mapping: IMapping = {
        return
       }
 
-      const newState = { ...state, data: { ...defData, name: value } }
+      const newState = { ...state, data: { ...defData } }
       setState(newState)
      }}
      items={arr.map((group) => ({
@@ -455,15 +460,6 @@ const InputText: React.FC<{
 }
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
- const conditionGroups = [
-  { id: 1, name: "Exact match", key: "ExactMatch", disabled: false },
-  { id: 2, name: "Include text", key: "includeText" },
-  { id: 3, name: "Regular expression", key: "Regexp", disabled: false },
-  { id: 4, name: "Any of" },
-  { id: 5, name: "All of" },
-  { id: 6, name: "Not" },
- ]
-
  const key = condition.type
 
  const isBasic = condition.data[key] !== undefined
@@ -476,7 +472,7 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
 
  const [state, setState] = useState(defaultState)
 
- console.log(condition)
+ console.log(state, "setState")
 
  useEffect(() => {
   const structure = state.structure
@@ -508,22 +504,28 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     <DefSelect
      mini
      className="w-full"
-     defaultValue={state.structure}
+     defaultValue={getNameCondition(state.structure)}
      onValueChange={(value) => {
-      const defData = genDefObject(value)
+      const defObject = genDefObject(value)
 
       if (isAnyOrAll(value)) {
-       setState({ ...state, structure: value, data: [] })
+       setState({ ...defaultState, ...defObject })
        return
       }
 
-      if (defData) {
-       setState({ ...state, structure: value, data: defData })
+      if (value === "not") {
+       setState({ ...defaultState, ...defObject })
+       return
       }
+
+      setState({
+       conditionGroups: state.conditionGroups,
+       ...defObject,
+      })
      }}
-     items={state.conditionGroups.map((group) => ({
+     items={state.conditionGroups.map((group, index) => ({
       value: group.name,
-      key: group.id.toString(),
+      key: index.toString(),
       disabled: group.disabled,
      }))}
      placeholder="Choose group"
