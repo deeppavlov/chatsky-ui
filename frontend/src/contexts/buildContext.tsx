@@ -23,7 +23,7 @@ type BuildContextType = {
   buildStart: (
     options: buildPresetType
   ) => Promise<{ status: buildApiStatusType; build_id?: number }>
-  buildStop: () => void
+  buildStop: (buildId: number) => void
   buildStatus: string
   setBuildStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
   setBuildsHandler: (builds: buildMinifyApiType[]) => void
@@ -90,19 +90,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
       const started_builds = await get_builds()
       setBuildsHandler(started_builds)
 
-      const timerId = setTimeout(async () => {
-        setBuild(false)
-        setBuildStatus("failed")
-        n.add({
-          title: "Build timeout error!",
-          message: "",
-          type: "error",
-        })
-        await build_stop(build_id)
-        setBuildPending(false)
-        return "failed"
-      }, 15000)
-
       let flag = true
       while (flag) {
         const status_res = await build_status(build_id)
@@ -110,7 +97,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (status !== "running" && status !== "alive") {
           flag = false
-          clearTimeout(timerId)
 
           await handleBuildCompletion(status)
           return { status, build_id }
@@ -150,11 +136,16 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const buildStop = async () => {
+  const buildStop = async (buildId: number) => {
     try {
-      await build_stop(builds[0].id + 1)
+      await build_stop(buildId)
       setBuildPending(() => false)
       setBuildStatus("stopped")
+      n.add({
+        title: "Build stopped!",
+        message: "",
+        type: "info",
+      })
     } catch (error) {
       console.log(error)
       n.add({
