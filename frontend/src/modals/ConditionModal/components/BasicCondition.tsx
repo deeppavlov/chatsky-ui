@@ -4,20 +4,34 @@ import DefSelect from "@/UI/Input/DefSelect"
 import DefInput from "@/UI/Input/DefInput"
 import { Checkbox, Button } from "@nextui-org/react"
 import DefTextarea from "@/UI/Input/DefTextarea"
-import _ from "lodash"
+import _, { isArray } from "lodash"
 import DeleteBasicConditionIcon from "@/icons/nodes/conditions/deleteBasicConditionIcon"
-
-interface IFlags {
- ignoreCase: boolean
-}
 
 interface IDefObject {
  text?: string
- flags?: IFlags
+ flags?: { ignoreCase: boolean }
  data?: IDefObject[] | IDefObject | {}
  id?: string
  pattern?: string
  structure: string
+}
+
+interface IMapping {
+ [key: string]: (
+  setState: (value: IState) => void,
+  state: IState,
+  id?: string | undefined
+ ) => JSX.Element
+}
+
+interface IState {
+ structure: string
+ data?: IDefObject[] | IDefObject
+ conditionGroups: {
+  name: string
+  key?: string
+  disabled?: boolean
+ }[]
 }
 
 const genDefObject = (key: string): IDefObject | undefined => {
@@ -48,24 +62,6 @@ const genDefObject = (key: string): IDefObject | undefined => {
   default:
    return undefined
  }
-}
-
-interface IMapping {
- [key: string]: (
-  setState: (value: IState) => void,
-  state: IState,
-  id?: string | undefined
- ) => JSX.Element
-}
-
-interface IState {
- structure: string
- data?: IDefObject[]
- conditionGroups: {
-  name: string
-  key?: string
-  disabled?: boolean
- }[]
 }
 
 const isAnyOrAll = (value: string): boolean =>
@@ -258,16 +254,6 @@ const mapping: IMapping = {
             return item
            })
 
-           const conditionGroups = state.conditionGroups.map((condition) => {
-            if (
-             condition.name === value &&
-             condition.hasOwnProperty("disabled")
-            ) {
-             return { ...condition, disabled: true }
-            }
-            return condition
-           })
-
            const newState = { ...state, conditionGroups, data: newData }
            setState(newState)
           }}
@@ -291,12 +277,6 @@ const mapping: IMapping = {
             const newData = state.data!.filter(
              (item: IDefObject) => item.id !== el.id
             )
-
-            const conditionGroups = state.conditionGroups.map((condition) => {
-             const isDisabled =
-              condition.name === el.name && condition.hasOwnProperty("disabled")
-             return isDisabled ? { ...condition, disabled: false } : condition
-            })
 
             setState({
              ...state,
@@ -325,12 +305,6 @@ const mapping: IMapping = {
             return item
            })
 
-           const conditionGroups = state.conditionGroups.map((condition) => {
-            const isDisabled =
-             condition.name === el.name && condition.hasOwnProperty("disabled")
-            return isDisabled ? { ...condition, disabled: false } : condition
-           })
-           console.log(value, "dsdasdasdsadas")
            const newState = { ...state, data: newData }
            setState(newState)
           }}
@@ -460,39 +434,53 @@ const InputText: React.FC<{
 }
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
- const defaultState: IState = {
-  structure: condition.data.structure,
-  data: condition.data.data,
-  conditionGroups: conditionGroups,
+ //  const { python: pythonIgnored, ...conditionData } = condition.data
+ const priority = condition.data.priority
+ const transition_type = condition.data.transition_type
+
+ const defaulValue = {
+  priority,
+  transition_type,
+  conditionGroups,
  }
 
- const [state, setState] = useState(defaultState)
+ const defState: IState = condition.data.hasOwnProperty("structure")
+  ? { ...condition.data, conditionGroups }
+  : defaulValue
+
+ const [state, setState] = useState(defState)
+
+ console.log(state)
 
  useEffect(() => {
-  const { python: pythonIgnored, ...newCondition } = condition.data
+  const { conditionGroups: conditionGroupsIgnored, ...newState } = state
 
-  if (state.structure === "not") {
-   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
-   const result = { ...condition, data: { ...newCondition, ...newState } }
-   setData(result)
-   return
+  const newCondition = {
+   ...condition,
+   data: { ...newState, priority, transition_type },
   }
 
-  if (isAnyOrAll(state.structure)) {
-   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
-   const result = { ...condition, data: { ...newCondition, ...newState } }
-   console.log(result, "result")
-   setData(result)
-   return
+  const conditionStructures = newState.structure
+
+  if (isAnyOrAll(conditionStructures)) {
+   const arrConditions = state.data.map((el) => el.structure)
+
+   const mapStructures = {
+    allOf: ["exactMatch", "regExp"],
+    anyOf: ["regExp"],
+   }
+
+   const arrKeyMap = mapStructures[conditionStructures]
+
+   state.conditionGroups.forEach((group) => {
+    if (group.hasOwnProperty("disabled")) {
+     group.disabled =
+      arrKeyMap.includes(group.key) && arrConditions.includes(group.key)
+    }
+   })
   }
 
-  const {
-   conditionGroups: conditionGroupsIgnored,
-   data: dataIgnored,
-   ...newState
-  } = state
-  const result = { ...condition, data: { ...newCondition, ...newState } }
-  setData(result)
+  setData(newCondition)
  }, [state])
 
  const TextConditions = isAnyOrAll(state.structure) ? (
@@ -515,25 +503,11 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
      onValueChange={(value) => {
       const defObject = genDefObject(value)
 
-      if (isAnyOrAll(value)) {
-       setState({ ...defaultState, ...defObject })
-       return
-      }
-
-      if (value === "not") {
-       setState({ ...defaultState, ...defObject })
-       return
-      }
-
-      setState({
-       conditionGroups: state.conditionGroups,
-       ...defObject,
-      })
+      setState({ ...defaulValue, ...defObject })
      }}
      items={state.conditionGroups.map((group, index) => ({
       value: group.name,
       key: index.toString(),
-      disabled: group.disabled,
      }))}
      placeholder="Choose group"
     />
