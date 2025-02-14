@@ -55,35 +55,3 @@ class SlotConditionConverter(ConditionConverter):
     def get_pre_transitions(self):
         slot_path = self.slots_conf[self.condition.slot_id]  # type: ignore
         return {slot_path: {"chatsky.processing.slots.Extract": slot_path}}
-
-
-class ChatskyConditionConverter(ConditionConverter):
-    def __init__(self, condition: dict):
-        if condition["type"] != "basic":
-            raise BadConditionException("Unsupported condition type '%s'" % condition["type"])
-
-        structure = condition["data"]["structure"]
-        cnd_details = condition["data"][structure]
-        if structure in ["All", "Any"]:
-            cnd_details = [ChatskyConditionConverter(cnd).condition for cnd in cnd_details]
-            print(f"cnd_details {structure} condition to {cnd_details}")
-        elif structure == "Not":
-            cnd_details = ChatskyConditionConverter(cnd_details).condition
-            print(f"Converted Not condition to {cnd_details}")
-
-        if isinstance(cnd_details, dict):
-            self.condition = globals()[structure](**cnd_details) 
-            print(f"Converted {structure} condition to {cnd_details}")
-        elif isinstance(cnd_details, list):
-            self.condition = globals()[structure](*cnd_details)
-            print(f"Converted {structure} condition to {cnd_details}")
-        else:
-            self.condition = globals()[structure](cnd_details)
-            print(f"Converted {structure} condition to {cnd_details}")
-        
-
-    def _convert(self):
-        return {f"chatsky.conditions.{self.condition.__class__.__name__}": self.condition.model_dump()}
-
-    def get_pre_transitions(self):
-        return {}
