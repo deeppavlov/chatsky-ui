@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.condition import CustomCondition, SlotCondition
+from ....schemas.front_graph_components.info_holders.condition import *
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
