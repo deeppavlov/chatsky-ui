@@ -195,7 +195,7 @@ class RunManager(ProcessManager):
         async def _get_new_id():
             return max([run["id"] for run in await self.get_full_info(0, 10000)]) + 1
 
-        async def _get_build_port(build_id):
+        async def _get_build_info(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
             port = build_info.get("port")
             messenger = build_info["preset"]["messenger"]
@@ -203,7 +203,7 @@ class RunManager(ProcessManager):
             return port, messenger
 
         self.last_id = await _get_new_id()
-        build_port, messenger = await _get_build_port(build_id)
+        build_port, messenger = await _get_build_info(build_id)
 
         if build_port is not None and not RunManager._is_available_port(build_port):
             raise ValueError(f"Port '{build_port}' is already in use")
@@ -251,7 +251,7 @@ class RunManager(ProcessManager):
         runs_conf = await read_conf(settings.runs_path)
         for process in self.processes.values():
             run_params = await process.get_full_info()
-            runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
+            runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
 
         await write_conf(runs_conf, settings.runs_path)
 
@@ -359,6 +359,6 @@ class BuildManager(ProcessManager):
         builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
             build_params = await process.get_full_info()
-            builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
+            builds_conf = BuildManager.add_new_conf(builds_conf, build_params)  # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)
