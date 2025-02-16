@@ -1,24 +1,24 @@
 # chatsky_condition_converter.py
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 from ....schemas.front_graph_components.info_holders.condition import (
+    AllOfCondition,
+    AnyOfCondition,
     ChatskyCondition,
     ExactMatchCondition,
     IncludeTextCondition,
-    RegexpCondition,
     NotCondition,
-    AllOfCondition,
-    AnyOfCondition,
+    RegexpCondition,
 )
-from .condition_converter import ConditionConverter, BadConditionException
+from .condition_converter import BadConditionException, ConditionConverter
 
 
 def get_nested(data: dict, keys: list[str]) -> Any:
     """
     Helper function to safely retrieve nested values from a dictionary.
-    
+
     Raises:
         BadConditionException: If any key is missing in the data.
     """
@@ -38,7 +38,7 @@ class BaseChatskyConditionConverter(ConditionConverter, ABC):
     def _convert(self) -> dict:
         """
         Convert the condition into its target representation.
-        
+
         Must be implemented by all subclasses.
         """
         pass
@@ -54,26 +54,16 @@ class BaseChatskyConditionConverter(ConditionConverter, ABC):
 class ExactMatchConditionConverter(BaseChatskyConditionConverter):
     def __init__(self, condition_data: dict) -> None:
         text = get_nested(condition_data, ["data", "text"])
-        self.condition = ChatskyCondition(
-            name="",
-            condition=ExactMatchCondition(match=text)
-        )
+        self.condition = ChatskyCondition(name="", condition=ExactMatchCondition(match=text))
 
     def _convert(self) -> dict:
-        return {
-            "chatsky.conditions.ExactMatch": {
-                "match": {"chatsky.Message": self.condition.condition.match}
-            }
-        }
+        return {"chatsky.conditions.ExactMatch": {"match": {"chatsky.Message": self.condition.condition.match}}}
 
 
 class IncludeTextConditionConverter(BaseChatskyConditionConverter):
     def __init__(self, condition_data: dict) -> None:
         text = get_nested(condition_data, ["data", "text"])
-        self.condition = ChatskyCondition(
-            name="",
-            condition=IncludeTextCondition(text=text)
-        )
+        self.condition = ChatskyCondition(name="", condition=IncludeTextCondition(text=text))
 
     def _convert(self) -> dict:
         return {"chatsky.conditions.HasText": {"text": self.condition.condition.text}}
@@ -83,10 +73,7 @@ class RegexpConditionConverter(BaseChatskyConditionConverter):
     def __init__(self, condition_data: dict) -> None:
         pattern = get_nested(condition_data, ["data", "pattern"])
         flags = get_nested(condition_data, ["data", "flags"])
-        self.condition = ChatskyCondition(
-            name="",
-            condition=RegexpCondition(pattern=pattern, flags=flags)
-        )
+        self.condition = ChatskyCondition(name="", condition=RegexpCondition(pattern=pattern, flags=flags))
 
     def _map_flags(self, flags: dict) -> int:
         flag_value = 0
@@ -98,7 +85,7 @@ class RegexpConditionConverter(BaseChatskyConditionConverter):
         return {
             "chatsky.conditions.Regexp": {
                 "pattern": self.condition.condition.pattern,
-                "flags": self._map_flags(self.condition.condition.flags)
+                "flags": self._map_flags(self.condition.condition.flags),
             }
         }
 
@@ -107,10 +94,7 @@ class NotConditionConverter(BaseChatskyConditionConverter):
     def __init__(self, condition_data: dict) -> None:
         # Save the raw data for later extraction of the negated condition.
         self.raw_condition_data = condition_data
-        self.condition = ChatskyCondition(
-            name="",
-            condition=NotCondition(condition=condition_data)
-        )
+        self.condition = ChatskyCondition(name="", condition=NotCondition(condition=condition_data))
 
     def _convert(self) -> dict:
         # Extract the nested condition; assumes structure: {"data": {...}}
@@ -126,10 +110,7 @@ class NotConditionConverter(BaseChatskyConditionConverter):
 class AllOfConditionConverter(BaseChatskyConditionConverter):
     def __init__(self, condition_data: dict) -> None:
         conditions = get_nested(condition_data, ["data", "data"])
-        self.condition = ChatskyCondition(
-            name="",
-            condition=AllOfCondition(conditions=conditions)
-        )
+        self.condition = ChatskyCondition(name="", condition=AllOfCondition(conditions=conditions))
 
     def _convert(self) -> dict:
         converted_conditions = []
@@ -145,10 +126,7 @@ class AllOfConditionConverter(BaseChatskyConditionConverter):
 class AnyOfConditionConverter(BaseChatskyConditionConverter):
     def __init__(self, condition_data: dict) -> None:
         conditions = get_nested(condition_data, ["data", "data"])
-        self.condition = ChatskyCondition(
-            name="",
-            condition=AnyOfCondition(conditions=conditions)
-        )
+        self.condition = ChatskyCondition(name="", condition=AnyOfCondition(conditions=conditions))
 
     def _convert(self) -> dict:
         converted_conditions = []
