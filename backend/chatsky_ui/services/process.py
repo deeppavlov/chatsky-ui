@@ -41,7 +41,7 @@ class Process(ABC):
         self.logger: logging.Logger
         self.to_be_terminated = False
 
-    async def start(self, cmd_to_run: str) -> None:
+    async def start(self, cmd_to_run: str, env = None) -> None:
         """Starts an asyncronous process with the given command."""
         self.process = await asyncio.create_subprocess_exec(
             *cmd_to_run.split(),
@@ -49,6 +49,7 @@ class Process(ABC):
             stderr=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.PIPE,
             preexec_fn=os.setsid,
+            env=env,
         )
 
     async def get_full_info(self, attributes: list) -> Dict[str, Any]:
@@ -177,10 +178,10 @@ class RunProcess(Process):
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
-        async def check_telegram_readiness(stream, name):
+        async def check_telegram_readiness(stream):
             async for line in stream:
                 decoded_line = line.decode().strip()
-                self.logger.info(f"[{name}] {decoded_line}")
+                self.logger.info(decoded_line)
 
                 if "telegram.ext.Application:Application started" in decoded_line:
                     self.logger.info("The application is ready for use!")
@@ -202,8 +203,8 @@ class RunProcess(Process):
         else:
             done, pending = await asyncio.wait(
                 [
-                    asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
-                    asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
+                    asyncio.create_task(check_telegram_readiness(self.process.stdout)),
+                    asyncio.create_task(check_telegram_readiness(self.process.stderr)),
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
                 timeout=PING_PONG_TIMEOUT,

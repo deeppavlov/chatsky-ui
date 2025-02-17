@@ -24,6 +24,7 @@ from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.utils.repo_manager import RepoManager
+from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 
 
 class ProcessManager(ABC):
@@ -197,27 +198,46 @@ class RunManager(ProcessManager):
 
         async def _get_build_info(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path) or {}
+            if not build_info:
+                raise ValueError(f"Build id '{build_id}' not found in the database")
             port = build_info.get("port")
             messenger = build_info["preset"]["messenger"]
             self.logger.debug("Attached build port '%s' for run process '%s'", port, self.last_id)
             return port, messenger
 
+        async def _check_available_tg_token(token_name):
+            for run in await self.get_full_info(0, 10000):
+                if token_name and token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
+                    raise ValueError(f"Bot with token name '{token_name}' is already in use by another run process with id: '{run['id']}'")
+
+        def _assign_token_to_key_used_by_build(token_name, unique_build_token):
+            full_token_name = "_".join(["TG", token_name])
+            self.logger.info("Assigning token '%s' to key '%s'", full_token_name, unique_build_token)
+            token_value = os.getenv(full_token_name)
+            if token_value is None:
+                raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
+            settings.add_env_vars({unique_build_token: token_value})
+
+        if (datetime.now() - self.last_run_time).seconds < 13 and [process for process in self.processes.values() if process.status == Status.RUNNING] and preset.end_status == "success":
+            raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
+
         self.last_id = await _get_new_id()
         build_port, messenger = await _get_build_info(build_id)
 
         if build_port is not None and not RunManager._is_available_port(build_port):
-            raise ValueError(f"Port '{build_port}' is already in use")
-        if (datetime.now() - self.last_run_time).seconds < 13 and [process.status == Status.RUNNING for process in self.processes.values()]:
-            raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
+            raise ConnectionError(f"Port conflict: port '{build_port}' is already in use")
+
+        if messenger == "telegram":
+            await _check_available_tg_token(preset.tg_bot_token)
+            load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
+            _assign_token_to_key_used_by_build(preset.tg_bot_token, UNIQUE_BUILD_TOKEN.format(build_id=build_id))
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
-        f" --messenger {messenger}"
 
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
-        load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
-        await process.start(cmd_to_run)
+        await process.start(cmd_to_run, env=os.environ.copy())
         process.logger.debug("Started process. status: '%s'", process.process.returncode)
         self.last_run_time = datetime.now()
 
@@ -249,25 +269,27 @@ class RunManager(ProcessManager):
         # save current run info into runs_path
         self.logger.debug("Updating db run info")
         runs_conf = await read_conf(settings.runs_path)
+        builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
-            run_params = await process.get_full_info()
+            run_params = await process.get_full_info() #TODO: Try to use the process object attributes instead of having it as dict using get_full_info
             runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
 
+
+            # save current run id into the correspoinding build in builds_path
+            for build in builds_conf:
+                if build.id == run_params["build_id"]:  # type: ignore
+                    if run_params["id"] not in build.run_ids:  # type: ignore
+                        build.run_ids.append(run_params["id"])  # type: ignore
+                        break
         await write_conf(runs_conf, settings.runs_path)
-
-        # save current run id into the correspoinding build in builds_path
-        builds_conf = await read_conf(settings.builds_path)
-        for build in builds_conf:
-            if build.id == run_params["build_id"]:  # type: ignore
-                if run_params["id"] not in build.run_ids:  # type: ignore
-                    build.run_ids.append(run_params["id"])  # type: ignore
-                    break
-
         await write_conf(builds_conf, settings.builds_path)
 
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
+    def __init__(self):
+        super().__init__()
+        self.last_build_time = datetime.now().replace(year=datetime.now().year - 1)
 
     async def _get_available_port(self) -> int:
         async def _get_busy_ports():
@@ -296,6 +318,9 @@ class BuildManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
+        if [process for process in self.processes.values() if process.status == Status.RUNNING] and (datetime.now() - self.last_build_time).seconds < 5 and preset.end_status == "success":
+            raise RuntimeError("Another process is still using the build.yaml file. Can't commit changes.")
+
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
@@ -310,13 +335,14 @@ class BuildManager(ProcessManager):
             port = None
         process = BuildProcess(id_, port, preset)
         cmd_to_run = (
-            f"chatsky.ui build_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+            f"chatsky.ui build_bot {id_} " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
             f" --messenger {preset.messenger}"
         )
         if port is not None:
             cmd_to_run += f" --chatsky-port {port}"
 
         await process.start(cmd_to_run)
+        self.last_build_time = datetime.now()
         self.processes[id_] = process
 
         return id_

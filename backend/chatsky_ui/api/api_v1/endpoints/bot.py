@@ -56,7 +56,13 @@ async def start_build(
     Returns:
         {"status": "ok", "build_id": build_id}: in case of **starting** the build process successfully.
     """
-    build_id = await build_manager.start(preset)
+    try:
+        build_id = await build_manager.start(preset)
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Several builds were requested in short time. Please wait a bit and try.",
+        ) from e
     background_tasks.add_task(build_manager.check_status, build_id)
     build_manager.logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
@@ -201,11 +207,16 @@ async def start_run(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
         ) from e
+    except ConnectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Port conflict error. Something went wrong. Please check the logs for more details.",
+        ) from e
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Port conflict error. Please check that the port is not in use.",
-        ) from e
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+            ) from e
 
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)

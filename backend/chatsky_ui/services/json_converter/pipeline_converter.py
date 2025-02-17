@@ -14,16 +14,18 @@ from .base_converter import BaseConverter
 from .messenger_converter import MessengerConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
+from .consts import UNIQUE_BUILD_TOKEN
 
 
 class PipelineConverter(BaseConverter):
-    def __call__(self, input_file: Path, output_dir: Path, messenger: str, chatsky_port: Optional[int]):
+    def __call__(self, build_id: int, input_file: Path, output_dir: Path, messenger: str, chatsky_port: Optional[int]):
         self.from_yaml(file_path=input_file)
 
         self.pipeline = Pipeline(
             messenger={
                 messenger: {},
                 "chatsky_port": chatsky_port,
+                "tg_token_name": UNIQUE_BUILD_TOKEN.format(build_id=build_id),
             },
             **self.graph,
         )

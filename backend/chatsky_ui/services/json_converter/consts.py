@@ -1,3 +1,4 @@
 RESPONSES_FILE = "responses"
 CONDITIONS_FILE = "conditions"
 CUSTOM_FILE = "custom"
+UNIQUE_BUILD_TOKEN = "UNIQUE_BUILD_TOKEN_{build_id}"
