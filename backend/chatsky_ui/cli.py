@@ -4,12 +4,12 @@ import os
 import string
 import sys
 from pathlib import Path
+from typing import Optional
 
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
-from typing import Optional
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -114,7 +114,7 @@ def build_scenario(
         input_file=settings.frontend_flows_path,
         output_dir=settings.scripts_dir,
         messenger=messenger,
-        chatsky_port=chatsky_port
+        chatsky_port=chatsky_port,
     )  # TODO: rename to frontend_graph_path
 
 

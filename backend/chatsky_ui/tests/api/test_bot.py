@@ -24,7 +24,9 @@ RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
     "preset_status, expected_status",
     [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.COMPLETED)],
 )
-async def test_start_build(mocker, override_dependency, preset_status, expected_status, start_build_endpoint, dummy_build_preset):
+async def test_start_build(
+    mocker, override_dependency, preset_status, expected_status, start_build_endpoint, dummy_build_preset
+):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as process_manager:
@@ -106,10 +108,10 @@ async def test_stop_build_bad_id(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "preset_status", ["failure", "loop", "success"]
-)
-async def test_start_run(mocker, override_dependency, preset_status, start_run_endpoint, dummy_build_id, dummy_run_preset):
+@pytest.mark.parametrize("preset_status", ["failure", "loop", "success"])
+async def test_start_run(
+    mocker, override_dependency, preset_status, start_run_endpoint, dummy_build_id, dummy_run_preset
+):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_run_manager) as process_manager:
@@ -133,7 +135,9 @@ async def test_start_run(mocker, override_dependency, preset_status, start_run_e
                     logger.debug("Success run process timed out. Expected behavior.")
 
                     mocker.patch("chatsky_ui.services.process.PING_PONG_TIMEOUT", 15)
-                    assert await process_manager.processes[process_id].is_alive(), f"Current process status 'Running' did not match the expected 'Alive'"
+                    assert await process_manager.processes[
+                        process_id
+                    ].is_alive(), "Current process status 'Running' did not match the expected 'Alive'"
                     await process.stop()
                 elif preset_status == "loop":
                     logger.debug("Loop process timed out. Expected behavior.")
@@ -147,7 +151,9 @@ async def test_start_run(mocker, override_dependency, preset_status, start_run_e
 
 
 # @pytest.mark.asyncio
-# async def test_get_run_logs(override_dependency, start_run_endpoint, dummy_build_id, dummy_run_preset, dummy_build_preset):
+# async def test_get_run_logs(
+#     override_dependency, start_run_endpoint, dummy_build_id, dummy_run_preset, dummy_build_preset
+# ):
 
 #     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
 #         async with override_dependency(get_run_manager) as process_manager:

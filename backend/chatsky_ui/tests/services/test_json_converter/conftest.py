@@ -143,4 +143,6 @@ def telegram_messenger(unique_build_token):
 
 @pytest.fixture
 def chatsky_telegram_messenger(telegram_messenger):
-    return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": telegram_messenger["tg_token_name"]}}}
+    return {
+        "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": telegram_messenger["tg_token_name"]}}
+    }

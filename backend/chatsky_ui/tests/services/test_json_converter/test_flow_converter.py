@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pytest
@@ -94,7 +93,7 @@ class TestPipelineConverter:
         pipeline_path = Path(__file__).parent / "test_pipeline.yaml"
         with open(pipeline_path, "w") as file:
             yaml.dump(pipeline, file)
-        #TODO: when adding the token validator to messenger:
+        # TODO: when adding the token validator to messenger:
         # os.environ[UNIQUE_BUILD_TOKEN.format(build_id=dummy_build_id)] = "some_token"
 
         PipelineConverter()(dummy_build_id, pipeline_path, Path(__file__).parent, "telegram", None)

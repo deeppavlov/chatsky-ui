@@ -3,19 +3,20 @@
 
 import os
 from contextlib import asynccontextmanager
+from typing import Literal
 
 import nest_asyncio
 import pytest
-from typing import Literal
 
 nest_asyncio.apply = lambda: None
 
 from pathlib import Path
 
 from chatsky_ui.main import app
+from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.services.process_manager import BuildManager, RunManager
-from chatsky_ui.schemas.preset import BuildPreset, RunPreset
+
 
 @pytest.fixture(scope="session", autouse=True)
 def set_working_directory():
@@ -37,6 +38,7 @@ def unique_build_token(dummy_build_id) -> str:
 def dummy_build_preset():
     def wrapper(end_status: Literal["success", "failure", "loop"] = "success"):
         return BuildPreset(name="dummy_build_preset", end_status=end_status, preset="dummy", messenger="web")
+
     return wrapper
 
 
@@ -70,6 +72,7 @@ def dummy_run_preset(dummy_token_name):
             preset="dummy",
             tg_bot_token=dummy_token_name,
         )
+
     return wrapper
 
 
