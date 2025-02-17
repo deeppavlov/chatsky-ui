@@ -129,10 +129,7 @@ const handleValueChangeCheckbox = (
       ...state,
       data: { ...state.data, flags: { ignoreCase: value } },
      })
-   : setState({
-      ...state,
-      flags: { ignoreCase: value },
-     })
+   : setState({ ...state, flags: { ignoreCase: value } })
   return
  }
 
@@ -155,7 +152,7 @@ interface IConditionGroup {
  disabled?: boolean
 }
 
-const disabledCondition = (state: IState): IConditionGroup[] => {
+const disabledConditionGroup = (state: IState): IConditionGroup[] => {
  const conditionStructures = state.structure
  const arrConditions: string[] = (state.data as IDefObject[])
   .map((el: IDefObject) => el.structure)
@@ -197,6 +194,17 @@ const getNameCondition = (key: string) => {
  return condition.length === 0 ? "" : condition[0].name
 }
 
+const ConditionHeader = ({ onDelete }: { onDelete?: () => void }) => (
+ <div className="flex items-center justify-between">
+  <p>Condition</p>
+  {onDelete && (
+   <button onClick={onDelete} aria-label="Delete condition">
+    <DeleteBasicConditionIcon />
+   </button>
+  )}
+ </div>
+)
+
 const mapping: IMapping = {
  exactMatch: (setState, state, id = undefined) => {
   const padding = id === undefined ? "py-[12px]" : ""
@@ -223,6 +231,7 @@ const mapping: IMapping = {
     />
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
+      aria-label="Case sensitive"
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
       type="checkbox"
       onValueChange={(value) =>
@@ -250,6 +259,7 @@ const mapping: IMapping = {
     />
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
+      aria-label="Case sensitive"
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
       onValueChange={(value) =>
        handleValueChangeCheckbox(setState, state, id, value)
@@ -272,52 +282,29 @@ const mapping: IMapping = {
       if (el.structure === "") {
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
-         <div className="flex flex items-center justify-between">
-          <p>Condition</p>
-          <button
-           onClick={() => {
-            const newData = (state.data as IDefObject[]).filter(
-             (item: IDefObject) => item.id !== el.id
-            )
+         <ConditionHeader
+          onDelete={() => {
+           const newData = (state.data as IDefObject[]).filter(
+            (item: IDefObject) => item.id !== el.id
+           )
+           const newState = { ...state, data: newData }
+           const newConditionGroups = disabledConditionGroup(newState)
+           setState({ ...newState, conditionGroups: newConditionGroups })
+          }}
+         />
 
-            const newState = {
-             ...state,
-             data: newData,
-            }
-
-            const newConditionGroups = disabledCondition(newState)
-
-            setState({
-             ...newState,
-             conditionGroups: newConditionGroups,
-            })
-           }}
-          >
-           <DeleteBasicConditionIcon />
-          </button>
-         </div>
          <DefSelect
           key={index}
           mini
           className="w-full"
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
-
            const newCondition = { ...defData, id: el.id }
-
            const newData = (state.data as IDefObject[]).map(
-            (item: IDefObject) => {
-             if (item.id === el.id) {
-              return newCondition
-             }
-             return item
-            }
+            (item: IDefObject) => (item.id === el.id ? newCondition : item)
            )
-
            const newState = { ...state, conditionGroups, data: newData }
-
-           const newConditionGroups = disabledCondition(newState)
-
+           const newConditionGroups = disabledConditionGroup(newState)
            setState({ ...newState, conditionGroups: newConditionGroups })
           }}
           items={arr.map((group, index) => ({
@@ -333,30 +320,17 @@ const mapping: IMapping = {
       if (el.structure !== undefined) {
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
-         <div className="flex flex items-center justify-between">
-          <p>Condition</p>
-          <button
-           onClick={() => {
-            const newData = (state.data as IDefObject[]).filter(
-             (item: IDefObject) => item.id !== el.id
-            )
+         <ConditionHeader
+          onDelete={() => {
+           const newData = (state.data as IDefObject[]).filter(
+            (item: IDefObject) => item.id !== el.id
+           )
+           const newState = { ...state, data: newData }
+           const newConditionGroups = disabledConditionGroup(newState)
 
-            const newState = {
-             ...state,
-             data: newData,
-            }
-
-            const newConditionGroups = disabledCondition(newState)
-
-            setState({
-             ...newState,
-             conditionGroups: newConditionGroups,
-            })
-           }}
-          >
-           <DeleteBasicConditionIcon />
-          </button>
-         </div>
+           setState({ ...newState, conditionGroups: newConditionGroups })
+          }}
+         />
          <DefSelect
           key={index}
           defaultValue={getNameCondition(el.structure)}
@@ -364,25 +338,12 @@ const mapping: IMapping = {
           className="w-full"
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
-
            const newCondition = { ...defData, id: el.id }
-
            const newData = (state.data as IDefObject[]).map(
-            (item: IDefObject) => {
-             if (item.id === el.id) {
-              return newCondition
-             }
-             return item
-            }
+            (item: IDefObject) => (item.id === el.id ? newCondition : item)
            )
-
-           const newState = {
-            ...state,
-            data: newData,
-           }
-
-           const newConditionGroups = disabledCondition(newState)
-
+           const newState = { ...state, data: newData }
+           const newConditionGroups = disabledConditionGroup(newState)
            setState({ ...newState, conditionGroups: newConditionGroups })
           }}
           items={arr.map((group, index) => ({
@@ -396,7 +357,6 @@ const mapping: IMapping = {
         </div>
        )
       }
-      return null
      })}
     </div>
     <Button
@@ -450,25 +410,17 @@ const mapping: IMapping = {
      className={`w-full`}
      onValueChange={(value) => {
       const defData = genDefObject(value)
-
       if (isAnyOrAll(state.structure)) {
        const newCondition = { ...defData, id }
-
        const newData: IDefObject[] = (state.data as IDefObject[]).map(
-        (item: IDefObject) => {
-         if (item.id === id) {
-          return { ...item, data: newCondition }
-         }
-         return item
-        }
+        (item: IDefObject) =>
+         item.id === id ? { ...item, data: newCondition } : item
        )
-
        setState({ ...state, data: newData })
        return
       }
-
       const newState = { ...state, data: { ...defData } }
-      setState(newState as IState)
+      setState(newState)
      }}
      items={arr.map((group) => ({
       value: group.name,
@@ -537,7 +489,6 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     transition_type: condition.data.transition_type,
    },
   }
-
   setData(newCondition)
  }, [state])
 
@@ -560,9 +511,7 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
      defaultValue={getNameCondition(state.structure)}
      onValueChange={(value) => {
       const defObject = genDefObject(value)
-
       const newStructure = defObject?.structure ?? ""
-
       setState({ conditionGroups, ...defObject, structure: newStructure })
      }}
      items={state.conditionGroups.map((group, index) => ({
