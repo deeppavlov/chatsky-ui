@@ -5,7 +5,7 @@ import pytest
 import yaml
 
 from chatsky_ui.services.json_converter.flow_converter import FlowConverter
-from chatsky_ui.services.json_converter.interface_converter import InterfaceConverter
+from chatsky_ui.services.json_converter.messenger_converter import MessengerConverter
 from chatsky_ui.services.json_converter.pipeline_converter import PipelineConverter
 from chatsky_ui.services.json_converter.script_converter import ScriptConverter
 
@@ -68,37 +68,36 @@ class TestScriptConverter:
             converter.extract_start_fallback_labels()
 
 
-class TestInterfaceConverter:
-    def test_interface_converter(self, telegram_interface, chatsky_telegram_interface):
-        os.environ["TG_BOT_TOKEN"] = "some_token"
+class TestMessengerConverter:
+    def test_messenger_converter(self, telegram_messenger, chatsky_telegram_messenger):
+        converted_messenger = MessengerConverter(telegram_messenger)()
 
-        converted_interface = InterfaceConverter(telegram_interface)()
+        assert converted_messenger == chatsky_telegram_messenger
 
-        assert converted_interface == chatsky_telegram_interface
+    # def test_messenger_fail_no_token(self, telegram_messenger):
+    #     os.environ.pop("TG_BOT_TOKEN", None)
+    #     with pytest.raises(ValueError):
+    #         MessengerConverter(telegram_messenger)()
 
-    def test_interface_fail_no_token(self, telegram_interface):
-        os.environ.pop("TG_BOT_TOKEN", None)
-        with pytest.raises(ValueError):
-            InterfaceConverter(telegram_interface)()
-
-    def test_interface_fail_multiple_interfaces(self, telegram_interface):
-        interface = {**telegram_interface, "http": {}}
+    def test_messenger_fail_multiple_messengers(self, telegram_messenger):
+        messenger = {**telegram_messenger, "web": {}}
 
         with pytest.raises(ValueError):
-            InterfaceConverter(interface)()
+            MessengerConverter(messenger)()
 
 
 class TestPipelineConverter:
     def test_pipeline_converter(
-        self, flow, telegram_interface, chatsky_telegram_interface, converted_group_slot, chatsky_flow
+        self, dummy_build_id, flow, chatsky_telegram_messenger, converted_group_slot, chatsky_flow
     ):
-        pipeline = {"flows": [flow], "interface": telegram_interface}
+        pipeline = {"flows": [flow]}
         pipeline_path = Path(__file__).parent / "test_pipeline.yaml"
         with open(pipeline_path, "w") as file:
             yaml.dump(pipeline, file)
-        os.environ["TG_BOT_TOKEN"] = "some_token"
+        #TODO: when adding the token validator to messenger:
+        # os.environ[UNIQUE_BUILD_TOKEN.format(build_id=dummy_build_id)] = "some_token"
 
-        PipelineConverter()(pipeline_path, Path(__file__).parent)
+        PipelineConverter()(dummy_build_id, pipeline_path, Path(__file__).parent, "telegram", None)
 
         output_file = Path(__file__).parent / "build.yaml"
         with open(output_file) as file:
@@ -108,7 +107,7 @@ class TestPipelineConverter:
 
         assert converted_pipeline == {
             "script": chatsky_flow,
-            "messenger_interface": chatsky_telegram_interface,
+            "messenger_interface": chatsky_telegram_messenger,
             "slots": converted_group_slot,
             "start_label": ["test_flow", "test_node"],
             "fallback_label": ["test_flow", "test_node"],
