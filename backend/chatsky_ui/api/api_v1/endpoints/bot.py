@@ -9,6 +9,7 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import Preset
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
+from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
 router = APIRouter()
 
@@ -258,3 +259,15 @@ async def respond(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=f"Please check that service's up and running on the port '{settings.chatsky_port}'.",
             ) from e
+
+
+@router.get("/get_user_chats/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
+async def get_chat_records(
+    run_id: int, user_id: int, pagination: Pagination = Depends()
+) -> Optional[List[str]]:
+    """Gets the records of a user's chat from a specified run.
+
+    The offset and limit parameters can be used to paginate the results.
+    """
+    if user_id is not None:
+        return await SQLiteExtractor().fetch_chat_records(run_id, user_id, pagination.offset(), pagination.limit)
