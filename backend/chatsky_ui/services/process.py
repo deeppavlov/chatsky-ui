@@ -178,10 +178,10 @@ class RunProcess(Process):
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
-        async def check_telegram_readiness(stream, name):
+        async def check_telegram_readiness(stream):
             async for line in stream:
                 decoded_line = line.decode().strip()
-                self.logger.info(f"[{name}] {decoded_line}")
+                self.logger.info(decoded_line)
 
                 if "telegram.ext.Application:Application started" in decoded_line:
                     self.logger.info("The application is ready for use!")
@@ -203,8 +203,8 @@ class RunProcess(Process):
         else:
             done, pending = await asyncio.wait(
                 [
-                    asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
-                    asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
+                    asyncio.create_task(check_telegram_readiness(self.process.stdout)),
+                    asyncio.create_task(check_telegram_readiness(self.process.stderr)),
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
                 timeout=PING_PONG_TIMEOUT,
