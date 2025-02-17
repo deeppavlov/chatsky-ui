@@ -13,14 +13,14 @@ interface IDefObject {
  data?: IDefObject[] | IDefObject | {}
  id?: string
  pattern?: string
- structure: string
+ structure?: string
 }
 
 interface IMapping {
  [key: string]: (
   setState: (value: IState) => void,
   state: IState,
-  id?: string | undefined
+  id?: string
  ) => JSX.Element
 }
 
@@ -32,9 +32,10 @@ interface IState {
   key?: string
   disabled?: boolean
  }[]
+ flags?: { ignoreCase: boolean }
 }
 
-const genDefObject = (key: string): IDefObject | undefined => {
+const genDefObject = (key: string): IDefObject => {
  switch (key) {
   case "Exact match":
    return {
@@ -60,7 +61,8 @@ const genDefObject = (key: string): IDefObject | undefined => {
   case "Not":
    return { structure: "not", data: {} }
   default:
-   return undefined
+   console.log(key)
+   return { structure: "unknown" }
  }
 }
 
@@ -71,13 +73,17 @@ const isAnyOrAll = (value: string): boolean =>
  value === "anyOf"
 
 const getValue = (state: IState, id: string): IDefObject => {
+ const stateData = state.data as IDefObject[]
+
  if (isAnyOrAll(state.structure)) {
-  const data: IDefObject = state.data!.filter(
+  const data: IDefObject = stateData.filter(
    (item: IDefObject) => item.id === id
   )[0]
-  return data.structure === "not" ? data.data : data
+  return data.structure === "not" ? (data.data as IDefObject) : data
  }
- return state.structure !== "not" ? (state as IDefObject) : state.data
+ return state.structure !== "not"
+  ? (state as IDefObject)
+  : (state.data as IDefObject)
 }
 
 const handleValueChange = (
@@ -89,19 +95,24 @@ const handleValueChange = (
 ) => {
  if (id === undefined) {
   state.structure === "not"
-   ? setState({ ...state, data: { ...state.data, [field]: value } })
+   ? setState({
+      ...state,
+      data: { ...(state.data as IDefObject), [field]: value },
+     })
    : setState({ ...state, [field]: value })
   return
  }
 
- const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-  if (item.id === id) {
-   return item.structure === "not"
-    ? { ...item, data: { ...item.data, [field]: value } }
-    : { ...item, [field]: value }
+ const newData: IDefObject[] = (state.data as IDefObject[]).map(
+  (item: IDefObject) => {
+   if (item.id === id) {
+    return item.structure === "not"
+     ? { ...item, data: { ...item.data, [field]: value } }
+     : { ...item, [field]: value }
+   }
+   return item
   }
-  return item
- })
+ )
  setState({ ...state, data: newData })
  return
 }
@@ -125,15 +136,51 @@ const handleValueChangeCheckbox = (
   return
  }
 
- const newData: IDefObject[] = state.data.map((item: IDefObject) => {
-  if (item.id === id) {
-   return item.structure === "not"
-    ? { ...item, data: { ...item.data, flags: { ignoreCase: value } } }
-    : { ...item, flags: { ignoreCase: value } }
+ const newData: IDefObject[] = (state.data as IDefObject[]).map(
+  (item: IDefObject) => {
+   if (item.id === id) {
+    return item.structure === "not"
+     ? { ...item, data: { ...item.data, flags: { ignoreCase: value } } }
+     : { ...item, flags: { ignoreCase: value } }
+   }
+   return item
   }
-  return item
- })
+ )
  setState({ ...state, data: newData })
+}
+
+interface IConditionGroup {
+ name: string
+ key?: string
+ disabled?: boolean
+}
+
+const disabledCondition = (state: IState): IConditionGroup[] => {
+ const conditionStructures = state.structure
+ const arrConditions: string[] = (state.data as IDefObject[])
+  .map((el: IDefObject) => el.structure)
+  .filter((structure): structure is string => structure !== undefined)
+
+ const mapStructures: { [key: string]: string[] } = {
+  allOf: ["exactMatch", "regExp"],
+  anyOf: ["regExp"],
+ }
+
+ const arrKeyMap = mapStructures[conditionStructures]
+
+ const newConditionGroups = state.conditionGroups.map((group) => {
+  if (group.hasOwnProperty("disabled")) {
+   group.disabled =
+    group.key &&
+    arrKeyMap.includes(group.key) &&
+    arrConditions.includes(group.key)
+     ? true
+     : false
+  }
+  return group
+ })
+
+ return newConditionGroups
 }
 
 const conditionGroups = [
@@ -221,18 +268,29 @@ const mapping: IMapping = {
   return (
    <>
     <div className="flex flex-col gap-[24px] pl-[24px] py-[24px]">
-     {state.data!.map((el: IDefObject, index: number) => {
-      if (el.structure === undefined) {
+     {(state.data as IDefObject[]).map((el: IDefObject, index: number) => {
+      if (el.structure === "") {
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
          <div className="flex flex items-center justify-between">
           <p>Condition</p>
           <button
            onClick={() => {
-            const newData = state.data!.filter(
+            const newData = (state.data as IDefObject[]).filter(
              (item: IDefObject) => item.id !== el.id
             )
-            setState({ ...state, data: newData })
+
+            const newState = {
+             ...state,
+             data: newData,
+            }
+
+            const newConditionGroups = disabledCondition(newState)
+
+            setState({
+             ...newState,
+             conditionGroups: newConditionGroups,
+            })
            }}
           >
            <DeleteBasicConditionIcon />
@@ -247,15 +305,20 @@ const mapping: IMapping = {
 
            const newCondition = { ...defData, id: el.id }
 
-           const newData = state.data!.map((item: IDefObject) => {
-            if (item.id === el.id) {
-             return newCondition
+           const newData = (state.data as IDefObject[]).map(
+            (item: IDefObject) => {
+             if (item.id === el.id) {
+              return newCondition
+             }
+             return item
             }
-            return item
-           })
+           )
 
            const newState = { ...state, conditionGroups, data: newData }
-           setState(newState)
+
+           const newConditionGroups = disabledCondition(newState)
+
+           setState({ ...newState, conditionGroups: newConditionGroups })
           }}
           items={arr.map((group, index) => ({
            value: group.name,
@@ -274,14 +337,20 @@ const mapping: IMapping = {
           <p>Condition</p>
           <button
            onClick={() => {
-            const newData = state.data!.filter(
+            const newData = (state.data as IDefObject[]).filter(
              (item: IDefObject) => item.id !== el.id
             )
 
-            setState({
+            const newState = {
              ...state,
              data: newData,
-             conditionGroups,
+            }
+
+            const newConditionGroups = disabledCondition(newState)
+
+            setState({
+             ...newState,
+             conditionGroups: newConditionGroups,
             })
            }}
           >
@@ -298,15 +367,23 @@ const mapping: IMapping = {
 
            const newCondition = { ...defData, id: el.id }
 
-           const newData = state.data!.map((item: IDefObject) => {
-            if (item.id === el.id) {
-             return newCondition
+           const newData = (state.data as IDefObject[]).map(
+            (item: IDefObject) => {
+             if (item.id === el.id) {
+              return newCondition
+             }
+             return item
             }
-            return item
-           })
+           )
 
-           const newState = { ...state, data: newData }
-           setState(newState)
+           const newState = {
+            ...state,
+            data: newData,
+           }
+
+           const newConditionGroups = disabledCondition(newState)
+
+           setState({ ...newState, conditionGroups: newConditionGroups })
           }}
           items={arr.map((group, index) => ({
            value: group.name,
@@ -324,13 +401,15 @@ const mapping: IMapping = {
     </div>
     <Button
      data-testid="add-condition-button"
-     onClick={() =>
-      Array.isArray(state.data) &&
+     onClick={() => {
       setState({
        ...state,
-       data: [...state.data, { structure: undefined, id: _.uniqueId() }],
+       data: [
+        ...(state.data as IDefObject[]),
+        { structure: "", id: _.uniqueId() },
+       ],
       })
-     }
+     }}
      className="bg-foreground text-background my-3"
     >
      + Add condition
@@ -350,8 +429,12 @@ const mapping: IMapping = {
   ]
 
   const key: string = isAnyOrAll(state.structure)
-   ? state.data!.filter((data: IDefObject) => data.id === id)[0].data.structure
-   : state.data!.structure
+   ? (
+      (state.data as IDefObject[]).filter(
+       (data: IDefObject) => data.id === id
+      )[0]?.data as IDefObject
+     )?.structure ?? ""
+   : (state.data as IDefObject).structure ?? ""
 
   const padding =
    isAnyOrAll(state.structure) || state.structure === "not" ? "pl-[24px]" : ""
@@ -371,19 +454,21 @@ const mapping: IMapping = {
       if (isAnyOrAll(state.structure)) {
        const newCondition = { ...defData, id }
 
-       const newData: IDefObject[] = state.data!.map((item: IDefObject) => {
-        if (item.id === id) {
-         return { ...item, data: newCondition }
+       const newData: IDefObject[] = (state.data as IDefObject[]).map(
+        (item: IDefObject) => {
+         if (item.id === id) {
+          return { ...item, data: newCondition }
+         }
+         return item
         }
-        return item
-       })
+       )
 
        setState({ ...state, data: newData })
        return
       }
 
       const newState = { ...state, data: { ...defData } }
-      setState(newState)
+      setState(newState as IState)
      }}
      items={arr.map((group) => ({
       value: group.name,
@@ -434,50 +519,23 @@ const InputText: React.FC<{
 }
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
- //  const { python: pythonIgnored, ...conditionData } = condition.data
- const priority = condition.data.priority
- const transition_type = condition.data.transition_type
-
- const defaulValue = {
-  priority,
-  transition_type,
-  conditionGroups,
- }
-
- const defState: IState = condition.data.hasOwnProperty("structure")
-  ? { ...condition.data, conditionGroups }
-  : defaulValue
+ const defState: IState =
+  condition.data.hasOwnProperty("structure") && condition.data.structure
+   ? { ...condition.data, conditionGroups, structure: condition.data.structure }
+   : { conditionGroups, structure: "" }
 
  const [state, setState] = useState(defState)
-
- console.log(state)
 
  useEffect(() => {
   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
 
   const newCondition = {
    ...condition,
-   data: { ...newState, priority, transition_type },
-  }
-
-  const conditionStructures = newState.structure
-
-  if (isAnyOrAll(conditionStructures)) {
-   const arrConditions = state.data.map((el) => el.structure)
-
-   const mapStructures = {
-    allOf: ["exactMatch", "regExp"],
-    anyOf: ["regExp"],
-   }
-
-   const arrKeyMap = mapStructures[conditionStructures]
-
-   state.conditionGroups.forEach((group) => {
-    if (group.hasOwnProperty("disabled")) {
-     group.disabled =
-      arrKeyMap.includes(group.key) && arrConditions.includes(group.key)
-    }
-   })
+   data: {
+    ...newState,
+    priority: condition.data.priority,
+    transition_type: condition.data.transition_type,
+   },
   }
 
   setData(newCondition)
@@ -503,7 +561,9 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
      onValueChange={(value) => {
       const defObject = genDefObject(value)
 
-      setState({ ...defaulValue, ...defObject })
+      const newStructure = defObject?.structure ?? ""
+
+      setState({ conditionGroups, ...defObject, structure: newStructure })
      }}
      items={state.conditionGroups.map((group, index) => ({
       value: group.name,

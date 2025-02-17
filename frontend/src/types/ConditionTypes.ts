@@ -18,7 +18,7 @@ export type conditionDataType = {
   action: string
   variables: string[]
  }
- basic?: any
+ structure?: string
 }
 
 export type conditionTypeType =
