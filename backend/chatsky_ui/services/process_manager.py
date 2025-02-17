@@ -271,8 +271,8 @@ class RunManager(ProcessManager):
         runs_conf = await read_conf(settings.runs_path)
         builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
-            run_params = await process.get_full_info() #TODO: Try to use the process object instead of having it as dict using get_full_info
-            runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
+            run_params = await process.get_full_info() #TODO: Try to use the process object attributes instead of having it as dict using get_full_info
+            runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
 
 
             # save current run id into the correspoinding build in builds_path
@@ -385,6 +385,6 @@ class BuildManager(ProcessManager):
         builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
             build_params = await process.get_full_info()
-            builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
+            builds_conf = BuildManager.add_new_conf(builds_conf, build_params)  # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)
