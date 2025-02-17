@@ -146,7 +146,10 @@ const BuildManagerPage = () => {
             <span className='z-10 text-background'>Quick build and run</span>
           </Button>
         </div>
-        <Button className='bg-btn-accent rounded-lg flex-shrink-0 flex justify-center items-center gap-2'>
+        <Button
+          isDisabled
+          className='bg-btn-accent rounded-lg flex-shrink-0 flex justify-center items-center gap-2'
+        >
           <MicroscopeIcon />
           <span className='text-sm font-semibold'>Test panel</span>
         </Button>

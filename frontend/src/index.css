@@ -380,3 +380,7 @@ table thead tr:nth-child(2) {
 .zoom-out {
   animation: zoom-out 0.2s ease-in forwards;
 }
+
+input[type="password"]::-ms-reveal {
+  display: none;
+}
