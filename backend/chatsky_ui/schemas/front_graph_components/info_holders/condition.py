@@ -13,8 +13,6 @@ from pydantic import Field, model_validator
 
 from ..base_component import BaseComponent
 
-from ..base_component import BaseComponent
-from chatsky.conditions import All, Any, ExactMatch, Regexp, HasText, Not
 
 class Condition(BaseComponent):
     """Base condition model."""
