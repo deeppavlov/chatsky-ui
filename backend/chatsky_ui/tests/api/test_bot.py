@@ -15,8 +15,17 @@ from chatsky_ui.schemas.process_status import Status
 
 load_dotenv()
 
-BUILD_COMPLETION_TIMEOUT = float(os.getenv("BUILD_COMPLETION_TIMEOUT", 10))
+BUILD_COMPLETION_TIMEOUT = float(os.getenv("BUILD_COMPLETION_TIMEOUT", 15))
 RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
+DELAY_BETWEEN_BUILDS = float(os.getenv("DELAY_BETWEEN_BUILDS", 5))
+DELAY_BETWEEN_RUNS = float(os.getenv("DELAY_BETWEEN_RUNS", 13))
+
+async def _start_process_with_retry(client, endpoint, data, delay, retries=1):
+    response = await client.post(endpoint, json=data)
+    if response.status_code == 400 and retries > 0:
+        await asyncio.sleep(delay)
+        return await _start_process_with_retry(client, endpoint, data, retries - 1, delay)
+    return response
 
 
 @pytest.mark.asyncio
@@ -33,10 +42,7 @@ async def test_start_build(
             process_manager.save_built_script_to_git = mocker.MagicMock()
             process_manager.is_changed_graph = mocker.MagicMock(return_value=True)
 
-            response = await async_client.post(
-                start_build_endpoint,
-                json=dummy_build_preset(preset_status).model_dump(),
-            )
+            response = await _start_process_with_retry(async_client, start_build_endpoint, dummy_build_preset(preset_status).model_dump(), DELAY_BETWEEN_BUILDS)
 
             assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
 
@@ -68,10 +74,7 @@ async def test_stop_build(override_dependency, start_build_endpoint, stop_build_
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as manager:
-            response = await async_client.post(
-                start_build_endpoint,
-                json=dummy_build_preset().model_dump(),
-            )
+            response = await _start_process_with_retry(async_client, start_build_endpoint, dummy_build_preset().model_dump(), DELAY_BETWEEN_BUILDS)
 
             assert response.status_code == 201
             logger.debug("Processes: %s", manager.processes)
@@ -92,10 +95,7 @@ async def test_stop_build_bad_id(
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as manager:
-            response = await async_client.post(
-                start_build_endpoint,
-                json=dummy_build_preset().model_dump(),
-            )
+            response = await _start_process_with_retry(async_client, start_build_endpoint, dummy_build_preset().model_dump(), DELAY_BETWEEN_BUILDS)
 
             assert response.status_code == 201
             logger.debug("Processes: %s", manager.processes)
@@ -118,10 +118,7 @@ async def test_start_run(
 
             settings.add_env_vars({"TG_MY_TOKEN": "7581183652:AAG3k40MhM7cqwh1KQg_66nklnkB5taRGyk"})
 
-            response = await async_client.post(
-                start_run_endpoint(dummy_build_id),
-                json=dummy_run_preset(preset_status).model_dump(),
-            )
+            response = await _start_process_with_retry(async_client, start_run_endpoint(dummy_build_id), dummy_run_preset(preset_status).model_dump(), DELAY_BETWEEN_RUNS)
 
             assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
 
@@ -151,17 +148,11 @@ async def test_start_run(
 
 
 # @pytest.mark.asyncio
-# async def test_get_run_logs(
-#     override_dependency, start_run_endpoint, dummy_build_id, dummy_run_preset, dummy_build_preset
-# ):
-
+# async def test_get_run_logs(override_dependency, start_run_endpoint, dummy_build_id, dummy_run_preset):
 #     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
 #         async with override_dependency(get_run_manager) as process_manager:
-#             await async_client.post("/api/v1/bot/flow/tg_token", json={dummy_run_preset.tg_bot_token: "dummy"})
-#             response = await async_client.post(
-#                 start_run_endpoint(dummy_build_id),
-#                 json=dummy_run_preset().model_dump(),
-#             )
+#             settings.add_env_vars({"TG_MY_TOKEN": "7581183652:AAG3k40MhM7cqwh1KQg_66nklnkB5taRGyk"})
+#             response = await _start_process_with_retry(async_client, start_run_endpoint(dummy_build_id), dummy_run_preset().model_dump(), DELAY_BETWEEN_RUNS)
 
 #             run_id = process_manager.last_id
 

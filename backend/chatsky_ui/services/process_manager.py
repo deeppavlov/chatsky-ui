@@ -145,7 +145,7 @@ class ProcessManager(ABC):
         process_info = await self.get_process_info(id_, path)
         if process_info is None:
             self.logger.error("Id '%s' not found", id_)
-            return None
+            return None #TODO: raise error and handle it!
 
         log_file = Path(process_info["log_path"])
         try:
@@ -227,7 +227,6 @@ class RunManager(ProcessManager):
         if (
             (datetime.now() - self.last_run_time).seconds < 13
             and [process for process in self.processes.values() if process.status == Status.RUNNING]
-            and preset.end_status == "success"
         ):
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
@@ -333,7 +332,6 @@ class BuildManager(ProcessManager):
         if (
             [process for process in self.processes.values() if process.status == Status.RUNNING]
             and (datetime.now() - self.last_build_time).seconds < 5
-            and preset.end_status == "success"
         ):
             raise RuntimeError("Another process is still using the build.yaml file. Can't commit changes.")
 
