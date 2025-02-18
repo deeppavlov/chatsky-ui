@@ -46,4 +46,9 @@ class SQLiteExtractor:
 
     def fetch_chat_records(self, run_id: int, user_id: int, offset: int, limit: int):
         context = self.get_context(run_id, user_id)
-        return context.responses, context.requests
+        requests = context.requests
+        responses = context.responses
+        result = []
+        for user_request, bot_response in zip(requests.values(), responses.values()):
+            result.append((user_request.text, bot_response.text))
+        return result
