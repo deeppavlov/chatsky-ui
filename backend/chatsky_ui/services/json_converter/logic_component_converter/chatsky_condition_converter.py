@@ -77,8 +77,8 @@ class RegexpConditionConverter(BaseChatskyConditionConverter):
 
     def _map_flags(self, flags: dict) -> int:
         flag_value = 0
-        if flags.get("ignoreCase", "false") == "true":
-            flag_value |= re.IGNORECASE
+        if flags.get("ignoreCase", False) == True:
+            flag_value |= re.IGNORECASE.value
         return flag_value
 
     def _convert(self) -> dict:
@@ -143,7 +143,7 @@ class ChatskyConditionConverter(ConditionConverter):
     MAP_CONDITION = {
         "exactMatch": ExactMatchConditionConverter,
         "includeText": IncludeTextConditionConverter,
-        "regexp": RegexpConditionConverter,
+        "regExp": RegexpConditionConverter,
         "not": NotConditionConverter,
         "allOf": AllOfConditionConverter,
         "anyOf": AnyOfConditionConverter,
