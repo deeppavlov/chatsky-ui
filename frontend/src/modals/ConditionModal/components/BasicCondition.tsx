@@ -229,8 +229,12 @@ const mapping: IMapping = {
      defaultValue={""}
      setState={(value) => handleValueChange(setState, state, id, value, "text")}
     />
-    <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
+    <div
+     className="flex items-center gap-2 pl-[12px] pt-[12px]"
+     style={{ cursor: "not-allowed", opacity: 0.3 }}
+    >
      <Checkbox
+      isDisabled={true}
       aria-label="Case sensitive"
       isSelected={getValue(state, id ?? "").flags?.ignoreCase}
       type="checkbox"
@@ -238,7 +242,7 @@ const mapping: IMapping = {
        handleValueChangeCheckbox(setState, state, id, value)
       }
      />
-     <label className="text-sm font-medium"> Case sensitive </label>
+     <label className="text-sm font-medium "> Case sensitive </label>
     </div>
    </div>
   )
