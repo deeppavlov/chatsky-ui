@@ -99,11 +99,11 @@ class NotConditionConverter(BaseChatskyConditionConverter):
     def _convert(self) -> dict:
         # Extract the nested condition; assumes structure: {"data": {...}}
         negated_data = get_nested(self.raw_condition_data, ["data", "data"])
-        structure = get_nested(negated_data, ["data", "structure"])
+        structure = get_nested(negated_data, ["structure"])
         converter_class = ChatskyConditionConverter.MAP_CONDITION.get(structure)
         if not converter_class:
             raise BadConditionException(f"Unsupported condition structure: {structure}")
-        negated_converter = converter_class(negated_data)
+        negated_converter = converter_class({"data": negated_data})
         return {"chatsky.conditions.Not": negated_converter()}
 
 

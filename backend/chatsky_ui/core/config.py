@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict
 
 import uvicorn
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 from omegaconf import DictConfig, OmegaConf
 
 LOG_LEVELS: Dict[str, int] = {
@@ -33,7 +33,6 @@ class Settings:
         self.set_config(
             host=os.getenv("HOST", "0.0.0.0"),
             port=os.getenv("PORT", "8000"),
-            chatsky_port=os.getenv("CHATSKY_PORT", "8020"),
             log_level=os.getenv("LOG_LEVEL", "info"),
             conf_reload=os.getenv("CONF_RELOAD", "false"),
             work_directory=".",
@@ -45,7 +44,7 @@ class Settings:
                 value = Path(value)
             elif key == "conf_reload":
                 value = str(value).lower() in ["true", "yes", "t", "y", "1"]
-            elif key in ["port", "CHATSKY_PORT"]:
+            elif key in ["port"]:
                 value = int(value)
             setattr(self, key, value)
 
@@ -58,7 +57,7 @@ class Settings:
         self.runs_path = self.work_directory / "chatsky_ui/app_data/runs.yaml"
         self.frontend_flows_path = self.work_directory / "chatsky_ui/app_data/frontend_flows.yaml"
         self.dir_logs = self.work_directory / "chatsky_ui/logs"
-        self.presets = self.work_directory / "chatsky_ui/presets"
+        self.presets_path = self.work_directory / "chatsky_ui/presets"
         self.snippet2lint_path = self.work_directory / "chatsky_ui/.snippet2lint.py"
 
         self.custom_dir = self.work_directory / "bot/custom"
@@ -75,7 +74,6 @@ class Settings:
                     "work_directory": str(self.work_directory),
                     "host": self.host,
                     "port": self.port,
-                    "chatsky_port": self.chatsky_port,
                     "log_level": self.log_level,
                     "conf_reload": self.conf_reload,
                 }
@@ -92,6 +90,19 @@ class Settings:
     def refresh_work_dir(self):
         config = self._load_temp_config()
         self.set_config(**config)
+
+    def add_env_vars(self, env_vars: Dict[str, str]):
+        dotenv_path = settings.work_directory / ".env"
+        dotenv_path.touch(exist_ok=True)
+
+        for key, value in env_vars.items():
+            if key in os.environ:
+                logging.warning(
+                    f"Environment variable '{key}' already exists. "
+                    f"Changing value from '{os.environ[key]}' to '{value}'."
+                )
+            os.environ[key] = value
+            set_key(dotenv_path, key, value)
 
 
 class AppRunner:
