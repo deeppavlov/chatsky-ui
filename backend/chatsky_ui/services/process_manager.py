@@ -7,7 +7,6 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
-from datetime import datetime
 import asyncio
 import os
 import socket
@@ -15,9 +14,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-import socket
 
-from abc import ABC, abstractmethod
 from dotenv import load_dotenv
 from omegaconf import OmegaConf
 
@@ -29,7 +26,6 @@ from chatsky_ui.schemas.process_status import Status
 from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.utils.repo_manager import RepoManager
-from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 
 
 class ProcessManager(ABC):
@@ -181,6 +177,7 @@ class ProcessManager(ABC):
 
 class RunManager(ProcessManager):
     """Process manager for running a Chatsky pipeline."""
+
     def __init__(self):
         super().__init__()
         self.last_run_time = datetime.now().replace(year=datetime.now().year - 1)
@@ -198,6 +195,7 @@ class RunManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
+
         async def _get_new_id():
             return max([run["id"] for run in await self.get_full_info(0, 10000)]) + 1
 
@@ -298,6 +296,7 @@ class RunManager(ProcessManager):
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
+
     def __init__(self):
         super().__init__()
         self.last_build_time = datetime.now().replace(year=datetime.now().year - 1)

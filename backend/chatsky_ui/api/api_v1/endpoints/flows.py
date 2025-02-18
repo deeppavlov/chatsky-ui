@@ -1,7 +1,5 @@
 import os
 from typing import Dict, Optional, Union
-from dotenv import load_dotenv
-import os
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status

@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from typing import Optional
 
 try:
     from yaml import CDumper as Dumper
@@ -16,7 +15,6 @@ from .consts import UNIQUE_BUILD_TOKEN
 from .messenger_converter import MessengerConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
-from .consts import UNIQUE_BUILD_TOKEN
 
 
 class PipelineConverter(BaseConverter):

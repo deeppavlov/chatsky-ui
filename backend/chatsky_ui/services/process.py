@@ -4,7 +4,6 @@ Process classes.
 
 Classes for build and run processes.
 """
-from datetime import datetime
 import asyncio
 import logging
 import os
@@ -20,7 +19,6 @@ from httpx import AsyncClient
 from chatsky_ui.core.logger_config import get_logger, setup_logging
 from chatsky_ui.schemas.preset import BasePreset, BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.schemas.preset import BuildPreset, RunPreset, BasePreset
 
 load_dotenv()
 

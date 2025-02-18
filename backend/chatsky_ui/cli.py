@@ -10,7 +10,6 @@ import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
 from typing_extensions import Annotated
-from typing import Optional
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
