@@ -1,3 +1,4 @@
+# flake8: noqa: W503
 """
 Process manager
 ----------------
@@ -6,14 +7,14 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
-from datetime import datetime
 import asyncio
 import os
+import socket
+from abc import ABC, abstractmethod
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-import socket
 
-from abc import ABC, abstractmethod
 from dotenv import load_dotenv
 from omegaconf import OmegaConf
 
@@ -22,9 +23,9 @@ from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.db.base import read_conf, read_logs, write_conf
 from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
+from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 from chatsky_ui.services.process import BuildProcess, RunProcess
 from chatsky_ui.utils.repo_manager import RepoManager
-from chatsky_ui.services.json_converter.consts import UNIQUE_BUILD_TOKEN
 
 
 class ProcessManager(ABC):
@@ -144,7 +145,7 @@ class ProcessManager(ABC):
         process_info = await self.get_process_info(id_, path)
         if process_info is None:
             self.logger.error("Id '%s' not found", id_)
-            return None
+            return None  # TODO: raise error and handle it!
 
         log_file = Path(process_info["log_path"])
         try:
@@ -176,6 +177,7 @@ class ProcessManager(ABC):
 
 class RunManager(ProcessManager):
     """Process manager for running a Chatsky pipeline."""
+
     def __init__(self):
         super().__init__()
         self.last_run_time = datetime.now().replace(year=datetime.now().year - 1)
@@ -193,6 +195,7 @@ class RunManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
+
         async def _get_new_id():
             return max([run["id"] for run in await self.get_full_info(0, 10000)]) + 1
 
@@ -208,7 +211,10 @@ class RunManager(ProcessManager):
         async def _check_available_tg_token(token_name):
             for run in await self.get_full_info(0, 10000):
                 if token_name and token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
-                    raise ValueError(f"Bot with token name '{token_name}' is already in use by another run process with id: '{run['id']}'")
+                    raise ValueError(
+                        f"Bot with token name '{token_name}' is already in use "
+                        f"by another run process with id: '{run['id']}'"
+                    )
 
         def _assign_token_to_key_used_by_build(token_name, unique_build_token):
             full_token_name = "_".join(["TG", token_name])
@@ -218,7 +224,9 @@ class RunManager(ProcessManager):
                 raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
             settings.add_env_vars({unique_build_token: token_value})
 
-        if (datetime.now() - self.last_run_time).seconds < 13 and [process for process in self.processes.values() if process.status == Status.RUNNING]:
+        if (datetime.now() - self.last_run_time).seconds < 13 and [
+            process for process in self.processes.values() if process.status == Status.RUNNING
+        ]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
         self.last_id = await _get_new_id()
@@ -271,9 +279,10 @@ class RunManager(ProcessManager):
         runs_conf = await read_conf(settings.runs_path)
         builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
-            run_params = await process.get_full_info() #TODO: Try to use the process object instead of having it as dict using get_full_info
-            runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
-
+            run_params = (
+                await process.get_full_info()
+            )  # TODO: Try to use the process object attributes instead of having it as dict using get_full_info
+            runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
 
             # save current run id into the correspoinding build in builds_path
             for build in builds_conf:
@@ -287,6 +296,7 @@ class RunManager(ProcessManager):
 
 class BuildManager(ProcessManager):
     """Process manager for converting a frontned graph to a Chatsky script."""
+
     def __init__(self):
         super().__init__()
         self.last_build_time = datetime.now().replace(year=datetime.now().year - 1)
@@ -318,7 +328,9 @@ class BuildManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
-        if [process for process in self.processes.values() if process.status == Status.RUNNING] and (datetime.now() - self.last_build_time).seconds < 5:
+        if [process for process in self.processes.values() if process.status == Status.RUNNING] and (
+            datetime.now() - self.last_build_time
+        ).seconds < 5:
             raise RuntimeError("Another process is still using the build.yaml file. Can't commit changes.")
 
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
@@ -335,7 +347,9 @@ class BuildManager(ProcessManager):
             port = None
         process = BuildProcess(id_, port, preset)
         cmd_to_run = (
-            f"chatsky.ui build_bot {id_} " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+            f"chatsky.ui build_bot {id_} "
+            f"--preset {preset.end_status} "
+            f"--project-dir {settings.work_directory}"
             f" --messenger {preset.messenger}"
         )
         if port is not None:
@@ -385,6 +399,6 @@ class BuildManager(ProcessManager):
         builds_conf = await read_conf(settings.builds_path)
         for process in self.processes.values():
             build_params = await process.get_full_info()
-            builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
+            builds_conf = BuildManager.add_new_conf(builds_conf, build_params)  # type: ignore
 
         await write_conf(builds_conf, settings.builds_path)

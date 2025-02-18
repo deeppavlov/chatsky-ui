@@ -4,7 +4,6 @@ Process classes.
 
 Classes for build and run processes.
 """
-from datetime import datetime
 import asyncio
 import logging
 import os
@@ -17,10 +16,9 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from httpx import AsyncClient
 
-from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
+from chatsky_ui.schemas.preset import BasePreset, BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.schemas.preset import BuildPreset, RunPreset, BasePreset
 
 load_dotenv()
 
@@ -41,7 +39,7 @@ class Process(ABC):
         self.logger: logging.Logger
         self.to_be_terminated = False
 
-    async def start(self, cmd_to_run: str, env = None) -> None:
+    async def start(self, cmd_to_run: str, env=None) -> None:
         """Starts an asyncronous process with the given command."""
         self.process = await asyncio.create_subprocess_exec(
             *cmd_to_run.split(),
@@ -178,10 +176,10 @@ class RunProcess(Process):
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
-        async def check_telegram_readiness(stream, name):
+        async def check_telegram_readiness(stream):
             async for line in stream:
                 decoded_line = line.decode().strip()
-                self.logger.info(f"[{name}] {decoded_line}")
+                self.logger.info(decoded_line)
 
                 if "telegram.ext.Application:Application started" in decoded_line:
                     self.logger.info("The application is ready for use!")
@@ -195,16 +193,14 @@ class RunProcess(Process):
                         f"http://localhost:{self.port}/health",
                     )
                     return response.json()["status"] == "ok"
-                except Exception as e:
-                    self.logger.info(
-                        f"Process '{self.id}' isn't alive on port '{self.port}' yet. "
-                    )
+                except Exception:
+                    self.logger.info(f"Process '{self.id}' isn't alive on port '{self.port}' yet. ")
             return False
         else:
             done, pending = await asyncio.wait(
                 [
-                    asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
-                    asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
+                    asyncio.create_task(check_telegram_readiness(self.process.stdout)),
+                    asyncio.create_task(check_telegram_readiness(self.process.stderr)),
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
                 timeout=PING_PONG_TIMEOUT,

@@ -39,3 +39,5 @@ class Messenger(BaseComponent):
         if self.telegram is not None and (self.tg_token_name is None or self.tg_token_name == ""):
             raise ValueError("The 'tg_token_name' must be provided when using 'telegram' messenger.")
         return self
+
+    # TODO: Add a model validator to check if the token name is in the .env file

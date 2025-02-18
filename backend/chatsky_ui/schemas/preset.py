@@ -20,5 +20,5 @@ class RunPreset(BasePreset):
     @model_validator(mode="after")
     def validate_tg_bot_token(self):
         if self.tg_bot_token is not None:
-            self.tg_bot_token = self.tg_bot_token.replace(' ', '_').upper()
+            self.tg_bot_token = self.tg_bot_token.replace(" ", "_").upper()
         return self
