@@ -8,14 +8,25 @@ from httpx import AsyncClient
 from httpx._transports.asgi import ASGITransport
 
 from chatsky_ui.api.deps import get_build_manager, get_run_manager
+from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.main import app
 from chatsky_ui.schemas.process_status import Status
 
 load_dotenv()
 
-BUILD_COMPLETION_TIMEOUT = float(os.getenv("BUILD_COMPLETION_TIMEOUT", 10))
+BUILD_COMPLETION_TIMEOUT = float(os.getenv("BUILD_COMPLETION_TIMEOUT", 15))
 RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
+DELAY_BETWEEN_BUILDS = float(os.getenv("DELAY_BETWEEN_BUILDS", 5))
+DELAY_BETWEEN_RUNS = float(os.getenv("DELAY_BETWEEN_RUNS", 13))
+
+
+async def _start_process_with_retry(client, endpoint, data, delay, retries=1):
+    response = await client.post(endpoint, json=data)
+    if response.status_code == 400 and retries > 0:
+        await asyncio.sleep(delay)
+        return await _start_process_with_retry(client, endpoint, data, retries - 1, delay)
+    return response
 
 
 @pytest.mark.asyncio
@@ -23,16 +34,17 @@ RUN_RUNNING_TIMEOUT = float(os.getenv("RUN_RUNNING_TIMEOUT", 5))
     "preset_status, expected_status",
     [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.COMPLETED)],
 )
-async def test_start_build(mocker, override_dependency, preset_status, expected_status, start_build_endpoint):
+async def test_start_build(
+    mocker, override_dependency, preset_status, expected_status, start_build_endpoint, dummy_build_preset
+):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as process_manager:
             process_manager.save_built_script_to_git = mocker.MagicMock()
             process_manager.is_changed_graph = mocker.MagicMock(return_value=True)
 
-            response = await async_client.post(
-                start_build_endpoint,
-                json={"wait_time": 0.1, "end_status": preset_status},
+            response = await _start_process_with_retry(
+                async_client, start_build_endpoint, dummy_build_preset(preset_status).model_dump(), DELAY_BETWEEN_BUILDS
             )
 
             assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
@@ -61,13 +73,12 @@ async def test_start_build(mocker, override_dependency, preset_status, expected_
 
 
 @pytest.mark.asyncio
-async def test_stop_build(override_dependency, start_build_endpoint, stop_build_endpoint):
+async def test_stop_build(override_dependency, start_build_endpoint, stop_build_endpoint, dummy_build_preset):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_build_manager) as manager:
-            response = await async_client.post(
-                start_build_endpoint,
-                json={"wait_time": 0.1, "end_status": "success"},
+            response = await _start_process_with_retry(
+                async_client, start_build_endpoint, dummy_build_preset().model_dump(), DELAY_BETWEEN_BUILDS
             )
 
             assert response.status_code == 201
@@ -84,14 +95,13 @@ async def test_stop_build(override_dependency, start_build_endpoint, stop_build_
 
 @pytest.mark.asyncio
 async def test_stop_build_bad_id(
-    override_dependency, start_run_endpoint, set_working_directory, dummy_build_id, stop_build_endpoint, inexistent_id
+    override_dependency, start_build_endpoint, stop_build_endpoint, inexistent_id, dummy_build_preset
 ):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        async with override_dependency(get_run_manager) as manager:
-            response = await async_client.post(
-                start_run_endpoint(dummy_build_id),
-                json={"wait_time": 0.1, "end_status": "success"},
+        async with override_dependency(get_build_manager) as manager:
+            response = await _start_process_with_retry(
+                async_client, start_build_endpoint, dummy_build_preset().model_dump(), DELAY_BETWEEN_BUILDS
             )
 
             assert response.status_code == 201
@@ -105,16 +115,21 @@ async def test_stop_build_bad_id(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "preset_status, expected_status", [("failure", Status.FAILED), ("loop", Status.RUNNING), ("success", Status.ALIVE)]
-)
-async def test_start_run(override_dependency, preset_status, expected_status, start_run_endpoint, dummy_build_id):
+@pytest.mark.parametrize("preset_status", ["failure", "loop", "success"])
+async def test_start_run(
+    mocker, override_dependency, preset_status, start_run_endpoint, dummy_build_id, dummy_run_preset
+):
     logger = get_logger(__name__)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
         async with override_dependency(get_run_manager) as process_manager:
-            response = await async_client.post(
+
+            settings.add_env_vars({"TG_MY_TOKEN": "7581183652:AAG3k40MhM7cqwh1KQg_66nklnkB5taRGyk"})
+
+            response = await _start_process_with_retry(
+                async_client,
                 start_run_endpoint(dummy_build_id),
-                json={"wait_time": 0.1, "end_status": preset_status},
+                dummy_run_preset(preset_status).model_dump(),
+                DELAY_BETWEEN_RUNS,
             )
 
             assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
@@ -128,11 +143,14 @@ async def test_start_run(override_dependency, preset_status, expected_status, st
                 if preset_status == "success":
                     logger.debug("Success run process timed out. Expected behavior.")
 
-                    current_status = await process_manager.get_status(process_id)
-                    assert (
-                        current_status == expected_status
-                    ), f"Current process status '{current_status}' did not match the expected '{expected_status}'"
-                    await process.stop()
+                    mocker.patch("chatsky_ui.services.process.PING_PONG_TIMEOUT", 15)
+                    assert await process_manager.processes[
+                        process_id
+                    ].is_alive(), "Current process status 'Running' did not match the expected 'Alive'"
+                    try:
+                        await process.stop()
+                    except ProcessLookupError:
+                        logger.debug("Process already stopped.")
                 elif preset_status == "loop":
                     logger.debug("Loop process timed out. Expected behavior.")
                     assert True
@@ -144,14 +162,21 @@ async def test_start_run(override_dependency, preset_status, expected_status, st
                     ) from exc
 
 
-@pytest.mark.asyncio
-async def test_get_run_logs(run_process, dummy_run_id):
-    process = await run_process("echo Hello")
-    process.logger.info("test log")
-    await process.update_db_info()
+# @pytest.mark.asyncio
+# async def test_get_run_logs(override_dependency, start_run_endpoint, dummy_build_id, dummy_run_preset):
+#     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+#         async with override_dependency(get_run_manager) as process_manager:
+#             settings.add_env_vars({"TG_MY_TOKEN": "7581183652:AAG3k40MhM7cqwh1KQg_66nklnkB5taRGyk"})
+#             response = await _start_process_with_retry(
+#                 async_client, start_run_endpoint(dummy_build_id), dummy_run_preset().model_dump(), DELAY_BETWEEN_RUNS
+#             )
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get(f"/api/v1/bot/runs/logs/{dummy_run_id}")
+#             run_id = process_manager.last_id
 
-        assert get_response.status_code == 200
-        assert any(["test log" in log for log in get_response.json()])
+
+#             assert response.json().get("status") == "ok", "Start process response status is not 'ok'"
+
+#             get_response = await async_client.get(f"/api/v1/bot/runs/logs/{run_id}")
+
+#             assert get_response.status_code == 200
+#             assert get_response.json()

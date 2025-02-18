@@ -70,7 +70,7 @@ type TabContextType = {
   quietSaveFlows: () => void
   updateFlow: (flow: FlowType) => void
   getLocaleFlows: () => FlowType[]
-  getFlows: () => void
+  getFlows: (id: number) => Promise<FlowType[]>
   deleteNode: (id: string) => void
   deleteEdge: (id: string) => void
   deleteObject: (id: string) => void
@@ -96,7 +96,7 @@ const initialValue: TabContextType = {
   getLocaleFlows: () => {
     return []
   },
-  getFlows: async () => {},
+  getFlows: async () => [],
   deleteNode: () => {},
   deleteEdge: () => {},
   deleteObject: () => {},
@@ -137,10 +137,11 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    * API flows get function
    * @returns {FlowType[]} flows array
    */
-  const getFlows = async () => {
+  const getFlows = async (build_id?: number) => {
     screenLoading.addScreenLoading()
     try {
-      const { data } = await get_flows()
+      const { data } = await get_flows(build_id)
+
       if (data.flows) {
         const slot_nodes: SlotsNodeType[] = data.flows
           .map((flow) => flow.data.nodes)
@@ -152,14 +153,18 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         setGroups(groups)
         if (data.flows.some((flow) => flow.name === "Global")) {
           setFlows(data.flows)
+          return data.flows
         } else {
           setFlows([globalFlow, ...data.flows])
+          return [globalFlow, ...data.flows]
         }
       } else {
         setFlows([globalFlow])
+        return [globalFlow]
       }
     } catch (error) {
       console.error(error)
+      return []
     } finally {
       screenLoading.removeScreenLoading()
     }
@@ -175,7 +180,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    *
    * @param {FlowType[]} flows flows to save array
    */
-  const saveFlows = async (flows: FlowType[], _interface?: interfaceType) => {
+  const saveFlows = async (flows: FlowType[]) => {
     const slot_nodes: SlotsNodeType[] = flows
       .map((flow) => flow.data.nodes)
       .flat()
@@ -186,7 +191,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     setGroups(groups)
     const parsed_groups = await parseGroups(groups)
     try {
-      await save_flows(flows, (_interface = _interface ?? { interface: "ui" }), parsed_groups)
+      await save_flows(flows, parsed_groups)
       setFlows(flows)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -378,7 +383,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         deleteObject,
         validateDeletion,
         validateNodeDeletion,
-      }}>
+      }}
+    >
       {children}
     </flowContext.Provider>
   )

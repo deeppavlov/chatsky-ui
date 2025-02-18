@@ -1,17 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import {
   buildApiStatusType,
-  buildPresetType,
-  get_builds,
   get_runs,
   localRunType,
   runMinifyApiType,
+  runPresetType,
   run_start,
   run_status,
   run_stop,
+  run_stop_all,
 } from "../api/bot"
-import { buildContext } from "./buildContext"
 import { NotificationsContext } from "./notificationsContext"
+import { AxiosError } from "axios"
 
 export type runApiType = {
   id: number
@@ -26,14 +26,13 @@ export type runApiType = {
 type RunContextType = {
   runs: localRunType[]
   setRuns: React.Dispatch<React.SetStateAction<localRunType[]>>
-  run: localRunType | null
-  setRun: React.Dispatch<React.SetStateAction<localRunType | null>>
-  runPending: boolean
-  setRunPending: React.Dispatch<React.SetStateAction<boolean>>
-  runStart: (preset: buildPresetType) => void
+  startingRunId: number | null
+  setStartingRunId: React.Dispatch<React.SetStateAction<number | null>>
+  runStopping: boolean
+  setRunStopping: React.Dispatch<React.SetStateAction<boolean>>
+  runStart: (build_id: string, preset: runPresetType) => void
   runStop: (run_id: number) => void
-  runStatus: buildApiStatusType
-  setRunStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
+  stopAllRuns: (run_ids: number[]) => void
   setRunsHandler: (runs: runMinifyApiType[]) => void
 }
 
@@ -41,23 +40,21 @@ type RunContextType = {
 export const runContext = createContext({
   setRuns: () => {},
   runs: [],
-  run: null,
-  setRun: () => {},
-  runPending: false,
-  setRunPending: () => {},
+  startingRunId: null,
+  setStartingRunId: () => {},
+  runStopping: false,
+  setRunStopping: () => {},
   runStart: async () => {},
   runStop: () => {},
-  setRunStatus: () => {},
-  runStatus: "stopped",
+  stopAllRuns: () => {},
   setRunsHandler: () => {},
 } as RunContextType)
 
 export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [run, setRun] = useState<localRunType | null>(null)
-  const [runPending, setRunPending] = useState(false)
-  const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
+  const [startingRunId, setStartingRunId] = useState<number | null>(null)
+  const [runStopping, setRunStopping] = useState(false)
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuildsHandler } = useContext(buildContext)
   const { notification: n } = useContext(NotificationsContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
@@ -73,7 +70,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       setRuns(_runs)
       if (_runs[_runs.length - 1].status === "alive") {
         setRun(_runs[_runs.length - 1])
-        setRunStatus("alive")
       }
     }
   }
@@ -82,114 +78,175 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     getRunInitial()
   }, [])
 
-  const runStart = async ({ end_status = "success", wait_time = 0 }: buildPresetType) => {
-    setRunPending(() => true)
-    setRunStatus("running")
+  const runStart = async (
+    build_id: string,
+    { end_status = "success", ...restParams }: runPresetType
+  ) => {
+    setStartingRunId(runs.length)
+
     try {
-      const builds = await get_builds()
-      const { run_id } = await run_start({ wait_time, end_status }, builds[builds.length - 1].id)
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      const started_runs = await get_runs()
-      const started_run = started_runs.find((r) => r.id === run_id)
-      if (started_run) {
-        setRun({ ...started_run, type: "run" })
-        setRuns((prev) => [
-          ...prev,
-          {
-            ...started_run,
-            type: "run",
-          },
-        ])
-        const builds = await get_builds()
-        setBuildsHandler(builds)
-        let flag = true
-        let timer = 0
-        const timerId = setInterval(() => timer++, 500)
-        while (flag) {
-          if (timer > 7200) {
-            setRunPending(() => false)
-            setRunStatus("failed")
-            n.add({
-              title: "Run timeout error!",
-              message: "",
-              type: "error",
-            })
-            return (flag = false)
-          }
-          const { status } = await run_status(started_run.id)
-          if (status === "alive") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("alive")
-            n.add({
-              message: "",
-              title: "Run started!",
-              type: "success",
-            })
-          }
-          if (status === "failed") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("failed")
-            n.add({
-              message: "Unknown run error. Please check your script.",
-              title: "Run failed!",
-              type: "error",
-            })
-          }
-          if (status === "stopped") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("stopped")
-          }
-          await new Promise((resolve) => setTimeout(resolve, 500))
+      // 1. Запуск рана и получение run_id
+      const { run_id } = await run_start(build_id, {
+        end_status,
+        ...restParams,
+      })
+
+      let started_run
+      const checkInterval = 500
+
+      // 2. Ожидание появления рана в списке ранов
+      while (!started_run) {
+        // const started_runs = await get_runs()
+        started_run = await get_runs(run_id)
+        await new Promise((resolve) => setTimeout(resolve, checkInterval))
+        // Это бесконечный цикл, но его можно остановить с помощью кнопки в интерфейсе
+
+        if (started_run) {
+          // Если ран найден, добавляем его в стейт
+          setRunsHandler([...runs, started_run])
+          setRun({ ...started_run, type: "run" })
         }
-        clearInterval(timerId)
+      }
+
+      // 4. Мониторинг статуса рана
+      let isMonitoring = true
+
+      while (isMonitoring) {
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          const { status } = await run_status(started_run.id)
+
+          if (status !== "running") {
+            // Обновляем состояние, если статус изменился
+            setRuns((prev) => prev.map((r) => (run_id === r.id ? { ...r, status } : r)))
+            isMonitoring = false
+
+            switch (status) {
+              case "alive":
+                n.add({
+                  title: "Run started!",
+                  message: "",
+                  type: "success",
+                })
+                break
+
+              case "failed":
+                n.add({
+                  title: "Run failed!",
+                  message: "Unknown run error. Please check your script.",
+                  type: "error",
+                })
+                break
+
+              default:
+                // Продолжаем мониторинг
+                break
+            }
+          }
+        } catch (error) {
+          console.log(error)
+          // если функция run_status вернёт ошибку, не прерываем цикл
+        }
       }
     } catch (error) {
-      console.log(error)
+      console.error("Error during run start:", error)
+      setStartingRunId(null)
+      n.add({
+        title: "Run error!",
+        message: error instanceof AxiosError ? error.message : "An unexpected error occurred.",
+        type: "error",
+      })
     } finally {
-      setRunPending(() => false)
+      setStartingRunId(null)
     }
   }
 
   async function runStop(run_id: number) {
-    setRunPending(() => true)
     try {
-      const res = await run_stop(run_id)
-      if (res.status === "ok") {
-        setTimeout(async () => {
-          const builds = await get_builds()
-          setBuildsHandler(builds)
-          const runs = await get_runs()
-          setRunsHandler(runs)
-          setRunStatus("stopped")
-          setRunPending(() => false)
+      await run_stop(run_id)
+      let counter = 0
+      const timerId = setInterval(async () => {
+        if (counter > 10) {
+          clearInterval(timerId)
+          n.add({
+            message: "",
+            title: "Error stopping the run!",
+            type: "error",
+          })
+        }
+        counter += 1
+
+        const { status } = await run_status(run_id)
+        if (status === "stopped") {
+          clearInterval(timerId)
+          setRunsHandler(runs.map((r) => (r.id === run_id ? { ...r, status } : r)))
           n.add({
             message: "",
             title: "Run stopped!",
             type: "info",
           })
-        }, 500)
-      }
+        }
+      }, 1000)
     } catch (error) {
       console.log(error)
+      n.add({
+        message: "",
+        title: "Error stopping the run!",
+        type: "error",
+      })
+    }
+  }
+
+  const stopAllRuns = async () => {
+    setRunStopping(true)
+    try {
+      await run_stop_all()
+      let counter = 0
+      const timerId = setInterval(async () => {
+        if (counter > 10) {
+          clearInterval(timerId)
+          n.add({
+            message: "",
+            title: "Error stopping the run!",
+            type: "error",
+          })
+        }
+        counter += 1
+        const runs = await get_runs()
+        if (runs.every((r) => r.status !== "alive")) {
+          clearInterval(timerId)
+          setRunsHandler(runs)
+          n.add({
+            message: "",
+            title: "All runs stopped!",
+            type: "info",
+          })
+        }
+      }, 1000)
+    } catch (error) {
+      console.log(error)
+      n.add({
+        message: "",
+        title: "Error stopping the run!",
+        type: "error",
+      })
+    } finally {
+      setRunStopping(false)
     }
   }
 
   return (
     <runContext.Provider
       value={{
-        run,
-        setRun,
-        runPending,
-        setRunPending,
+        startingRunId,
+        setStartingRunId,
+        runStopping,
+        setRunStopping,
         runStart,
         runStop,
-        runStatus,
+        stopAllRuns,
         runs,
         setRuns,
-        setRunStatus,
         setRunsHandler,
       }}
     >

@@ -20,27 +20,53 @@ type runStartResponseType = {
   }
 }
 
+export type messengerType = "web" | "telegram"
+
 export type buildMinifyApiType = {
   id: number
   status: buildApiStatusType
-  preset_end_status: string
-  timestamp: number
+  port: number
+  timestamp: string
   log_path: string
   runs: runMinifyApiType[]
+  preset: {
+    name: string
+    messenger: messengerType
+    preset: string
+    end_status: string
+  }
 }
 
 export type runMinifyApiType = {
   id: number
-  status: buildApiStatusType
-  preset_end_status: string
-  log_path: string
-  timestamp: number
   build_id: number
+  status: buildApiStatusType
+  timestamp: string
+  log_path: string
+  port: number
+  messenger: messengerType
+  preset: {
+    name: string
+    build_name: string
+    preset: string
+    end_status: string
+    tg_bot_token?: string
+  }
 }
 
 export type buildPresetType = {
-  wait_time: number
   end_status: buildApiStatusType
+  name: string
+  messenger: messengerType
+  preset: string
+}
+
+export type runPresetType = {
+  end_status: buildApiStatusType
+  name: string
+  build_name: string
+  preset: string
+  tg_bot_token?: string
 }
 
 export type buildResponseType = {
@@ -157,10 +183,13 @@ export const get_build = async (build_id: number) => {
   }
 }
 
-export const get_runs = async () => {
+export const get_runs = async <T extends number | undefined = undefined>(
+  run_id?: T
+): Promise<T extends number ? runMinifyApiType : runMinifyApiType[]> => {
+  const url = run_id ? `/bot/runs?run_id=${run_id}` : "/bot/runs"
+
   try {
-    const { data }: { data: runMinifyApiType[] } = await $v1.get("/bot/runs")
-    // console.log(data)
+    const { data } = await $v1.get(url)
     return data
   } catch (error) {
     console.log(error)
@@ -178,7 +207,7 @@ export const get_run = async (run_id: number) => {
   }
 }
 
-export const run_start = async (preset: buildPresetType, build_id: number) => {
+export const run_start = async (build_id: string, preset: runPresetType) => {
   try {
     const { data }: runStartResponseType = await $v1.post(`/bot/run/start/${build_id}`, preset)
     return data
@@ -190,7 +219,17 @@ export const run_start = async (preset: buildPresetType, build_id: number) => {
 
 export const run_stop = async (run_id: number) => {
   try {
-    const { data }: { data: {status: 'ok' | 'error'} } = await $v1.get(`/bot/run/stop/${run_id}`)
+    const { data }: { data: { status: "ok" | "error" } } = await $v1.get(`/bot/run/stop/${run_id}`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const run_stop_all = async () => {
+  try {
+    const { data }: { data: { status: "ok" | "error" } } = await $v1.get("/bot/run/stop_all")
     return data
   } catch (error) {
     console.log(error)
@@ -208,18 +247,13 @@ export const run_status = async (run_id: number) => {
   }
 }
 
-export const send_message = async (user_id: number, user_message: string) => {
+export const send_message = async (run_id: number, user_message: string, user_id?: number) => {
+  const url = `bot/chat?run_id=${run_id}&user_message=${user_message}${
+    user_id ? `&user_id=${user_id}` : ""
+  }`
+
   try {
-    const { data }: { data: botMessage } = await $v1.post(
-      "/bot/chat",
-      {},
-      {
-        params: {
-          user_id,
-          user_message,
-        },
-      }
-    )
+    const { data }: { data: botMessage } = await $v1.post(url)
     return data
   } catch (error) {
     console.log(error)

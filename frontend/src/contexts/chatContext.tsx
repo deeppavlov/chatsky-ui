@@ -7,31 +7,43 @@ export type messageType = {
   type: "user" | "bot" | "system"
 }
 
+interface IChatHistory {
+  [runId: number]: messageType[]
+}
+
 type chatContextType = {
-  chat: boolean
-  setChat: React.Dispatch<React.SetStateAction<boolean>>
-  messages: messageType[]
-  setMessages: React.Dispatch<React.SetStateAction<messageType[]>>
+  chatId: number
+  setChatId: React.Dispatch<React.SetStateAction<number>>
+  chatHistory: IChatHistory
+  setChatHistory: React.Dispatch<React.SetStateAction<IChatHistory>>
+  setMessages: (messages: messageType[]) => void
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const chatContext = createContext({} as chatContextType)
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams()
-  const [chat, setChat] = useState(searchParams.get('chat') === 'opened')
-  const [messages, setMessages] = useLocalStorage<messageType[]>("chat_messages", [])
+  const [chatId, setChatId] = useState<number>(-1)
+  const [chatHistory, setChatHistory] = useLocalStorage<{ [runId: number]: messageType[] }>(
+    "chat_messages",
+    {}
+  )
+  const setMessages = (messages: messageType[]) => {
+    setChatHistory((history) => ({ ...history, [chatId]: messages }))
+  }
 
   return (
     <chatContext.Provider
       value={{
-        chat,
-        setChat,
-        messages,
+        chatId,
+        setChatId,
+        chatHistory,
+        setChatHistory,
         setMessages,
-      }}>
+      }}
+    >
       {children}
     </chatContext.Provider>
   )

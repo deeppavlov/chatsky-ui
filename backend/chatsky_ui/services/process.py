@@ -16,9 +16,8 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from httpx import AsyncClient
 
-from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger, setup_logging
-from chatsky_ui.db.base import read_conf, write_conf
+from chatsky_ui.schemas.preset import BasePreset, BuildPreset, RunPreset
 from chatsky_ui.schemas.process_status import Status
 
 load_dotenv()
@@ -30,18 +29,17 @@ PING_PONG_TIMEOUT = float(os.getenv("PING_PONG_TIMEOUT", 0.5))
 class Process(ABC):
     """Base for build and run processes."""
 
-    def __init__(self, id_: int, preset_end_status: str = ""):
+    def __init__(self, id_: int, preset: BasePreset):
         self.id: int = id_
-        self.preset_end_status: str = preset_end_status
+        self.preset = preset
         self.status: Status = Status.NULL
         self.timestamp: datetime = datetime.now()
         self.log_path: Path
-        self.lock: asyncio.Lock = asyncio.Lock()
         self.process: Optional[asyncio.subprocess.Process] = None
         self.logger: logging.Logger
         self.to_be_terminated = False
 
-    async def start(self, cmd_to_run: str) -> None:
+    async def start(self, cmd_to_run: str, env=None) -> None:
         """Starts an asyncronous process with the given command."""
         self.process = await asyncio.create_subprocess_exec(
             *cmd_to_run.split(),
@@ -49,6 +47,7 @@ class Process(ABC):
             stderr=asyncio.subprocess.PIPE,
             stdin=asyncio.subprocess.PIPE,
             preexec_fn=os.setsid,
+            env=env,
         )
 
     async def get_full_info(self, attributes: list) -> Dict[str, Any]:
@@ -68,6 +67,8 @@ class Process(ABC):
                     params[k] = v.strftime("%Y-%m-%dT%H:%M:%S")
                 elif isinstance(v, Path):
                     params[k] = str(v)
+                elif isinstance(v, BasePreset):
+                    params[k] = v.model_dump()
             return params
 
         await self.check_status()
@@ -78,7 +79,7 @@ class Process(ABC):
         return _map_to_str(info)
 
     @abstractmethod
-    async def update_db_info(self):
+    async def is_alive(self) -> bool:
         raise NotImplementedError
 
     async def check_status(self) -> Status:
@@ -97,15 +98,16 @@ class Process(ABC):
         if self.process is None:
             self.status = Status.NULL
             return self.status
+
         # if process is already alive, don't interrupt potential open channels by checking status periodically.
-        elif self.process.returncode is None:
+        if self.process.returncode is None:
             if self.status == Status.ALIVE:
+                pass
+            elif self.status == Status.RUNNING and await self.is_alive():
                 self.status = Status.ALIVE
             else:
-                if await self.is_alive():
-                    self.status = Status.ALIVE
-                else:
-                    self.status = Status.RUNNING
+                self.status = Status.RUNNING
+            return self.status
 
         elif self.process.returncode == 0:
             self.status = Status.COMPLETED
@@ -153,121 +155,83 @@ class Process(ABC):
             self.logger.error("Process group '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
 
-    def add_new_conf(self, conf: list, params: dict) -> list:  # TODO: rename conf everywhere to metadata/meta
-        for run in conf:
-            if run.id == params["id"]:  # type: ignore
-                for key, value in params.items():
-                    setattr(run, key, value)
-                break
-        else:
-            conf.append(params)
-
-        return conf
-
 
 class RunProcess(Process):
     """Process for running a Chatsky pipeline."""
 
-    def __init__(self, id_: int, build_id: int, preset_end_status: str = ""):
-        super().__init__(id_, preset_end_status)
+    def __init__(self, id_: int, build_id: int, messenger: str, port: Optional[int], preset: RunPreset):
+        super().__init__(id_, preset)
         self.build_id: int = build_id
+        self.messenger = messenger
+        self.port = port
 
         self.log_path: Path = setup_logging("runs", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "build_id"]
+            attributes = ["id", "preset", "messenger", "port", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
-
-    async def update_db_info(self) -> None:
-        # save current run info into runs_path
-        self.logger.debug("Updating db run info")
-        runs_conf = await read_conf(settings.runs_path)
-        run_params = await self.get_full_info()
-
-        runs_conf = self.add_new_conf(runs_conf, run_params)  # type: ignore
-
-        await write_conf(runs_conf, settings.runs_path)
-
-        # save current run id into the correspoinding build in builds_path
-        builds_conf = await read_conf(settings.builds_path)
-        for build in builds_conf:
-            if build.id == run_params["build_id"]:  # type: ignore
-                if run_params["id"] not in build.run_ids:  # type: ignore
-                    build.run_ids.append(run_params["id"])  # type: ignore
-                    break
-
-        await write_conf(builds_conf, settings.builds_path)
 
     async def is_alive(self) -> bool:
         """Checks if the process is alive by writing to stdin andreading its stdout."""
 
-        async def check_telegram_readiness(stream, name):
+        async def check_telegram_readiness(stream):
             async for line in stream:
                 decoded_line = line.decode().strip()
-                self.logger.info(f"[{name}] {decoded_line}")
+                self.logger.info(decoded_line)
 
                 if "telegram.ext.Application:Application started" in decoded_line:
                     self.logger.info("The application is ready for use!")
                     return True
             return False
 
-        async with AsyncClient() as client:
-            try:
-                response = await client.get(
-                    f"http://localhost:{settings.chatsky_port}/health",
-                )
-                return response.json()["status"] == "ok"
-            except Exception as e:
-                self.logger.info(
-                    f"Process '{self.id}' isn't alive on port '{settings.chatsky_port}' yet. "
-                    f"Ignore this if you're not connecting via HTTPInterface. Exception caught: {e}"
-                )
+        if self.port is not None:
+            async with AsyncClient() as client:
+                try:
+                    response = await client.get(
+                        f"http://localhost:{self.port}/health",
+                    )
+                    return response.json()["status"] == "ok"
+                except Exception:
+                    self.logger.info(f"Process '{self.id}' isn't alive on port '{self.port}' yet. ")
+            return False
+        else:
+            done, pending = await asyncio.wait(
+                [
+                    asyncio.create_task(check_telegram_readiness(self.process.stdout)),
+                    asyncio.create_task(check_telegram_readiness(self.process.stderr)),
+                ],
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=PING_PONG_TIMEOUT,
+            )
 
-        done, pending = await asyncio.wait(
-            [
-                asyncio.create_task(check_telegram_readiness(self.process.stdout, "STDOUT")),
-                asyncio.create_task(check_telegram_readiness(self.process.stderr, "STDERR")),
-            ],
-            return_when=asyncio.FIRST_COMPLETED,
-            timeout=PING_PONG_TIMEOUT,
-        )
+            for task in pending:
+                task.cancel()
 
-        for task in pending:
-            task.cancel()
+            for task in done:
+                result = task.result()
+                if result:
+                    return result
 
-        for task in done:
-            result = task.result()
-            if result:
-                return result
-
-        return False
+            return False
 
 
 class BuildProcess(Process):
     """Process for converting a frontned graph to a Chatsky script."""
 
-    def __init__(self, id_: int, preset_end_status: str = ""):
-        super().__init__(id_, preset_end_status)
+    def __init__(self, id_: int, port: Optional[int], preset: BuildPreset):
+        super().__init__(id_, preset)
         self.run_ids: List[int] = []
+        self.port = port
 
         self.log_path: Path = setup_logging("builds", self.id, self.timestamp)
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
         if attributes is None:
-            attributes = ["id", "preset_end_status", "status", "timestamp", "log_path", "run_ids"]
+            attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "run_ids"]
         return await super().get_full_info(attributes)
-
-    async def update_db_info(self) -> None:
-        """Saves current build info into builds_path"""
-        builds_conf = await read_conf(settings.builds_path)
-        build_params = await self.get_full_info()
-
-        builds_conf = self.add_new_conf(builds_conf, build_params)  # type: ignore
-
-        await write_conf(builds_conf, settings.builds_path)
 
     async def is_alive(self) -> bool:
         return False
