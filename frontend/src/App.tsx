@@ -12,32 +12,40 @@ import Index from "./pages/Index"
 
 const App = () => {
   const router = createBrowserRouter([
-    {
-      path: "/",
+   {
+    path: "/",
+    element: (
+     <ContextWrapper>
+      <Index />
+     </ContextWrapper>
+    ),
+    loader: Preloader,
+    errorElement: <Fallback />,
+    children: [
+     {
+      path: "app/flow/:flowId",
       element: (
-        <ContextWrapper>
-          <Index />
-        </ContextWrapper>
+       <ReactFlowProvider>
+        <PopUpProvider>
+         <UndoRedoProvider>
+          <Flow />
+         </UndoRedoProvider>
+        </PopUpProvider>
+       </ReactFlowProvider>
       ),
       loader: Preloader,
-      errorElement: <Fallback />,
-      children: [
-        {
-          path: "app/flow/:flowId",
-          element: (
-            <ReactFlowProvider>
-              <PopUpProvider>
-                <UndoRedoProvider>
-                  <Flow />
-                </UndoRedoProvider>
-              </PopUpProvider>
-            </ReactFlowProvider>
-          ),
-          loader: Preloader,
-        },
-        { path: "app/home", element: <Home />, loader: Preloader },
-      ],
-    },
+     },
+     {
+      path: "app/home",
+      element: (
+       <PopUpProvider>
+        <Home />
+       </PopUpProvider>
+      ),
+      loader: Preloader,
+     },
+    ],
+   },
   ])
 
   return (
