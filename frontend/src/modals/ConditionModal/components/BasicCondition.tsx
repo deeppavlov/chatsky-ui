@@ -516,7 +516,19 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
      onValueChange={(value) => {
       const defObject = genDefObject(value)
       const newStructure = defObject?.structure ?? ""
-      setState({ conditionGroups, ...defObject, structure: newStructure })
+
+      const newConditionGroups = state.conditionGroups.map((group) => {
+       if (group.disabled) {
+        group.disabled = false
+       }
+       return group
+      })
+
+      setState({
+       conditionGroups: newConditionGroups,
+       ...defObject,
+       structure: newStructure,
+      })
      }}
      items={state.conditionGroups.map((group, index) => ({
       value: group.name,
