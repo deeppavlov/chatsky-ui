@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import yaml
 from typing import Optional
@@ -11,6 +12,7 @@ except ImportError:
 
 from ...schemas.front_graph_components.pipeline import Pipeline
 from .base_converter import BaseConverter
+from .consts import UNIQUE_BUILD_TOKEN
 from .messenger_converter import MessengerConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter

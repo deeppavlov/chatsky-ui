@@ -1,11 +1,9 @@
-import asyncio
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from httpx import AsyncClient
 
 from chatsky_ui.api import deps
-from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.pagination import Pagination
 from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
@@ -154,8 +152,7 @@ async def check_build_processes(
         for build in builds_info:
             del build["run_ids"]
             build["runs"] = [
-                {k: v for k, v in run.items() if k != "build_id"}
-                for run in runs_info if run["build_id"] == build["id"]
+                {k: v for k, v in run.items() if k != "build_id"} for run in runs_info if run["build_id"] == build["id"]
             ]
 
         return builds_info
@@ -214,9 +211,9 @@ async def start_run(
         ) from e
     except ValueError as e:
         raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=str(e),
-            ) from e
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
 
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)
@@ -316,7 +313,8 @@ async def respond(
     if build_port is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Build process of id '{run_id}' doesn't have a messenger of type 'web'. Check the build port and messenger in metadata.",
+            detail="Build process of id '{run_id}' doesn't have a messenger of type 'web'. "
+            "Check the build port and messenger in metadata.",
         )
 
     async with AsyncClient() as client:

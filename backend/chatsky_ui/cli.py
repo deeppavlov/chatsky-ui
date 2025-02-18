@@ -4,6 +4,7 @@ import os
 import string
 import sys
 from pathlib import Path
+from typing import Optional
 
 import nest_asyncio
 import typer
@@ -114,7 +115,7 @@ def build_scenario(
         input_file=settings.frontend_flows_path,
         output_dir=settings.scripts_dir,
         messenger=messenger,
-        chatsky_port=chatsky_port
+        chatsky_port=chatsky_port,
     )  # TODO: rename to frontend_graph_path
 
 

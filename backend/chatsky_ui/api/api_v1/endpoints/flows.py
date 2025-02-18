@@ -1,7 +1,9 @@
+import os
 from typing import Dict, Optional, Union
 from dotenv import load_dotenv
 import os
 
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from git.exc import GitCommandError
 from omegaconf import OmegaConf
@@ -72,5 +74,4 @@ async def get_tg_tokens() -> list:
     for key, _ in os.environ.items():
         if key.startswith("TG_"):
             tg_token.append("_".join(key.split("_")[1:]))
-    
     return tg_token
