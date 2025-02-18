@@ -59,7 +59,7 @@ class RegexpCondition(Regexp):
     """Condition based on regular expression matching."""
 
     pattern: str
-    flags: Dict[str, str] = Field(default_factory=dict, description="Flags for the regex pattern")
+    flags: Dict[str, bool] = Field(default_factory=dict, description="Flags for the regex pattern")
 
     @model_validator(mode="after")
     def validate_flags(self) -> "RegexpCondition":
