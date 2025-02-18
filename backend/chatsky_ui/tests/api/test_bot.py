@@ -147,7 +147,10 @@ async def test_start_run(
                     assert await process_manager.processes[
                         process_id
                     ].is_alive(), "Current process status 'Running' did not match the expected 'Alive'"
-                    await process.stop()
+                    try:
+                        await process.stop()
+                    except ProcessLookupError:
+                        logger.debug("Process already stopped.")
                 elif preset_status == "loop":
                     logger.debug("Loop process timed out. Expected behavior.")
                     assert True
