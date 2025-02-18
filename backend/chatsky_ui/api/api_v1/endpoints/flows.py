@@ -72,5 +72,4 @@ async def get_tg_tokens() -> list:
     for key, _ in os.environ.items():
         if key.startswith("TG_"):
             tg_token.append("_".join(key.split("_")[1:]))
-
     return tg_token

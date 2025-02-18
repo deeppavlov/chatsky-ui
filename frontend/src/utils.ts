@@ -227,3 +227,41 @@ export async function parseGroups(groups: SlotsGroupType[]): Promise<Record<stri
 
   return result
 }
+
+export const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+
+  return `${year}/${month}/${day} ${hours}:${minutes}`
+}
+
+export function formatRelativeTime(timestamp: string) {
+  const now = new Date().getTime()
+  const date = new Date(timestamp).getTime()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" })
+
+  if (diffInSeconds < 60) {
+    return rtf.format(-diffInSeconds, "second")
+  } else if (diffInSeconds < 3600) {
+    const diffInMinutes = Math.floor(diffInSeconds / 60)
+    return rtf.format(-diffInMinutes, "minute")
+  } else if (diffInSeconds < 86400) {
+    const diffInHours = Math.floor(diffInSeconds / 3600)
+    return rtf.format(-diffInHours, "hour")
+  } else if (diffInSeconds < 2592000) {
+    const diffInDays = Math.floor(diffInSeconds / 86400)
+    return rtf.format(-diffInDays, "day")
+  } else if (diffInSeconds < 31536000) {
+    const diffInMonths = Math.floor(diffInSeconds / 2592000)
+    return rtf.format(-diffInMonths, "month")
+  } else {
+    const diffInYears = Math.floor(diffInSeconds / 31536000)
+    return rtf.format(-diffInYears, "year")
+  }
+}

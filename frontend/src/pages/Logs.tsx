@@ -6,9 +6,11 @@ import { localBuildType, localRunType } from "../api/bot"
 import { buildContext } from "../contexts/buildContext"
 import { runContext } from "../contexts/runContext"
 import { parseSearchParams } from "../utils"
+import { workspaceContext } from "@/contexts/workspaceContext"
 
 const Logs = memo(() => {
-  const { builds, logsPage } = useContext(buildContext)
+  const { builds } = useContext(buildContext)
+  const { currentPage } = useContext(workspaceContext)
   const { runs } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [currentItem, setCurrentItem] = useState<localBuildType | localRunType | null>(
@@ -32,8 +34,9 @@ const Logs = memo(() => {
     <div
       className='w-full h-full absolute transition-transform duration-300 bg-background pt-20 pb-6 px-8 grid grid-cols-6 gap-6'
       style={{
-        transform: !logsPage ? `translateX(100%)` : "translateX(0%)",
-      }}>
+        transform: currentPage === "inspect" ? "translateX(0%)" : `translateX(100%)`,
+      }}
+    >
       <div>
         <h1 className='text-3xl mb-4'>Builds</h1>
         <div className='grid gap-2 overflow-y-scroll max-h-[600px]'>
@@ -55,7 +58,8 @@ const Logs = memo(() => {
               base: "w-full px-0 py-0",
               content: "w-full pl-4 py-0 ",
               trigger: "w-full px-2 py-1 rounded-lg border border-border",
-            }}>
+            }}
+          >
             {builds && builds.length ? (
               builds
                 .sort((a, b) => b.id - a.id)
@@ -77,21 +81,14 @@ const Logs = memo(() => {
                         <p>Build {build.id}</p>
                         <span className='flex items-center'>
                           {build.status === "completed" && (
-                            <CheckCircle2
-                              fill='var(--status-green)'
-                              stroke='white'
-                            />
+                            <CheckCircle2 fill='var(--status-green)' stroke='white' />
                           )}{" "}
-                          {build.status === "running" && (
-                            <Spinner
-                              size='sm'
-                              color='warning'
-                            />
-                          )}
+                          {build.status === "running" && <Spinner size='sm' color='warning' />}
                           {build.status === "failed" && <X color='red' />}
                         </span>
                       </div>
-                    }>
+                    }
+                  >
                     <div className='grid gap-2 mt-2'>
                       {build.runs &&
                         build.runs.length &&
@@ -112,27 +109,17 @@ const Logs = memo(() => {
                                   })
                                   setCurrentItem({ ...r, type: "run" })
                                 }}
-                                className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'>
+                                className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'
+                              >
                                 <p>Run {r.id}</p>
                                 <span className='flex items-center'>
                                   {r.status === "completed" && (
-                                    <CheckCircle2
-                                      fill='var(--status-green)'
-                                      stroke='white'
-                                    />
+                                    <CheckCircle2 fill='var(--status-green)' stroke='white' />
                                   )}{" "}
-                                  {r.status === "running" && (
-                                    <Spinner
-                                      size='sm'
-                                      color='danger'
-                                    />
-                                  )}
+                                  {r.status === "running" && <Spinner size='sm' color='danger' />}
                                   {r.status === "failed" && <X color='red' />}
                                   {r.status === "stopped" && (
-                                    <Slash
-                                      className='scale-50'
-                                      strokeWidth={4}
-                                    />
+                                    <Slash className='scale-50' strokeWidth={4} />
                                   )}
                                 </span>
                               </div>
@@ -157,17 +144,9 @@ const Logs = memo(() => {
                   <h4 className='text-xl font-semibold flex items-center gap-1 my-4'>
                     <span className='flex items-center'>
                       {currentItem.status === "completed" && (
-                        <CheckCircle2
-                          fill='var(--status-green)'
-                          stroke='white'
-                        />
+                        <CheckCircle2 fill='var(--status-green)' stroke='white' />
                       )}
-                      {currentItem.status === "running" && (
-                        <Spinner
-                          size='sm'
-                          color='warning'
-                        />
-                      )}
+                      {currentItem.status === "running" && <Spinner size='sm' color='warning' />}
                       {currentItem.status === "failed" && <X />}
                     </span>
                     Build {currentItem.id}
@@ -181,7 +160,8 @@ const Logs = memo(() => {
                             currentItem.status === "completed"
                               ? "var(--status-green)"
                               : "var(--status-red)",
-                        }}>
+                        }}
+                      >
                         {currentItem.status}
                       </span>
                     </p>
@@ -191,14 +171,15 @@ const Logs = memo(() => {
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Preset name:</span>
-                      {currentItem.preset_end_status}
+                      {currentItem.preset.end_status}
                     </p>
                     <p>
                       <span className='font-medium text-neutral-500 mr-1'>Logs file path:</span>
                       <a
                         download
                         href={`../../../backend/${currentItem.log_path}`}
-                        className='text-blue-500 underline'>
+                        className='text-blue-500 underline'
+                      >
                         {currentItem.log_path}
                       </a>
                     </p>
@@ -209,17 +190,9 @@ const Logs = memo(() => {
                   <h4 className='text-xl font-semibold flex items-center gap-1 my-4'>
                     <span className='flex items-center'>
                       {currentItem.status === "completed" && (
-                        <CheckCircle2
-                          fill='var(--status-green)'
-                          stroke='white'
-                        />
+                        <CheckCircle2 fill='var(--status-green)' stroke='white' />
                       )}
-                      {currentItem.status === "running" && (
-                        <Spinner
-                          size='sm'
-                          color='danger'
-                        />
-                      )}
+                      {currentItem.status === "running" && <Spinner size='sm' color='danger' />}
                       {currentItem.status === "failed" && <X color='red' />}
                       {currentItem.status === "stopped" && <CircleSlash />}
                     </span>
@@ -234,9 +207,10 @@ const Logs = memo(() => {
                             currentItem.status === "completed"
                               ? "var(--status-green)"
                               : currentItem.status === "stopped"
-                                ? "var(--foreground)"
-                                : "var(--status-red)",
-                        }}>
+                              ? "var(--foreground)"
+                              : "var(--status-red)",
+                        }}
+                      >
                         {currentItem.status}
                       </span>
                     </p>
@@ -249,7 +223,8 @@ const Logs = memo(() => {
                       <a
                         download
                         href={`../../../backend/${currentItem.log_path}`}
-                        className='text-blue-500 underline'>
+                        className='text-blue-500 underline'
+                      >
                         {currentItem.log_path}
                       </a>
                     </p>
