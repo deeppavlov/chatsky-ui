@@ -14,7 +14,12 @@ const FormString: React.FC<IProps> = ({ label, input, isError, errorMessage }) =
       <div className='flex'>
         <div className='flex flex-col min-w-[100px]'>
           <div className='h-12 flex items-center mr-4'>
-            <span className={cn("text-sm font-semibold", isError ? "text-danger" : "text-base")}>
+            <span
+              className={cn(
+                "text-sm font-semibold whitespace-nowrap",
+                isError ? "text-danger" : "text-base"
+              )}
+            >
               {label}
             </span>
           </div>
