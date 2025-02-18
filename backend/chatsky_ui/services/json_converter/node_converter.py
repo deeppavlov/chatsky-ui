@@ -2,6 +2,7 @@ from chatsky import PRE_RESPONSE, PRE_TRANSITION, RESPONSE, TRANSITIONS
 
 from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .base_converter import BaseConverter
+from .logic_component_converter.chatsky_condition_converter import ChatskyConditionConverter
 from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter
 from .logic_component_converter.chatsky_condition_converter import ChatskyConditionConverter
 from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter
