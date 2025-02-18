@@ -44,6 +44,7 @@ export type runMinifyApiType = {
   timestamp: string
   log_path: string
   port: number
+  messenger: messengerType
   preset: {
     name: string
     build_name: string
@@ -246,18 +247,13 @@ export const run_status = async (run_id: number) => {
   }
 }
 
-export const send_message = async (user_id: number, user_message: string) => {
+export const send_message = async (run_id: number, user_message: string, user_id?: number) => {
+  const url = `bot/chat?run_id=${run_id}&user_message=${user_message}${
+    user_id ? `&user_id=${user_id}` : ""
+  }`
+
   try {
-    const { data }: { data: botMessage } = await $v1.post(
-      "/bot/chat",
-      {},
-      {
-        params: {
-          user_id,
-          user_message,
-        },
-      }
-    )
+    const { data }: { data: botMessage } = await $v1.post(url)
     return data
   } catch (error) {
     console.log(error)
