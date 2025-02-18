@@ -104,6 +104,7 @@ def build_scenario(
 def run_bot(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
+    run_id: int = 0,
 ):
     """Runs the bot with one of three various presets."""
     project_dir = project_dir or settings.work_directory
@@ -112,12 +113,15 @@ def run_bot(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
+    os.environ["run_id"] = str(run_id)
+
     _execute_command_file(project_dir, "run.json", preset)
 
 
 @cli.command("run_scenario")
 def run_scenario(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    run_id: int = 0,
 ):
     """Runs the bot with preset `success`"""
     if not project_dir.is_dir():
@@ -125,11 +129,11 @@ def run_scenario(
     settings.set_config(work_directory=project_dir)
     script_path = settings.scripts_dir / "build.yaml"
 
-    command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
+    command_to_run = f"python {project_dir}/app.py --script-path {script_path} --run_id {run_id}"
     try:
         asyncio.run(_execute_command(command_to_run))
     except FileNotFoundError:
-        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path}"
+        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path} --run_id {run_id}"
         asyncio.run(_execute_command(command_to_run))
 
 

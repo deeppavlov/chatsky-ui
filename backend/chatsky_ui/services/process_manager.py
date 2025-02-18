@@ -6,6 +6,7 @@ Process managers are used to manage run and build processes. They are responsibl
 starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of process managers.
 """
+
 import asyncio
 import os
 from pathlib import Path
@@ -166,12 +167,17 @@ class RunManager(ProcessManager):
             int: the id of the new started process
         """
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
-        cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
         self.last_id = max([run["id"] for run in await self.get_full_info(0, 10000)])
         self.last_id += 1
         id_ = self.last_id
         process = RunProcess(id_, build_id, preset.end_status)
 
+        cmd_to_run = (
+            f"chatsky.ui run_bot "
+            f"--preset {preset.end_status} "
+            f"--project-dir {settings.work_directory}"
+            f"--run_id {id_}"
+        )
         load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
         await process.start(cmd_to_run)
         process.logger.debug("Started process. status: '%s'", process.process.returncode)

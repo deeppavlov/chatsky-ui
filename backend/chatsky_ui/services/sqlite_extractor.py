@@ -1,10 +1,10 @@
 import sqlite3
 
-from chatsky_ui.core.config import settings
-from chatsky_ui.core.logger_config import get_logger
-
 from chatsky import Context
 from pydantic import ValidationError
+
+from chatsky_ui.core.config import settings
+from chatsky_ui.core.logger_config import get_logger
 
 
 class SQLiteExtractor:
@@ -29,7 +29,7 @@ class SQLiteExtractor:
             database = settings.context_storage_dir + f"/run_{run_id}.db"
             with sqlite3.connect(database) as conn:
                 cur = conn.cursor()
-                cur.execute('SELECT * FROM contexts WHERE id = ?', (user_id,))
+                cur.execute("SELECT * FROM contexts WHERE id = ?", (user_id,))
                 rows = cur.fetchall()
                 return rows
         except sqlite3.Error as e:

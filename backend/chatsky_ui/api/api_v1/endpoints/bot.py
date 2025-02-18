@@ -46,7 +46,6 @@ async def start_build(
     background_tasks: BackgroundTasks,
     build_manager: BuildManager = Depends(deps.get_build_manager),
 ) -> Dict[str, Union[str, int]]:
-
     """Starts a `build` process with the given preset.
 
     This runs a background task to check the status of the process every 2 seconds.
@@ -261,13 +260,8 @@ async def respond(
             ) from e
 
 
-@router.get("/get_user_chats/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
-async def get_chat_records(
-    run_id: int, user_id: int, pagination: Pagination = Depends()
-) -> Optional[List[str]]:
-    """Gets the records of a user's chat from a specified run.
-
-    The offset and limit parameters can be used to paginate the results.
-    """
+@router.get("/get_chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
+async def get_chat_records(run_id: int, user_id: int, pagination: Pagination = Depends()) -> Optional[List[str]]:
+    """Gets the records of a user's chat from a specified run."""
     if user_id is not None:
         return await SQLiteExtractor().fetch_chat_records(run_id, user_id, pagination.offset(), pagination.limit)
