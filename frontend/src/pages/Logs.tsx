@@ -7,6 +7,8 @@ import { buildContext } from "../contexts/buildContext"
 import { runContext } from "../contexts/runContext"
 import { parseSearchParams } from "../utils"
 import { workspaceContext } from "@/contexts/workspaceContext"
+import Chat from "@/components/chat/Chat"
+import ScrolledContainer from "@/UI/ScrolledContainer/ScrolledContainer"
 
 const Logs = memo(() => {
   const { builds } = useContext(buildContext)
@@ -32,111 +34,113 @@ const Logs = memo(() => {
 
   return (
     <div
-      className='w-full h-full absolute transition-transform duration-300 bg-background pt-20 pb-6 px-8 grid grid-cols-6 gap-6'
+      className='w-screen h-screen absolute transition-transform duration-300 bg-background pt-14 pb-12 pl-8 pr-0 grid grid-cols-6 gap-6'
       style={{
         transform: currentPage === "inspect" ? "translateX(0%)" : `translateX(100%)`,
       }}
     >
-      <div>
-        <h1 className='text-3xl mb-4'>Builds</h1>
-        <div className='grid gap-2 overflow-y-scroll max-h-[600px]'>
-          <Accordion
-            showDivider={false}
-            selectedKeys={
-              currentItem
-                ? currentItem.type === "build"
-                  ? [currentItem.id.toString()]
-                  : [
-                      builds
-                        .find((build) => build.runs.some((run) => run.id === currentItem.id))!
-                        .id.toString(),
-                    ]
-                : []
-            }
-            className='w-full flex flex-col gap-2'
-            itemClasses={{
-              base: "w-full px-0 py-0",
-              content: "w-full pl-4 py-0 ",
-              trigger: "w-full px-2 py-1 rounded-lg border border-border",
-            }}
-          >
-            {builds && builds.length ? (
-              builds
-                .sort((a, b) => b.id - a.id)
-                .map((build) => (
-                  <AccordionItem
-                    textValue='TEST'
-                    key={build.id}
-                    className=''
-                    onPress={() => {
-                      setCurrentItem(build)
-                      setSearchParams({
-                        ...parseSearchParams(searchParams),
-                        build_id: build.id.toString(),
-                        type: "build",
-                      })
-                    }}
-                    title={
-                      <div className='flex items-center justify-between w-full'>
-                        <p>Build {build.id}</p>
-                        <span className='flex items-center'>
-                          {build.status === "completed" && (
-                            <CheckCircle2 fill='var(--status-green)' stroke='white' />
-                          )}{" "}
-                          {build.status === "running" && <Spinner size='sm' color='warning' />}
-                          {build.status === "failed" && <X color='red' />}
-                        </span>
+      <div className='pt-6 flex flex-col gap-4'>
+        <h1 className='text-3xl'>Builds</h1>
+        <ScrolledContainer className='h-0 flex-grow'>
+          <div className='pb-2'>
+            <Accordion
+              showDivider={false}
+              selectedKeys={
+                currentItem
+                  ? currentItem.type === "build"
+                    ? [currentItem.id.toString()]
+                    : [
+                        builds
+                          .find((build) => build.runs.some((run) => run.id === currentItem.id))!
+                          .id.toString(),
+                      ]
+                  : []
+              }
+              className='w-full flex flex-col gap-2'
+              itemClasses={{
+                base: "w-full px-0 py-0",
+                content: "w-full pl-4 py-0",
+                trigger: "w-full px-2 py-1 rounded-lg border border-border",
+              }}
+            >
+              {builds && builds.length ? (
+                builds
+                  .sort((a, b) => b.id - a.id)
+                  .map((build) => (
+                    <AccordionItem
+                      textValue='TEST'
+                      key={build.id}
+                      className=''
+                      onPress={() => {
+                        setCurrentItem(build)
+                        setSearchParams({
+                          ...parseSearchParams(searchParams),
+                          build_id: build.id.toString(),
+                          type: "build",
+                        })
+                      }}
+                      title={
+                        <div className='flex items-center justify-between w-full'>
+                          <p>Build {build.id}</p>
+                          <span className='flex items-center'>
+                            {build.status === "completed" && (
+                              <CheckCircle2 fill='var(--status-green)' stroke='white' />
+                            )}{" "}
+                            {build.status === "running" && <Spinner size='sm' color='warning' />}
+                            {build.status === "failed" && <X color='red' />}
+                          </span>
+                        </div>
+                      }
+                    >
+                      <div className='grid gap-2 mt-2'>
+                        {build.runs &&
+                          build.runs.length &&
+                          build.runs
+                            .sort((a, b) => b.id - a.id)
+                            .map((r) => {
+                              return (
+                                <div
+                                  key={r.id}
+                                  onClick={async (e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setSearchParams({
+                                      ...parseSearchParams(searchParams),
+                                      run_id: r.toString(),
+                                      build_id: build.id.toString(),
+                                      type: "run",
+                                    })
+                                    setCurrentItem({ ...r, type: "run" })
+                                  }}
+                                  className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'
+                                >
+                                  <p>Run {r.id}</p>
+                                  <span className='flex items-center'>
+                                    {r.status === "completed" && (
+                                      <CheckCircle2 fill='var(--status-green)' stroke='white' />
+                                    )}{" "}
+                                    {r.status === "running" && <Spinner size='sm' color='danger' />}
+                                    {r.status === "failed" && <X color='red' />}
+                                    {r.status === "stopped" && (
+                                      <Slash className='scale-50' strokeWidth={4} />
+                                    )}
+                                  </span>
+                                </div>
+                              )
+                            })}
                       </div>
-                    }
-                  >
-                    <div className='grid gap-2 mt-2'>
-                      {build.runs &&
-                        build.runs.length &&
-                        build.runs
-                          .sort((a, b) => b.id - a.id)
-                          .map((r) => {
-                            return (
-                              <div
-                                key={r.id}
-                                onClick={async (e) => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  setSearchParams({
-                                    ...parseSearchParams(searchParams),
-                                    run_id: r.toString(),
-                                    build_id: build.id.toString(),
-                                    type: "run",
-                                  })
-                                  setCurrentItem({ ...r, type: "run" })
-                                }}
-                                className='flex items-center justify-between border border-border rounded-lg px-2 py-0.5 cursor-pointer'
-                              >
-                                <p>Run {r.id}</p>
-                                <span className='flex items-center'>
-                                  {r.status === "completed" && (
-                                    <CheckCircle2 fill='var(--status-green)' stroke='white' />
-                                  )}{" "}
-                                  {r.status === "running" && <Spinner size='sm' color='danger' />}
-                                  {r.status === "failed" && <X color='red' />}
-                                  {r.status === "stopped" && (
-                                    <Slash className='scale-50' strokeWidth={4} />
-                                  )}
-                                </span>
-                              </div>
-                            )
-                          })}
-                    </div>
-                  </AccordionItem>
-                ))
-            ) : (
-              <AccordionItem textValue='TEST'>No builds found</AccordionItem>
-            )}
-          </Accordion>
-        </div>
+                    </AccordionItem>
+                  ))
+              ) : (
+                <AccordionItem textValue='TEST'>No builds found</AccordionItem>
+              )}
+            </Accordion>
+          </div>
+        </ScrolledContainer>
       </div>
-      <div className='col-span-4 flex items-start gap-10'>
+      <div className='col-span-5 flex items-start gap-10 justify-between'>
         <Divider orientation='vertical' />
-        <div className='flex flex-col items-start justify-start gap-2'>
+        <div className='pt-6 flex flex-col items-start justify-start gap-2 flex-grow'>
           {currentItem && (
             <>
               {currentItem.type === "build" ? (
@@ -234,6 +238,7 @@ const Logs = memo(() => {
             </>
           )}
         </div>
+        <Chat />
       </div>
       {/* <div>
         <h1 className='text-3xl mb-4'>Runs</h1>

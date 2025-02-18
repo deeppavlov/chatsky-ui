@@ -476,7 +476,6 @@ export default function Flow() {
       ))}
       {nodesLayoutMode && <NodesLayout />}
       <Logs />
-      <Chat />
       <BuildManagerPage />
       <Settings />
       <FootBar />

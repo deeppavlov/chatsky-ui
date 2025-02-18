@@ -13,7 +13,6 @@ import { Logo } from "../../icons/Logo"
 import GrabModeIcon from "../../icons/header/GrabModeIcon"
 import GridModeIcon from "../../icons/header/GridModeIcon"
 import ListViewIcon from "../../icons/header/ListViewIcon"
-import BuildMenu from "./BuildMenu"
 import NodeInstruments from "./components/NodeInstruments"
 
 const Header = memo(() => {
@@ -147,7 +146,6 @@ const Header = memo(() => {
         )}
       </div>
       <div className='flex items-center justify-start gap-1'>
-        {location.pathname.includes("flow") && <BuildMenu />}
         {location.pathname.includes("home") && (
           <Popover placement='left-end' radius='sm'>
             <PopoverTrigger>

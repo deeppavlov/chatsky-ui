@@ -26,8 +26,6 @@ export type runApiType = {
 type RunContextType = {
   runs: localRunType[]
   setRuns: React.Dispatch<React.SetStateAction<localRunType[]>>
-  run: localRunType | null
-  setRun: React.Dispatch<React.SetStateAction<localRunType | null>>
   startingRunId: number | null
   setStartingRunId: React.Dispatch<React.SetStateAction<number | null>>
   runStopping: boolean
@@ -35,8 +33,6 @@ type RunContextType = {
   runStart: (build_id: string, preset: runPresetType) => void
   runStop: (run_id: number) => void
   stopAllRuns: (run_ids: number[]) => void
-  runStatus: buildApiStatusType
-  setRunStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
   setRunsHandler: (runs: runMinifyApiType[]) => void
 }
 
@@ -44,8 +40,6 @@ type RunContextType = {
 export const runContext = createContext({
   setRuns: () => {},
   runs: [],
-  run: null,
-  setRun: () => {},
   startingRunId: null,
   setStartingRunId: () => {},
   runStopping: false,
@@ -53,8 +47,6 @@ export const runContext = createContext({
   runStart: async () => {},
   runStop: () => {},
   stopAllRuns: () => {},
-  setRunStatus: () => {},
-  runStatus: "stopped",
   setRunsHandler: () => {},
 } as RunContextType)
 
@@ -62,7 +54,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [run, setRun] = useState<localRunType | null>(null)
   const [startingRunId, setStartingRunId] = useState<number | null>(null)
   const [runStopping, setRunStopping] = useState(false)
-  const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
   const [runs, setRuns] = useState<localRunType[]>([])
   const { notification: n } = useContext(NotificationsContext)
 
@@ -79,7 +70,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       setRuns(_runs)
       if (_runs[_runs.length - 1].status === "alive") {
         setRun(_runs[_runs.length - 1])
-        setRunStatus("alive")
       }
     }
   }
@@ -92,7 +82,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     build_id: string,
     { end_status = "success", ...restParams }: runPresetType
   ) => {
-    setRunStatus("running")
     setStartingRunId(runs.length)
 
     try {
@@ -130,7 +119,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           if (status !== "running") {
             // Обновляем состояние, если статус изменился
             setRuns((prev) => prev.map((r) => (run_id === r.id ? { ...r, status } : r)))
-            setRunStatus(status)
             isMonitoring = false
 
             switch (status) {
@@ -192,7 +180,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         if (status === "stopped") {
           clearInterval(timerId)
           setRunsHandler(runs.map((r) => (r.id === run_id ? { ...r, status } : r)))
-          setRunStatus("stopped")
           n.add({
             message: "",
             title: "Run stopped!",
@@ -229,7 +216,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         if (runs.every((r) => r.status !== "alive")) {
           clearInterval(timerId)
           setRunsHandler(runs)
-          setRunStatus("stopped")
           n.add({
             message: "",
             title: "All runs stopped!",
@@ -252,8 +238,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <runContext.Provider
       value={{
-        run,
-        setRun,
         startingRunId,
         setStartingRunId,
         runStopping,
@@ -261,10 +245,8 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         runStart,
         runStop,
         stopAllRuns,
-        runStatus,
         runs,
         setRuns,
-        setRunStatus,
         setRunsHandler,
       }}
     >
