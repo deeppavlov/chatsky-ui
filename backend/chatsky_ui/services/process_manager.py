@@ -145,7 +145,7 @@ class ProcessManager(ABC):
         process_info = await self.get_process_info(id_, path)
         if process_info is None:
             self.logger.error("Id '%s' not found", id_)
-            return None #TODO: raise error and handle it!
+            return None  # TODO: raise error and handle it!
 
         log_file = Path(process_info["log_path"])
         try:
@@ -224,10 +224,9 @@ class RunManager(ProcessManager):
                 raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
             settings.add_env_vars({unique_build_token: token_value})
 
-        if (
-            (datetime.now() - self.last_run_time).seconds < 13
-            and [process for process in self.processes.values() if process.status == Status.RUNNING]
-        ):
+        if (datetime.now() - self.last_run_time).seconds < 13 and [
+            process for process in self.processes.values() if process.status == Status.RUNNING
+        ]:
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
         self.last_id = await _get_new_id()
@@ -329,10 +328,9 @@ class BuildManager(ProcessManager):
         Returns:
             int: the id of the new started process
         """
-        if (
-            [process for process in self.processes.values() if process.status == Status.RUNNING]
-            and (datetime.now() - self.last_build_time).seconds < 5
-        ):
+        if [process for process in self.processes.values() if process.status == Status.RUNNING] and (
+            datetime.now() - self.last_build_time
+        ).seconds < 5:
             raise RuntimeError("Another process is still using the build.yaml file. Can't commit changes.")
 
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
