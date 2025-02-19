@@ -51,7 +51,6 @@ export const runContext = createContext({
 } as RunContextType)
 
 export const RunProvider = ({ children }: { children: React.ReactNode }) => {
-  const [run, setRun] = useState<localRunType | null>(null)
   const [startingRunId, setStartingRunId] = useState<number | null>(null)
   const [runStopping, setRunStopping] = useState(false)
   const [runs, setRuns] = useState<localRunType[]>([])
@@ -68,9 +67,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         return { ...run, type: "run" }
       })
       setRuns(_runs)
-      if (_runs[_runs.length - 1].status === "alive") {
-        setRun(_runs[_runs.length - 1])
-      }
     }
   }
 
@@ -104,7 +100,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         if (started_run) {
           // Если ран найден, добавляем его в стейт
           setRunsHandler([...runs, started_run])
-          setRun({ ...started_run, type: "run" })
         }
       }
 
