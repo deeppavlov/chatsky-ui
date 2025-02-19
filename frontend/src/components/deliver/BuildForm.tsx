@@ -130,7 +130,7 @@ const BuildForm = () => {
         </Button>
         <Button
           onClick={handleBuild}
-          disabled={buildPending}
+          isDisabled={buildPending}
           className='font-semibold bg-foreground text-background rounded-lg w-full'
         >
           Build
