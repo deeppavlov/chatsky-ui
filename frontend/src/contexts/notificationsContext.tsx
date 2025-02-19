@@ -109,7 +109,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
 
   /**
    * Create new notification function
-   * @param {createNotificationType} notification_object message, title, type, duration, timestamp, stack of notifications 
+   * @param {createNotificationType} notification_object message, title, type, duration, timestamp, stack of notifications
    * Calls new notification
    */
   const addNotification = ({
@@ -144,7 +144,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
               </h3>
             </div>
             {notification.message && (
-              <p className='text-sm text-neutral-500'>{notification.message}</p>
+              <p className='text-sm text-neutral-500 whitespace-pre-wrap'>{notification.message}</p>
             )}
           </div>
         </div>
@@ -159,7 +159,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
    * Delete notification by timestamp (as id) function
    * @param {number} timestamp as notification id
    */
-  const deleteNotification = (timestamp: number) => {    
+  const deleteNotification = (timestamp: number) => {
     setNotifications((prevNotifications) =>
       prevNotifications.filter((notification) => notification.timestamp !== timestamp)
     )
