@@ -72,7 +72,13 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       const { build_id } = await build_start({ end_status, name, preset, messenger })
-      const started_build = await get_builds(build_id)
+
+      let started_build = await get_builds(build_id)
+      while (!started_build) {
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        started_build = await get_builds(build_id)
+      }
+
       setBuildsHandler([...builds, started_build])
 
       let flag = true
@@ -82,8 +88,8 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (status !== "running" && status !== "alive") {
           flag = false
-
-          handleBuildCompletion(status, build_id)
+          setBuilds((builds) => builds.map((b) => (b.id === build_id ? { ...b, status } : b)))
+          handleBuildCompletion(status)
           return { status, build_id }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -97,9 +103,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     return { status: "failed" }
   }
 
-  const handleBuildCompletion = (status: buildApiStatusType, build_id: number) => {
-    setBuilds((builds) => builds.map((b) => (b.id === build_id ? { ...b, status } : b)))
-
+  const handleBuildCompletion = (status: buildApiStatusType) => {
     if (status === "completed") {
       n.add({
         title: "Build successfully!",

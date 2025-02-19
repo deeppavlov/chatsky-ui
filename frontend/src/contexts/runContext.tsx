@@ -87,21 +87,13 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         ...restParams,
       })
 
-      let started_run
-      const checkInterval = 500
-
       // 2. Ожидание появления рана в списке ранов
+      let started_run = await get_runs(run_id)
       while (!started_run) {
-        // const started_runs = await get_runs()
+        await new Promise((resolve) => setTimeout(resolve, 500))
         started_run = await get_runs(run_id)
-        await new Promise((resolve) => setTimeout(resolve, checkInterval))
-        // Это бесконечный цикл, но его можно остановить с помощью кнопки в интерфейсе
-
-        if (started_run) {
-          // Если ран найден, добавляем его в стейт
-          setRunsHandler([...runs, started_run])
-        }
       }
+      setRunsHandler([...runs, started_run])
 
       // 4. Мониторинг статуса рана
       let isMonitoring = true
