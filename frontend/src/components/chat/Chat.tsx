@@ -17,14 +17,19 @@ const Chat = memo(() => {
   const { runs } = useContext(runContext)
   const { chatId, chatHistory, setChatHistory, setMessages } = useContext(chatContext)
   const { setMouseOnPane } = useContext(workspaceContext)
+
   const [isEmoji, setIsEmoji] = useState(false)
   const [listIsOpen, setListIsOpen] = useState(false)
   const [emojis, setEmojis] = useState<EmojiType[]>([])
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [emojisPending, setEmojisPending] = useState(false)
+  const [messageValue, setMessageValue] = useState("")
+
+  const chatWindowRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+
   const messages = chatHistory[chatId] || []
   const selectedRun = runs.find((run) => run.id === chatId)
-  const [messageValue, setMessageValue] = useState("")
 
   const handleMessage = async () => {
     if (!messageValue) return
@@ -95,9 +100,8 @@ const Chat = memo(() => {
   useEffect(() => {
     setMessageValue("")
     setIsEmoji(false)
-  }, [selectedRun])
-
-  const chatWindowRef = useRef<HTMLDivElement>(null)
+    inputRef.current?.focus()
+  }, [chatId])
 
   useEffect(() => {
     chatWindowRef.current?.scrollBy({
@@ -240,6 +244,7 @@ const Chat = memo(() => {
             </div>
           </div>
           <Textarea
+            ref={inputRef}
             isDisabled={selectedRun && selectedRun.status !== "alive"}
             onFocusChange={(focus: boolean) => setMouseOnPane(!focus)}
             data-testid='chat-input'
