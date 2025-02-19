@@ -72,8 +72,8 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       const { build_id } = await build_start({ end_status, name, preset, messenger })
-      const started_builds = await get_builds()
-      setBuildsHandler(started_builds)
+      const started_build = await get_builds(build_id)
+      setBuildsHandler([...builds, started_build])
 
       let flag = true
       while (flag) {
