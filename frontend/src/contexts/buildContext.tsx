@@ -83,7 +83,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         if (status !== "running" && status !== "alive") {
           flag = false
 
-          await handleBuildCompletion(status)
+          handleBuildCompletion(status, build_id)
           return { status, build_id }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -97,10 +97,8 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     return { status: "failed" }
   }
 
-  const handleBuildCompletion = async (status: string) => {
-    const builds = await get_builds()
-
-    setBuilds(builds.map((build) => ({ ...build, type: "build" })))
+  const handleBuildCompletion = (status: buildApiStatusType, build_id: number) => {
+    setBuilds((builds) => builds.map((b) => (b.id === build_id ? { ...b, status } : b)))
 
     if (status === "completed") {
       n.add({
