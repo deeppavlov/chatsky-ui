@@ -170,9 +170,7 @@ const ConditionModal = ({
     )
    }
    if (basicCondition.structure === "") {
-    reasons.push(
-     `Structure in ${mapping[structure]} => ${subStructure} cannot be empty`
-    )
+    reasons.push(`Structure in ${mapping[structure]} cannot be empty`)
    }
    if (basicCondition.structure === "not") {
     const subStructure = mapping[basicCondition.data.structure]
@@ -188,9 +186,7 @@ const ConditionModal = ({
      )
     }
     if (Object.keys(basicCondition.data).length === 0) {
-     reasons.push(
-      `Structure in ${mapping[structure]} => Not => cannot be empty`
-     )
+     reasons.push(`Structure in ${mapping[structure]} => Not cannot be empty`)
     }
    }
   }
@@ -255,6 +251,8 @@ const ConditionModal = ({
    status: reasons.length === 0,
    reason: reasons.join("\n "),
   }
+
+  console.log(result.reason)
 
   return result
  }
