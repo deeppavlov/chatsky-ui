@@ -1,7 +1,7 @@
-from pathlib import Path
+import os
 from typing import Dict, Optional, Union
 
-from dotenv import set_key
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from git.exc import GitCommandError
 from omegaconf import OmegaConf
@@ -37,7 +37,7 @@ async def flows_get(
                 detail="Failed to checkout the latest commit",
             ) from e
 
-    omega_flows = await read_conf(settings.frontend_flows_path)
+    omega_flows = await read_conf(settings.frontend_flows_path, settings.frontend_flows_path_lock)
     dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
     return {"status": "ok", "data": dict_flows}  # type: ignore
 
@@ -51,16 +51,25 @@ async def flows_post(
     tags = sorted(build_manager.graph_repo_manager.repo.tags, key=lambda t: t.commit.committed_datetime)
     build_manager.graph_repo_manager.checkout_tag(tags[-1], settings.frontend_flows_path.name)
 
-    await write_conf(flows, settings.frontend_flows_path)
+    await write_conf(flows, settings.frontend_flows_path, settings.frontend_flows_path_lock)
     build_manager.graph_repo_manager.commit_changes("Save frontend flows")
 
     return {"status": "ok"}
 
 
 @router.post("/tg_token")
-async def post_tg_token(token: str):
-    dotenv_path = Path(settings.work_directory) / ".env"
-    dotenv_path.touch(exist_ok=True)
-
-    set_key(dotenv_path, "TG_BOT_TOKEN", token)
+async def post_tg_token(tokens: Dict[str, str]) -> Dict[str, str]:
+    sanitized_tokens = {f"TG_{key.replace(' ', '_').upper()}": value for key, value in tokens.items()}
+    settings.add_env_vars(sanitized_tokens)
     return {"status": "ok", "message": "Token saved successfully"}
+
+
+@router.get("/get_tg_tokens")
+async def get_tg_tokens() -> list:
+    load_dotenv(settings.work_directory / ".env", override=True)
+
+    tg_token = []
+    for key, _ in os.environ.items():
+        if key.startswith("TG_"):
+            tg_token.append("_".join(key.split("_")[1:]))
+    return tg_token

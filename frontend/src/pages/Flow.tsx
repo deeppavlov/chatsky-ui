@@ -42,6 +42,7 @@ import Fallback from "./Fallback"
 import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
 import Settings from "./Settings"
+import BuildManagerPage from "./BuildManagerPage"
 
 const nodeTypes = {
   default_node: DefaultNode,
@@ -70,6 +71,7 @@ export default function Flow() {
     selectedNode,
     mouseOnPane,
     managerMode,
+    currentPage,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
   const { takeSnapshot, copy, paste, copiedSelection, disableCopyPaste } =
@@ -365,8 +367,11 @@ export default function Flow() {
       setMousePos({ x: e.clientX, y: e.clientY })
     }
 
-    document.addEventListener("keydown", kbdHandler)
-    document.addEventListener("mousemove", mouseMoveHandler)
+    if (currentPage === "edit") {
+      // костыль - чтобы страницы deliver, inspect... не ререндерились при движении мыши. В дальнейшем надо переделать эти страницы как отдельные вкладки
+      document.addEventListener("keydown", kbdHandler)
+      document.addEventListener("mousemove", mouseMoveHandler)
+    }
 
     return () => {
       document.removeEventListener("keydown", kbdHandler)
@@ -410,12 +415,14 @@ export default function Flow() {
   return (
     <div
       data-testid='flow-page'
-      className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'>
+      className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'
+    >
       <SideBar />
       {transitions((style) => (
         <a.div
           style={{ width: "100%", height: "100vh", ...style }}
-          className='col-span-6 opacity-0 pb-10'>
+          className='col-span-6 opacity-0 pb-10'
+        >
           <ReactFlowCustom
             deleteKeyCode={["Backspace", "Delete"]}
             style={{
@@ -451,7 +458,8 @@ export default function Flow() {
             nodesFocusable={!managerMode}
             edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
-            snapToGrid={!workspaceMode}>
+            snapToGrid={!workspaceMode}
+          >
             <Background
               className='bg-background'
               variant={BackgroundVariant.Dots}
@@ -468,7 +476,7 @@ export default function Flow() {
       ))}
       {nodesLayoutMode && <NodesLayout />}
       <Logs />
-      <Chat />
+      <BuildManagerPage />
       <Settings />
       <FootBar />
     </div>

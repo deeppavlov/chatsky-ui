@@ -2,6 +2,7 @@ from chatsky import PRE_RESPONSE, PRE_TRANSITION, RESPONSE, TRANSITIONS
 
 from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .base_converter import BaseConverter
+from .logic_component_converter.chatsky_condition_converter import ChatskyConditionConverter
 from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter
 from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter
 
@@ -14,6 +15,7 @@ class NodeConverter(BaseConverter):
     CONDITION_CONVERTER = {
         "python": CustomConditionConverter,
         "slot": SlotConditionConverter,
+        "basic": ChatskyConditionConverter,
     }
 
     def __init__(self, config: dict):
@@ -22,10 +24,12 @@ class NodeConverter(BaseConverter):
 
 class InfoNodeConverter(NodeConverter):
     MAP_TR2CHATSKY = {
-        "start": "dst.Start",
-        "fallback": "dst.Fallback",
-        "previous": "dst.Previous",
-        "repeat": "dst.Current",
+        "start": {"chatsky.destinations.Start": {}},
+        "fallback": {"chatsky.destinations.Fallback": {}},
+        "previous": {"chatsky.destinations.Previous": {}},
+        "current": {"chatsky.destinations.Current": {}},
+        "forward": {"chatsky.destinations.Forward": {}},
+        "backward": {"chatsky.destinations.Backward": {}},
     }
 
     def __init__(self, node: dict):
@@ -49,13 +53,12 @@ class InfoNodeConverter(NodeConverter):
             TRANSITIONS: [
                 {
                     "dst": condition["dst"]
-                    if condition["data"]["transition_type"] == "manual"
-                    else self.MAP_TR2CHATSKY[condition["data"]["transition_type"]],
+                    if condition["data"]["transition_type"] == "manual" and "dst" in condition
+                    else self.MAP_TR2CHATSKY.get(condition["data"]["transition_type"], self.MAP_TR2CHATSKY["fallback"]),
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }
                 for condition, converter in zip(self.node.conditions, condition_converters)
-                if "dst" in condition
             ],
             PRE_TRANSITION: {
                 key: value

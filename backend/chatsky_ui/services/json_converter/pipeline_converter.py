@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -10,16 +11,25 @@ except ImportError:
 
 from ...schemas.front_graph_components.pipeline import Pipeline
 from .base_converter import BaseConverter
-from .interface_converter import InterfaceConverter
+from .consts import UNIQUE_BUILD_TOKEN
+from .messenger_converter import MessengerConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
 
 
 class PipelineConverter(BaseConverter):
-    def __call__(self, input_file: Path, output_dir: Path):
+    def __call__(self, build_id: int, input_file: Path, output_dir: Path, messenger: str, chatsky_port: Optional[int]):
         self.from_yaml(file_path=input_file)
 
-        self.pipeline = Pipeline(**self.graph)
+        self.pipeline = Pipeline(
+            messenger={
+                messenger: {},
+                "chatsky_port": chatsky_port,
+                "tg_token_name": UNIQUE_BUILD_TOKEN.format(build_id=build_id),
+            },
+            **self.graph,
+        )
+
         self.converted_pipeline = super().__call__()
 
         self.to_yaml(dir_path=output_dir)
@@ -41,7 +51,7 @@ class PipelineConverter(BaseConverter):
 
         return {
             "script": script_converter(slots_conf=slots_conf),
-            "messenger_interface": InterfaceConverter(self.pipeline.interface)(),
+            "messenger_interface": MessengerConverter(self.pipeline.messenger)(),
             "slots": slots_converter(),
             "start_label": start_label,
             "fallback_label": fallback_label,

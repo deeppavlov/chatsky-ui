@@ -1,13 +1,11 @@
-import asyncio
 from typing import Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from httpx import AsyncClient
 
 from chatsky_ui.api import deps
-from chatsky_ui.core.config import settings
 from chatsky_ui.schemas.pagination import Pagination
-from chatsky_ui.schemas.preset import Preset
+from chatsky_ui.schemas.preset import BuildPreset, RunPreset
 from chatsky_ui.services.process_manager import BuildManager, ProcessManager, RunManager
 from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
@@ -42,7 +40,7 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> Di
 
 @router.post("/build/start", status_code=201)
 async def start_build(
-    preset: Preset,
+    preset: BuildPreset,
     background_tasks: BackgroundTasks,
     build_manager: BuildManager = Depends(deps.get_build_manager),
 ) -> Dict[str, Union[str, int]]:
@@ -56,9 +54,13 @@ async def start_build(
     Returns:
         {"status": "ok", "build_id": build_id}: in case of **starting** the build process successfully.
     """
-
-    await asyncio.sleep(preset.wait_time)
-    build_id = await build_manager.start(preset)
+    try:
+        build_id = await build_manager.start(preset)
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Several builds were requested in short time. Please wait a bit and try.",
+        ) from e
     background_tasks.add_task(build_manager.check_status, build_id)
     build_manager.logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
@@ -79,6 +81,18 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
         {"status": "ok"}: in case of stopping a process successfully.
     """
     return await _stop_process(build_id, build_manager, process="build")
+
+
+@router.get("/build/stop_all", status_code=200)
+async def stop_all_builds(build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, str]:
+    try:
+        await build_manager.stop_all()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Please check that service's up and running.",
+        ) from e
+    return {"status": "ok"}
 
 
 @router.get("/build/status/{build_id}", status_code=200)
@@ -124,12 +138,32 @@ async def check_build_processes(
     Args:
         build_id (Optional[int]): The id of the process to check. If not specified, all processes will be returned.
     """
+
+    async def _get_builds_info_with_runs_info(
+        build_manager: BuildManager, run_manager: RunManager, offset: int, limit: int
+    ) -> List[Dict[str, Any]]:
+        """Returns metadata of ``limit`` number of processes, starting from the ``offset``th process.
+
+        Args:
+            run_manager (RunManager): the run manager to use for getting all runs of this build
+        """
+        builds_info = await build_manager.get_full_info(offset=offset, limit=limit)
+        runs_info = await run_manager.get_full_info(offset=0, limit=10**5)
+        for build in builds_info:
+            del build["run_ids"]
+            build["runs"] = [
+                {k: v for k, v in run.items() if k != "build_id"} for run in runs_info if run["build_id"] == build["id"]
+            ]
+
+        return builds_info
+
+    builds_info = await _get_builds_info_with_runs_info(
+        build_manager, run_manager, offset=pagination.offset(), limit=pagination.limit
+    )
     if build_id is not None:
-        return await build_manager.get_build_info(build_id, run_manager)
+        return next((build for build in builds_info if build["id"] == build_id), None)
     else:
-        return await build_manager.get_full_info_with_runs_info(
-            run_manager, offset=pagination.offset(), limit=pagination.limit
-        )
+        return builds_info
 
 
 @router.get("/builds/logs/{build_id}", response_model=Optional[list], status_code=200)
@@ -148,7 +182,7 @@ async def get_build_logs(
 async def start_run(
     *,
     build_id: int,
-    preset: Preset,
+    preset: RunPreset,
     background_tasks: BackgroundTasks,
     run_manager: RunManager = Depends(deps.get_run_manager),
 ) -> Dict[str, Union[str, int]]:
@@ -163,9 +197,24 @@ async def start_run(
     Returns:
         {"status": "ok", "build_id": run_id}: in case of **starting** the run process successfully.
     """
+    try:
+        run_id = await run_manager.start(build_id, preset)
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
+        ) from e
+    except ConnectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Port conflict error. Something went wrong. Please check the logs for more details.",
+        ) from e
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
 
-    await asyncio.sleep(preset.wait_time)
-    run_id = await run_manager.start(build_id, preset)
     background_tasks.add_task(run_manager.check_status, run_id)
     run_manager.logger.info("Run process '%s' has started", run_id)
     return {"status": "ok", "run_id": run_id}
@@ -187,6 +236,18 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
     """
 
     return await _stop_process(run_id, run_manager, process="run")
+
+
+@router.get("/run/stop_all", status_code=200)
+async def stop_all_runs(run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, str]:
+    try:
+        await run_manager.stop_all()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Please check that service's up and running.",
+        ) from e
+    return {"status": "ok"}
 
 
 @router.get("/run/status/{run_id}", status_code=200)
@@ -243,20 +304,30 @@ async def get_run_logs(
 
 @router.post("/chat", status_code=201)
 async def respond(
-    user_id: str,
+    run_id: int,
     user_message: str,
+    user_id: Optional[str] = None,
+    run_manager: RunManager = Depends(deps.get_run_manager),
 ):
+    build_port = run_manager.get_port(run_id)
+    if build_port is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Build process of id '{run_id}' doesn't have a messenger of type 'web'. "
+            "Check the build port and messenger in metadata.",
+        )
+
     async with AsyncClient() as client:
         try:
             response = await client.post(
-                f"http://localhost:{settings.chatsky_port}/chat",
+                f"http://localhost:{build_port}/chat",
                 params={"user_id": user_id, "user_message": user_message},
             )
             return response.json()
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Please check that service's up and running on the port '{settings.chatsky_port}'.",
+                detail=f"Please check that service's up and running on the port '{build_port}'.",
             ) from e
 
 
