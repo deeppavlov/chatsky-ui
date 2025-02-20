@@ -187,12 +187,29 @@ async def test_get_chat_records(run_process, dummy_run_id):
     run_id = "test"
     user_id = 0
     test_result = [
-        ["hi", "Hello!"],
-        ["hello", "Do you want a pizza?"],
+        ["hello", "Do you want two pizzas?"],
+        ["yesss", "Hello!"],
+        ["hello", "Do you want two pizzas?"],
+        ["yes", "Some cheese in pizza?"],
+        ["no", "Okay, so, your order is coming!"],
+        ["hello", "Hello!"],
+        ["hello", "Do you want two pizzas?"],
+        ["no", "Okay, bye!"],
+        ["hello", "Hello!"],
+        ["hello", "Do you want two pizzas?"],
         ["yes", "Some cheese in pizza?"],
         ["yes", "Cool! Your order is coming!"],
-        ["yes", "Hello!"],
-        ["yes", "Hello!"],
+        ["hi", "Hello!"],
+        ["hello", "Do you want two pizzas?"],
+        ["dtfvgybuhnjmk,l", "Hello!"],
+        ["hello", "Do you want two pizzas?"],
+        ["yes", "Some cheese in pizza?"],
+        ["no", "Okay, so, your order is coming!"],
+        ["eretgh", "Hello!"],
+        ["helo", "Hello!"],
+        ["hello", "Do you want two pizzas?"],
+        ["yes", "Some cheese in pizza?"],
+        ["no", "Okay, so, your order is coming!"],
     ]
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
