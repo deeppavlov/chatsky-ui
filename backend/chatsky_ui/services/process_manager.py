@@ -31,6 +31,8 @@ from chatsky_ui.utils.repo_manager import RepoManager
 class ProcessManager(ABC):
     """Base for build and run process managers."""
 
+    _db_lock = asyncio.Lock()
+
     def __init__(self):
         self.processes: Dict[int, Union[BuildProcess, RunProcess]] = {}
         self.last_id: int
@@ -120,6 +122,7 @@ class ProcessManager(ABC):
                 Status.FAILED,
                 Status.FAILED_WITH_UNEXPECTED_CODE,
             ]:
+                await self.update_db_info()
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
@@ -127,22 +130,22 @@ class ProcessManager(ABC):
         """Checks the status of the process with the given id by calling the `check_status` method of the process."""
         return await self.processes[id_].check_status()
 
-    async def get_process_info(self, id_: int, path: Path) -> Optional[Dict[str, Any]]:
+    async def get_process_info(self, id_: int, path: Path, path_lock) -> Optional[Dict[str, Any]]:
         """Returns metadata of a specific process identified by its unique ID."""
-        db_conf = await read_conf(path)
+        db_conf = await read_conf(path, path_lock)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
         return next((db_process for db_process in conf_dict if db_process["id"] == id_), None)  # type: ignore
 
-    async def get_full_info(self, offset: int, limit: int, path: Path) -> List[Dict[str, Any]]:
+    async def get_full_info(self, offset: int, limit: int, path: Path, path_lock) -> List[Dict[str, Any]]:
         """Returns metadata of ``limit`` number of processes, starting from the ``offset``th process."""
 
-        db_conf = await read_conf(path)
+        db_conf = await read_conf(path, path_lock)
         conf_dict = OmegaConf.to_container(db_conf, resolve=True)
         return conf_dict[offset : offset + limit]  # type: ignore
 
-    async def fetch_process_logs(self, id_: int, offset: int, limit: int, path: Path) -> Optional[List[str]]:
+    async def fetch_process_logs(self, id_: int, offset: int, limit: int, path: Path, path_lock) -> Optional[List[str]]:
         """Returns the logs of one process according to its id. If the process is not found, returns None."""
-        process_info = await self.get_process_info(id_, path)
+        process_info = await self.get_process_info(id_, path, path_lock)
         if process_info is None:
             self.logger.error("Id '%s' not found", id_)
             return None  # TODO: raise error and handle it!
@@ -200,7 +203,7 @@ class RunManager(ProcessManager):
             return max([run["id"] for run in await self.get_full_info(0, 10000)]) + 1
 
         async def _get_build_info(build_id):
-            build_info = await self.get_process_info(build_id, settings.builds_path) or {}
+            build_info = await self.get_process_info(build_id, settings.builds_path, settings.builds_path_lock) or {}
             if not build_info:
                 raise ValueError(f"Build id '{build_id}' not found in the database")
             port = build_info.get("port")
@@ -256,42 +259,43 @@ class RunManager(ProcessManager):
 
     async def get_run_info(self, id_: int) -> Optional[Dict[str, Any]]:
         """Returns metadata of  a specific run process identified by its unique ID."""
-        return await super().get_process_info(id_, settings.runs_path)
+        return await super().get_process_info(id_, settings.runs_path, settings.runs_path_lock)
 
     async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
         """Returns metadata of ``limit`` number of run processes, starting from the ``offset``th process."""
-        path = path or settings.runs_path
-        return await super().get_full_info(offset, limit, path)
+        path = settings.runs_path
+        return await super().get_full_info(offset, limit, path, settings.runs_path_lock)
 
     async def fetch_run_logs(self, run_id: int, offset: int, limit: int) -> Optional[List[str]]:
         """Returns the logs of one run according to its id.
 
         Number of loglines returned is based on `offset` as the start line and limited by `limit` lines.
         """
-        return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path)
+        return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path, settings.runs_path_lock)
 
     def get_port(self, run_id: int) -> Optional[int]:
         return self.processes[run_id].port
 
     async def update_db_info(self) -> None:
         # save current run info into runs_path
-        self.logger.debug("Updating db run info")
-        runs_conf = await read_conf(settings.runs_path)
-        builds_conf = await read_conf(settings.builds_path)
-        for process in self.processes.values():
-            run_params = (
-                await process.get_full_info()
-            )  # TODO: Try to use the process object attributes instead of having it as dict using get_full_info
-            runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
+        async with ProcessManager._db_lock:
+            self.logger.debug("Updating db run info")
+            runs_conf = await read_conf(settings.runs_path, settings.runs_path_lock)
+            builds_conf = await read_conf(settings.builds_path, settings.builds_path_lock)
+            for process in self.processes.values():
+                run_params = (
+                    await process.get_full_info()
+                )  # TODO: Try to use the process object attributes instead of having it as dict using get_full_info
+                runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
 
-            # save current run id into the correspoinding build in builds_path
-            for build in builds_conf:
-                if build.id == run_params["build_id"]:  # type: ignore
-                    if run_params["id"] not in build.run_ids:  # type: ignore
-                        build.run_ids.append(run_params["id"])  # type: ignore
-                        break
-        await write_conf(runs_conf, settings.runs_path)
-        await write_conf(builds_conf, settings.builds_path)
+                # save current run id into the correspoinding build in builds_path
+                for build in builds_conf:
+                    if build.id == run_params["build_id"]:  # type: ignore
+                        if run_params["id"] not in build.run_ids:  # type: ignore
+                            build.run_ids.append(run_params["id"])  # type: ignore
+                            break
+            await write_conf(runs_conf, settings.runs_path, settings.runs_path_lock)
+            await write_conf(builds_conf, settings.builds_path, settings.builds_path_lock)
 
 
 class BuildManager(ProcessManager):
@@ -380,25 +384,27 @@ class BuildManager(ProcessManager):
             ]:
                 self.bot_repo_manager.commit_with_tag(process.id)
                 self.graph_repo_manager.commit_with_tag(process.id)
+                await self.update_db_info()
                 break
 
     async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
         """Returns metadata of ``limit`` number of processes, starting from the ``offset`` process."""
-        path = path or settings.builds_path
-        return await super().get_full_info(offset, limit, path)
+        path = settings.builds_path
+        return await super().get_full_info(offset, limit, path, settings.builds_path_lock)
 
     async def fetch_build_logs(self, build_id: int, offset: int, limit: int) -> Optional[List[str]]:
         """Returns the logs of one build according to its id.
 
         Number of loglines returned is based on `offset` as the start line and limited by `limit` lines.
         """
-        return await self.fetch_process_logs(build_id, offset, limit, settings.builds_path)
+        return await self.fetch_process_logs(build_id, offset, limit, settings.builds_path, settings.builds_path_lock)
 
     async def update_db_info(self) -> None:
         """Saves current build info into builds_path"""
-        builds_conf = await read_conf(settings.builds_path)
-        for process in self.processes.values():
-            build_params = await process.get_full_info()
-            builds_conf = BuildManager.add_new_conf(builds_conf, build_params)  # type: ignore
+        async with ProcessManager._db_lock:
+            builds_conf = await read_conf(settings.builds_path, settings.builds_path_lock)
+            for process in self.processes.values():
+                build_params = await process.get_full_info()
+                builds_conf = BuildManager.add_new_conf(builds_conf, build_params)  # type: ignore
 
-        await write_conf(builds_conf, settings.builds_path)
+            await write_conf(builds_conf, settings.builds_path, settings.builds_path_lock)

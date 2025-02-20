@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -29,6 +30,10 @@ class Settings:
         self.start_page = self.static_files / "index.html"
         self.package_dir = self.config_file_path.parents[2]
         self.temp_conf = self.config_file_path.with_name("temp_conf.yaml")
+
+        self.builds_path_lock = asyncio.Lock()
+        self.runs_path_lock = asyncio.Lock()
+        self.frontend_flows_path_lock = asyncio.Lock()
 
         self.set_config(
             host=os.getenv("HOST", "0.0.0.0"),
