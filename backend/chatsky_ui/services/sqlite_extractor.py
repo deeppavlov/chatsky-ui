@@ -26,7 +26,7 @@ class SQLiteExtractor:
 
     async def extract_user_context(self, run_id: str, user_id: int):
         try:
-            database = settings.context_storage_dir + f"/run_{run_id}.db"
+            database = f"{settings.context_storage_dir}" + f"/run_{run_id}.db"
             with sqlite3.connect(database) as conn:
                 cur = conn.cursor()
                 cur.execute("SELECT * FROM contexts WHERE id = ?", (user_id,))
