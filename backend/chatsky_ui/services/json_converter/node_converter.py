@@ -54,9 +54,7 @@ class InfoNodeConverter(NodeConverter):
                 {
                     "dst": condition.get("dst", [])
                     if condition["data"]["transition_type"] == "manual"
-                    else self.MAP_TR2CHATSKY.get(
-                        condition["data"]["transition_type"], self.MAP_TR2CHATSKY["fallback"]
-                    ),
+                    else self.MAP_TR2CHATSKY.get(condition["data"]["transition_type"], self.MAP_TR2CHATSKY["fallback"]),
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }

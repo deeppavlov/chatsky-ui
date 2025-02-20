@@ -1,4 +1,3 @@
-from asyncio import Lock
 from pathlib import Path
 from typing import List, Union
 

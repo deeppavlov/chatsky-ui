@@ -30,6 +30,7 @@ from chatsky_ui.utils.repo_manager import RepoManager
 
 class ProcessManager(ABC):
     """Base for build and run process managers."""
+
     _db_lock = asyncio.Lock()
 
     def __init__(self):
