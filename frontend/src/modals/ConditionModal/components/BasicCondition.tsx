@@ -9,7 +9,7 @@ import DeleteBasicConditionIcon from "@/icons/nodes/conditions/deleteBasicCondit
 
 interface IDefObject {
  text?: string
- flags?: { ignoreCase: boolean }
+ flags?: { caseSensitive: boolean }
  data?: IDefObject[] | IDefObject | {}
  id?: string
  pattern?: string
@@ -32,7 +32,7 @@ interface IState {
   key?: string
   disabled?: boolean
  }[]
- flags?: { ignoreCase: boolean }
+ flags?: { caseSensitive: boolean }
 }
 
 const genDefObject = (key: string): IDefObject => {
@@ -46,13 +46,13 @@ const genDefObject = (key: string): IDefObject => {
    return {
     structure: "includeText",
     text: "",
-    flags: { ignoreCase: false },
+    flags: { caseSensitive: false },
    }
   case "Regular expression":
    return {
     structure: "regExp",
     pattern: "",
-    flags: { ignoreCase: false },
+    flags: { caseSensitive: false },
    }
   case "Any of":
    return { structure: "anyOf", data: [] }
@@ -127,9 +127,9 @@ const handleValueChangeCheckbox = (
   state.structure === "not"
    ? setState({
       ...state,
-      data: { ...state.data, flags: { ignoreCase: value } },
+      data: { ...state.data, flags: { caseSensitive: value } },
      })
-   : setState({ ...state, flags: { ignoreCase: value } })
+   : setState({ ...state, flags: { caseSensitive: value } })
   return
  }
 
@@ -137,8 +137,8 @@ const handleValueChangeCheckbox = (
   (item: IDefObject) => {
    if (item.id === id) {
     return item.structure === "not"
-     ? { ...item, data: { ...item.data, flags: { ignoreCase: value } } }
-     : { ...item, flags: { ignoreCase: value } }
+     ? { ...item, data: { ...item.data, flags: { caseSensitive: value } } }
+     : { ...item, flags: { caseSensitive: value } }
    }
    return item
   }
@@ -236,7 +236,7 @@ const mapping: IMapping = {
      <Checkbox
       isDisabled={true}
       aria-label="Case sensitive"
-      isSelected={getValue(state, id ?? "").flags?.ignoreCase}
+      isSelected={getValue(state, id ?? "").flags?.caseSensitive}
       type="checkbox"
       onValueChange={(value) =>
        handleValueChangeCheckbox(setState, state, id, value)
@@ -264,7 +264,7 @@ const mapping: IMapping = {
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
       aria-label="Case sensitive"
-      isSelected={getValue(state, id ?? "").flags?.ignoreCase}
+      isSelected={getValue(state, id ?? "").flags?.caseSensitive}
       onValueChange={(value) =>
        handleValueChangeCheckbox(setState, state, id, value)
       }

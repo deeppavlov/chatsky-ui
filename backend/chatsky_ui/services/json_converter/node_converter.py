@@ -24,10 +24,12 @@ class NodeConverter(BaseConverter):
 
 class InfoNodeConverter(NodeConverter):
     MAP_TR2CHATSKY = {
-        "start": "dst.Start",
-        "fallback": "dst.Fallback",
-        "previous": "dst.Previous",
-        "repeat": "dst.Current",
+        "start": {"chatsky.destinations.Start": {}},
+        "fallback": {"chatsky.destinations.Fallback": {}},
+        "previous": {"chatsky.destinations.Previous": {}},
+        "current": {"chatsky.destinations.Current": {}},
+        "forward": {"chatsky.destinations.Forward": {}},
+        "backward": {"chatsky.destinations.Backward": {}},
     }
 
     def __init__(self, node: dict):
@@ -50,14 +52,15 @@ class InfoNodeConverter(NodeConverter):
             RESPONSE: self.RESPONSE_CONVERTER[self.node.response["type"]](self.node.response)(),
             TRANSITIONS: [
                 {
-                    "dst": condition["dst"]
+                    "dst": condition.get("dst", [])
                     if condition["data"]["transition_type"] == "manual"
-                    else self.MAP_TR2CHATSKY[condition["data"]["transition_type"]],
+                    else self.MAP_TR2CHATSKY.get(
+                        condition["data"]["transition_type"], self.MAP_TR2CHATSKY["fallback"]
+                    ),
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }
                 for condition, converter in zip(self.node.conditions, condition_converters)
-                if "dst" in condition
             ],
             PRE_TRANSITION: {
                 key: value
