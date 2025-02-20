@@ -24,7 +24,7 @@ class SQLiteExtractor:
     def set_logger(self):
         self._logger = get_logger(__name__)
 
-    def extract_user_context(self, run_id: int, user_id: int):
+    async def extract_user_context(self, run_id: str, user_id: int):
         try:
             database = settings.context_storage_dir + f"/run_{run_id}.db"
             with sqlite3.connect(database) as conn:
@@ -32,20 +32,23 @@ class SQLiteExtractor:
                 cur.execute("SELECT * FROM contexts WHERE id = ?", (user_id,))
                 rows = cur.fetchall()
                 return rows
-        except sqlite3.Error as e:
-            print(e)
+        except sqlite3.Error:
+            self.logger.error("Connection to db failed or database structure is too different.")
+            return None
 
-    def get_context(self, run_id: int, user_id: int):
+    async def get_context(self, run_id: str, user_id: int):
         try:
-            query_result = self.extract_user_context(run_id, user_id)
+            query_result = await self.extract_user_context(run_id, user_id)
             (id, context) = query_result[0]
             return Context.model_validate_json(context)
-        except ValidationError as e:
-            # In case a database is old (Chatsky `Context` was updated since then), this may throw an error.
-            print(e)
+        except ValidationError:
+            self.logger.error(
+                "Extracted Context doesn't match the current Chatsky version's Context." "(probably it's outdated)"
+            )
+            return None
 
-    def fetch_chat_records(self, run_id: int, user_id: int, offset: int, limit: int):
-        context = self.get_context(run_id, user_id)
+    async def fetch_chat_records(self, run_id: int | str, user_id: int, offset: int, limit: int):
+        context = await self.get_context(str(run_id), user_id)
         requests = context.requests
         responses = context.responses
         result = []

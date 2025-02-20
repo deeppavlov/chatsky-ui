@@ -155,3 +155,23 @@ async def test_get_run_logs(run_process, dummy_run_id):
 
         assert get_response.status_code == 200
         assert any(["test log" in log for log in get_response.json()])
+
+
+@pytest.mark.asyncio
+async def test_get_chat_records(run_process, dummy_run_id):
+    run_id = "test"
+    user_id = 0
+    test_result = [
+        ["hi", "Hello!"],
+        ["hello", "Do you want a pizza?"],
+        ["yes", "Some cheese in pizza?"],
+        ["yes", "Cool! Your order is coming!"],
+        ["yes", "Hello!"],
+        ["yes", "Hello!"],
+    ]
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+        get_response = await async_client.get(f"/get_chat/{run_id}/{user_id}")
+
+        assert get_response.status_code == 200
+        assert test_result == get_response.json()

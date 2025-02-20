@@ -261,7 +261,6 @@ async def respond(
 
 
 @router.get("/get_chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
-async def get_chat_records(run_id: int, user_id: int, pagination: Pagination = Depends()) -> Optional[List[str]]:
+async def get_chat_records(run_id: int | str, user_id: int, pagination: Pagination = Depends()) -> Optional[List[str]]:
     """Gets the records of a user's chat from a specified run."""
-    if user_id is not None:
-        return await SQLiteExtractor().fetch_chat_records(run_id, user_id, pagination.offset(), pagination.limit)
+    return await SQLiteExtractor().fetch_chat_records(run_id, user_id, pagination.offset(), pagination.limit)
