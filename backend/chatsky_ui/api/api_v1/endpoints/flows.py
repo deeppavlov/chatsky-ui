@@ -37,7 +37,7 @@ async def flows_get(
                 detail="Failed to checkout the latest commit",
             ) from e
 
-    omega_flows = await read_conf(settings.frontend_flows_path)
+    omega_flows = await read_conf(settings.frontend_flows_path, settings.frontend_flows_path_lock)
     dict_flows = OmegaConf.to_container(omega_flows, resolve=True)
     return {"status": "ok", "data": dict_flows}  # type: ignore
 
@@ -51,7 +51,7 @@ async def flows_post(
     tags = sorted(build_manager.graph_repo_manager.repo.tags, key=lambda t: t.commit.committed_datetime)
     build_manager.graph_repo_manager.checkout_tag(tags[-1], settings.frontend_flows_path.name)
 
-    await write_conf(flows, settings.frontend_flows_path)
+    await write_conf(flows, settings.frontend_flows_path, settings.frontend_flows_path_lock)
     build_manager.graph_repo_manager.commit_changes("Save frontend flows")
 
     return {"status": "ok"}

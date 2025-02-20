@@ -162,10 +162,12 @@ export const build_status = async (build_id: number) => {
   }
 }
 
-export const get_builds = async () => {
+export const get_builds = async <T extends number | undefined = undefined>(
+  build_id?: T
+): Promise<T extends number ? buildMinifyApiType : buildMinifyApiType[]> => {
+  const url = build_id ? `/bot/builds?build_id=${build_id}` : "/bot/builds"
   try {
-    const { data }: { data: buildMinifyApiType[] } = await $v1.get("/bot/builds")
-    // console.log(data)
+    const { data } = await $v1.get(url)
     return data
   } catch (error) {
     console.log(error)

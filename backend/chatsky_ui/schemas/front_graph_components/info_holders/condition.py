@@ -63,7 +63,7 @@ class RegexpCondition(Regexp):
 
     @model_validator(mode="after")
     def validate_flags(self) -> "RegexpCondition":
-        allowed_keys = {"ignoreCase"}
+        allowed_keys = {"caseSensitive"}
         invalid_keys = set(self.flags) - allowed_keys
         if invalid_keys:
             raise ValueError(f"Invalid key(s) {invalid_keys} in flags. Allowed keys are {allowed_keys}")

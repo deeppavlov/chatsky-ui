@@ -77,7 +77,7 @@ class RegexpConditionConverter(BaseChatskyConditionConverter):
 
     def _map_flags(self, flags: dict) -> int:
         flag_value = 0
-        if flags.get("ignoreCase", False):
+        if not flags.get("caseSensitive", False):
             flag_value |= re.IGNORECASE.value
         return flag_value
 

@@ -30,8 +30,10 @@ const StartRunForm = () => {
   const { runs, runStart, startingRunId } = useContext(runContext)
 
   const successBuilds = builds.filter((b) => b.status === "completed")
-
   const buildNames = successBuilds.map((b) => ({ name: b.preset.name, id: b.id.toString() }))
+  const usedTelegramTokens = runs
+    .filter((r) => r.messenger === "telegram" && r.status === "alive")
+    .map((r) => r.preset.tg_bot_token)
 
   const initialFormData: IFormData = {
     name: `Run ${runs.length}`,
@@ -72,6 +74,9 @@ const StartRunForm = () => {
       } catch (error) {
         console.log(error)
       }
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setFieldErrors(({ tokenName, tokenValue, ...errors }) => errors)
     }
 
     setFormData((prev) => ({
@@ -83,9 +88,18 @@ const StartRunForm = () => {
       isTelegram,
       isTokensAdding: isTelegram ? state.isTokensAdding : false,
     }))
+
+    const aliveWebRunBuildIds = runs
+      .filter((r) => r.status === "alive" && r.messenger === "web")
+      .map((r) => r.build_id)
+    const buildError = !e.target.value.length
+      ? "Please select a build"
+      : aliveWebRunBuildIds.includes(Number(e.target.value))
+      ? "This build is already in use"
+      : undefined
     setFieldErrors((errors) => ({
       ...errors,
-      build: e.target.value.length ? undefined : "Please select a build",
+      build: buildError,
     }))
   }
 
@@ -105,7 +119,11 @@ const StartRunForm = () => {
       tokenValue: "",
     }))
 
-    const error = e.target.value.length ? undefined : "Please select Telegram token"
+    const error = !e.target.value.length
+      ? "Please select Telegram token"
+      : usedTelegramTokens.includes(e.target.value)
+      ? "This token is already in use"
+      : undefined
     setFieldErrors((errors) => ({ ...errors, tokenValue: undefined, tokenName: error }))
   }
 
@@ -137,8 +155,10 @@ const StartRunForm = () => {
         tokenNameError = tokenState.isTokensAdding
           ? "Please enter Telegram token name"
           : "Please select Telegram token"
-      } else if (tokenState.isTokensAdding && tokenState.tokens.includes(formData.tokenName)) {
+      } else if (tokenState.tokens.includes(formData.tokenName) && tokenState.isTokensAdding) {
         tokenNameError = "The token with this name already exists"
+      } else if (usedTelegramTokens.includes(formData.tokenName) && !tokenState.isTokensAdding) {
+        tokenNameError = "This token is already in use"
       }
     }
 
@@ -146,7 +166,15 @@ const StartRunForm = () => {
       tokenState.isTokensAdding && !formData.tokenValue
         ? "Please enter Telegram token to access the HTTP API"
         : undefined
-    const buildError = !formData.buildId ? "Please select a build" : undefined
+
+    const aliveWebRunBuildIds = runs
+      .filter((r) => r.status === "alive" && r.messenger === "web")
+      .map((r) => r.build_id)
+    const buildError = !formData.buildId
+      ? "Please select a build"
+      : aliveWebRunBuildIds.includes(Number(formData.buildId))
+      ? "This build is already in use"
+      : undefined
     setFieldErrors({
       tokenName: tokenNameError,
       tokenValue: tokenValueError,
@@ -330,7 +358,12 @@ const StartRunForm = () => {
       <div>
         <Button
           onClick={handleStartRun}
-          isDisabled={startingRunId !== null || !formData.buildId}
+          isDisabled={
+            startingRunId !== null ||
+            !!fieldErrors.build ||
+            !!fieldErrors.tokenName ||
+            !!fieldErrors.tokenValue
+          }
           className='font-semibold bg-foreground text-background rounded-lg w-full'
         >
           Run
