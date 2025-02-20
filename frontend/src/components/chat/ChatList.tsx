@@ -13,7 +13,7 @@ const ChatList = () => {
   const aliveRuns = runs.filter((run) => run.status === "alive" && run.messenger === "web")
   const runsWithDialogs = runs.filter((run) => chatHistory[run.id] && run.status !== "alive")
 
-  const chats = [...aliveRuns.reverse(), ...runsWithDialogs.reverse()]
+  const chats = [...runsWithDialogs, ...aliveRuns].reverse()
 
   useLayoutEffect(() => {
     if (chats.length !== 0) {

@@ -51,7 +51,6 @@ export const runContext = createContext({
 } as RunContextType)
 
 export const RunProvider = ({ children }: { children: React.ReactNode }) => {
-  const [run, setRun] = useState<localRunType | null>(null)
   const [startingRunId, setStartingRunId] = useState<number | null>(null)
   const [runStopping, setRunStopping] = useState(false)
   const [runs, setRuns] = useState<localRunType[]>([])
@@ -68,9 +67,6 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         return { ...run, type: "run" }
       })
       setRuns(_runs)
-      if (_runs[_runs.length - 1].status === "alive") {
-        setRun(_runs[_runs.length - 1])
-      }
     }
   }
 
@@ -91,22 +87,13 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         ...restParams,
       })
 
-      let started_run
-      const checkInterval = 500
-
       // 2. Ожидание появления рана в списке ранов
+      let started_run = await get_runs(run_id)
       while (!started_run) {
-        // const started_runs = await get_runs()
+        await new Promise((resolve) => setTimeout(resolve, 500))
         started_run = await get_runs(run_id)
-        await new Promise((resolve) => setTimeout(resolve, checkInterval))
-        // Это бесконечный цикл, но его можно остановить с помощью кнопки в интерфейсе
-
-        if (started_run) {
-          // Если ран найден, добавляем его в стейт
-          setRunsHandler([...runs, started_run])
-          setRun({ ...started_run, type: "run" })
-        }
       }
+      setRunsHandler([...runs, started_run])
 
       // 4. Мониторинг статуса рана
       let isMonitoring = true

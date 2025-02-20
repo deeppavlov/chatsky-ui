@@ -1,9 +1,11 @@
-import { messengerType } from "@/api/bot"
+import { checkBuildIsChanged, messengerType } from "@/api/bot"
 import { buildContext } from "@/contexts/buildContext"
 import { Button, Input, Select, SelectItem } from "@nextui-org/react"
 import { QuestionMarkIcon } from "@radix-ui/react-icons"
 import { useContext, useEffect, useState } from "react"
 import FormControl from "../../UI/FormControl"
+import RebuildModal from "@/modals/RebuildModal/RebuildModal"
+import { PopUpContext } from "@/contexts/popUpContext"
 
 interface IFormData {
   name: string
@@ -18,6 +20,7 @@ const messengers = [
 
 const BuildForm = () => {
   const { buildStart, buildPending, builds } = useContext(buildContext)
+  const { openPopUp } = useContext(PopUpContext)
 
   const initialData: IFormData = {
     name: `Build ${builds.length}`,
@@ -47,7 +50,30 @@ const BuildForm = () => {
     setFormData((prev) => ({ ...prev, preset: e.target.value || "None" }))
   }
 
+  const handleConfirmRebuild = () => {
+    openPopUp(
+      <RebuildModal
+        id='rebuild'
+        onRebuild={async () => {
+          await buildStart({
+            end_status: "success",
+            ...formData,
+            name: formData.name || `Build ${builds.length}`,
+          })
+        }}
+      />,
+      "rebuild"
+    )
+  }
+
   const handleBuild = async () => {
+    const flowUpdated = await checkBuildIsChanged()
+
+    if (!flowUpdated) {
+      handleConfirmRebuild()
+      return
+    }
+
     await buildStart({
       end_status: "success",
       ...formData,
@@ -130,7 +156,7 @@ const BuildForm = () => {
         </Button>
         <Button
           onClick={handleBuild}
-          disabled={buildPending}
+          isDisabled={buildPending}
           className='font-semibold bg-foreground text-background rounded-lg w-full'
         >
           Build
