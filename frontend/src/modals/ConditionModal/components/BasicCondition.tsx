@@ -4,7 +4,7 @@ import DefSelect from "@/UI/Input/DefSelect"
 import DefInput from "@/UI/Input/DefInput"
 import { Checkbox, Button } from "@nextui-org/react"
 import DefTextarea from "@/UI/Input/DefTextarea"
-import _, { isArray } from "lodash"
+import _ from "lodash"
 import DeleteBasicConditionIcon from "@/icons/nodes/conditions/deleteBasicConditionIcon"
 
 interface IDefObject {
@@ -209,18 +209,8 @@ const mapping: IMapping = {
  exactMatch: (setState, state, id = undefined) => {
   const padding = id === undefined ? "py-[12px]" : ""
 
-  return (
-   <div className={`flex flex-col gap-[12px] ${padding}`}>
-    <InputText
-     value={getValue(state, id ?? "").text}
-     defaultValue={""}
-     setState={(value) => handleValueChange(setState, state, id, value, "text")}
-    />
-   </div>
-  )
- },
- includeText: (setState, state, id) => {
-  const padding = id === undefined ? "py-[12px]" : ""
+  const isInvalid = getValue(state, id ?? "").text === ""
+  const textError = isInvalid ? "Please fill every field" : ""
 
   return (
    <div className={`flex flex-col gap-[12px] ${padding}`}>
@@ -228,6 +218,25 @@ const mapping: IMapping = {
      value={getValue(state, id ?? "").text}
      defaultValue={""}
      setState={(value) => handleValueChange(setState, state, id, value, "text")}
+     errorMessage={textError}
+     isInvalid={isInvalid}
+    />
+   </div>
+  )
+ },
+ includeText: (setState, state, id) => {
+  const padding = id === undefined ? "py-[12px]" : ""
+
+  const isInvalid = getValue(state, id ?? "").text === ""
+  const textError = isInvalid ? "Please fill every field" : ""
+  return (
+   <div className={`flex flex-col gap-[12px] ${padding}`}>
+    <InputText
+     value={getValue(state, id ?? "").text}
+     defaultValue={""}
+     setState={(value) => handleValueChange(setState, state, id, value, "text")}
+     errorMessage={textError}
+     isInvalid={isInvalid}
     />
     <div
      className="flex items-center gap-2 pl-[12px] pt-[12px]"
@@ -249,6 +258,10 @@ const mapping: IMapping = {
  },
  regExp: (setState, state, id) => {
   const padding = id === undefined ? "py-[12px]" : ""
+
+  const isInvalid = getValue(state, id ?? "").pattern === ""
+  const textError = isInvalid ? "Please fill every field" : ""
+
   return (
    <div className={`flex flex-col gap-[12px] ${padding}`}>
     <TextMessage
@@ -260,6 +273,9 @@ const mapping: IMapping = {
      onValueChange={(value) =>
       handleValueChange(setState, state, id, value, "pattern")
      }
+     errorMessage={textError}
+     isInvalid={isInvalid}
+     type={"errorMessage"}
     />
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
      <Checkbox
@@ -298,6 +314,8 @@ const mapping: IMapping = {
          />
 
          <DefSelect
+          isInvalid={true}
+          errorMessage={"Please fill every field"}
           key={index}
           mini
           className="w-full"
@@ -403,12 +421,16 @@ const mapping: IMapping = {
   const padding =
    isAnyOrAll(state.structure) || state.structure === "not" ? "pl-[24px]" : ""
 
+  console.log(state)
+
   return (
    <div className={`${padding} flex flex-col gap-[12px] pt-[24px]`}>
     <div className="flex flex items-center justify-between">
      <p>Condition</p>
     </div>
     <DefSelect
+     isInvalid={state.data && !state.data.hasOwnProperty("structure")}
+     errorMessage={"Please fill every field"}
      mini
      defaultValue={getNameCondition(key)}
      className={`w-full`}
@@ -454,7 +476,15 @@ const InputText: React.FC<{
  setState: (value: string) => void
  defaultValue?: string
  value?: string
-}> = ({ setState, value = "", defaultValue = "" }) => {
+ isInvalid?: boolean
+ errorMessage: string
+}> = ({
+ setState,
+ value = "",
+ defaultValue = "",
+ isInvalid = false,
+ errorMessage = "",
+}) => {
  return (
   <div className="flex flex-col gap-[12px]">
    <TextMessage
@@ -462,6 +492,8 @@ const InputText: React.FC<{
     text={"Message has to match exactly the text below"}
    />
    <DefInput
+    isInvalid={isInvalid}
+    errorMessage={errorMessage}
     value={value}
     defaultValue={defaultValue}
     className="col-span-3"
@@ -510,6 +542,8 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     </div>
 
     <DefSelect
+     isInvalid={getNameCondition(state.structure) === ""}
+     errorMessage={"Please fill every field"}
      mini
      className="w-full"
      defaultValue={getNameCondition(state.structure)}
