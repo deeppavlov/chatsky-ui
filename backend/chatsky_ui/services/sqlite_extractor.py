@@ -1,8 +1,8 @@
 import sqlite3
+from typing import Union
 
 from chatsky import Context
 from pydantic import ValidationError
-from typing import Union
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
