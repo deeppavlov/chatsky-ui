@@ -5,49 +5,55 @@ import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 
 type ItemSelectType = {
-  key: string
-  value: string
-  disabled?: boolean
+ key: string
+ value: string
+ disabled?: boolean
 }
 
 type DefSelectProps = {
-  placeholder?: string
-  disabled?: boolean
-  className?: string
-  items: ItemSelectType[]
-  defaultValue?: string
-  onValueChange?: (value: string) => void
-  mini?: boolean
+ placeholder?: string
+ disabled?: boolean
+ className?: string
+ items: ItemSelectType[]
+ defaultValue?: string
+ onValueChange?: (value: string) => void
+ mini?: boolean
+ isInvalid?: boolean
+ errorMessage?: string
 }
 
 const DefSelect = ({
-  disabled = false,
-  className,
-  items,
-  defaultValue,
-  onValueChange,
-  placeholder,
-  mini = false,
+ disabled = false,
+ className,
+ items,
+ defaultValue,
+ onValueChange,
+ placeholder,
+ mini = false,
+ isInvalid = false,
+ errorMessage = "",
 }: DefSelectProps) => {
-  const [selectedValue, setSelectedValue] = useState(defaultValue || "")
+ const [selectedValue, setSelectedValue] = useState(defaultValue || "")
 
-  useEffect(() => {
-    setSelectedValue(defaultValue || "")
-  }, [defaultValue])
+ useEffect(() => {
+  setSelectedValue(defaultValue || "")
+ }, [defaultValue])
 
-  const handleChange = (value: string) => {
-    setSelectedValue(value)
-    if (onValueChange) {
-      onValueChange(value)
-    }
+ const handleChange = (value: string) => {
+  setSelectedValue(value)
+  if (onValueChange) {
+   onValueChange(value)
   }
+ }
 
-  return (
+ return (
+  <div className="flex flex-col gap-1">
    <RadixSelect.Root value={selectedValue} onValueChange={handleChange}>
     <RadixSelect.Trigger
      disabled={disabled}
      className={classNames(
       "relative flex items-center justify-between min-h-10 h-10 px-3.5 rounded-[8px] shadow-none bg-input-background border border-input-border hover:bg-transparent *:data-[placeholder]:text-input-border",
+      { "border-red-500": isInvalid }, // Добавляем класс для ошибки
       className
      )}
      aria-label="Select"
@@ -97,7 +103,11 @@ const DefSelect = ({
      </RadixSelect.Content>
     </RadixSelect.Portal>
    </RadixSelect.Root>
-  );
+   {isInvalid && errorMessage && (
+    <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+   )}
+  </div>
+ )
 }
 
 export default DefSelect
