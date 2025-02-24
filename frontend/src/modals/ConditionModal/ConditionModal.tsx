@@ -251,9 +251,6 @@ const ConditionModal = ({
    status: reasons.length === 0,
    reason: reasons.join("\n "),
   }
-
-  console.log(result.reason)
-
   return result
  }
 
@@ -452,7 +449,7 @@ const ConditionModal = ({
    if (!validate_basic.status) {
     n.add({
      title: "Saving error!",
-     message: `Condition is not valid: \n ${validate_basic.reason}`,
+     message: `Condition is not valid: \n Correct the errors and try again`,
      type: "error",
     })
    }
@@ -631,14 +628,16 @@ const ConditionModal = ({
      )}
     </div>
     <div className="flex items-end gap-2">
-     <Button
-      data-testid="test-condition-button"
-      onClick={testCondition}
-      isLoading={testConditionPending}
-      className=""
-     >
-      Test condition
-     </Button>
+     {currentCondition.type !== "basic" && (
+      <Button
+       data-testid="test-condition-button"
+       onClick={testCondition}
+       isLoading={testConditionPending}
+       className=""
+      >
+       Test condition
+      </Button>
+     )}
      <Button
       data-testid="save-condition-button"
       onClick={saveCondition}
