@@ -2,6 +2,7 @@ import sqlite3
 
 from chatsky import Context
 from pydantic import ValidationError
+from typing import Union
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
@@ -47,7 +48,7 @@ class SQLiteExtractor:
             )
             return None
 
-    async def fetch_chat_records(self, run_id: int | str, user_id: int, offset: int, limit: int):
+    async def fetch_chat_records(self, run_id: Union[int, str], user_id: int, offset: int, limit: int):
         context = await self.get_context(str(run_id), user_id)
         requests = context.requests
         responses = context.responses
