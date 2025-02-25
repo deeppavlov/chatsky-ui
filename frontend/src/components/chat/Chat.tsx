@@ -32,21 +32,10 @@ const Chat = memo(() => {
   const selectedRun = runs.find((run) => run.id === chatId)
 
   const handleMessage = async () => {
-    if (!messageValue) return
+    if (!messageValue || !selectedRun) return
 
     setMessageValue("")
     setIsEmoji(false)
-
-    if (!selectedRun) {
-      setMessages([
-        ...messages,
-        {
-          message: "Chat was not connected! Try to start any run!",
-          type: "system",
-        },
-      ])
-      return
-    }
 
     setMessages([
       ...messages,
@@ -204,7 +193,7 @@ const Chat = memo(() => {
             <div className='flex items-center gap-0.5'>
               <div className='relative flex items-center justify-center'>
                 <Button
-                  isDisabled={selectedRun && selectedRun.status !== "alive"}
+                  isDisabled={selectedRun?.status !== "alive"}
                   isIconOnly
                   variant='light'
                   onClick={() => setIsEmoji(!isEmoji)}
@@ -235,7 +224,7 @@ const Chat = memo(() => {
                 </div>
               </div>
               <Button
-                isDisabled={selectedRun && selectedRun.status !== "alive"}
+                isDisabled={selectedRun?.status !== "alive"}
                 data-testid='chat-send'
                 onClick={handleMessage}
                 variant='light'
@@ -247,7 +236,7 @@ const Chat = memo(() => {
           </div>
           <Textarea
             ref={inputRef}
-            isDisabled={selectedRun && selectedRun.status !== "alive"}
+            isDisabled={selectedRun?.status !== "alive"}
             onFocusChange={(focus: boolean) => setMouseOnPane(!focus)}
             data-testid='chat-input'
             value={messageValue}
