@@ -266,6 +266,9 @@ const BuildManagerPage = () => {
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
                       <StringItem content={["Messenger: ", buildMessenger]} />
+                      {r.preset.tg_bot_token && (
+                        <StringItem content={["Token: ", r.preset.tg_bot_token]} />
+                      )}
                       <StringItem content={["Build preset: ", buildPreset]} />
                       <StringItem content={["Run preset: ", r.preset.preset]} />
                       <StringItem content={["Date: ", formatTimestamp(r.timestamp)]} />
@@ -309,6 +312,9 @@ const BuildManagerPage = () => {
                   >
                     <StringItem content={["Build: ", r.preset.build_name]} />
                     <StringItem content={["Messenger: ", buildMessenger]} />
+                    {r.preset.tg_bot_token && (
+                      <StringItem content={["Token: ", r.preset.tg_bot_token]} />
+                    )}
                     <StringItem content={["Build preset: ", buildPreset]} />
                     <StringItem content={["Run preset: ", r.preset.preset]} />
                     <StringItem content={["Date: ", formatTimestamp(r.timestamp)]} />
@@ -358,6 +364,9 @@ const BuildManagerPage = () => {
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
                       <StringItem content={["Messenger: ", buildMessenger]} />
+                      {r.preset.tg_bot_token && (
+                        <StringItem content={["Token: ", r.preset.tg_bot_token]} />
+                      )}
                       <StringItem content={["Build preset: ", buildPreset]} />
                       <StringItem content={["Run preset: ", r.preset.preset]} />
                       <StringItem content={["Date: ", formatTimestamp(r.timestamp)]} />
