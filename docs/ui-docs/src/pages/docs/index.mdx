@@ -1,0 +1,105 @@
+# Chatsky UI overview
+
+Chatsky UI is a web application for creating highly customizable chatbots. This app is based on step-by-step design of the dialog flow, where you define each bot response and predict what the end user may reply. The result is a dialog graph in which all dialog variants are specified. You can assign bot responses and possible user reactions in a variety of ways: direct quotes, simplified intent-based constructions, LLM prompts, and Python code.
+
+To make your bot more personalized, you can also define slots - pieces of information about a user that can be utilized in a conversation, such as the person's name, phone number or email, as well as data relevant to the conversation, such as their favorite hobby or a product they're interested in.
+
+For further convenience and versatility, you can import vocabularies, create your own code snippets and small parts of a dialog flow which will be available in the dedicated library, right at your fingertips.
+
+Flexible settings also allow you to customize the bot for your needs. You can configure the pipeline in which you can connect additional dialog context processing services, add presets for building the bot after its configuration, and connect third-party LLM services for processing prompts.
+
+If you do not want to manually enter all the branches of the dialog, you can import or create your own dialog samples, based on which the program will build a dialog graph. All you have to do now is configure the bot for optimal performance.
+
+After you have created, built and run your bot, you can chat with it in the internal dialog interface or directly in a messenger, and the logs of the build, run and additional tests will help you understand where the error could occur.
+
+import { Callout } from 'nextra/components'
+
+<Callout type="info">
+  You can explore the layout of Chatsky UI in the following sections.
+</Callout>
+
+## Homepage
+
+The homepage shows the skill you are working on, as well as all the flows within.
+
+The list of available actions with the skill:
+
+- Rename your project and change its description
+- Open Chatsky code for this skill
+- Download a local copy of the project
+- Share the project for collaboration
+- Delete the project
+
+The list of available actions with flows:
+
+- Rename and change the description
+- Open flow settings
+- Rearrange flows
+
+Also on this screen you can access the app settings.
+
+## Editor
+
+Editor is the main workspace of Chatsky UI. This is where you create a skill, test it, build and run it, and eventually launch it in messengers.
+
+_All the editor components will be further explained down below_
+
+### Project menu
+
+The project menu provides access to essential editing functions, including undo and redo, as well as the ability to save the project and download a local copy. Additionally, it offers the option to launch your bot to Telegram.
+
+### User menu
+
+The account menu currently contains only three options:
+
+- Switch color themes
+- Shortcuts panel
+- Help center link
+
+_Account settings will be added with an upcoming release._
+
+### Tabs
+
+The bottom panel is the navigation within Chatsky UI.
+
+The leftmost button with Chatsky UI logo leads to the homepage.
+
+The middle section consists of five tabs:
+
+#### Import
+
+Import tab allows you to upload or create dialog samples, assign flows and convert them into the first draft of your skill.
+
+#### Edit
+
+Edit tab is the main canvas of Chatsky UI, on which nodes are located. The left panel contains the list of flows, as well as the components available for use - nodes, links, slots and presets you have created.
+
+Quick build and run option is also currently located at the top bar of Edit screen. This is a temporary solution before Deliver tab is released.
+
+#### Deliver
+
+Deliver tab allows you to set up your bot’s build and run configurations. After the bot is run, you will be able to test it in the internal chat panel or launch it to messengers.
+
+_Read more about build & run._
+
+#### Inspect
+
+Inspect is the panel where all the build and run, as well as internal test logs are displayed. You can review errors, backtrack successful builds and chat with your bot in this tab.
+
+_Read more about Inspect._
+
+### Settings
+
+Settings tab allows you to configure general settings, as well as the pipeline, build & run and advanced settings.
+
+_Read more about Settings._
+
+### Library
+
+Library is the general collection of all components that you have created or uploaded that can be used when creating and editing a skill. Library contains all the code components, conditions, responses, slot snippets, presets, intents and vocabulary items you may need in your work.
+
+_Read more about Library._
+
+### Notifications
+
+The bottom panel also contains notifications menu. You can configure notifications in ‘Settings → Advanced’.

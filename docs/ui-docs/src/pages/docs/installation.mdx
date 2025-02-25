@@ -1,0 +1,49 @@
+# Installation
+
+## System requirements
+
+Ensure you have Python version 3.9 or higher installed (Excluding 3.9.7).  
+
+## Local installation
+
+To install the package and necessary dependencies, run the following command:
+
+```javascript
+pip install chatsky-ui
+```
+
+## Chatsky UI app configuration
+
+You may add a `.env` file in the root directory and configure any of following environment variables. The values shown below are the default ones.
+
+```javascript
+HOST=0.0.0.0
+PORT=8000
+CONF_RELOAD=False
+LOG_LEVEL=info
+
+GRACEFUL_TERMINATION_TIMEOUT=2  # Waiting for process to stop
+PING_PONG_TIMEOUT=0.5  # Waiting the process to response before it mark it as still `running`
+
+# For tests:
+BUILD_COMPLETION_TIMEOUT=10
+RUN_RUNNING_TIMEOUT=5
+```
+
+The `chatsky.ui init` command will start an interactive `cookiecutter` process to create a project based on a predefined template. The resulting project will be a simple example template that you can customize to suit your needs.
+
+## Run your project
+
+To start your project, use the following command:
+
+```javascript
+chatsky.ui run_app --project-dir <PROJECT-SLUG>  # Replace <PROJECT-SLUG> with the slug you specified during initialization
+```
+
+{/* ## Share your editor via link
+
+(Тут гайд для шеринга проекта по ссылке для совместной работы) */}
+
+## Documentation
+
+You can refer to the [documentation](https://deeppavlov.github.io/chatsky-ui/) to dig into the application code understanding.

@@ -1,0 +1,93 @@
+# Create your first skill
+
+This is a quick start tutorial
+
+## Necessary elements for every skill
+
+### Global flow
+
+Global flow is the place for configuring nodes and slots that are ubiquitous for every other flow. It comes with a preset Global node that does not have any response and cannot be connected to any other node but the conditions you create will be added to every node in the graph.
+
+If you would like to have a set of slots that will be filled and used across the whole dialog, create Slots node in the global flow.
+
+Read more about flows
+
+### Local nodes
+
+Local node has the same purpose as the global node but has effect only in the flow it is placed in. All local conditions created in this node will appear in every other node in the flow.
+
+### Start node
+
+Start node represents the state that occurs in the beginning of a dialogue. After activating bot, it texts you the first response and then the dialogue thread unravels. You have to manually assign start node by selecting a preferred node and pressing the green play button ▶️ in the top bar. Selecting another node and repeating the process will transfer ‘start’ property to a new node.
+
+
+import { Callout } from 'nextra/components'
+
+<Callout type="info">
+  Note, that there can be only one start node for the whole graph.
+</Callout>
+
+
+### Fallback node
+
+Fallback node is the dialogue state that occurs when no conditions in the current node were triggered. You should assign ‘fallback‘ property to a node that is significant to the dialogue, so your user will not be confused. Fallback node can also have a response explaining that the dialogue is stalled, such as: “Sorry, I didn’t get it. What would you like to talk about?“
+
+Fallback node acts just like start node: there can also be only one and th assign it you select a node and press red repeat button ↶ in the top bar.
+
+## The process of creating a skill
+
+### Flows
+
+Once you’ve configured global node, you can move to creating a set of flows necessary to your bot.
+
+1. Press the plus button + next to the “Flows“ title in the sidebar
+2. Enter a flow name, a short description and select a color that will represent this flow in the modal window
+3. Press “Create“ button below
+
+The flow will appear in the sidebar below Global flow.
+
+Repeat the process for every other flow.
+
+### Graph
+
+Your dialogue graph is built out of nodes, so to create the first one:
+
+1. Expand the “Nodes“ section of the sidebar
+2. Drag “Default node“ and drop it on the canvas
+3. Press the section of the node with the robot icon - it represents this node’s response
+4. Configure the response in the modal window and press “Save“
+5. Add the first condition by pressing plus button + on the node
+6. Configure the condition and press “Save“
+7. Create the rest of conditions
+
+Now that you have the first node, create the second one. To connect them, select a condition in the first node that has to be triggered to transition to the next node, find the orange circle in the right hand side and drag it to the blue circle in the second node.
+
+### Links
+
+Once you’ve created your first flow’s graph, you can move to configuring another flow.
+
+To connect the flows, you should first create a node in the second one. Then move back to the first flow and drag and drop “Link” node to the canvas. A modal window will show up, in which you configure its endpoint: select the second flow and a node in there. 
+
+This link now represents the corresponding node, and you can connect them by dragging a transition just like between two nodes.
+
+### Build and run
+
+Once you’ve created your graph, you should test it before launching to the web. To do this, enter “Deliver“ section of the app by pressing the corresponding button in the bottom bar.
+
+Deliver section offers you thorough control over your builds and runs. You can read more on that later.
+
+Press “Quick build & run“ button to get your bot ready to chat. It will take no more than a minute depending on your hardware.
+
+### Testing and troubleshooting
+
+To enter chat, move to “Inspect“ section by pressing the corresponding button in the bottom bar.
+
+This section shows you build and run logs, and if any of the sidebar’s items show red cross next to build or run, this meand that an error had occurred, and you have to solve it and rerun the bot.
+
+If the Inspect sidebar shows successful build and run, you can chat with your bot in the window next to logs. Chatting with the bot several cycles will reveal any errors you might have done while creating the graph.
+
+### Launch
+
+Once you are happy with the dialogue process, you can launch your bot to a messenger you prefer.
+
+To do this, press “Project menu“ button in the left hand side of the top bar, then press “Launch“. Select your preferred messenger, and the instructions in the launch window will lead your way.
