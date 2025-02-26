@@ -31,7 +31,7 @@ const SlotsGroupModal = ({
   group,
 }: SlotsGroupModalType) => {
   const { updateNodeData } = useReactFlow()
-  const { closePopUp, openPopUp } = useContext(PopUpContext)
+  const { closePopUp } = useContext(PopUpContext)
   const { notification: n } = useContext(NotificationsContext)
   const { quietSaveFlows } = useContext(flowContext)
   const [nodeData, setNodeData] = useState(data)
@@ -41,7 +41,7 @@ const SlotsGroupModal = ({
       ? group.subgroups.map((id) => groups.find((g) => g.id === id)!)
       : []
   )
-  const [isSubGroup, setIsSubGroup] = useState<boolean>(!!group?.subgroup_to ?? false)
+  const [isSubGroup, setIsSubGroup] = useState<boolean>(!!group?.subgroup_to)
   const [parentGroup, setParentGroup] = useState<SlotsGroupType | null>(null)
   const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
     const id = "group_" + v4()

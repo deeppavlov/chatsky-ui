@@ -227,3 +227,38 @@ export async function parseGroups(groups: SlotsGroupType[]): Promise<Record<stri
 
   return result
 }
+
+export const formatTimestamp = (timestamp: string): string => {
+  const date = new Date(timestamp)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  const hours = String(date.getHours()).padStart(2, "0")
+  const minutes = String(date.getMinutes()).padStart(2, "0")
+
+  return `${year}/${month}/${day} ${hours}:${minutes}`
+}
+
+export function formatRelativeTime(timestamp: string, format: "default" | "short" = "default") {
+  const now = Date.now()
+  const date = new Date(timestamp).getTime()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+
+  if (format === "short") {
+    if (diffInSeconds < 60) return `${diffInSeconds} s`
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} m`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hr`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} d`
+    if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} mo`
+    return `${Math.floor(diffInSeconds / 31536000)} y`
+  }
+
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" })
+
+  if (diffInSeconds < 60) return rtf.format(-diffInSeconds, "second")
+  if (diffInSeconds < 3600) return rtf.format(-Math.floor(diffInSeconds / 60), "minute")
+  if (diffInSeconds < 86400) return rtf.format(-Math.floor(diffInSeconds / 3600), "hour")
+  if (diffInSeconds < 2592000) return rtf.format(-Math.floor(diffInSeconds / 86400), "day")
+  if (diffInSeconds < 31536000) return rtf.format(-Math.floor(diffInSeconds / 2592000), "month")
+  return rtf.format(-Math.floor(diffInSeconds / 31536000), "year")
+}
