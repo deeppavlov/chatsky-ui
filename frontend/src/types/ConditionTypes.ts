@@ -44,3 +44,13 @@ export type conditionLabelType =
  | "fallback"
  | "start"
  | "previous"
+
+export interface ICondition {
+ text?: string
+ flags?: { caseSensitive: boolean }
+ id?: string
+ pattern?: string
+ structure?: string
+ error?: boolean
+ data?: ICondition
+}
