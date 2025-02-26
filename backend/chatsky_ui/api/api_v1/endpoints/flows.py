@@ -54,7 +54,7 @@ async def flows_get(
 
 @router.post("/")
 async def flows_post(
-    flows: Dict[str, Union[str, Dict[str, Union[list, dict]]]], build_manager: BuildManager = Depends(get_build_manager)
+    flows: Dict[str, Union[list, dict]], build_manager: BuildManager = Depends(get_build_manager)
 ) -> Dict[str, str]:
     """Writes the flows to the frontend_flows.yaml file. Then commit changes to git without a tag.
 
