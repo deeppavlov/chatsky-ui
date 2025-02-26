@@ -21,6 +21,7 @@ class PipelineConverter(BaseConverter):
     """Converts frontend's `Pipeline` into a Chatsky `Pipeline`.
     Reads input from a file and writes output into a file.
     """
+
     def __call__(self, build_id: int, input_file: Path, output_dir: Path, messenger: str, chatsky_port: Optional[int]):
         """Reads frontend's `Pipeline` from the input_file, converts it into a Chatsky `Pipeline`,
         then writes it into the output_file.
