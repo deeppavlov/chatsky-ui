@@ -7,13 +7,14 @@ import DefTextarea from "@/UI/Input/DefTextarea"
 import _ from "lodash"
 import DeleteBasicConditionIcon from "@/icons/nodes/conditions/deleteBasicConditionIcon"
 
-interface IDefObject {
+interface ICondition {
  text?: string
  flags?: { caseSensitive: boolean }
- data?: IDefObject[] | IDefObject | {}
  id?: string
  pattern?: string
  structure?: string
+ error?: boolean
+ data?: ICondition
 }
 
 interface IMapping {
@@ -26,16 +27,19 @@ interface IMapping {
 
 interface IState {
  structure: string
- data?: IDefObject[] | IDefObject
+ text?: string
+ pattern?: string
+ data?: ICondition[] | ICondition
  conditionGroups: {
   name: string
   key?: string
   disabled?: boolean
  }[]
  flags?: { caseSensitive: boolean }
+ error?: boolean
 }
 
-const genDefObject = (key: string): IDefObject => {
+const genDefObject = (key: string): ICondition => {
  switch (key) {
   case "Exact match":
    return {
@@ -55,11 +59,17 @@ const genDefObject = (key: string): IDefObject => {
     flags: { caseSensitive: false },
    }
   case "Any of":
-   return { structure: "anyOf", data: [] }
+   return {
+    structure: "anyOf",
+    data: [] as ICondition[],
+   } as ICondition
   case "All of":
-   return { structure: "allOf", data: [] }
+   return {
+    structure: "allOf",
+    data: [] as ICondition[],
+   } as ICondition
   case "Not":
-   return { structure: "not", data: {} }
+   return { structure: "not", data: { structure: "" } }
   default:
    console.log(key)
    return { structure: "unknown" }
@@ -67,23 +77,20 @@ const genDefObject = (key: string): IDefObject => {
 }
 
 const isAnyOrAll = (value: string): boolean =>
- value === "Any of" ||
- value === "All of" ||
- value === "allOf" ||
- value === "anyOf"
+ value === "allOf" || value === "anyOf"
 
-const getValue = (state: IState, id: string): IDefObject => {
- const stateData = state.data as IDefObject[]
+const getValue = (state: IState, id: string): ICondition | IState => {
+ const stateData = state.data as ICondition[]
 
  if (isAnyOrAll(state.structure)) {
-  const data: IDefObject = stateData.filter(
-   (item: IDefObject) => item.id === id
+  const data: ICondition = stateData!.filter(
+   (item: ICondition) => item.id === id
   )[0]
-  return data.structure === "not" ? (data.data as IDefObject) : data
+  return data.structure === "not" ? data.data ?? {} : data
  }
  return state.structure !== "not"
-  ? (state as IDefObject)
-  : (state.data as IDefObject)
+  ? (state as IState)
+  : (state.data as ICondition) ?? {}
 }
 
 const handleValueChange = (
@@ -94,17 +101,23 @@ const handleValueChange = (
  field: string
 ) => {
  if (id === undefined) {
-  state.structure === "not"
-   ? setState({
-      ...state,
-      data: { ...(state.data as IDefObject), [field]: value },
-     })
-   : setState({ ...state, [field]: value })
+  const result =
+   state.structure === "not"
+    ? {
+       ...state,
+       data: {
+        ...(state.data as ICondition),
+        [field]: value,
+       },
+      }
+    : { ...state, [field]: value }
+
+  setState(result)
   return
  }
 
- const newData: IDefObject[] = (state.data as IDefObject[]).map(
-  (item: IDefObject) => {
+ const newData: ICondition[] = (state.data as ICondition[]).map(
+  (item: ICondition) => {
    if (item.id === id) {
     return item.structure === "not"
      ? { ...item, data: { ...item.data, [field]: value } }
@@ -133,8 +146,8 @@ const handleValueChangeCheckbox = (
   return
  }
 
- const newData: IDefObject[] = (state.data as IDefObject[]).map(
-  (item: IDefObject) => {
+ const newData: ICondition[] = (state.data as ICondition[]).map(
+  (item: ICondition) => {
    if (item.id === id) {
     return item.structure === "not"
      ? { ...item, data: { ...item.data, flags: { caseSensitive: value } } }
@@ -154,8 +167,8 @@ interface IConditionGroup {
 
 const disabledConditionGroup = (state: IState): IConditionGroup[] => {
  const conditionStructures = state.structure
- const arrConditions: string[] = (state.data as IDefObject[])
-  .map((el: IDefObject) => el.structure)
+ const arrConditions: string[] = (state.data as ICondition[])
+  .map((el: ICondition) => el.structure)
   .filter((structure): structure is string => structure !== undefined)
 
  const mapStructures: { [key: string]: string[] } = {
@@ -166,7 +179,7 @@ const disabledConditionGroup = (state: IState): IConditionGroup[] => {
  const arrKeyMap = mapStructures[conditionStructures]
 
  const newConditionGroups = state.conditionGroups.map((group) => {
-  if (group.hasOwnProperty("disabled")) {
+  if (Object.prototype.hasOwnProperty.call(group, "disabled")) {
    group.disabled =
     group.key &&
     arrKeyMap.includes(group.key) &&
@@ -205,12 +218,40 @@ const ConditionHeader = ({ onDelete }: { onDelete?: () => void }) => (
  </div>
 )
 
+const getError = (state: IState, id: string | undefined = undefined) => {
+ if (state.structure === "not" && state.data) {
+  return (state.data as ICondition).error
+ }
+ if (isAnyOrAll(state.structure) && state.data) {
+  const item = (state.data as ICondition[]).filter(
+   (item: ICondition) => item.id === id
+  )[0]
+
+  if (item && item.structure === "not" && item.data) {
+   return (item.data as ICondition).error
+  }
+
+  return item?.error
+ }
+ return state.error
+}
+
 const mapping: IMapping = {
  exactMatch: (setState, state, id = undefined) => {
   const padding = id === undefined ? "py-[12px]" : ""
 
-  const isInvalid = getValue(state, id ?? "").text === ""
-  const textError = isInvalid ? "Please fill every field" : ""
+  const error = getError(state, id)
+
+  const errorProps =
+   getValue(state, id ?? "").text === ""
+    ? {
+       errorMessage: error ? "Please fill every field" : "",
+       isInvalid: error,
+      }
+    : {
+       errorMessage: "",
+       isInvalid: false,
+      }
 
   return (
    <div className={`flex flex-col gap-[12px] ${padding}`}>
@@ -218,8 +259,7 @@ const mapping: IMapping = {
      value={getValue(state, id ?? "").text}
      defaultValue={""}
      setState={(value) => handleValueChange(setState, state, id, value, "text")}
-     errorMessage={textError}
-     isInvalid={isInvalid}
+     {...errorProps}
     />
    </div>
   )
@@ -227,16 +267,23 @@ const mapping: IMapping = {
  includeText: (setState, state, id) => {
   const padding = id === undefined ? "py-[12px]" : ""
 
-  const isInvalid = getValue(state, id ?? "").text === ""
-  const textError = isInvalid ? "Please fill every field" : ""
+  const error = getError(state, id)
+
+  const errorProps =
+   getValue(state, id ?? "").text === ""
+    ? {
+       errorMessage: error ? "Please fill every field" : "",
+       isInvalid: error,
+      }
+    : {}
+
   return (
    <div className={`flex flex-col gap-[12px] ${padding}`}>
     <InputText
      value={getValue(state, id ?? "").text}
      defaultValue={""}
      setState={(value) => handleValueChange(setState, state, id, value, "text")}
-     errorMessage={textError}
-     isInvalid={isInvalid}
+     {...errorProps}
     />
     <div
      className="flex items-center gap-2 pl-[12px] pt-[12px]"
@@ -259,8 +306,15 @@ const mapping: IMapping = {
  regExp: (setState, state, id) => {
   const padding = id === undefined ? "py-[12px]" : ""
 
-  const isInvalid = getValue(state, id ?? "").pattern === ""
-  const textError = isInvalid ? "Please fill every field" : ""
+  const error = getError(state, id)
+
+  const errorProps =
+   getValue(state, id ?? "").pattern === ""
+    ? {
+       errorMessage: error ? "Please fill every field" : "",
+       isInvalid: error,
+      }
+    : {}
 
   return (
    <div className={`flex flex-col gap-[12px] ${padding}`}>
@@ -273,8 +327,7 @@ const mapping: IMapping = {
      onValueChange={(value) =>
       handleValueChange(setState, state, id, value, "pattern")
      }
-     errorMessage={textError}
-     isInvalid={isInvalid}
+     {...errorProps}
      type={"errorMessage"}
     />
     <div className="flex items-center gap-2 pl-[12px] pt-[12px]">
@@ -298,14 +351,21 @@ const mapping: IMapping = {
   return (
    <>
     <div className="flex flex-col gap-[24px] pl-[24px] py-[24px]">
-     {(state.data as IDefObject[]).map((el: IDefObject, index: number) => {
+     {(state.data as ICondition[]).map((el: ICondition, index: number) => {
       if (el.structure === "") {
+       const error = getError(state, el.id)
+
+       const errorProps = {
+        errorMessage: error ? "Please select basic condition structure" : "",
+        isInvalid: error,
+       }
+
        return (
         <div className="flex flex-col gap-[12px]" key={index}>
          <ConditionHeader
           onDelete={() => {
-           const newData = (state.data as IDefObject[]).filter(
-            (item: IDefObject) => item.id !== el.id
+           const newData = (state.data as ICondition[]).filter(
+            (item: ICondition) => item.id !== el.id
            )
            const newState = { ...state, data: newData }
            const newConditionGroups = disabledConditionGroup(newState)
@@ -314,16 +374,15 @@ const mapping: IMapping = {
          />
 
          <DefSelect
-          isInvalid={true}
-          errorMessage={"Please fill every field"}
+          {...errorProps}
           key={index}
           mini
           className="w-full"
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
            const newCondition = { ...defData, id: el.id }
-           const newData = (state.data as IDefObject[]).map(
-            (item: IDefObject) => (item.id === el.id ? newCondition : item)
+           const newData = (state.data as ICondition[]).map(
+            (item: ICondition) => (item.id === el.id ? newCondition : item)
            )
            const newState = { ...state, conditionGroups, data: newData }
            const newConditionGroups = disabledConditionGroup(newState)
@@ -344,8 +403,8 @@ const mapping: IMapping = {
         <div className="flex flex-col gap-[12px]" key={index}>
          <ConditionHeader
           onDelete={() => {
-           const newData = (state.data as IDefObject[]).filter(
-            (item: IDefObject) => item.id !== el.id
+           const newData = (state.data as ICondition[]).filter(
+            (item: ICondition) => item.id !== el.id
            )
            const newState = { ...state, data: newData }
            const newConditionGroups = disabledConditionGroup(newState)
@@ -361,8 +420,8 @@ const mapping: IMapping = {
           onValueChange={(value: string) => {
            const defData = genDefObject(value)
            const newCondition = { ...defData, id: el.id }
-           const newData = (state.data as IDefObject[]).map(
-            (item: IDefObject) => (item.id === el.id ? newCondition : item)
+           const newData = (state.data as ICondition[]).map(
+            (item: ICondition) => (item.id === el.id ? newCondition : item)
            )
            const newState = { ...state, data: newData }
            const newConditionGroups = disabledConditionGroup(newState)
@@ -387,7 +446,7 @@ const mapping: IMapping = {
       setState({
        ...state,
        data: [
-        ...(state.data as IDefObject[]),
+        ...(state.data as ICondition[]),
         { structure: "", id: _.uniqueId() },
        ],
       })
@@ -404,6 +463,24 @@ const mapping: IMapping = {
   return mapping["anyOf"](setState, state)
  },
  not: (setState, state, id) => {
+  const error = getError(state, id)
+
+  const name =
+   state.structure === "not"
+    ? (state.data as ICondition).structure
+    : (
+       (state.data as ICondition[]).find((item: ICondition) => item.id === id)
+        ?.data as ICondition
+      )?.structure
+
+  const errorProps =
+   name === ""
+    ? {
+       errorMessage: error ? "Please select basic condition structure" : "",
+       isInvalid: error,
+      }
+    : {}
+
   const arr = [
    { id: 1, name: "Exact match" },
    { id: 2, name: "Include text" },
@@ -412,16 +489,14 @@ const mapping: IMapping = {
 
   const key: string = isAnyOrAll(state.structure)
    ? (
-      (state.data as IDefObject[]).filter(
-       (data: IDefObject) => data.id === id
-      )[0]?.data as IDefObject
+      (state.data as ICondition[]).filter(
+       (data: ICondition) => data.id === id
+      )[0]?.data as ICondition
      )?.structure ?? ""
-   : (state.data as IDefObject).structure ?? ""
+   : (state.data as ICondition).structure ?? ""
 
   const padding =
    isAnyOrAll(state.structure) || state.structure === "not" ? "pl-[24px]" : ""
-
-  console.log(state)
 
   return (
    <div className={`${padding} flex flex-col gap-[12px] pt-[24px]`}>
@@ -429,8 +504,7 @@ const mapping: IMapping = {
      <p>Condition</p>
     </div>
     <DefSelect
-     isInvalid={state.data && !state.data.hasOwnProperty("structure")}
-     errorMessage={"Please fill every field"}
+     {...errorProps}
      mini
      defaultValue={getNameCondition(key)}
      className={`w-full`}
@@ -438,8 +512,8 @@ const mapping: IMapping = {
       const defData = genDefObject(value)
       if (isAnyOrAll(state.structure)) {
        const newCondition = { ...defData, id }
-       const newData: IDefObject[] = (state.data as IDefObject[]).map(
-        (item: IDefObject) =>
+       const newData: ICondition[] = (state.data as ICondition[]).map(
+        (item: ICondition) =>
          item.id === id ? { ...item, data: newCondition } : item
        )
        setState({ ...state, data: newData })
@@ -477,7 +551,7 @@ const InputText: React.FC<{
  defaultValue?: string
  value?: string
  isInvalid?: boolean
- errorMessage: string
+ errorMessage?: string
 }> = ({
  setState,
  value = "",
@@ -508,15 +582,17 @@ const InputText: React.FC<{
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
  const defState: IState =
-  condition.data.hasOwnProperty("structure") && condition.data.structure
+  Object.prototype.hasOwnProperty.call(condition.data, "structure") &&
+  condition.data.structure
    ? { ...condition.data, conditionGroups, structure: condition.data.structure }
    : { conditionGroups, structure: "" }
 
  const [state, setState] = useState(defState)
 
+ console.log(state, "state 11111111")
+
  useEffect(() => {
   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
-
   const newCondition = {
    ...condition,
    data: {
@@ -525,7 +601,8 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     transition_type: condition.data.transition_type,
    },
   }
-  setData(newCondition)
+
+  setData(newCondition, (data) => setState({ ...state, ...data }))
  }, [state])
 
  const TextConditions = isAnyOrAll(state.structure) ? (
@@ -533,6 +610,14 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
    One of the conditions below has to be fulfilled
   </p>
  ) : null
+
+ const errorProps =
+  state.structure === ""
+   ? {
+      errorMessage: "Please select basic condition structure",
+      isInvalid: state.error ?? false,
+     }
+   : {}
 
  return (
   <>
@@ -542,8 +627,7 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
     </div>
 
     <DefSelect
-     isInvalid={getNameCondition(state.structure) === ""}
-     errorMessage={"Please fill every field"}
+     {...errorProps}
      mini
      className="w-full"
      defaultValue={getNameCondition(state.structure)}
