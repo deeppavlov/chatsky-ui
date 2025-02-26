@@ -160,11 +160,15 @@ init_with_cc: ## Initiates a new project using cookiecutter
 	cookiecutter https://github.com/deeppavlov/chatsky-ui-template.git
 
 
-.PHONY: build_docs
-build_docs: install_backend_env ## Builds the docs
+.PHONY: build_api_docs
+build_api_docs: install_backend_env ## Builds the docs
 	cd ${BACKEND_DIR} && \
 	. `poetry env info --path`/bin/activate && \
 	cd ../docs && make html && cd ../
+
+.PHONY: build_ui_docs
+build_ui_docs: install_frontend_env ## Builds the docs
+	cd docs/ui-docs && bun run build && cd ../
 
 .PHONY: style
 style: ## Formats code using black and checks with flake8 and isort
