@@ -27,7 +27,7 @@ PING_PONG_TIMEOUT = float(os.getenv("PING_PONG_TIMEOUT", 0.5))
 
 
 class Process(ABC):
-    """Base for build and run processes."""
+    """Base class for build and run processes."""
 
     def __init__(self, id_: int, preset: BasePreset):
         self.id: int = id_
@@ -40,7 +40,12 @@ class Process(ABC):
         self.to_be_terminated = False
 
     async def start(self, cmd_to_run: str, env=None) -> None:
-        """Starts an asyncronous process with the given command."""
+        """Starts an asynchronous process with the given command.
+
+        Args:
+            cmd_to_run (str): The command to run the process.
+            env (dict, optional): Environment variables to be passed down to the subprocess. Defaults to None.
+        """
         self.process = await asyncio.create_subprocess_exec(
             *cmd_to_run.split(),
             stdout=asyncio.subprocess.PIPE,
@@ -80,6 +85,11 @@ class Process(ABC):
 
     @abstractmethod
     async def is_alive(self) -> bool:
+        """Checks if the process is alive.
+
+        Returns:
+            bool: True if the process is alive, False otherwise.
+        """
         raise NotImplementedError
 
     async def check_status(self) -> Status:
@@ -150,7 +160,7 @@ class Process(ABC):
             except asyncio.TimeoutError:
                 os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
                 self.logger.debug("Process '%s' was forcefully killed.", self.id)
-            self.logger.debug("Process returencode '%s' ", self.process.returncode)
+            self.logger.debug("Process returncode '%s' ", self.process.returncode)
         except ProcessLookupError as exc:
             self.logger.error("Process group '%s' not found. It may have already exited.", self.id)
             raise ProcessLookupError from exc
@@ -169,12 +179,24 @@ class RunProcess(Process):
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
+        """Get the values of the attributes mentioned in the list.
+
+        Args:
+            attributes (list, optional): A list of attributes to get the values of. Defaults to None.
+
+        Returns:
+            dict: A dictionary containing the values of the attributes mentioned in the list.
+        """
         if attributes is None:
             attributes = ["id", "preset", "messenger", "port", "status", "timestamp", "log_path", "build_id"]
         return await super().get_full_info(attributes)
 
     async def is_alive(self) -> bool:
-        """Checks if the process is alive by writing to stdin andreading its stdout."""
+        """Checks if the process is alive by writing to stdin and reading its stdout.
+
+        Returns:
+            bool: True if the process is alive, False otherwise.
+        """
 
         async def check_telegram_readiness(stream):
             async for line in stream:
@@ -218,7 +240,7 @@ class RunProcess(Process):
 
 
 class BuildProcess(Process):
-    """Process for converting a frontned graph to a Chatsky script."""
+    """Process for converting a frontend graph to a Chatsky script."""
 
     def __init__(self, id_: int, port: Optional[int], preset: BuildPreset):
         super().__init__(id_, preset)
@@ -229,9 +251,22 @@ class BuildProcess(Process):
         self.logger = get_logger(str(id_), self.log_path)
 
     async def get_full_info(self, attributes: Optional[list] = None) -> Dict[str, Any]:
+        """Get the values of the attributes mentioned in the list.
+
+        Args:
+            attributes (list, optional): A list of attributes to get the values of. Defaults to None.
+
+        Returns:
+            dict: A dictionary containing the values of the attributes mentioned in the list.
+        """
         if attributes is None:
             attributes = ["id", "preset", "port", "status", "timestamp", "log_path", "run_ids"]
         return await super().get_full_info(attributes)
 
     async def is_alive(self) -> bool:
+        """Checks if the process is alive.
+
+        Returns:
+            bool: Always returns False for BuildProcess.
+        """
         return False
