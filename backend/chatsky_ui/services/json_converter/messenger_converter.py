@@ -7,6 +7,7 @@ class MessengerConverter(BaseConverter):
 
     Supports `HTTPMessengerInterface` and `TelegramInterface` at the moment.
     """
+
     def __init__(self, messenger: dict):
         """Creates an `InterfaceConverter` object. Makes an `Messenger` schema from a given dictionary.
 

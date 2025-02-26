@@ -282,7 +282,7 @@ class RunManager(ProcessManager):
 
     async def update_db_info(self) -> None:
         """Saves current run info into runs_path.
-        
+
         Also saves current run id into the corresponding build in builds_path
         """
         async with ProcessManager._db_lock:
@@ -314,10 +314,11 @@ class BuildManager(ProcessManager):
 
     async def _get_available_port(self) -> int:
         """Finds an available port for the build process.
-        
+
         An available port is one that is not currently in use by any existing build process
         and is not currently busy on the system.
         """
+
         async def _get_busy_ports():
             builds_metadata = await self.get_full_info(0, 10000)
             return [build["port"] for build in builds_metadata if build["port"] is not None]

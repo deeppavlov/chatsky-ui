@@ -118,7 +118,8 @@ async def stop_all_builds(build_manager: BuildManager = Depends(deps.get_build_m
         build_manager (BuildManager): The build manager dependency.
 
     Raises:
-        HTTPException: If there is an error stopping the builds, an HTTP 500 error is raised with a message indicating the service status.
+        HTTPException: If there is an error stopping the builds,
+        an HTTP 500 error is raised with a message indicating the service status.
 
     Returns:
         {"status": "ok"}: in case of stopping all builds successfully.
@@ -316,7 +317,7 @@ async def stop_all_runs(run_manager: RunManager = Depends(deps.get_run_manager))
         run_manager (RunManager): The run manager dependency.
 
     Raises:
-        HTTPException: If there is an error stopping the runs, an HTTP 500 error is raised with 
+        HTTPException: If there is an error stopping the runs, an HTTP 500 error is raised with
         a message indicating the service status.
 
     Returns:
