@@ -8,13 +8,17 @@ import { Edge, useReactFlow } from "@xyflow/react"
 import classNames from "classnames"
 import { AnimatePresence, motion } from "framer-motion"
 import { HelpCircle, PlusCircleIcon, TrashIcon } from "lucide-react"
-import { useContext, useEffect, useMemo, useState } from "react"
+import { useContext, useEffect, useMemo, useRef, useState } from "react"
 import { lint_service } from "../../api/services"
 import { flowContext } from "../../contexts/flowContext"
 import { NotificationsContext } from "../../contexts/notificationsContext"
 import { PopUpContext } from "../../contexts/popUpContext"
 import EditPenIcon from "../../icons/EditPenIcon"
-import { conditionType, conditionTypeType } from "../../types/ConditionTypes"
+import {
+ conditionType,
+ conditionTypeType,
+ ICondition,
+} from "../../types/ConditionTypes"
 import { AppNode, DefaultNodeDataType } from "../../types/NodeTypes"
 import DefInput from "../../UI/Input/DefInput"
 import { generateNewConditionBase } from "../../utils"
@@ -31,10 +35,14 @@ import SlotCondition from "./components/SlotCondition"
 import UsingLLMConditionSection from "./components/UsingLLMCondition"
 import BasicConditionIcon from "@/icons/nodes/conditions/BasicConditionIcon"
 import BasicCondition from "./components/BasicCondition"
+import _ from "lodash"
 
 export type ConditionModalContentType = {
  condition: conditionType
- setData: React.Dispatch<React.SetStateAction<conditionType>>
+ setData: (
+  state: conditionType,
+  callback: (data: conditionType) => void
+ ) => void
 }
 
 type ConditionModalProps = CustomModalProps & {
@@ -86,6 +94,11 @@ const ConditionModal = ({
   is_create || !condition ? generateNewConditionBase() : condition
  )
 
+ const ref = useRef<{
+  state: conditionType
+  setState: (data: conditionType) => void
+ }>()
+
  const validateConditionName = (is_create: boolean) => {
   const nodes = getNodes() as AppNode[]
   if (!is_create) {
@@ -127,131 +140,61 @@ const ConditionModal = ({
   }
  }
 
- interface ICondition {
-  structure?: string
-  text?: string
-  pattern?: string
-  data: {
-   structure: string
-   data?: ICondition[] | ICondition
-   text?: string
-   pattern?: string
-  }
- }
+ const validateConditionBasic = (condition: ICondition) => {
+  const { data } = condition
 
- interface ValidationResult {
-  status: boolean
-  reason: string
- }
+  const arrError: boolean[] = []
 
- const mapping: { [key: string]: string } = {
-  exactMatch: "Exact match",
-  includeText: "Include text",
-  regExp: "Regular expression",
-  anyOf: "Any of",
-  allOf: "All of",
-  not: "Not",
- }
- const validateConditionBasic = (condition: ICondition): ValidationResult => {
-  const reasons: string[] = []
+  const isEmpty =
+   data?.structure === "" || data?.text === "" || data?.pattern === ""
 
-  const validateBasicCondition = (basicCondition: ICondition) => {
-   const subStructure = basicCondition.structure
-    ? mapping[basicCondition.structure]
-    : ""
-   if (basicCondition.text === "") {
-    reasons.push(
-     `Text field in ${mapping[structure]} => ${subStructure} is not filled`
-    )
-   }
-   if (basicCondition.pattern === "") {
-    reasons.push(
-     `Pattern field in ${mapping[structure]} => ${subStructure} is not filled`
-    )
-   }
-   if (basicCondition.structure === "") {
-    reasons.push(`Structure in ${mapping[structure]} cannot be empty`)
-   }
-   if (basicCondition.structure === "not") {
-    const subStructure = mapping[basicCondition.data.structure]
+  const { error: _, ...res } = data as ICondition
+  isEmpty ? (condition.data!.error = isEmpty) : (condition.data = res)
+  arrError.push(isEmpty)
 
-    if (basicCondition.data.text === "") {
-     reasons.push(
-      `Text field in ${mapping[structure]} => Not => ${subStructure}is not filled`
-     )
-    }
-    if (basicCondition.data.pattern === "") {
-     reasons.push(
-      `Pattern field in ${mapping[structure]} => Not => ${subStructure} is not filled`
-     )
-    }
-    if (Object.keys(basicCondition.data).length === 0) {
-     reasons.push(`Structure in ${mapping[structure]} => Not cannot be empty`)
-    }
-   }
+  if (data && data.structure === "not") {
+   const { error: _, ...res } = condition.data!.data as ICondition
+
+   const isEmpty =
+    data.data!.structure === "" ||
+    data.data!.text === "" ||
+    data.data!.pattern === ""
+   isEmpty
+    ? (condition.data!.data!.error = isEmpty)
+    : (condition.data!.data = res)
+   arrError.push(isEmpty)
   }
 
-  const validateNestedConditions = (
-   conditions: ICondition[],
-   structure: string
-  ) => {
-   if (conditions.length === 0) {
-    reasons.push(`${mapping[structure]} must have child conditions`)
+  if (data && (data.structure === "anyOf" || data.structure === "allOf")) {
+   const isEmptyCildren = (data.data as ICondition[]).length === 0
+   const { error: _, ...res } = data as ICondition
+
+   if (isEmptyCildren) {
+    isEmptyCildren
+     ? (condition.data!.error = isEmptyCildren)
+     : (condition.data = res)
+    arrError.push(true)
    }
-   conditions.forEach((basicCondition) => {
-    validateBasicCondition(basicCondition)
+
+   (data.data as ICondition[]).forEach((item: ICondition) => {
+    if (item.structure === "not") {
+     const { error: _, ...res } = item.data as ICondition
+     const isEmpty =
+      item.data!.structure === "" ||
+      item.data!.text === "" ||
+      item.data!.pattern === ""
+     isEmpty ? (item.data!.error = isEmpty) : (item.data = res)
+     arrError.push(isEmpty)
+    }
+
+    const isEmpty =
+     item.structure === "" || item.text === "" || item.pattern === ""
+    isEmpty ? (item.error = isEmpty) : (item = res)
+    arrError.push(isEmpty)
    })
   }
-
-  const { structure = "", data, text, pattern } = condition.data
-
-  if (structure === "") {
-   reasons.push("Select the structure of the basic condition")
-  }
-
-  if (structure === "anyOf" || structure === "allOf") {
-   if (data) {
-    validateNestedConditions(data as ICondition[], structure)
-   }
-  }
-
-  if (structure === "not") {
-   const value = data as ICondition
-
-   const subStructure = value.structure ? mapping[value.structure] : ""
-   if (value.text === "") {
-    reasons.push(
-     `Text field in ${mapping[structure]} => ${subStructure} is not filled`
-    )
-   }
-   if (value.pattern === "") {
-    reasons.push(
-     `Pattern field in ${mapping[structure]} => ${subStructure} is not filled`
-    )
-   }
-   if (Object.keys(value).length === 0) {
-    reasons.push(`Structure in ${mapping[structure]} cannot be empty`)
-   }
-  }
-
-  if (
-   structure === "exactMatch" ||
-   structure === "includeText" ||
-   structure === "regExp"
-  ) {
-   if (text === "") {
-    reasons.push(`Text field in ${mapping[structure]} is not filled`)
-   }
-   if (pattern === "") {
-    reasons.push(`Pattern field in ${mapping[structure]} is not filled`)
-   }
-  }
-
-  const result: ValidationResult = {
-   status: reasons.length === 0,
-   reason: reasons.join("\n "),
-  }
-  return result
+  const status = !arrError.includes(true)
+  return { condition, status }
  }
 
  const validateConditionAction = () => {
@@ -366,7 +309,11 @@ const ConditionModal = ({
    basic: (
     <BasicCondition
      condition={currentCondition}
-     setData={setCurrentCondition}
+     setData={(state, setState) => {
+      // const newState = validateConditionBasic(state)
+      ref.current = { state: { ...state }, setState }
+      setCurrentCondition(state)
+     }}
     />
    ),
   }),
@@ -422,12 +369,14 @@ const ConditionModal = ({
 
  const saveCondition = () => {
   const validate_name: ValidateErrorType = validateConditionName(is_create)
-  const validate_basic: ValidateErrorType =
-   currentCondition.type === "basic"
-    ? validateConditionBasic(currentCondition as ICondition)
-    : { status: true, reason: "" }
 
-  if (validate_name.status && validate_basic.status) {
+  const newState = validateConditionBasic(currentCondition)
+
+  if (!newState.status && ref.current?.setState) {
+   ref.current.setState(newState.condition.data as conditionType)
+  }
+
+  if (validate_name.status && newState.status) {
    updateNodeData(data.id, {
     ...data,
     conditions: is_create
@@ -443,13 +392,6 @@ const ConditionModal = ({
     n.add({
      title: "Saving error!",
      message: `Condition name is not valid: \n ${validate_name.reason}`,
-     type: "error",
-    })
-   }
-   if (!validate_basic.status) {
-    n.add({
-     title: "Saving error!",
-     message: `Condition is not valid: \n Correct the errors and try again`,
      type: "error",
     })
    }
