@@ -16,7 +16,7 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
 
     Args:
         id_ (int): The id of the process to stop.
-        process_manager (ProcessManager): The process manager containing the process with the given id.
+        process_manager (ProcessManager): The process manager of the process with the given id.
 
     Raises:
         HTTPException: With status code 404 if the process with the given id is not found.
@@ -42,7 +42,7 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> Di
 
     Args:
         id_ (int): The id of the process to check.
-        process_manager (ProcessManager): The process manager containing the process with the given id.
+        process_manager (ProcessManager): The process manager of the process with the given id.
 
     Raises:
         HTTPException: With status code 404 if the process is not found.
@@ -70,7 +70,7 @@ async def start_build(
     This runs a background task to check the status of the process every 2 seconds.
 
     Args:
-        preset (Preset): The preset to set the build process for. Must be among ("success", "failure", "loop")
+        preset (BuildPreset): The preset to set the build process for. Must be among ("success", "failure", "loop")
         background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that keeps checking
             the status of the build process in the background after returning a response.
         build_manager (BuildManager): The process manager dependency to start the process with.
@@ -109,6 +109,20 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
 
 @router.get("/build/stop_all", status_code=200)
 async def stop_all_builds(build_manager: BuildManager = Depends(deps.get_build_manager)) -> Dict[str, str]:
+    """
+    Stop all ongoing builds.
+
+    This endpoint stops all builds managed by the build manager.
+
+    Args:
+        build_manager (BuildManager): The build manager dependency.
+
+    Raises:
+        HTTPException: If there is an error stopping the builds, an HTTP 500 error is raised with a message indicating the service status.
+
+    Returns:
+        {"status": "ok"}: in case of stopping all builds successfully.
+    """
     try:
         await build_manager.stop_all()
     except Exception as e:
@@ -175,7 +189,7 @@ async def check_build_processes(
         pagination (Pagination): An object containing the offset and limit parameters for paginating results.
 
     Returns:
-        In case `build_id` is specified, the build info for that process is returned.
+        In case `build_id` is specified, the build info for that process along with its runs info is returned.
         Otherwise, a list containing statuses of all `build` processes along with their runs info.
     """
 
@@ -237,13 +251,18 @@ async def start_run(
 
     Args:
         build_id (int): The id of the build process to start running.
-        preset (Preset): The preset to set the build process for. Must be among ("success", "failure", "loop")
+        preset (RunPreset): The preset to set the build process for. Must be among ("success", "failure", "loop")
         background_tasks (BackgroundTasks): A background tasks manager. Required to schedule a task that keeps checking
             the status of the run process in the background after returning a response.
         run_manager (RunManager): The `run` process manager to start the process with.
 
+    Raises:
+        HTTPException: With status code 400 if several runs were requested in a short time.
+        HTTPException: With status code 409 if there is a port conflict error.
+        HTTPException: With status code 400 and the internal error details if there is a value error.
+
     Returns:
-        {"status": "ok", "build_id": run_id}: in case of **starting** the run process successfully.
+        {"status": "ok", "run_id": run_id}: in case of **starting** the run process successfully.
     """
     try:
         run_id = await run_manager.start(build_id, preset)
@@ -288,6 +307,21 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
 
 @router.get("/run/stop_all", status_code=200)
 async def stop_all_runs(run_manager: RunManager = Depends(deps.get_run_manager)) -> Dict[str, str]:
+    """
+    Stop all ongoing runs.
+
+    This endpoint stops all runs managed by the run manager.
+
+    Args:
+        run_manager (RunManager): The run manager dependency.
+
+    Raises:
+        HTTPException: If there is an error stopping the runs, an HTTP 500 error is raised with 
+        a message indicating the service status.
+
+    Returns:
+        {"status": "ok"}: in case of stopping all runs successfully.
+    """
     try:
         await run_manager.stop_all()
     except Exception as e:
@@ -368,9 +402,18 @@ async def respond(
     user_id: Optional[str] = None,
     run_manager: RunManager = Depends(deps.get_run_manager),
 ):
-    """Sends a response to "http://localhost:chatsky_port/chat".
+    """Sends a response to "http://localhost:<BUILD-PORT>/chat".
+
+    The BUILD-PORT is port where Chatsky is up and running. This endpoint is used to send a message to Chatsky.
+
+    Args:
+        run_id (int): The id of the process to send the message to.
+        user_message (str): The message to send to Chatsky.
+        user_id (Optional[str]): The id of the user sending the message. Defaults to None.
+        run_manager (RunManager): The process manager dependency to send the message with.
 
     Raises:
+        HTTPException: With status code 404 if the build process doesn't have a messenger of type 'web'.
         HTTPException: With status code 503 if the service is unavailable.
     """
     build_port = run_manager.get_port(run_id)

@@ -30,6 +30,9 @@ class PipelineConverter(BaseConverter):
             input_file (Path): File containing Chatsky-UI `Pipeline`. Currently, it's "frontend_flows.yaml".
             output_dir (Path): The directory to write the Chatsky `Pipeline` file into.
                 The file with the `Pipeline` will be named "build.yaml".
+            messenger (str): The messenger to use. Currently, "telegram" and "web" are supported.
+            chatsky_port (Optional[int]): The port for the `HTTPMessengerInterface`. 
+                Shouldn't be ignored if web messengr is used.
         """
         self.from_yaml(file_path=input_file)
 

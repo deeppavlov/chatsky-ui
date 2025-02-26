@@ -77,13 +77,13 @@ async def flows_post(
 
 @router.post("/tg_token")
 async def post_tg_token(tokens: Dict[str, str]) -> Dict[str, str]:
-    """Writes the `TG_BOT_TOKEN` into the .env file for later use.
+    """Writes the `tokens` dictionary pairs into the .env file for later use.
 
     Args:
-        token (str): The token to write into the .env file.
+        tokens (dict): Tokens to write in the format {"token_name": "token_value"}.
 
     Returns:
-        {"status": "ok"}: in case of writing the token into the file successfully.
+        {"status": "ok"}: in case of writing the tokens into the file successfully.
     """
     sanitized_tokens = {f"TG_{key.replace(' ', '_').upper()}": value for key, value in tokens.items()}
     settings.add_env_vars(sanitized_tokens)
@@ -92,6 +92,16 @@ async def post_tg_token(tokens: Dict[str, str]) -> Dict[str, str]:
 
 @router.get("/get_tg_tokens")
 async def get_tg_tokens() -> list:
+    """Retrieves Telegram tokens from environment variables.
+
+    This function loads environment variables from a .env file located in the
+    specified work directory. It then iterates through the environment variables
+    and collects those that start with "TG_", returning them as a list of strings.
+
+    Returns:
+        list: A list of Telegram tokens extracted from environment variables.
+    """
+    """"""
     load_dotenv(settings.work_directory / ".env", override=True)
 
     tg_token = []
