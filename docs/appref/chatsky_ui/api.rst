@@ -6,12 +6,12 @@ Subpackages
 
 .. toctree::
    :glob:
-   :maxdepth: 4
+   :maxdepth: 1
 
    api/*
 
 
-chatsky_ui.api.deps module
+api.deps module
 ------------------
 
 .. automodule:: chatsky_ui.api.deps

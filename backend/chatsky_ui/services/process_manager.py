@@ -3,9 +3,9 @@
 Process manager
 ----------------
 
-Process managers are used to manage run and build processes. They are responsible for
-starting, stopping, updating, and checking the status of processes. Processes themselves
-are stored in the ``processes`` dictionary of process managers.
+Process managers are used to manage :py:class:`~.process.RunProcess` and :py:class:`~.process.BuildProcess`.
+They are responsible for starting, stopping, updating, and checking status of processes. Processes themselves
+are stored in the `processes` dictionary of a process manager.
 """
 import asyncio
 import os
