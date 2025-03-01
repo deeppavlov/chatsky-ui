@@ -1,40 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 📘 Project Documentation (Chatsky UI Docs)
 
-## Getting Started
+This directory contains the documentation built with [Nextra](https://nextra.site) — a static documentation generator for Next.js.
 
-First, run the development server:
+## 🚀 Installation & Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Install dependencies
+
+`bun install`
+
+2. Run locally
+
+`bun run dev`
+
+The documentation will be available at `http://localhost:8000`.
+
+## 📂 Project Structure
+
+```
+src/
+├── components/ # Additional components
+├── icons/ # Project icons
+├── pages/ # Main application pages
+│ ├── docs/ # Documentation section
+│ │ ├── nodes/ # Subsection of documentation
+│ │ ├── \_meta.ts # Metadata for the documentation structure
+│ │ ├── index.mdx # Main documentation page
+│ │ ├── deliver.mdx
+│ │ ├── inspect.mdx
+│ │ ├── installation.mdx
+│ │ ├── quick_start.mdx
+│ │ ├── settings.mdx
+│ │ ├── skill_basics.mdx
+│ │ ├── \_app.tsx # Global Next.js settings
+│ │ ├── \_document.tsx # Custom Document for Next.js
+├── styles/ # Project styles
+├── bun.lockb # Bun dependencies lock file
+├── eslint.config.mjs # ESLint configuration
+├── next.config.ts # Next.js configuration
+├── package.json # Dependencies file
+├── postcss.config.mjs # PostCSS configuration
+├── README.md # Project documentation
+├── tailwind.config.ts # TailwindCSS configuration
+├── theme.config.tsx # Nextra theme configuration
+└── tsconfig.json # TypeScript configuration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 Building Static Files
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+The documentation is generated as static files using Next.js with the `output:"export"` setting.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+To build the project, run:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+`bun run build`
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The output files will be placed in the `out/` directory.
 
-## Learn More
+## 🚀 Deployment on GitHub Pages
 
-To learn more about Next.js, take a look at the following resources:
+The project is deployed on GitHub Pages.
+To export the documentation as static files and deploy it, run:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+`bun run build`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+After that, the files in the `out/` directory can be uploaded to the repository for deployment.
 
-## Deploy on Vercel
+## 🛠 Useful Commands
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+    •	bun run dev — start in development mode
+    •	bun run start — start in production mode
+    •	bun run build — build the project and export static files
+    •	bun run lint — check the code
