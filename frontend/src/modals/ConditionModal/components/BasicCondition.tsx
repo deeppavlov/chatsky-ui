@@ -1,4 +1,4 @@
-import { ConditionModalContentType } from '../ConditionModal'
+import { conditionType } from '../../../types/ConditionTypes'
 import { useEffect, useState } from 'react'
 import DefSelect from '@/UI/Input/DefSelect'
 import DefInput from '@/UI/Input/DefInput'
@@ -6,6 +6,14 @@ import { Checkbox, Button } from '@nextui-org/react'
 import DefTextarea from '@/UI/Input/DefTextarea'
 import _ from 'lodash'
 import DeleteBasicConditionIcon from '@/icons/nodes/conditions/deleteBasicConditionIcon'
+
+export type IMyConditionModalContentType = {
+ condition: conditionType
+ setData: (
+  state: conditionType,
+  callback: (data: conditionType) => void
+ ) => void
+}
 
 interface ICondition {
  text?: string
@@ -587,7 +595,10 @@ const InputText: React.FC<{
  )
 }
 
-const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
+const BasicCondition = ({
+ condition,
+ setData,
+}: IMyConditionModalContentType) => {
  const defState: IState =
   Object.prototype.hasOwnProperty.call(condition.data, 'structure') &&
   condition.data.structure

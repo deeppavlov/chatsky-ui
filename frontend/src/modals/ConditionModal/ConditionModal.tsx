@@ -1,48 +1,45 @@
-import ButtonConditionIcon from "@/icons/nodes/conditions/ButtonConditionIcon"
-import CodeConditionIcon from "@/icons/nodes/conditions/CodeConditionIcon"
-import CustomConditionIcon from "@/icons/nodes/conditions/CustomConditionIcon"
-import LLMConditionIcon from "@/icons/nodes/conditions/LLMConditionIcon"
-import SlotsConditionIcon from "@/icons/nodes/conditions/SlotsConditionIcon"
-import { Button, Tab, Tabs } from "@nextui-org/react"
-import { Edge, useReactFlow } from "@xyflow/react"
-import classNames from "classnames"
-import { AnimatePresence, motion } from "framer-motion"
-import { HelpCircle, PlusCircleIcon, TrashIcon } from "lucide-react"
-import { useContext, useEffect, useMemo, useRef, useState } from "react"
-import { lint_service } from "../../api/services"
-import { flowContext } from "../../contexts/flowContext"
-import { NotificationsContext } from "../../contexts/notificationsContext"
-import { PopUpContext } from "../../contexts/popUpContext"
-import EditPenIcon from "../../icons/EditPenIcon"
+import ButtonConditionIcon from '@/icons/nodes/conditions/ButtonConditionIcon'
+import CodeConditionIcon from '@/icons/nodes/conditions/CodeConditionIcon'
+import CustomConditionIcon from '@/icons/nodes/conditions/CustomConditionIcon'
+import LLMConditionIcon from '@/icons/nodes/conditions/LLMConditionIcon'
+import SlotsConditionIcon from '@/icons/nodes/conditions/SlotsConditionIcon'
+import { Button, Tab, Tabs } from '@nextui-org/react'
+import { Edge, useReactFlow } from '@xyflow/react'
+import classNames from 'classnames'
+import { AnimatePresence, motion } from 'framer-motion'
+import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { lint_service } from '../../api/services'
+import { flowContext } from '../../contexts/flowContext'
+import { NotificationsContext } from '../../contexts/notificationsContext'
+import { PopUpContext } from '../../contexts/popUpContext'
+import EditPenIcon from '../../icons/EditPenIcon'
 import {
  conditionType,
  conditionTypeType,
  ICondition,
-} from "../../types/ConditionTypes"
-import { AppNode, DefaultNodeDataType } from "../../types/NodeTypes"
-import DefInput from "../../UI/Input/DefInput"
-import { generateNewConditionBase } from "../../utils"
-import AlertModal from "../AlertModal"
+} from '../../types/ConditionTypes'
+import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
+import DefInput from '../../UI/Input/DefInput'
+import { generateNewConditionBase } from '../../utils'
+import AlertModal from '../AlertModal'
 import {
  CustomModalProps,
  Modal,
  ModalBody,
  ModalFooter,
  ModalHeader,
-} from "../ModalComponents"
-import PythonCondition from "./components/PythonCondition"
-import SlotCondition from "./components/SlotCondition"
-import UsingLLMConditionSection from "./components/UsingLLMCondition"
-import BasicConditionIcon from "@/icons/nodes/conditions/BasicConditionIcon"
-import BasicCondition from "./components/BasicCondition"
-import _ from "lodash"
+} from '../ModalComponents'
+import PythonCondition from './components/PythonCondition'
+import SlotCondition from './components/SlotCondition'
+import UsingLLMConditionSection from './components/UsingLLMCondition'
+import BasicConditionIcon from '@/icons/nodes/conditions/BasicConditionIcon'
+import BasicCondition from './components/BasicCondition'
+import _ from 'lodash'
 
 export type ConditionModalContentType = {
  condition: conditionType
- setData: (
-  state: conditionType,
-  callback: (data: conditionType) => void
- ) => void
+ setData: React.Dispatch<React.SetStateAction<conditionType>>
 }
 
 type ConditionModalProps = CustomModalProps & {
@@ -52,15 +49,15 @@ type ConditionModalProps = CustomModalProps & {
 }
 
 type ConditionModalTab =
- | "Using LLM"
- | "Slot filling"
- | "Button"
- | "Python code"
- | "Custom"
- | "Basic"
+ | 'Using LLM'
+ | 'Slot filling'
+ | 'Button'
+ | 'Python code'
+ | 'Custom'
+ | 'Basic'
 
 type LintStatusType = {
- status: "ok" | "error"
+ status: 'ok' | 'error'
  message: string
 }
 
@@ -73,14 +70,14 @@ const ConditionModal = ({
  data,
  condition,
  is_create = false,
- id = "condition-modal",
+ id = 'condition-modal',
 }: ConditionModalProps) => {
  const { closePopUp, openPopUp } = useContext(PopUpContext)
  const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
  const { notification: n } = useContext(NotificationsContext)
  const { quietSaveFlows } = useContext(flowContext)
  const [selected, setSelected] = useState<conditionTypeType>(
-  condition?.type ?? "python"
+  condition?.type ?? 'python'
  )
  const [lintStatus, setLintStatus] = useState<LintStatusType | null>(null)
  const [testConditionPending, setTestConditionPending] = useState(false)
@@ -104,7 +101,7 @@ const ConditionModal = ({
   if (!is_create) {
    const is_name_valid = !nodes.some(
     (node: AppNode) =>
-     node.type === "default_node" &&
+     node.type === 'default_node' &&
      node.data.conditions.some(
       (c) => c.name === currentCondition.name && c.id !== currentCondition.id
      )
@@ -112,29 +109,29 @@ const ConditionModal = ({
    if (!is_name_valid) {
     return {
      status: false,
-     reason: "Name must be unique",
+     reason: 'Name must be unique',
     }
    } else {
     return {
      status: true,
-     reason: "",
+     reason: '',
     }
    }
   } else {
    const is_name_valid = !nodes.some(
     (node: AppNode) =>
-     node.type === "default_node" &&
+     node.type === 'default_node' &&
      node.data.conditions?.some((c) => c.name === currentCondition.name)
    )
    if (!is_name_valid) {
     return {
      status: false,
-     reason: "Name must be unique",
+     reason: 'Name must be unique',
     }
    } else {
     return {
      status: true,
-     reason: "",
+     reason: '',
     }
    }
   }
@@ -146,26 +143,26 @@ const ConditionModal = ({
   const arrError: boolean[] = []
 
   const isEmpty =
-   data?.structure === "" || data?.text === "" || data?.pattern === ""
+   data?.structure === '' || data?.text === '' || data?.pattern === ''
 
   const { error: _, ...res } = data as ICondition
   isEmpty ? (condition.data!.error = isEmpty) : (condition.data = res)
   arrError.push(isEmpty)
 
-  if (data && data.structure === "not") {
+  if (data && data.structure === 'not') {
    const { error: _, ...res } = condition.data!.data as ICondition
 
    const isEmpty =
-    data.data!.structure === "" ||
-    data.data!.text === "" ||
-    data.data!.pattern === ""
+    data.data!.structure === '' ||
+    data.data!.text === '' ||
+    data.data!.pattern === ''
    isEmpty
     ? (condition.data!.data!.error = isEmpty)
     : (condition.data!.data = res)
    arrError.push(isEmpty)
   }
 
-  if (data && (data.structure === "anyOf" || data.structure === "allOf")) {
+  if (data && (data.structure === 'anyOf' || data.structure === 'allOf')) {
    const isEmptyCildren = (data.data as ICondition[]).length === 0
    const { error: _, ...res } = data as ICondition
 
@@ -177,18 +174,18 @@ const ConditionModal = ({
    }
 
    (data.data as ICondition[]).forEach((item: ICondition) => {
-    if (item.structure === "not") {
+    if (item.structure === 'not') {
      const { error: _, ...res } = item.data as ICondition
      const isEmpty =
-      item.data!.structure === "" ||
-      item.data!.text === "" ||
-      item.data!.pattern === ""
+      item.data!.structure === '' ||
+      item.data!.text === '' ||
+      item.data!.pattern === ''
      isEmpty ? (item.data!.error = isEmpty) : (item.data = res)
      arrError.push(isEmpty)
     }
 
     const isEmpty =
-     item.structure === "" || item.text === "" || item.pattern === ""
+     item.structure === '' || item.text === '' || item.pattern === ''
     isEmpty ? (item.error = isEmpty) : (item = res)
     arrError.push(isEmpty)
    })
@@ -200,50 +197,50 @@ const ConditionModal = ({
  const validateConditionAction = () => {
   const reasons: string[] = []
   if (
-   currentCondition.type === "python" &&
+   currentCondition.type === 'python' &&
    currentCondition.data.python?.action
   ) {
    if (
-    currentCondition.data.python?.action.includes("return") &&
-    currentCondition.data.python?.action.includes("class") &&
-    currentCondition.data.python?.action.includes("(BaseCondition):")
+    currentCondition.data.python?.action.includes('return') &&
+    currentCondition.data.python?.action.includes('class') &&
+    currentCondition.data.python?.action.includes('(BaseCondition):')
    ) {
     return {
      status: true,
-     reason: "",
+     reason: '',
     }
    } else {
-    if (!currentCondition.data.python?.action.includes("return")) {
-     reasons.push("Missing return statement")
+    if (!currentCondition.data.python?.action.includes('return')) {
+     reasons.push('Missing return statement')
     }
-    if (!currentCondition.data.python?.action.includes("class")) {
-     reasons.push("Missing def statement")
+    if (!currentCondition.data.python?.action.includes('class')) {
+     reasons.push('Missing def statement')
     }
-    if (!currentCondition.data.python?.action.includes("(BaseCondition):")) {
-     reasons.push("Missing condition statement")
+    if (!currentCondition.data.python?.action.includes('(BaseCondition):')) {
+     reasons.push('Missing condition statement')
     }
     return {
      status: false,
-     reason: reasons.join("\n "),
+     reason: reasons.join('\n '),
     }
    }
   } else if (
-   currentCondition.type === "python" &&
+   currentCondition.type === 'python' &&
    !currentCondition.data.python?.action
   ) {
    return {
     status: false,
-    reason: "Missing action",
+    reason: 'Missing action',
    }
-  } else if (currentCondition.type !== "python") {
+  } else if (currentCondition.type !== 'python') {
    return {
     status: true,
-    reason: "",
+    reason: '',
    }
   }
   return {
    status: false,
-   reason: "Validation error",
+   reason: 'Validation error',
   }
  }
 
@@ -254,33 +251,33 @@ const ConditionModal = ({
  }[] = useMemo(
   () => [
    {
-    title: "Python code",
-    value: "python",
+    title: 'Python code',
+    value: 'python',
     icon: <CodeConditionIcon className="size-5" />,
    },
    {
-    title: "Basic",
-    value: "basic",
+    title: 'Basic',
+    value: 'basic',
     icon: <BasicConditionIcon className="size-5" />,
    },
    {
-    title: "Using LLM",
-    value: "llm",
+    title: 'Using LLM',
+    value: 'llm',
     icon: <LLMConditionIcon className="size-5" />,
    },
    {
-    title: "Slot filling",
-    value: "slot",
+    title: 'Slot filling',
+    value: 'slot',
     icon: <SlotsConditionIcon className="size-5" />,
    },
    {
-    title: "Button",
-    value: "button",
+    title: 'Button',
+    value: 'button',
     icon: <ButtonConditionIcon className="size-5" />,
    },
    {
-    title: "Custom",
-    value: "custom",
+    title: 'Custom',
+    value: 'custom',
     icon: <CustomConditionIcon className="size-5" />,
    },
   ],
@@ -322,9 +319,9 @@ const ConditionModal = ({
 
  const lintCondition = async () => {
   setLintStatus(null)
-  if (currentCondition.type === "python") {
+  if (currentCondition.type === 'python') {
    try {
-    const res = await lint_service(currentCondition.data.python?.action ?? "")
+    const res = await lint_service(currentCondition.data.python?.action ?? '')
     setLintStatus(res)
     return res
    } catch (error) {
@@ -337,7 +334,7 @@ const ConditionModal = ({
 
  const testCondition = async () => {
   setTestConditionPending(() => true)
-  if (currentCondition.type === "python") {
+  if (currentCondition.type === 'python') {
    const lint = await lintCondition()
    const validate_action = validateConditionAction()
    if (lint && validate_action.status) {
@@ -346,7 +343,7 @@ const ConditionModal = ({
    } else {
     if (!validate_action.status) {
      setLintStatus(() => ({
-      status: "error",
+      status: 'error',
       message: validate_action.reason,
      }))
     }
@@ -390,9 +387,9 @@ const ConditionModal = ({
   } else {
    if (!validate_name.status) {
     n.add({
-     title: "Saving error!",
+     title: 'Saving error!',
      message: `Condition name is not valid: \n ${validate_name.reason}`,
-     type: "error",
+     type: 'error',
     })
    }
   }
@@ -432,7 +429,7 @@ const ConditionModal = ({
     title="Delete condition"
     description={
      <>
-      Are you sure you want to delete the condition{" "}
+      Are you sure you want to delete the condition{' '}
       <span className="text-sm bg-border rounded px-1">
        {currentCondition?.name}
       </span>
@@ -442,7 +439,7 @@ const ConditionModal = ({
     actionText="Delete"
     cancelText="Cancel"
    />,
-   "delete-condition"
+   'delete-condition'
   )
  }
 
@@ -451,22 +448,22 @@ const ConditionModal = ({
    <ModalHeader>
     <div className="flex items-center gap-2">
      {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
-     {is_create ? "Create condition" : "Edit condition"}
+     {is_create ? 'Create condition' : 'Edit condition'}
     </div>
    </ModalHeader>
    <ModalBody className="min-h-[480px]">
     <label>
      <Tabs
-      disabledKeys={["llm", "custom", "button"]}
+      disabledKeys={['llm', 'custom', 'button']}
       selectedKey={selected}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       onSelectionChange={setSelectedHandler}
       items={tabItems}
       classNames={{
-       tabList: "w-full bg-table-background",
-       tab: "",
-       cursor: "border border-contrast-border",
+       tabList: 'w-full bg-table-background',
+       tab: '',
+       cursor: 'border border-contrast-border',
       }}
       className="bg-background w-full max-w-full"
      >
@@ -496,7 +493,7 @@ const ConditionModal = ({
       onChange={(e) =>
        setCurrentCondition({
         ...currentCondition,
-        name: e.target.value.replace(/\s/g, ""),
+        name: e.target.value.replace(/\s/g, ''),
        })
       }
      />
@@ -529,24 +526,24 @@ const ConditionModal = ({
        {bodyItems[selected]}
       </motion.div>
      </AnimatePresence>
-     {selected === "python" && (
+     {selected === 'python' && (
       <div
        className="grid transition-all duration-150 overflow-hidden"
        style={{
-        gridTemplateRows: lintStatus ? "1fr" : "0fr",
+        gridTemplateRows: lintStatus ? '1fr' : '0fr',
        }}
       >
        <div className="min-h-0 transition-all duration-150">
         <p
          className={classNames(
-          "text-xs p-2 mt-2 rounded-lg font-mono",
-          lintStatus?.status == "error"
-           ? "bg-[var(--condition-test-error)]"
-           : "bg-[var(--condition-test-success)]"
+          'text-xs p-2 mt-2 rounded-lg font-mono',
+          lintStatus?.status == 'error'
+           ? 'bg-[var(--condition-test-error)]'
+           : 'bg-[var(--condition-test-success)]'
          )}
         >
-         {lintStatus?.status == "ok"
-          ? "Condition test passed!"
+         {lintStatus?.status == 'ok'
+          ? 'Condition test passed!'
           : lintStatus?.message}
         </p>
        </div>
@@ -570,7 +567,7 @@ const ConditionModal = ({
      )}
     </div>
     <div className="flex items-end gap-2">
-     {currentCondition.type !== "basic" && (
+     {currentCondition.type !== 'basic' && (
       <Button
        data-testid="test-condition-button"
        onClick={testCondition}
