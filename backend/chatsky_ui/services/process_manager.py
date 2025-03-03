@@ -245,12 +245,12 @@ class RunManager(ProcessManager):
             _assign_token_to_key_used_by_build(preset.tg_bot_token, UNIQUE_BUILD_TOKEN.format(build_id=build_id))
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
-        cmd_to_run = (
-            f"chatsky.ui run_bot "
-            f"--preset {preset.end_status} "
-            f"--project-dir {settings.work_directory}"
-            f"--run_id {self.last_id}"
-        )
+        cmd_to_run = " ".join([
+            "chatsky.ui run_bot",
+            f"--preset {preset.end_status}",
+            f"--project-dir {settings.work_directory}",
+            f"--run-id {self.last_id}",
+        ])
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
         await process.start(cmd_to_run, env=os.environ.copy())
