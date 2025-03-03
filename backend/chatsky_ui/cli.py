@@ -122,7 +122,7 @@ def build_scenario(
 def run_bot(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
     preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
-    run_id: int = 0,
+    run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
 ):
     """Runs the bot with one of three various presets."""
     project_dir = project_dir or settings.work_directory
@@ -139,7 +139,7 @@ def run_bot(
 @cli.command("run_scenario")
 def run_scenario(
     project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
-    run_id: int = 0,
+    run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
 ):
     """Runs the bot with preset `success`"""
     if not project_dir.is_dir():

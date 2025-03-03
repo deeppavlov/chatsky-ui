@@ -1,4 +1,5 @@
 from chatsky_ui.services.process_manager import BuildManager, RunManager
+from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
 build_manager = BuildManager()
 
@@ -18,3 +19,11 @@ def get_run_manager() -> RunManager:
     run_manager.set_bot_repo_manager()
     run_manager.set_graph_repo_manager()
     return run_manager
+
+
+sql_extractor = SQLiteExtractor()
+
+
+def get_sqlite_extractor() -> SQLiteExtractor:
+    sql_extractor.set_logger()
+    return sql_extractor
