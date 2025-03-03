@@ -71,7 +71,7 @@ Modal.displayName = 'Modal'
 type ModalHeaderProps = {
  children: React.ReactNode
  className?: string
- showCloseButton: boolean
+ showCloseButton?: boolean
 }
 
 export const ModalHeader = ({
