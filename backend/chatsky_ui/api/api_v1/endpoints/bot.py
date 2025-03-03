@@ -333,7 +333,10 @@ async def respond(
 
 @router.get("/get_chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
 async def get_chat_records(
-    run_id: int, user_id: int, pagination: Pagination = Depends(), sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor)
+    run_id: int,
+    user_id: int,
+    pagination: Pagination = Depends(),
+    sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
     """Gets the records of a user's chat from a specified run."""
     try:

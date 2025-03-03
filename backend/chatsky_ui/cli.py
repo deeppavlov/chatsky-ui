@@ -152,7 +152,9 @@ def run_scenario(
     try:
         asyncio.run(_execute_command(command_to_run))
     except FileNotFoundError:
-        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path}"
+        command_to_run = (
+            f"python3 {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path}"
+        )
         asyncio.run(_execute_command(command_to_run))
 
 
