@@ -13,10 +13,14 @@ from chatsky_ui.core.config import settings
 
 
 def signal_handler(self, signum):
-    global stop_background_task
-    print("Caught termination signal, shutting down gracefully...")
+    """Gracefully shuts down Chatsky-UI in case of receiving Ctrl+C signal."""
     for process in run_manager.processes.values():
         process.to_be_terminated = True
+    if signum == signal.SIGINT:
+        print("Caught SIGINT termination signal, shutting down gracefully...")
+        settings.temp_conf.unlink(missing_ok=True)
+    elif signum == signal.SIGTERM:
+        print("Caught SIGTERM termination signal, shutting down gracefully and restarting Chatsky-UI...")
 
 
 @asynccontextmanager
@@ -25,13 +29,14 @@ async def lifespan(app: FastAPI):
         settings.refresh_work_dir()
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
     yield
 
-    settings.temp_conf.unlink(missing_ok=True)
+    run_manager.set_logger()
     await run_manager.stop_all()
 
 
-app = FastAPI(title="DF Designer", version=__version__, lifespan=lifespan)
+app = FastAPI(title="Chatsky UI", version=__version__, lifespan=lifespan)
 
 
 app.add_middleware(
