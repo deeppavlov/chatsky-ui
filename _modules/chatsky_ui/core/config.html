@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.core.config &mdash; Chatsky-UI 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=b1f64a84"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../appref/chatsky_ui.html">chatsky_ui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.core.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for chatsky_ui.core.config</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">uvicorn</span>
+<span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">OmegaConf</span>
+
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="Settings"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.Settings">[docs]</a><span class="k">class</span> <span class="nc">Settings</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">API_V1_STR</span> <span class="o">=</span> <span class="s2">&quot;/api/v1&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">APP</span> <span class="o">=</span> <span class="s2">&quot;chatsky_ui.main:app&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;static&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_files</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">package_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_file_path</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;temp_conf.yaml&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="n">host</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HOST&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">),</span>
+            <span class="n">port</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;8000&quot;</span><span class="p">),</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LOG_LEVEL&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">),</span>
+            <span class="n">conf_reload</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;CONF_RELOAD&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">),</span>
+            <span class="n">work_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Settings.set_config"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.Settings.set_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;work_directory&quot;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;conf_reload&quot;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;port&quot;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;work_directory&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_user_proj_paths</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_user_proj_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">builds_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;chatsky_ui/app_data/builds.yaml&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runs_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;chatsky_ui/app_data/runs.yaml&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frontend_flows_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;chatsky_ui/app_data/frontend_flows.yaml&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dir_logs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;chatsky_ui/logs&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">presets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;chatsky_ui/presets&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snippet2lint_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;chatsky_ui/.snippet2lint.py&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;bot/custom&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_dir</span> <span class="o">/</span> <span class="s2">&quot;.services_index.yaml&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conditions_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_dir</span> <span class="o">/</span> <span class="s2">&quot;conditions.py&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">responses_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_dir</span> <span class="o">/</span> <span class="s2">&quot;responses.py&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scripts_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span> <span class="o">/</span> <span class="s2">&quot;bot/scripts&quot;</span>
+
+<div class="viewcode-block" id="Settings.save_config"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.Settings.save_config">[docs]</a>    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+        <span class="n">OmegaConf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">OmegaConf</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;work_directory&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_directory</span><span class="p">),</span>
+                    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+                    <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+                    <span class="s2">&quot;log_level&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
+                    <span class="s2">&quot;conf_reload&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">conf_reload</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">),</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_temp_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DictConfig</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_conf</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="Settings.refresh_work_dir"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.Settings.refresh_work_dir">[docs]</a>    <span class="k">def</span> <span class="nf">refresh_work_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_temp_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AppRunner"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.AppRunner">[docs]</a><span class="k">class</span> <span class="nc">AppRunner</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Settings has not been configured. Call set_logger() first.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span>
+
+<div class="viewcode-block" id="AppRunner.set_settings"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.AppRunner.set_settings">[docs]</a>    <span class="k">def</span> <span class="nf">set_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="o">=</span> <span class="n">app_settings</span></div>
+
+<div class="viewcode-block" id="AppRunner.run"><a class="viewcode-back" href="../../../appref/chatsky_ui/core.html#chatsky_ui.core.config.AppRunner.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">reload</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">conf_reload</span><span class="p">:</span>
+            <span class="n">reload_conf</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;reload&quot;</span><span class="p">:</span> <span class="n">reload</span><span class="p">,</span>
+                <span class="s2">&quot;reload_dirs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">package_dir</span><span class="p">)],</span>
+                <span class="s2">&quot;reload_excludes&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="sa">f</span><span class="s2">&quot;./</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">work_directory</span><span class="si">}</span><span class="s2">/*&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;./</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">work_directory</span><span class="si">}</span><span class="s2">/*/*&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;./</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">work_directory</span><span class="si">}</span><span class="s2">/*/*/*&quot;</span><span class="p">,</span>
+                <span class="p">],</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reload_conf</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;reload&quot;</span><span class="p">:</span> <span class="n">reload</span><span class="p">}</span>
+        <span class="n">uvicorn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">APP</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">log_level</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">reload_conf</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">()</span>
+<span class="n">app_runner</span> <span class="o">=</span> <span class="n">AppRunner</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

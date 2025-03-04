@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.api.api_v1.endpoints.flows &mdash; Chatsky-UI 0.4.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=c87aa342"></script>
+      <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../appref/chatsky_ui.html">chatsky_ui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.api.api_v1.endpoints.flows</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for chatsky_ui.api.api_v1.endpoints.flows</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">status</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">git.exc</span><span class="w"> </span><span class="kn">import</span> <span class="n">GitCommandError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">OmegaConf</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatsky_ui.api.deps</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_build_manager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatsky_ui.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatsky_ui.db.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_conf</span><span class="p">,</span> <span class="n">write_conf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chatsky_ui.services.process_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuildManager</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="flows_get">
+<a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.flows.flows_get">[docs]</a>
+<span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">flows_get</span><span class="p">(</span>
+    <span class="n">build_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_build_manager</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the flows by reading the frontend_flows.yaml file. If the build_id isn&#39;t passed</span>
+<span class="sd">    then it will return the last saved (committed) flow.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        build_id (Optional[int]): The id of the process to get the flows from.</span>
+<span class="sd">        build_manager (BuildManager): The `build` process manager containing the `build_id` process.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;, &quot;data&quot;: dict_flows}: in case of reading the frontend_flows.yaml file successfully,</span>
+<span class="sd">        where `data` contains the flows obtained from the file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">build_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">build_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">build_manager</span><span class="o">.</span><span class="n">graph_repo_manager</span><span class="o">.</span><span class="n">checkout_tag</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">frontend_flows_path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">GitCommandError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">,</span>
+                <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Build_id </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">build_manager</span><span class="o">.</span><span class="n">graph_repo_manager</span><span class="o">.</span><span class="n">checkout_tag</span><span class="p">(</span><span class="s2">&quot;HEAD&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">frontend_flows_path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">GitCommandError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">,</span>
+                <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Failed to checkout the latest commit&quot;</span><span class="p">,</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+    <span class="n">omega_flows</span> <span class="o">=</span> <span class="k">await</span> <span class="n">read_conf</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">frontend_flows_path</span><span class="p">)</span>
+    <span class="n">dict_flows</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">omega_flows</span><span class="p">,</span> <span class="n">resolve</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">dict_flows</span><span class="p">}</span>  <span class="c1"># type: ignore</span></div>
+
+
+
+<div class="viewcode-block" id="flows_post">
+<a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.flows.flows_post">[docs]</a>
+<span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">flows_post</span><span class="p">(</span>
+    <span class="n">flows</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]]],</span> <span class="n">build_manager</span><span class="p">:</span> <span class="n">BuildManager</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_build_manager</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes the flows to the frontend_flows.yaml file. Then commit changes to git without a tag.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        flows (dict): The flows to write into the frontend_flows.yaml file.</span>
+<span class="sd">        build_manager (BuildManager): The `build` process manager used in the current context.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;}: in case of writing the flows into the file successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">build_manager</span><span class="o">.</span><span class="n">graph_repo_manager</span><span class="o">.</span><span class="n">repo</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">commit</span><span class="o">.</span><span class="n">committed_datetime</span><span class="p">)</span>
+    <span class="n">build_manager</span><span class="o">.</span><span class="n">graph_repo_manager</span><span class="o">.</span><span class="n">checkout_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">settings</span><span class="o">.</span><span class="n">frontend_flows_path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">write_conf</span><span class="p">(</span><span class="n">flows</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">frontend_flows_path</span><span class="p">)</span>
+    <span class="n">build_manager</span><span class="o">.</span><span class="n">graph_repo_manager</span><span class="o">.</span><span class="n">commit_changes</span><span class="p">(</span><span class="s2">&quot;Save frontend flows&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="post_tg_token">
+<a class="viewcode-back" href="../../../../../appref/chatsky_ui/api/api_v1/endpoints.html#chatsky_ui.api.api_v1.endpoints.flows.post_tg_token">[docs]</a>
+<span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/tg_token&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">post_tg_token</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes the `TG_BOT_TOKEN` into the .env file for later use.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        token (str): The token to write into the .env file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        {&quot;status&quot;: &quot;ok&quot;}: in case of writing the token into the file successfully.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dotenv_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">work_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;.env&quot;</span>
+    <span class="n">dotenv_path</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">set_key</span><span class="p">(</span><span class="n">dotenv_path</span><span class="p">,</span> <span class="s2">&quot;TG_BOT_TOKEN&quot;</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Token saved successfully&quot;</span><span class="p">}</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

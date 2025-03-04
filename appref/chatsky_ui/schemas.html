@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.schemas package &mdash; Chatsky-UI 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b1f64a84"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chatsky_ui.services package" href="services.html" />
+    <link rel="prev" title="chatsky_ui.db package" href="db.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../chatsky_ui.html">chatsky_ui package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../chatsky_ui.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="api.html">api package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="clients.html">chatsky_ui.clients package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="core.html">chatsky_ui.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="db.html">chatsky_ui.db package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">chatsky_ui.schemas package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#chatsky-ui-schemas-pagination-module">chatsky_ui.schemas.pagination module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chatsky-ui-schemas-preset-module">chatsky_ui.schemas.preset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chatsky-ui-schemas-process-status-module">chatsky_ui.schemas.process_status module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="services.html">chatsky_ui.services package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tests.html">chatsky_ui.tests package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../chatsky_ui.html#module-chatsky_ui.cli">cli module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../chatsky_ui.html#module-chatsky_ui.main">main module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../chatsky_ui.html">chatsky_ui package</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.schemas package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/appref/chatsky_ui/schemas.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chatsky-ui-schemas-package">
+<h1>chatsky_ui.schemas package<a class="headerlink" href="#chatsky-ui-schemas-package" title="Permalink to this heading"></a></h1>
+<section id="chatsky-ui-schemas-pagination-module">
+<h2>chatsky_ui.schemas.pagination module<a class="headerlink" href="#chatsky-ui-schemas-pagination-module" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-chatsky_ui.schemas.pagination"></span><dl class="py class">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.schemas.pagination.</span></span><span class="sig-name descname"><span class="pre">Pagination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/chatsky_ui/schemas/pagination.html#Pagination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination.limit">
+<span class="sig-name descname"><span class="pre">limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination.limit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'limit':</span> <span class="pre">Query(100000),</span> <span class="pre">'page':</span> <span class="pre">Query(1)}</span></em><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination.model_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination.offset">
+<span class="sig-name descname"><span class="pre">offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/chatsky_ui/schemas/pagination.html#Pagination.offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination.offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.pagination.Pagination.page">
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#chatsky_ui.schemas.pagination.Pagination.page" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="chatsky-ui-schemas-preset-module">
+<h2>chatsky_ui.schemas.preset module<a class="headerlink" href="#chatsky-ui-schemas-preset-module" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-chatsky_ui.schemas.preset"></span><dl class="py class">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.preset.Preset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.schemas.preset.</span></span><span class="sig-name descname"><span class="pre">Preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'success'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'failure'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'loop'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/chatsky_ui/schemas/preset.html#Preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.schemas.preset.Preset" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.preset.Preset.end_status">
+<span class="sig-name descname"><span class="pre">end_status</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'success'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'failure'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'loop'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#chatsky_ui.schemas.preset.Preset.end_status" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.preset.Preset.model_computed_fields">
+<span class="sig-name descname"><span class="pre">model_computed_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ComputedFieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#chatsky_ui.schemas.preset.Preset.model_computed_fields" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary of computed field names and their corresponding <cite>ComputedFieldInfo</cite> objects.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.preset.Preset.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#chatsky_ui.schemas.preset.Preset.model_config" title="Permalink to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.preset.Preset.model_fields">
+<span class="sig-name descname"><span class="pre">model_fields</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">FieldInfo</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'end_status':</span> <span class="pre">FieldInfo(annotation=Literal['success',</span> <span class="pre">'failure',</span> <span class="pre">'loop'],</span> <span class="pre">required=True),</span> <span class="pre">'wait_time':</span> <span class="pre">FieldInfo(annotation=float,</span> <span class="pre">required=True)}</span></em><a class="headerlink" href="#chatsky_ui.schemas.preset.Preset.model_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Metadata about the fields defined on the model,
+mapping of field names to [<cite>FieldInfo</cite>][pydantic.fields.FieldInfo].</p>
+<p>This replaces <cite>Model.__fields__</cite> from Pydantic V1.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.preset.Preset.wait_time">
+<span class="sig-name descname"><span class="pre">wait_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#chatsky_ui.schemas.preset.Preset.wait_time" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="chatsky-ui-schemas-process-status-module">
+<h2>chatsky_ui.schemas.process_status module<a class="headerlink" href="#chatsky-ui-schemas-process-status-module" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-chatsky_ui.schemas.process_status"></span><dl class="py class">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">chatsky_ui.schemas.process_status.</span></span><span class="sig-name descname"><span class="pre">Status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/chatsky_ui/schemas/process_status.html#Status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.ALIVE">
+<span class="sig-name descname"><span class="pre">ALIVE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'alive'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.ALIVE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.COMPLETED">
+<span class="sig-name descname"><span class="pre">COMPLETED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'completed'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.COMPLETED" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.FAILED">
+<span class="sig-name descname"><span class="pre">FAILED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'failed'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.FAILED" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.FAILED_WITH_UNEXPECTED_CODE">
+<span class="sig-name descname"><span class="pre">FAILED_WITH_UNEXPECTED_CODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'failed</span> <span class="pre">with</span> <span class="pre">unexpected</span> <span class="pre">returncode'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.FAILED_WITH_UNEXPECTED_CODE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.NULL">
+<span class="sig-name descname"><span class="pre">NULL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'null'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.NULL" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.RUNNING">
+<span class="sig-name descname"><span class="pre">RUNNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'running'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.RUNNING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chatsky_ui.schemas.process_status.Status.STOPPED">
+<span class="sig-name descname"><span class="pre">STOPPED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'stopped'</span></em><a class="headerlink" href="#chatsky_ui.schemas.process_status.Status.STOPPED" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="db.html" class="btn btn-neutral float-left" title="chatsky_ui.db package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="services.html" class="btn btn-neutral float-right" title="chatsky_ui.services package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

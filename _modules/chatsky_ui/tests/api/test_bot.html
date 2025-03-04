@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.tests.api.test_bot &mdash; Chatsky-UI 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=b1f64a84"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../appref/chatsky_ui.html">chatsky_ui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.tests.api.test_bot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for chatsky_ui.tests.api.test_bot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">from</span> <span class="nn">fastapi</span> <span class="kn">import</span> <span class="n">BackgroundTasks</span><span class="p">,</span> <span class="n">HTTPException</span>
+
+<span class="kn">from</span> <span class="nn">chatsky_ui.api.api_v1.endpoints.bot</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_check_process_status</span><span class="p">,</span>
+    <span class="n">_stop_process</span><span class="p">,</span>
+    <span class="n">check_build_processes</span><span class="p">,</span>
+    <span class="n">check_run_processes</span><span class="p">,</span>
+    <span class="n">connect</span><span class="p">,</span>
+    <span class="n">get_build_logs</span><span class="p">,</span>
+    <span class="n">get_run_logs</span><span class="p">,</span>
+    <span class="n">start_build</span><span class="p">,</span>
+    <span class="n">start_run</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.schemas.process_status</span> <span class="kn">import</span> <span class="n">Status</span>
+<span class="kn">from</span> <span class="nn">chatsky_ui.services.process_manager</span> <span class="kn">import</span> <span class="n">RunManager</span>
+
+<span class="n">PROCESS_ID</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">RUN_ID</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="n">BUILD_ID</span> <span class="o">=</span> <span class="mi">43</span>
+
+
+<div class="viewcode-block" id="test_stop_process_success"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_stop_process_success">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_stop_process_success</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
+    <span class="n">process_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">process_manager</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="c1"># Call the function under test</span>
+    <span class="k">await</span> <span class="n">_stop_process</span><span class="p">(</span><span class="n">PROCESS_ID</span><span class="p">,</span> <span class="n">process_manager</span><span class="p">)</span>
+
+    <span class="c1"># Assert the stop method was called once with the correct id</span>
+    <span class="n">process_manager</span><span class="o">.</span><span class="n">stop</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">PROCESS_ID</span><span class="p">)</span></div>
+
+
+<span class="c1"># TODO: take into consideration the errors when process type is build</span>
+<div class="viewcode-block" id="test_stop_process_error"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_stop_process_error">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s2">&quot;error_type&quot;</span><span class="p">,</span> <span class="p">[</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">])</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_stop_process_error</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">error_type</span><span class="p">):</span>
+    <span class="n">mock_stop</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">(</span><span class="n">side_effect</span><span class="o">=</span><span class="n">error_type</span><span class="p">)</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">RunManager</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="n">mock_stop</span><span class="p">)</span>
+
+    <span class="n">process_type</span> <span class="o">=</span> <span class="s2">&quot;run&quot;</span>
+
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">HTTPException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc_info</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">_stop_process</span><span class="p">(</span><span class="n">PROCESS_ID</span><span class="p">,</span> <span class="n">RunManager</span><span class="p">(),</span> <span class="n">process_type</span><span class="p">)</span>
+
+        <span class="c1"># Assert the stop method was called once with the correct id</span>
+        <span class="k">assert</span> <span class="n">exc_info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span>
+    <span class="n">mock_stop</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">PROCESS_ID</span><span class="p">)</span></div>
+
+
+<span class="c1"># TODO: check the errors</span>
+<div class="viewcode-block" id="test_check_process_status"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_check_process_status">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_check_process_status</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
+    <span class="n">mocked_process_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">mocked_process_manager</span><span class="p">,</span> <span class="s2">&quot;processes&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">PROCESS_ID</span><span class="p">:</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()})</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">mocked_process_manager</span><span class="p">,</span> <span class="s2">&quot;get_status&quot;</span><span class="p">,</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="n">Status</span><span class="o">.</span><span class="n">ALIVE</span><span class="p">))</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_check_process_status</span><span class="p">(</span><span class="n">PROCESS_ID</span><span class="p">,</span> <span class="n">mocked_process_manager</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">response</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;alive&quot;</span><span class="p">}</span>
+    <span class="n">mocked_process_manager</span><span class="o">.</span><span class="n">get_status</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_start_build"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_start_build">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_start_build</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
+    <span class="n">build_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">preset</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="n">BUILD_ID</span><span class="p">)</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">multiple</span><span class="p">(</span><span class="n">build_manager</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">check_status</span><span class="o">=</span><span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">())</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">multiple</span><span class="p">(</span><span class="n">preset</span><span class="p">,</span> <span class="n">wait_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_status</span><span class="o">=</span><span class="s2">&quot;loop&quot;</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">start_build</span><span class="p">(</span><span class="n">preset</span><span class="p">,</span> <span class="n">background_tasks</span><span class="o">=</span><span class="n">BackgroundTasks</span><span class="p">(),</span> <span class="n">build_manager</span><span class="o">=</span><span class="n">build_manager</span><span class="p">)</span>
+    <span class="n">start</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">preset</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="s2">&quot;build_id&quot;</span><span class="p">:</span> <span class="n">BUILD_ID</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="test_check_build_processes_some_info"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_check_build_processes_some_info">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_check_build_processes_some_info</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">pagination</span><span class="p">):</span>
+    <span class="n">build_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">check_build_processes</span><span class="p">(</span><span class="n">BUILD_ID</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">pagination</span><span class="p">)</span>
+
+    <span class="n">build_manager</span><span class="o">.</span><span class="n">get_build_info</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">BUILD_ID</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_check_build_processes_all_info"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_check_build_processes_all_info">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_check_build_processes_all_info</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">pagination</span><span class="p">):</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">build_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">check_build_processes</span><span class="p">(</span><span class="n">build_id</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">pagination</span><span class="p">)</span>
+
+    <span class="n">build_manager</span><span class="o">.</span><span class="n">get_full_info_with_runs_info</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span>
+        <span class="n">run_manager</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">limit</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">limit</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_get_build_logs"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_get_build_logs">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_get_build_logs</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">pagination</span><span class="p">):</span>
+    <span class="n">build_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">get_build_logs</span><span class="p">(</span><span class="n">BUILD_ID</span><span class="p">,</span> <span class="n">build_manager</span><span class="p">,</span> <span class="n">pagination</span><span class="p">)</span>
+
+    <span class="n">build_manager</span><span class="o">.</span><span class="n">fetch_build_logs</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">BUILD_ID</span><span class="p">,</span> <span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">pagination</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_start_run"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_start_run">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_start_run</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">preset</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="n">RUN_ID</span><span class="p">)</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">multiple</span><span class="p">(</span><span class="n">run_manager</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">check_status</span><span class="o">=</span><span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">())</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">multiple</span><span class="p">(</span><span class="n">preset</span><span class="p">,</span> <span class="n">wait_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_status</span><span class="o">=</span><span class="s2">&quot;loop&quot;</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">start_run</span><span class="p">(</span>
+        <span class="n">build_id</span><span class="o">=</span><span class="n">BUILD_ID</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">preset</span><span class="p">,</span> <span class="n">background_tasks</span><span class="o">=</span><span class="n">BackgroundTasks</span><span class="p">(),</span> <span class="n">run_manager</span><span class="o">=</span><span class="n">run_manager</span>
+    <span class="p">)</span>
+    <span class="n">start</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">BUILD_ID</span><span class="p">,</span> <span class="n">preset</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">response</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span> <span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="n">RUN_ID</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="test_check_run_processes_some_info"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_check_run_processes_some_info">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_check_run_processes_some_info</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">pagination</span><span class="p">):</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">check_run_processes</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">pagination</span><span class="p">)</span>
+
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">get_run_info</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_check_run_processes_all_info"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_check_run_processes_all_info">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_check_run_processes_all_info</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">pagination</span><span class="p">):</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">check_run_processes</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">pagination</span><span class="p">)</span>
+
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">get_full_info</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">offset</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">limit</span><span class="o">=</span><span class="n">pagination</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_get_run_logs"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_get_run_logs">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_get_run_logs</span><span class="p">(</span><span class="n">mocker</span><span class="p">,</span> <span class="n">pagination</span><span class="p">):</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+
+    <span class="k">await</span> <span class="n">get_run_logs</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">pagination</span><span class="p">)</span>
+
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">fetch_run_logs</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">,</span> <span class="n">pagination</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span> <span class="n">pagination</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_connect"><a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/api.html#chatsky_ui.tests.api.test_bot.test_connect">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_connect</span><span class="p">(</span><span class="n">mocker</span><span class="p">):</span>
+    <span class="n">websocket</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+    <span class="n">websocket_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">AsyncMock</span><span class="p">()</span>
+    <span class="n">websocket_manager</span><span class="o">.</span><span class="n">disconnect</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">run_manager</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">run_process</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+    <span class="n">run_manager</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">{</span><span class="n">RUN_ID</span><span class="p">:</span> <span class="n">run_process</span><span class="p">}</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="s2">&quot;query_params&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">)})</span>
+
+    <span class="k">await</span> <span class="n">connect</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">websocket_manager</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">)</span>
+
+    <span class="n">websocket_manager</span><span class="o">.</span><span class="n">connect</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">websocket</span><span class="p">)</span>
+    <span class="n">websocket_manager</span><span class="o">.</span><span class="n">send_process_output_to_websocket</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">websocket</span><span class="p">)</span>
+    <span class="n">websocket_manager</span><span class="o">.</span><span class="n">forward_websocket_messages_to_process</span><span class="o">.</span><span class="n">assert_awaited_once_with</span><span class="p">(</span><span class="n">RUN_ID</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">websocket</span><span class="p">)</span>
+    <span class="n">websocket_manager</span><span class="o">.</span><span class="n">disconnect</span><span class="o">.</span><span class="n">assert_called_once_with</span><span class="p">(</span><span class="n">websocket</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

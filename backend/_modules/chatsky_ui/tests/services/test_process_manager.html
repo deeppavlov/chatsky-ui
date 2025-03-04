@@ -1,0 +1,155 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chatsky_ui.tests.services.test_process_manager &mdash; Chatsky-UI 0.4.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
+      <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Chatsky-UI
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../appref/chatsky_ui.html">chatsky_ui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Chatsky-UI</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">chatsky_ui.tests.services.test_process_manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for chatsky_ui.tests.services.test_process_manager</h1><div class="highlight"><pre>
+<span></span><span class="c1"># from pathlib import Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="c1"># from omegaconf import OmegaConf</span>
+
+
+<div class="viewcode-block" id="TestRunManager">
+<a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/services.html#chatsky_ui.tests.services.test_process_manager.TestRunManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TestRunManager</span><span class="p">:</span>
+<div class="viewcode-block" id="TestRunManager.test_stop_with_error">
+<a class="viewcode-back" href="../../../../appref/chatsky_ui/tests/services.html#chatsky_ui.tests.services.test_process_manager.TestRunManager.test_stop_with_error">[docs]</a>
+    <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_stop_with_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_manager</span><span class="p">,</span> <span class="n">inexistent_id</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">((</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">)):</span>
+            <span class="k">await</span> <span class="n">run_manager</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">inexistent_id</span><span class="p">)</span></div>
+</div>
+
+
+    <span class="c1"># @pytest.mark.asyncio</span>
+    <span class="c1"># async def test_stop_all():</span>
+    <span class="c1">#     pass</span>
+
+    <span class="c1"># def test_check_status(self, run_manager, preset):</span>
+    <span class="c1">#     pass</span>
+
+    <span class="c1"># @pytest.mark.asyncio</span>
+    <span class="c1"># async def test_get_process_info(self, mocker, run_manager):</span>
+    <span class="c1">#     df_conf = OmegaConf.create(</span>
+    <span class="c1">#         f&quot;&quot;&quot;</span>
+    <span class="c1">#         - id: {RUN_ID}</span>
+    <span class="c1">#           status: stopped</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     )</span>
+    <span class="c1">#     df_conf_dict = {</span>
+    <span class="c1">#         &quot;id&quot;: RUN_ID,</span>
+    <span class="c1">#         &quot;status&quot;: &quot;stopped&quot;,</span>
+    <span class="c1">#     }</span>
+
+    <span class="c1">#     read_conf = mocker.patch(&quot;chatsky_ui.services.process_manager.read_conf&quot;)</span>
+    <span class="c1">#     read_conf.return_value = df_conf</span>
+
+    <span class="c1">#     run_info = await run_manager.get_run_info(RUN_ID)</span>
+    <span class="c1">#     assert run_info == df_conf_dict</span>
+
+    <span class="c1"># @pytest.mark.asyncio</span>
+    <span class="c1"># async def test_update_db_n_fetch_run_logs(self, run_process, dummy_run_id, run_manager):</span>
+    <span class="c1">#     process = await run_process(&quot;echo Hello&quot;)</span>
+    <span class="c1">#     process.logger.info(&quot;test log&quot;)</span>
+    <span class="c1">#     await process.update_db_info()</span>
+
+    <span class="c1">#     logs = await run_manager.fetch_run_logs(dummy_run_id, 0, 10)</span>
+
+    <span class="c1">#     assert any([&quot;test log&quot; in log for log in logs])</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Denis Kuznetsov, Maks Rogatkin, Rami Mashkouk.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
