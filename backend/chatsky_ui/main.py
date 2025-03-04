@@ -12,9 +12,19 @@ from chatsky_ui.api.deps import run_manager
 from chatsky_ui.core.config import settings
 
 
-def signal_handler(self, signum):
+def sigint_signal_handler(self, signum):
+    """Gracefully shuts down Chatsky-UI in case of receiving Ctrl+C signal."""
     global stop_background_task
-    print("Caught termination signal, shutting down gracefully...")
+    print("Caught SIGINT termination signal, shutting down gracefully...")
+    for process in run_manager.processes.values():
+        process.to_be_terminated = True
+    settings.temp_conf.unlink(missing_ok=True)
+
+
+def sigterm_signal_handler(self, signum):
+    """Gracefully shuts down Chatsky-UI in case of Uvicorn reloading. (Uvicorn sends SIGTERM to end the app lifespan)"""
+    global stop_background_task
+    print("Caught SIGTERM termination signal, shutting down gracefully and restarting Chatsky-UI...")
     for process in run_manager.processes.values():
         process.to_be_terminated = True
 
@@ -24,10 +34,9 @@ async def lifespan(app: FastAPI):
     if settings.temp_conf.exists():
         settings.refresh_work_dir()
     if threading.current_thread() is threading.main_thread():
-        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGINT, sigint_signal_handler)
+        signal.signal(signal.SIGTERM, sigterm_signal_handler)
     yield
-
-    settings.temp_conf.unlink(missing_ok=True)
     await run_manager.stop_all()
 
 
