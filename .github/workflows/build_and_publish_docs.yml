@@ -33,6 +33,9 @@ jobs:
       - name: remove jekyll theming for api
         run: touch docs/_build/html/.nojekyll
 
+      - name: setup Bun
+        run: npm install -g bun
+
       - name: install ui docs dependencies
         run: bun install
         working-directory: docs/ui-docs
