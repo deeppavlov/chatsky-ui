@@ -72,7 +72,8 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
           </ContextMenu.Trigger>
         )}
       </div>
-      <ContextMenu.Portal>
+
+      {/* <ContextMenu.Portal>
         <ContextMenu.Content className='bg-background p-1 w-36 rounded-xl border border-border'>
           {Object.values(CONDITION_LABELS).map((item) => (
             <ContextMenu.Item
@@ -83,7 +84,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
             </ContextMenu.Item>
           ))}
         </ContextMenu.Content>
-      </ContextMenu.Portal>
+      </ContextMenu.Portal> */}
       {/* <ConditionModal
         data={data}
         isOpen={isConditionOpen}
