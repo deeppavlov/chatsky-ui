@@ -40,7 +40,7 @@ class PipelineConverter(BaseConverter):
 
     def to_yaml(self, dir_path: Path):
         with open(f"{dir_path}/build.yaml", "w", encoding="UTF-8") as file:
-            yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False)
+            yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False, allow_unicode=True)
 
     def _convert(self):
         slots_converter = SlotsConverter(self.pipeline.flows)
