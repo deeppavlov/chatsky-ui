@@ -19,9 +19,9 @@ import CheckIcon from "@/icons/CheckIcon"
 import MicroscopeIcon from "@/icons/MicroscopeIcon"
 
 const BuildManagerPage = () => {
-  const { currentPage } = useContext(workspaceContext)
+  const { currentTab } = useContext(workspaceContext)
   const { saveFlows, flows } = useContext(flowContext)
-  const { buildStart, buildPending, builds, buildStop } = useContext(buildContext)
+  const { buildStart, builds: reversedBuilds, buildStop } = useContext(buildContext)
   const { getFlows } = useContext(flowContext)
   const {
     runStart,
@@ -29,10 +29,12 @@ const BuildManagerPage = () => {
     stopAllRuns,
     startingRunId,
     runStopping,
+    stoppingRunIds,
     runs: reversedRuns,
   } = useContext(runContext)
   const { openPopUp } = useContext(PopUpContext)
   const runs = [...reversedRuns].reverse()
+  const builds = [...reversedBuilds].reverse()
 
   const aliveRuns = runs.filter((r) => r.status === "alive" || r.status === "running")
   const previousRuns = runs.filter(
@@ -124,7 +126,7 @@ const BuildManagerPage = () => {
   return (
     <div
       style={{
-        transform: currentPage === "deliver" ? "translateX(0)" : "translateX(100%)",
+        transform: currentTab === "deliver" ? "translateX(0)" : "translateX(100%)",
       }}
       className='absolute top-0 left-0 transition-all duration-300 pt-24 pb-12 px-10 w-screen h-screen bg-background flex flex-col'
     >
@@ -134,7 +136,7 @@ const BuildManagerPage = () => {
           <h2 className='text-2xl font-semibold'>Deliver</h2>
           <Button
             disableRipple
-            disabled={startingRunId !== null || buildPending}
+            disabled={loading}
             className='bg-foreground text-background rounded-lg'
             onClick={buildAndRunHandler}
           >
@@ -258,6 +260,7 @@ const BuildManagerPage = () => {
                             e.stopPropagation()
                             runStop(r.id)
                           }}
+                          disabled={stoppingRunIds.includes(r.id)}
                           className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
                         >
                           <SquareIcon className='size-4 stroke-foreground' />
@@ -281,6 +284,9 @@ const BuildManagerPage = () => {
                 onClick={handleStopRuns}
                 className='bg-btn-accent rounded-lg w-full flex-shrink-0 flex justify-center items-center gap-2'
               >
+                {runStopping && (
+                  <div className='absolute inset-0 bg-input-border w-full h-full animate-fill-progress opacity-50 z-0'></div>
+                )}
                 <SquareIcon className='size-4 stroke-foreground' />
                 <span className='text-sm text-foreground font-semibold'>Stop all</span>
               </Button>
@@ -300,7 +306,6 @@ const BuildManagerPage = () => {
                 return (
                   <Accordion
                     key={r.id}
-                    isLoading={false}
                     title={r.preset.name}
                     infoBlock={
                       <div className='flex gap-1 items-center overflow-hidden'>
