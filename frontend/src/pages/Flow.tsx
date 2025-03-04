@@ -19,14 +19,11 @@ import { a, useTransition } from "@react-spring/web"
 import "@xyflow/react/dist/style.css"
 import { useParams } from "react-router-dom"
 import { v4 } from "uuid"
-import Chat from "../components/chat/Chat"
 import CustomEdge from "../components/edges/ButtonEdge/ButtonEdge"
-import FootBar from "../components/footbar/FootBar"
 import DefaultNode from "../components/nodes/DefaultNode"
 import LinkNode from "../components/nodes/LinkNode"
 import SlotsNode from "../components/nodes/SlotsNode"
 import ReactFlowCustom from "../components/ReactFlowCustom"
-import SideBar from "../components/sidebar/SideBar"
 import { NODES, NODE_NAMES } from "../consts"
 import { CustomReactFlowInstanceType, flowContext } from "../contexts/flowContext"
 import { MetaContext } from "../contexts/metaContext"
@@ -39,10 +36,7 @@ import { AppNode, NodesTypes } from "../types/NodeTypes"
 import { responseType } from "../types/ResponseTypes"
 import { Preloader } from "../UI/Preloader/Preloader"
 import Fallback from "./Fallback"
-import Logs from "./Logs"
 import NodesLayout from "./NodesLayout"
-import Settings from "./Settings"
-import BuildManagerPage from "./BuildManagerPage"
 
 const nodeTypes = {
   default_node: DefaultNode,
@@ -71,7 +65,6 @@ export default function Flow() {
     selectedNode,
     mouseOnPane,
     managerMode,
-    currentPage,
   } = useContext(workspaceContext)
   const { screenLoading } = useContext(MetaContext)
   const { takeSnapshot, copy, paste, copiedSelection, disableCopyPaste } =
@@ -367,11 +360,8 @@ export default function Flow() {
       setMousePos({ x: e.clientX, y: e.clientY })
     }
 
-    if (currentPage === "edit") {
-      // костыль - чтобы страницы deliver, inspect... не ререндерились при движении мыши. В дальнейшем надо переделать эти страницы как отдельные вкладки
-      document.addEventListener("keydown", kbdHandler)
-      document.addEventListener("mousemove", mouseMoveHandler)
-    }
+    document.addEventListener("keydown", kbdHandler)
+    document.addEventListener("mousemove", mouseMoveHandler)
 
     return () => {
       document.removeEventListener("keydown", kbdHandler)
@@ -413,11 +403,7 @@ export default function Flow() {
   }
 
   return (
-    <div
-      data-testid='flow-page'
-      className='w-screen h-screen relative flex items-start bg-background overflow-x-hidden'
-    >
-      <SideBar />
+    <>
       {transitions((style) => (
         <a.div
           style={{ width: "100%", height: "100vh", ...style }}
@@ -459,6 +445,7 @@ export default function Flow() {
             edgesFocusable={!managerMode}
             snapGrid={workspaceMode ? [24, 24] : [96, 96]}
             snapToGrid={!workspaceMode}
+            reconnectRadius={20}
           >
             <Background
               className='bg-background'
@@ -475,10 +462,6 @@ export default function Flow() {
         </a.div>
       ))}
       {nodesLayoutMode && <NodesLayout />}
-      <Logs />
-      <BuildManagerPage />
-      <Settings />
-      <FootBar />
-    </div>
+    </>
   )
 }
