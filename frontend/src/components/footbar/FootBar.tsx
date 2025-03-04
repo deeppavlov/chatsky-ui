@@ -21,7 +21,7 @@ const FootBar = memo(() => {
   } = useDisclosure()
 
   const { version } = useContext(MetaContext)
-  const { currentPage, setCurrentPage } = useContext(workspaceContext)
+  const { currentTab, setCurrentTab } = useContext(workspaceContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const { notifications } = useContext(NotificationsContext)
@@ -29,23 +29,14 @@ const FootBar = memo(() => {
   const onSelectionChange = useCallback(
     (key: Key) => {
       const pageKey = key as PageType
-      setCurrentPage(pageKey)
+      setCurrentTab(pageKey)
       setSearchParams({
         ...parseSearchParams(searchParams),
         page: pageKey,
       })
     },
-    [searchParams, setSearchParams, setCurrentPage]
+    [searchParams, setSearchParams, setCurrentTab]
   )
-  // const findDefaultSelectedKey = useCallback(() => {
-  //   if (settingsPage) {
-  //     return "Settings"
-  //   } else if (logsPage) {
-  //     return "Inspect"
-  //   } else {
-  //     return "Edit"
-  //   }
-  // }, [settingsPage])
 
   return (
     <div
@@ -55,7 +46,7 @@ const FootBar = memo(() => {
       <div className='absolute w-full flex items-center justify-center'>
         <Tabs
           onSelectionChange={onSelectionChange}
-          defaultSelectedKey={currentPage}
+          defaultSelectedKey={currentTab}
           variant='light'
           className=''
           classNames={{

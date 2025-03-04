@@ -62,8 +62,6 @@ const StartRunForm = () => {
     tokens: [],
   }
 
-  // const formState = JSON.parse(sessionStorage.getItem("startRunFormState") || "{}")
-
   const [formData, setFormData] = useState<IFormData>(formState?.formData || initialFormData)
   const [fieldErrors, setFieldErrors] = useState<IFieldErrors>(formState?.fieldErrors || {})
   const [tokenState, setTokenState] = useState<ITokenState>(
@@ -248,37 +246,6 @@ const StartRunForm = () => {
       setTokenState(formState?.tokenState)
     }
   }, [])
-
-  // useEffect(() => {
-  //   return () => {
-  //     sessionStorage.setItem(
-  //       "startRunFormState",
-  //       JSON.stringify({
-  //         formData,
-  //         tokenState,
-  //         fieldErrors,
-  //       })
-  //     )
-  //   }
-  // }, [formData, tokenState, fieldErrors])
-
-  // useEffect(() => {
-  //   if (Object.hasOwn(formState, "formData")) {
-  //     setFormData(formState?.formData)
-  //     setFieldErrors(formState?.fieldErrors)
-  //     setTokenState(formState?.tokenState)
-  //   }
-  // }, [])
-
-  // useEffect(() => {
-  //   const clearSessionStorage = () => {
-  //     sessionStorage.removeItem("startRunFormState")
-  //   }
-  //   window.addEventListener("beforeunload", clearSessionStorage)
-  //   return () => {
-  //     window.removeEventListener("beforeunload", clearSessionStorage)
-  //   }
-  // }, [])
 
   return (
     <div className='h-full w-full flex flex-col gap-3'>
