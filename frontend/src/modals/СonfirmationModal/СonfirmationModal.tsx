@@ -8,8 +8,15 @@ interface ConfirmationModalProps extends ModalType {
  onDelete: (e: React.MouseEvent) => void
 }
 
-const islinkNode = (flow: FlowType) => {
- return flow.data.nodes.some((node) => node.type === 'link_node')
+const getContent = (arrLink: string[]) => {
+ if (arrLink.length >= 2) {
+  return 'This flow is linked to other flows.'
+ }
+ if (arrLink.length === 1) {
+  return `This flow is linked to ${arrLink[0]}.`
+ }
+
+ return 'This flow contains part of <Project name> dialog.'
 }
 
 const СonfirmationModal = ({
@@ -21,27 +28,23 @@ const СonfirmationModal = ({
 }: ConfirmationModalProps) => {
  console.log(flow, 'СonfirmationModal ')
 
- const genContent = () => {
-  const result = []
+ const getLinckNodeOut = () => {
   const linkNode = flow.data.nodes.filter((node) => node.type === 'link_node')
 
   if (linkNode.length !== 0) {
    const linkNode = flow.data.nodes.filter((node) => node.type === 'link_node')
    const transitions = linkNode.map(({ data }) => data.transition.target_flow)
    const targetFlow = [...new Set(transitions)]
-   result.push(...targetFlow)
-  }
 
-  if (islinkNode(flow)) {
-   result.push(`This flow contains part of <Project name> dialog.`)
+   return targetFlow
   }
-
-  return result
+  return []
  }
 
- //  console.log(targetFlow, 'targetFlow')
+ const linckNodeIn = flow?.toLink?.map((el) => el.flowName) ?? []
+ const linckNodeOut = getLinckNodeOut()
 
- console.log(genContent())
+ const arrLink = [...new Set([...linckNodeIn, ...linckNodeOut])]
 
  return (
   <Modal
@@ -57,7 +60,7 @@ const СonfirmationModal = ({
     {`Do you want to delete ${flow.name}?`}
    </ModalHeader>
    <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
-    <div>{123}</div>
+    <div>{getContent(arrLink)}</div>
    </ModalBody>
    <ModalFooter className="flex-row flex justify-between items-center">
     <div className="flex justify-between w-full">

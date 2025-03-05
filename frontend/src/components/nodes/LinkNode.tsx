@@ -23,6 +23,7 @@ import {
 import { Edge, Handle, Position, useReactFlow } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import classNames from 'classnames'
+import { useParams } from 'react-router-dom'
 import { AlertTriangle, Link2 } from 'lucide-react'
 import { memo, useContext, useEffect, useMemo, useState } from 'react'
 import { flowContext } from '../../contexts/flowContext'
@@ -33,6 +34,8 @@ import { FlowType } from '../../types/FlowTypes'
 import { AppNode, LinkNodeDataType } from '../../types/NodeTypes'
 
 const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
+ const { flowId } = useParams()
+
  const { updateNodeData } = useReactFlow<AppNode, Edge>()
  const { onOpen, onClose, isOpen } = useDisclosure()
  const { flows, deleteNode, updateFlow } = useContext(flowContext)
@@ -44,6 +47,8 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   data.transition.is_configured ?? false
  )
  const { notification: n } = useContext(NotificationsContext)
+
+ const flow = flows.find((flow: FlowType) => flow.name === flowId)
 
  /**
   * This useEffect checks if link configured
@@ -125,8 +130,6 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
  }
 
  const onSave = () => {
-  console.log()
-
   if (toFlow && toNode) {
    const newToLink =
     Object.prototype.hasOwnProperty.call(toFlow, 'toLink') &&
@@ -144,8 +147,12 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     },
    }
 
-   toFlow.toLink = [...newToLink, node]
-   updateFlow(toFlow)
+   const isLinck = toFlow?.toLink?.map((el) => el.id).includes(data.id)
+   if (!isLinck) {
+    toFlow.toLink = [...newToLink, { ...node, flowName: flow?.name }]
+    console.log(toFlow, 'toFlow')
+    updateFlow(toFlow)
+   }
 
    updateNodeData(data.id, node)
    setIsConfigured(true)
@@ -182,7 +189,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
       </PopoverTrigger>
       <PopoverContent>ID: {data.id}</PopoverContent>
      </Popover>
-     {true && (
+     {(!toFlow || !toNode) && isConfigured && (
       <Tooltip
        content="It looks like this node/flow is not defined. Please, re-create it!"
        radius="sm"
