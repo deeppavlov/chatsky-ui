@@ -69,14 +69,15 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
      Edit flow
     </button>
    </div>
-   <СonfirmationModal
-    content={`This flow contains part of <Project name> dialog.`}
-    flow={flow}
-    size={'sm'}
-    isOpen={isOpen}
-    onClose={onClose}
-    onDelete={(e) => deleteFlowHandler(e)}
-   />
+   {isOpen && (
+    <СonfirmationModal
+     flow={flow}
+     size={'sm'}
+     isOpen={isOpen}
+     onClose={onClose}
+     onDelete={(e) => deleteFlowHandler(e)}
+    />
+   )}
   </div>
  )
 }

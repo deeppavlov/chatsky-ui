@@ -6,34 +6,61 @@ import { FlowType } from '../../types/FlowTypes'
 interface ConfirmationModalProps extends ModalType {
  flow: FlowType
  onDelete: (e: React.MouseEvent) => void
- content: string
+}
+
+const islinkNode = (flow: FlowType) => {
+ return flow.data.nodes.some((node) => node.type === 'link_node')
 }
 
 const СonfirmationModal = ({
- content,
  flow,
  isOpen,
  onClose,
  onDelete,
  size = '3xl',
 }: ConfirmationModalProps) => {
- console.log(flow)
+ console.log(flow, 'СonfirmationModal ')
+
+ const genContent = () => {
+  const result = []
+  const linkNode = flow.data.nodes.filter((node) => node.type === 'link_node')
+
+  if (linkNode.length !== 0) {
+   const linkNode = flow.data.nodes.filter((node) => node.type === 'link_node')
+   const transitions = linkNode.map(({ data }) => data.transition.target_flow)
+   const targetFlow = [...new Set(transitions)]
+   result.push(...targetFlow)
+  }
+
+  if (islinkNode(flow)) {
+   result.push(`This flow contains part of <Project name> dialog.`)
+  }
+
+  return result
+ }
+
+ //  console.log(targetFlow, 'targetFlow')
+
+ console.log(genContent())
 
  return (
   <Modal
-   className="bg-background"
+   className="bg-background w-[368px] p-[24px] pt-[16px]"
    isOpen={isOpen}
    onClose={onClose}
    size={size}
   >
-   <ModalHeader className={'!justify-center'} showCloseButton={false}>
+   <ModalHeader
+    className={'!justify-center pb-[0px] pt-[8px]'}
+    showCloseButton={false}
+   >
     {`Do you want to delete ${flow.name}?`}
    </ModalHeader>
    <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
-    <div>{content}</div>
+    <div>{123}</div>
    </ModalBody>
    <ModalFooter className="flex-row flex justify-between items-center">
-    <div className="flex gap-[16px] w-full">
+    <div className="flex justify-between w-full">
      <Button className="h-[40px] w-[152px] rounded-[10px]" onClick={onClose}>
       Cancel
      </Button>
