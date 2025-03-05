@@ -12,7 +12,7 @@ import RebuildModal from "@/modals/RebuildModal/RebuildModal"
 import RestoreBuildModal from "@/modals/RestoreBuildModal/RestoreBuildModal"
 import ScrolledContainer from "@/UI/ScrolledContainer/ScrolledContainer"
 import { formatRelativeTime, formatTimestamp } from "@/utils"
-import { Button, Divider } from "@nextui-org/react"
+import { Button, Divider, Tooltip } from "@nextui-org/react"
 import { RefreshCw, SquareArrowOutUpRight, SquareIcon, X } from "lucide-react"
 import { useContext, useState } from "react"
 import CheckIcon from "@/icons/CheckIcon"
@@ -207,15 +207,26 @@ const BuildManagerPage = () => {
                             </>
                           )}
                           {b.status === "running" && (
-                            <button
-                              onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation()
-                                buildStop(b.id)
+                            <Tooltip
+                              classNames={{
+                                content: [
+                                  "h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]",
+                                ],
                               }}
-                              className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
+                              content='Stop building'
+                              placement='bottom'
+                              offset={4}
                             >
-                              <SquareIcon className='size-4 stroke-foreground' />
-                            </button>
+                              <button
+                                onClick={(e: React.MouseEvent) => {
+                                  e.stopPropagation()
+                                  buildStop(b.id)
+                                }}
+                                className='h-6 w-6 flex justify-center items-center active:scale-95 stroke-none fill-input-border  hover:fill-text-secondary'
+                              >
+                                <SquareIcon className='size-[18px] stroke-inherit fill-inherit' />
+                              </button>
+                            </Tooltip>
                           )}
                         </div>
                       }
@@ -252,19 +263,34 @@ const BuildManagerPage = () => {
                   return (
                     <Accordion
                       key={r.id}
-                      isLoading={r.status === "running" || r.id === startingRunId}
+                      isLoading={
+                        r.status === "running" ||
+                        r.id === startingRunId ||
+                        stoppingRunIds.includes(r.id)
+                      }
                       title={r.preset.name}
                       infoBlock={
-                        <button
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation()
-                            runStop(r.id)
+                        <Tooltip
+                          classNames={{
+                            content: [
+                              "h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]",
+                            ],
                           }}
-                          disabled={stoppingRunIds.includes(r.id)}
-                          className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
+                          content='Stop running'
+                          placement='bottom'
+                          offset={4}
                         >
-                          <SquareIcon className='size-4 stroke-foreground' />
-                        </button>
+                          <button
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation()
+                              runStop(r.id)
+                            }}
+                            disabled={stoppingRunIds.includes(r.id)}
+                            className='h-6 w-6 flex justify-center items-center active:scale-95 stroke-none fill-input-border  hover:fill-text-secondary'
+                          >
+                            <SquareIcon className='size-[18px] stroke-inherit fill-inherit' />
+                          </button>
+                        </Tooltip>
                       }
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
@@ -287,7 +313,7 @@ const BuildManagerPage = () => {
                 {runStopping && (
                   <div className='absolute inset-0 bg-input-border w-full h-full animate-fill-progress opacity-50 z-0'></div>
                 )}
-                <SquareIcon className='size-4 stroke-foreground' />
+                <SquareIcon className='size-[18px] stroke-none fill-text' />
                 <span className='text-sm text-foreground font-semibold'>Stop all</span>
               </Button>
             </div>

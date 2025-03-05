@@ -55,7 +55,8 @@
     --condition-output-handle: #ff963b;
     --condition-link-input: #f5b75a;
 
-    --text: black;
+    --text: #000000e5;
+    --text-secondary: #000000b2;
 
     --double-active: #fff;
     --double-inactive: hsl(210 40% 98%);
@@ -132,7 +133,8 @@
 
       --table-background: #353434;
 
-      --text: white;
+      --text: #ffffffe5;
+      --text-secondary: #ffffffb2;
       --btn-black: var(--accent);
 
       --radius: 0.5rem;

@@ -19,6 +19,7 @@ export default {
         "condition-output-handle": "var(--condition-output-handle)",
         border: "var(--border)",
         text: "var(--text)",
+        "text-secondary": "var(--text-secondary)",
         "btn-black": "var(--btn-black)",
         "round-btn-shadow": "var(--round-btn-shadow)",
         "double-active": "var(--double-active)",
@@ -92,6 +93,7 @@ export default {
           medium: "0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)",
           large: "0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)",
         },
+        color: "red",
       },
       themes: {
         dark: {
