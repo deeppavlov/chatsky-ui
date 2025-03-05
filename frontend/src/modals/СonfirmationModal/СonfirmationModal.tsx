@@ -2,7 +2,7 @@ import { Button } from '@nextui-org/react'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import { ModalType } from '../../types/ModalTypes'
 import { FlowType } from '../../types/FlowTypes'
-
+import { LinkNodeDataType } from '../../types/NodeTypes'
 interface ConfirmationModalProps extends ModalType {
  flow: FlowType
  onDelete: (e: React.MouseEvent) => void
@@ -29,19 +29,18 @@ const СonfirmationModal = ({
  console.log(flow, 'СonfirmationModal ')
 
  const getLinckNodeOut = () => {
-  const linkNode = flow.data.nodes.filter((node) => node.type === 'link_node')
+  const linkNodes = flow.data.nodes.filter((node) => node.type === 'link_node');
 
-  if (linkNode.length !== 0) {
-   const linkNode = flow.data.nodes.filter((node) => node.type === 'link_node')
-   const transitions = linkNode.map(({ data }) => data.transition.target_flow)
-   const targetFlow = [...new Set(transitions)]
-
-   return targetFlow
+  if (linkNodes.length !== 0) {
+    const transitions = linkNodes.map((node) =>
+      (node.data as LinkNodeDataType).transition.target_flow
+    );
+    return [...new Set(transitions)];
   }
-  return []
+  return [];
  }
 
- const linckNodeIn = flow?.toLink?.map((el) => el.flowName) ?? []
+ const linckNodeIn = (flow?.toLink?.map((el) => el.flowName) ?? []).filter((name): name is string => !!name);
  const linckNodeOut = getLinckNodeOut()
 
  const arrLink = [...new Set([...linckNodeIn, ...linckNodeOut])]
