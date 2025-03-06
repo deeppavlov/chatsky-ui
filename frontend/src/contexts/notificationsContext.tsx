@@ -13,6 +13,7 @@ export type notificationType = {
   duration: number
   timestamp: number
   stack: number
+  isRead: boolean
 }
 
 export type createNotificationType = {
@@ -30,7 +31,7 @@ type notificationsContextType = {
     add: (notification: createNotificationType) => void
     delete: (timestamp: number) => void
     clear: () => void
-    set: (notifications: notificationType[]) => void
+    set: React.Dispatch<React.SetStateAction<notificationType[]>>
   }
   popupsDisabled: boolean
   setPopupsDisabled: React.Dispatch<React.SetStateAction<boolean>>
@@ -126,7 +127,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     stack = 1,
   }: createNotificationType) => {
     const color = notificationTypeColor(type)
-    const notification = { title, message, type, timestamp, stack, duration }
+    const notification = { title, message, type, timestamp, stack, duration, isRead: false }
     setNotifications((prevNotifications) => [...prevNotifications, notification])
     !popupsDisabled &&
       toast.custom(
