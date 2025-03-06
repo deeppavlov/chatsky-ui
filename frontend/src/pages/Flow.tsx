@@ -330,18 +330,18 @@ export default function Flow() {
    */
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
-        e.preventDefault()
-        if (selection) {
-          copy(selection)
-        }
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "v" && !disableCopyPaste) {
-        e.preventDefault()
-        if (reactFlowInstance && flow && flow.name === flowId && copiedSelection) {
-          paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
-        }
-      }
+      // if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
+      //   e.preventDefault()
+      //   if (selection) {
+      //     copy(selection)
+      //   }
+      // }
+      // if ((e.ctrlKey || e.metaKey) && e.key === "v" && !disableCopyPaste) {
+      //   e.preventDefault()
+      //   if (reactFlowInstance && flow && flow.name === flowId && copiedSelection) {
+      //     paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
+      //   }
+      // }
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
