@@ -150,7 +150,6 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
    const isLinck = toFlow?.toLink?.map((el) => el.id).includes(data.id)
    if (!isLinck) {
     toFlow.toLink = [...newToLink, { ...node, flowName: flow?.name }]
-    console.log(toFlow, 'toFlow')
     updateFlow(toFlow)
    }
 
@@ -286,7 +285,17 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
            selectedKeys={toFlow ? [toFlow.name] : []}
            onChange={handleFlowSelectionChange}
            size="sm"
-           items={flows}
+           items={
+            flows.filter((flow) => {
+             return ![
+              'Global flow',
+              'Global node',
+              'Local node',
+              'Global',
+              'Local',
+             ].includes(flow.name!)
+            }) ?? []
+           }
           >
            {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
           </Select>
@@ -311,8 +320,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
            items={
             toFlow?.data.nodes.filter((node) => {
              return (
-              !['link_node', 'global', 'local'].includes(node.type!) &&
-              !['LOCAL NODE', 'GLOBAL NODE'].includes(node.data.name!)
+              !['link_node', 'global', 'local', 'slots_node'].includes(
+               node.type!
+              ) && !['LOCAL NODE', 'GLOBAL NODE'].includes(node.data.name!)
              )
             }) ?? []
            }
