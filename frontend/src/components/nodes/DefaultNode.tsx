@@ -1,11 +1,11 @@
-import { Button, useDisclosure } from '@nextui-org/react'
+import { Button, useDisclosure, Tooltip } from '@nextui-org/react'
 import { Handle, Position } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import classNames from 'classnames'
 import { PlusIcon } from 'lucide-react'
 import { memo, useContext, useMemo, useState } from 'react'
 import { PopUpContext } from '../../contexts/popUpContext'
-import { workspaceContext } from '../../contexts/workspaceContext'
+
 import EditNodeIcon from '../../icons/nodes/EditNodeIcon'
 import FallbackNodeIcon from '../../icons/nodes/FallbackNodeIcon'
 import GlobalNodeIcon from '../../icons/nodes/GlobalNodeIcon'
@@ -55,8 +55,31 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
    <div id={data.id} data-testid={data.id} className="default_node">
     <div className="custom-drag-handle w-full flex justify-between items-center bg-node-header border-b border-border rounded-t-node pl-[23px] pr-[18px] py-2 gap-[8px]">
      <div className="flex ">
-      {data.flags?.includes('start') && <StartNodeIcon  />}
-      {data.flags?.includes('fallback') && <FallbackNodeIcon />}
+      {data.flags?.includes('start') && (
+       <Tooltip
+        placement="bottom"
+        radius="sm"
+        content="Start node"
+        className="px-[12px] py-[8px]"
+       >
+        <div className="bg-transparent border-none">
+         <StartNodeIcon />
+        </div>
+       </Tooltip>
+      )}
+
+      {data.flags?.includes('fallback') && (
+       <Tooltip
+        placement="bottom"
+        radius="sm"
+        content="Fallback node"
+        className="px-[12px] py-[8px]"
+       >
+        <div className="bg-transparent border-none">
+         <FallbackNodeIcon />
+        </div>
+       </Tooltip>
+      )}
      </div>
 
      <div className="flex items-center w-full">
