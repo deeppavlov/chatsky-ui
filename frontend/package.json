@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "env DEV=true vite",
     "build": "env DEV=false tsc && vite build",
-    "lint": "prettier --write --print-width 120 . && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "prettier --write . && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "jest",
     "e2e": "cypress run",
