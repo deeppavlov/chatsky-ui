@@ -52,7 +52,7 @@ jobs:
         with:
           branch: gh-pages
           folder: docs/_build/html
-          target-folder: backend
+          target-folder: api
           single-commit: True
 
       - name: deploy frontend documentation
@@ -60,5 +60,5 @@ jobs:
         with:
           branch: gh-pages
           folder: docs/ui-docs/out
-          target-folder: frontend
+          target-folder: ui
           single-commit: True

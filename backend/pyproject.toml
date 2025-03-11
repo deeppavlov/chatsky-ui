@@ -10,6 +10,7 @@ authors = [
 ]
 readme = "README.md"
 packages = [{include = "chatsky_ui"}]
+documentation = "https://deeppavlov.github.io/chatsky-ui/ui"
 
 [tool.poetry.dependencies]
 python = "^3.9,!=3.9.7"
