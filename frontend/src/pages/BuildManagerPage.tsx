@@ -1,4 +1,4 @@
-import { checkBuildIsChanged } from "@/api/bot"
+import { checkBuildIsChanged, messengerType } from "@/api/bot"
 import Accordion, { StringItem } from "@/components/deliver/Accordion"
 import BuildForm from "@/components/deliver/BuildForm"
 import StartRunForm from "@/components/deliver/StartRunForm"
@@ -12,16 +12,25 @@ import RebuildModal from "@/modals/RebuildModal/RebuildModal"
 import RestoreBuildModal from "@/modals/RestoreBuildModal/RestoreBuildModal"
 import ScrolledContainer from "@/UI/ScrolledContainer/ScrolledContainer"
 import { formatRelativeTime, formatTimestamp } from "@/utils"
-import { Button, Divider } from "@nextui-org/react"
+import { Button, Divider, Tooltip } from "@nextui-org/react"
 import { RefreshCw, SquareArrowOutUpRight, SquareIcon, X } from "lucide-react"
 import { useContext, useState } from "react"
 import CheckIcon from "@/icons/CheckIcon"
 import MicroscopeIcon from "@/icons/MicroscopeIcon"
 
+interface IMessengersMap {
+  web: string
+  telegram: string
+}
+const messengerMap: IMessengersMap = {
+  telegram: "Telegram",
+  web: "Preview",
+}
+
 const BuildManagerPage = () => {
-  const { currentPage } = useContext(workspaceContext)
+  const { currentTab } = useContext(workspaceContext)
   const { saveFlows, flows } = useContext(flowContext)
-  const { buildStart, buildPending, builds, buildStop } = useContext(buildContext)
+  const { buildStart, builds: reversedBuilds, buildStop } = useContext(buildContext)
   const { getFlows } = useContext(flowContext)
   const {
     runStart,
@@ -29,10 +38,12 @@ const BuildManagerPage = () => {
     stopAllRuns,
     startingRunId,
     runStopping,
+    stoppingRunIds,
     runs: reversedRuns,
   } = useContext(runContext)
   const { openPopUp } = useContext(PopUpContext)
   const runs = [...reversedRuns].reverse()
+  const builds = [...reversedBuilds].reverse()
 
   const aliveRuns = runs.filter((r) => r.status === "alive" || r.status === "running")
   const previousRuns = runs.filter(
@@ -124,7 +135,7 @@ const BuildManagerPage = () => {
   return (
     <div
       style={{
-        transform: currentPage === "deliver" ? "translateX(0)" : "translateX(100%)",
+        transform: currentTab === "deliver" ? "translateX(0)" : "translateX(100%)",
       }}
       className='absolute top-0 left-0 transition-all duration-300 pt-24 pb-12 px-10 w-screen h-screen bg-background flex flex-col'
     >
@@ -134,7 +145,7 @@ const BuildManagerPage = () => {
           <h2 className='text-2xl font-semibold'>Deliver</h2>
           <Button
             disableRipple
-            disabled={startingRunId !== null || buildPending}
+            disabled={loading}
             className='bg-foreground text-background rounded-lg'
             onClick={buildAndRunHandler}
           >
@@ -205,20 +216,31 @@ const BuildManagerPage = () => {
                             </>
                           )}
                           {b.status === "running" && (
-                            <button
-                              onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation()
-                                buildStop(b.id)
+                            <Tooltip
+                              classNames={{
+                                content: [
+                                  "h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]",
+                                ],
                               }}
-                              className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
+                              content='Stop building'
+                              placement='bottom'
+                              offset={4}
                             >
-                              <SquareIcon className='size-4 stroke-foreground' />
-                            </button>
+                              <button
+                                onClick={(e: React.MouseEvent) => {
+                                  e.stopPropagation()
+                                  buildStop(b.id)
+                                }}
+                                className='h-6 w-6 flex justify-center items-center active:scale-95 stroke-none fill-input-border  hover:fill-text-secondary'
+                              >
+                                <SquareIcon className='size-[18px] stroke-inherit fill-inherit' />
+                              </button>
+                            </Tooltip>
                           )}
                         </div>
                       }
                     >
-                      <StringItem content={["Messenger: ", b.preset.messenger]} />
+                      <StringItem content={["Messenger: ", messengerMap[b.preset.messenger]]} />
                       <StringItem content={["Preset: ", b.preset.preset]} />
                       <StringItem content={["Date: ", formatTimestamp(b.timestamp)]} />
                       <StringItem content={["Status: ", b.status]} />
@@ -250,22 +272,41 @@ const BuildManagerPage = () => {
                   return (
                     <Accordion
                       key={r.id}
-                      isLoading={r.status === "running" || r.id === startingRunId}
+                      isLoading={
+                        r.status === "running" ||
+                        r.id === startingRunId ||
+                        stoppingRunIds.includes(r.id)
+                      }
                       title={r.preset.name}
                       infoBlock={
-                        <button
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation()
-                            runStop(r.id)
+                        <Tooltip
+                          classNames={{
+                            content: [
+                              "h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]",
+                            ],
                           }}
-                          className='h-6 w-6 flex justify-center items-center active:scale-95 hover:scale-105'
+                          content='Stop running'
+                          placement='bottom'
+                          offset={4}
                         >
-                          <SquareIcon className='size-4 stroke-foreground' />
-                        </button>
+                          <button
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation()
+                              runStop(r.id)
+                            }}
+                            disabled={stoppingRunIds.includes(r.id)}
+                            className='h-6 w-6 flex justify-center items-center active:scale-95 stroke-none fill-input-border  hover:fill-text-secondary'
+                          >
+                            <SquareIcon className='size-[18px] stroke-inherit fill-inherit' />
+                          </button>
+                        </Tooltip>
                       }
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
-                      <StringItem content={["Messenger: ", buildMessenger]} />
+                      <StringItem content={["Messenger: ", messengerMap[buildMessenger]]} />
+                      {r.preset.tg_bot_token && (
+                        <StringItem content={["Token: ", r.preset.tg_bot_token]} />
+                      )}
                       <StringItem content={["Build preset: ", buildPreset]} />
                       <StringItem content={["Run preset: ", r.preset.preset]} />
                       <StringItem content={["Date: ", formatTimestamp(r.timestamp)]} />
@@ -278,7 +319,10 @@ const BuildManagerPage = () => {
                 onClick={handleStopRuns}
                 className='bg-btn-accent rounded-lg w-full flex-shrink-0 flex justify-center items-center gap-2'
               >
-                <SquareIcon className='size-4 stroke-foreground' />
+                {runStopping && (
+                  <div className='absolute inset-0 bg-input-border w-full h-full animate-fill-progress opacity-50 z-0'></div>
+                )}
+                <SquareIcon className='size-[18px] stroke-none fill-text' />
                 <span className='text-sm text-foreground font-semibold'>Stop all</span>
               </Button>
             </div>
@@ -297,7 +341,6 @@ const BuildManagerPage = () => {
                 return (
                   <Accordion
                     key={r.id}
-                    isLoading={false}
                     title={r.preset.name}
                     infoBlock={
                       <div className='flex gap-1 items-center overflow-hidden'>
@@ -308,7 +351,10 @@ const BuildManagerPage = () => {
                     }
                   >
                     <StringItem content={["Build: ", r.preset.build_name]} />
-                    <StringItem content={["Messenger: ", buildMessenger]} />
+                    <StringItem content={["Messenger: ", messengerMap[buildMessenger]]} />
+                    {r.preset.tg_bot_token && (
+                      <StringItem content={["Token: ", r.preset.tg_bot_token]} />
+                    )}
                     <StringItem content={["Build preset: ", buildPreset]} />
                     <StringItem content={["Run preset: ", r.preset.preset]} />
                     <StringItem content={["Date: ", formatTimestamp(r.timestamp)]} />
@@ -357,7 +403,10 @@ const BuildManagerPage = () => {
                       }
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
-                      <StringItem content={["Messenger: ", buildMessenger]} />
+                      <StringItem content={["Messenger: ", messengerMap[buildMessenger]]} />
+                      {r.preset.tg_bot_token && (
+                        <StringItem content={["Token: ", r.preset.tg_bot_token]} />
+                      )}
                       <StringItem content={["Build preset: ", buildPreset]} />
                       <StringItem content={["Run preset: ", r.preset.preset]} />
                       <StringItem content={["Date: ", formatTimestamp(r.timestamp)]} />

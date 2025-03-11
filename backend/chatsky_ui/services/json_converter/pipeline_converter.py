@@ -66,7 +66,7 @@ class PipelineConverter(BaseConverter):
             dir_path (Path): Path to the directory, where the output .yaml file will be dumped.
         """
         with open(f"{dir_path}/build.yaml", "w", encoding="UTF-8") as file:
-            yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False)
+            yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False, allow_unicode=True)
 
     def _convert(self):
         """Converts the inputs into a Chatsky `Pipeline` and returns it. It really returns a dictionary, but since
