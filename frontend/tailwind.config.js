@@ -20,6 +20,7 @@ export default {
         border: "var(--border)",
         text: "var(--text)",
         "text-secondary": "var(--text-secondary)",
+        "text-addition": "var(--text-addition)",
         "btn-black": "var(--btn-black)",
         "round-btn-shadow": "var(--round-btn-shadow)",
         "double-active": "var(--double-active)",

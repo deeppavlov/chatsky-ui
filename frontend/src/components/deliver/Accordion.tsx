@@ -39,7 +39,7 @@ const Accordion: FC<Props> = ({ title, children, infoBlock, isLoading }) => {
         )}
         <ChevronRightIcon
           className={cn(
-            "size-4 transition-all duration-300 stroke-input-border",
+            "size-4 transition-all duration-300 stroke-input-border shrink-0",
             isOpen && "rotate-90"
           )}
         />
@@ -57,7 +57,7 @@ const Accordion: FC<Props> = ({ title, children, infoBlock, isLoading }) => {
           transition: "height 0.3s ease",
           overflow: "hidden",
         }}
-        className='overflow-hidden px-6 flex flex-col mt-1'
+        className='overflow-hidden ps-6 pe-2 flex flex-col mt-1'
       >
         {children}
       </div>

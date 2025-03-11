@@ -57,6 +57,7 @@
 
     --text: #000000e5;
     --text-secondary: #000000b2;
+    --text-addition: #8d96b5;
 
     --double-active: #fff;
     --double-inactive: hsl(210 40% 98%);
@@ -135,6 +136,7 @@
 
       --text: #ffffffe5;
       --text-secondary: #ffffffb2;
+      --text-addition: #3f3f46;
       --btn-black: var(--accent);
 
       --radius: 0.5rem;

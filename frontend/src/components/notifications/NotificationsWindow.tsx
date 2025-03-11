@@ -11,6 +11,7 @@ import { AlertOctagon, AlertTriangle, BugIcon, CheckCircle2, InfoIcon, Trash } f
 import { useContext, useState } from "react"
 import { NotificationsContext } from "../../contexts/notificationsContext"
 import NotificationComponent from "./components/NotificationComponent"
+import cn from "classnames"
 
 type NotificationsWindowProps = {
   isOpen: boolean
@@ -86,9 +87,12 @@ export const NotificationsWindow = ({ setIsOpen }: NotificationsWindowProps) => 
                 setPopupsDisabled((prev) => !prev)
               }}
               checked={!popupsDisabled}
-              className='bg-text-secondary w-11 h-6 rounded-2xl p-[2px]'
+              className={cn(
+                "w-11 h-6 rounded-2xl p-[2px]",
+                popupsDisabled ? "bg-text-addition" : "bg-text-secondary"
+              )}
             >
-              <Switch.Thumb className='h-5 w-6 bg-white block rounded-full data-[state="checked"]:translate-x-4 transition-all duration-150' />
+              <Switch.Thumb className='h-5 w-6 bg-background block rounded-full data-[state="checked"]:translate-x-4 transition-all duration-150' />
             </Switch.Root>
           </Tooltip>
           <h1 className='text-medium font-medium'>Notifications</h1>
