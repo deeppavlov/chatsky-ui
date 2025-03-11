@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
         signal.signal(signal.SIGINT, signal_handler)
         signal.signal(signal.SIGTERM, signal_handler)
     yield
-    
+
     run_manager.set_logger()
     await run_manager.stop_all()
 
