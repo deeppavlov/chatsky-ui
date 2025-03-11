@@ -12,7 +12,7 @@ import ScrolledContainer from "@/UI/ScrolledContainer/ScrolledContainer"
 
 const Logs = memo(() => {
   const { builds } = useContext(buildContext)
-  const { currentPage } = useContext(workspaceContext)
+  const { currentTab } = useContext(workspaceContext)
   const { runs } = useContext(runContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [currentItem, setCurrentItem] = useState<localBuildType | localRunType | null>(
@@ -36,7 +36,7 @@ const Logs = memo(() => {
     <div
       className='w-screen h-screen absolute transition-transform duration-300 bg-background pt-14 pb-12 pl-8 pr-0 grid grid-cols-6 gap-6'
       style={{
-        transform: currentPage === "inspect" ? "translateX(0%)" : `translateX(100%)`,
+        transform: currentTab === "inspect" ? "translateX(0%)" : `translateX(100%)`,
       }}
     >
       <div className='pt-6 flex flex-col gap-4'>

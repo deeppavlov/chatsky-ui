@@ -5,14 +5,14 @@ import { themeContext } from "../contexts/themeContext"
 import { workspaceContext } from "../contexts/workspaceContext"
 
 const Settings = memo(() => {
-  const { currentPage } = useContext(workspaceContext)
+  const { currentTab } = useContext(workspaceContext)
   const { theme, toggleTheme } = useContext(themeContext)
 
   return (
     <>
       <div
         style={{
-          transform: currentPage === "settings" ? "translateX(0)" : "translateX(100%)",
+          transform: currentTab === "settings" ? "translateX(0)" : "translateX(100%)",
           // display: settingsPage ? "block" : "none",
         }}
         className='absolute top-0 left-0 transition-all duration-300 pt-24 pb-14 px-12 w-screen h-screen bg-background'

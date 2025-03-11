@@ -17,7 +17,7 @@ const FormString: React.FC<IProps> = ({ label, input, isError, errorMessage }) =
             <span
               className={cn(
                 "text-sm font-semibold whitespace-nowrap",
-                isError ? "text-danger" : "text-base"
+                isError ? "text-danger" : "text-text-secondary"
               )}
             >
               {label}

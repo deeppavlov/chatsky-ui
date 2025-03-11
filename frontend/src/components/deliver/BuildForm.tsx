@@ -6,8 +6,9 @@ import { useContext, useEffect, useState } from "react"
 import FormControl from "../../UI/FormControl"
 import RebuildModal from "@/modals/RebuildModal/RebuildModal"
 import { PopUpContext } from "@/contexts/popUpContext"
+import { workspaceContext } from "@/contexts/workspaceContext"
 
-interface IFormData {
+export interface IFormData {
   name: string
   messenger: messengerType
   preset: string
@@ -15,10 +16,11 @@ interface IFormData {
 
 const messengers = [
   { label: "Telegram", key: "telegram" },
-  { label: "Web", key: "web" },
+  { label: "Preview", key: "web" },
 ]
 
 const BuildForm = () => {
+  const { buildFormData, setBuildFormData } = useContext(workspaceContext)
   const { buildStart, buildPending, builds } = useContext(buildContext)
   const { openPopUp } = useContext(PopUpContext)
 
@@ -27,7 +29,7 @@ const BuildForm = () => {
     messenger: "web",
     preset: "None",
   }
-  const [formData, setFormData] = useState<IFormData>(initialData)
+  const [formData, setFormData] = useState<IFormData>(buildFormData ?? initialData)
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -37,11 +39,14 @@ const BuildForm = () => {
   }
 
   const handleMessengerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!e.target.value) {
+      return
+    }
     setFormData(
       (prev) =>
         ({
           ...prev,
-          messenger: e.target.value || "web",
+          messenger: e.target.value,
         } as IFormData)
     )
   }
@@ -85,6 +90,17 @@ const BuildForm = () => {
     setFormData((prev) => ({ ...prev, name: `Build ${builds.length}` }))
   }, [builds])
 
+  useEffect(() => {
+    return () => {
+      setBuildFormData(formData)
+    }
+  }, [formData, setBuildFormData])
+  useEffect(() => {
+    if (buildFormData) {
+      setFormData(buildFormData)
+    }
+  }, [])
+
   return (
     <div className='h-full w-full flex flex-col gap-3'>
       <div className='flex-grow flex flex-col'>
@@ -114,8 +130,8 @@ const BuildForm = () => {
             <Select
               aria-label='Messenger'
               labelPlacement='outside'
-              placeholder='Web'
-              defaultSelectedKeys={["web"]}
+              placeholder='Preview'
+              selectedKeys={[formData.messenger]}
               value={formData.messenger}
               onChange={handleMessengerChange}
               radius='sm'

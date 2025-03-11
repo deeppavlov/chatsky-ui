@@ -13,6 +13,7 @@ export type notificationType = {
   duration: number
   timestamp: number
   stack: number
+  isRead: boolean
 }
 
 export type createNotificationType = {
@@ -30,8 +31,10 @@ type notificationsContextType = {
     add: (notification: createNotificationType) => void
     delete: (timestamp: number) => void
     clear: () => void
-    set: (notifications: notificationType[]) => void
+    set: React.Dispatch<React.SetStateAction<notificationType[]>>
   }
+  popupsDisabled: boolean
+  setPopupsDisabled: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const NotificationsContext = createContext<notificationsContextType>({
@@ -42,10 +45,13 @@ export const NotificationsContext = createContext<notificationsContextType>({
     clear: () => {},
     set: () => {},
   },
+  popupsDisabled: false,
+  setPopupsDisabled: () => {},
 })
 
 const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
   const [notifications, setNotifications] = useLocalStorage<notificationType[]>("notifications", [])
+  const [popupsDisabled, setPopupsDisabled] = useLocalStorage("popupsDisabled", false)
 
   /**
    * This function returns notification toast classNames by notification type
@@ -121,38 +127,43 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     stack = 1,
   }: createNotificationType) => {
     const color = notificationTypeColor(type)
-    const notification = { title, message, type, timestamp, stack, duration }
+    const notification = { title, message, type, timestamp, stack, duration, isRead: false }
     setNotifications((prevNotifications) => [...prevNotifications, notification])
-    toast.custom(
-      (t) => (
-        <div
-          className={classNames(
-            t.visible ? "animate-appearance-in" : "animate-appearance-out",
-            "p-2 rounded-lg",
-            color,
-            `z-50 max-w-sm w-max rounded-lg pointer-events-auto flex border`
-          )}>
-          <div className='grid gap-1'>
-            <div className='flex items-center justify-start gap-2'>
-              {notificationTypeIcon(notification.type)}
-              <h3
-                className={classNames(
-                  "text-base font-medium",
-                  notificationHeaderColor(notification.type)
-                )}>
-                {notification.title}
-              </h3>
-            </div>
-            {notification.message && (
-              <p className='text-sm text-neutral-500 whitespace-pre-wrap'>{notification.message}</p>
+    !popupsDisabled &&
+      toast.custom(
+        (t) => (
+          <div
+            className={classNames(
+              t.visible ? "animate-appearance-in" : "animate-appearance-out",
+              "p-2 rounded-lg",
+              color,
+              `z-50 max-w-sm w-max rounded-lg pointer-events-auto flex border`
             )}
+          >
+            <div className='grid gap-1'>
+              <div className='flex items-center justify-start gap-2'>
+                {notificationTypeIcon(notification.type)}
+                <h3
+                  className={classNames(
+                    "text-base font-medium",
+                    notificationHeaderColor(notification.type)
+                  )}
+                >
+                  {notification.title}
+                </h3>
+              </div>
+              {notification.message && (
+                <p className='text-sm text-neutral-500 whitespace-pre-wrap'>
+                  {notification.message}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ),
-      {
-        id: message,
-      }
-    )
+        ),
+        {
+          id: message,
+        }
+      )
   }
 
   /**
@@ -181,7 +192,10 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         notifications,
         notification,
-      }}>
+        popupsDisabled,
+        setPopupsDisabled,
+      }}
+    >
       {children}
     </NotificationsContext.Provider>
   )

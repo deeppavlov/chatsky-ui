@@ -43,7 +43,7 @@ const ScrolledContainer: React.FC<ScrolledContainerProps> = ({ children, classNa
     return () => {
       resizeObserver.disconnect() // Очистка наблюдателя при размонтировании
     }
-  }, [])
+  }, [children])
 
   return (
     <div className={cn("flex w-full max-h-full", className)}>

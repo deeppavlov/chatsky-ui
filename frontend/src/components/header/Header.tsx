@@ -18,6 +18,7 @@ import NodeInstruments from "./components/NodeInstruments"
 const Header = memo(() => {
   const { version } = useContext(MetaContext)
   const location = useLocation()
+
   const {
     toggleWorkspaceMode,
     workspaceMode,
@@ -26,6 +27,7 @@ const Header = memo(() => {
     selectedNode,
     managerMode,
     toggleManagerMode,
+    currentTab,
   } = useContext(workspaceContext)
   const { flows, tab, saveFlows } = useContext(flowContext)
   const { undo, redo } = useContext(undoRedoContext)
@@ -100,48 +102,50 @@ const Header = memo(() => {
               }
             />
           </div>
-          <div className='flex items-center gap-1.5'>
-            <Tooltip radius='sm' content={`Grab mode ${managerMode ? "on" : "off"}`}>
-              <Button
-                isIconOnly
-                onClick={toggleManagerMode}
-                className={classNames(
-                  " bg-background hover:bg-overlay border border-border rounded-small",
-                  managerMode ? "bg-overlay border-border-darker" : ""
-                )}
-              >
-                <GrabModeIcon />
-              </Button>
-            </Tooltip>
-            <Tooltip radius='sm' content={`Free grid mode ${workspaceMode ? "on" : "off"}`}>
-              <Button
-                onClick={toggleWorkspaceMode}
-                isIconOnly
-                className={classNames(
-                  " bg-background hover:bg-overlay border border-border rounded-small",
-                  workspaceMode ? "bg-overlay border-border-darker" : ""
-                )}
-              >
-                <GridModeIcon />
-              </Button>
-            </Tooltip>
-            <Tooltip radius='sm' content={`List mode ${nodesLayoutMode ? "on" : "off"}`}>
-              <Button
-                onClick={toggleNodesLayoutMode}
-                isIconOnly
-                className={classNames(
-                  " bg-background hover:bg-overlay border border-border rounded-small",
-                  nodesLayoutMode ? "bg-overlay border-border-darker" : ""
-                )}
-              >
-                <ListViewIcon />
-              </Button>
-            </Tooltip>
-          </div>
+          {currentTab === "edit" && (
+            <div className='flex items-center gap-1.5'>
+              <Tooltip radius='sm' content={`Grab mode ${managerMode ? "on" : "off"}`}>
+                <Button
+                  isIconOnly
+                  onClick={toggleManagerMode}
+                  className={classNames(
+                    " bg-background hover:bg-overlay border border-border rounded-small",
+                    managerMode ? "bg-overlay border-border-darker" : ""
+                  )}
+                >
+                  <GrabModeIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip radius='sm' content={`Free grid mode ${workspaceMode ? "on" : "off"}`}>
+                <Button
+                  onClick={toggleWorkspaceMode}
+                  isIconOnly
+                  className={classNames(
+                    " bg-background hover:bg-overlay border border-border rounded-small",
+                    workspaceMode ? "bg-overlay border-border-darker" : ""
+                  )}
+                >
+                  <GridModeIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip radius='sm' content={`List mode ${nodesLayoutMode ? "on" : "off"}`}>
+                <Button
+                  onClick={toggleNodesLayoutMode}
+                  isIconOnly
+                  className={classNames(
+                    " bg-background hover:bg-overlay border border-border rounded-small",
+                    nodesLayoutMode ? "bg-overlay border-border-darker" : ""
+                  )}
+                >
+                  <ListViewIcon />
+                </Button>
+              </Tooltip>
+            </div>
+          )}
         </div>
       )}
       <div className='flex items-center'>
-        {selectedNode && flow && location.pathname.includes("flow") && (
+        {selectedNode && flow && location.pathname.includes("flow") && currentTab === "edit" && (
           <NodeInstruments flow={flow} />
         )}
       </div>

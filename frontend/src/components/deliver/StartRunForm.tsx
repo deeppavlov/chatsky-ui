@@ -5,6 +5,7 @@ import { Button, Input, Select, SelectItem } from "@nextui-org/react"
 import { useContext, useEffect, useState } from "react"
 import FormControl from "../../UI/FormControl"
 import { Eye, EyeOff } from "lucide-react"
+import { workspaceContext } from "@/contexts/workspaceContext"
 
 interface IFormData {
   name: string
@@ -20,15 +21,28 @@ interface ITokenState {
   tokens: string[]
 }
 
+interface IFieldErrors {
+  build?: string
+  tokenName?: string
+  tokenValue?: string
+}
+
+export interface IFormState {
+  formData: IFormData
+  tokenState: ITokenState
+  fieldErrors: IFieldErrors
+}
+
 const inputClassNames = {
   inputWrapper: ["border-none", "data-[focus=true]:after:h-0", "shadow-none"],
   input: ["w-full", "truncate", "placeholder:text-input-border"],
 }
 
 const StartRunForm = () => {
-  const { builds } = useContext(buildContext)
-  const { runs, runStart, startingRunId } = useContext(runContext)
-
+  const { builds: reversedBuilds } = useContext(buildContext)
+  const builds = [...reversedBuilds].reverse()
+  const { runs, runStart, runStarting } = useContext(runContext)
+  const { startRunFormState: formState, setStartRunFormState } = useContext(workspaceContext)
   const successBuilds = builds.filter((b) => b.status === "completed")
   const buildNames = successBuilds.map((b) => ({ name: b.preset.name, id: b.id.toString() }))
   const usedTelegramTokens = runs
@@ -48,17 +62,18 @@ const StartRunForm = () => {
     tokens: [],
   }
 
-  const [formData, setFormData] = useState<IFormData>(initialFormData)
-  const [tokenState, setTokenState] = useState<ITokenState>(initialTokenState)
+  const [formData, setFormData] = useState<IFormData>(formState?.formData || initialFormData)
+  const [fieldErrors, setFieldErrors] = useState<IFieldErrors>(formState?.fieldErrors || {})
+  const [tokenState, setTokenState] = useState<ITokenState>(
+    formState?.tokenState || initialTokenState
+  )
   const [hidePassword, setHidePassword] = useState(true)
-  const [fieldErrors, setFieldErrors] = useState<{
-    build?: string
-    tokenName?: string
-    tokenValue?: string
-  }>({})
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, name: e.target.value }))
+    setFormData((prev) => ({
+      ...prev,
+      name: e.target.value,
+    }))
   }
 
   const handleBuildChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -90,7 +105,7 @@ const StartRunForm = () => {
     }))
 
     const aliveWebRunBuildIds = runs
-      .filter((r) => r.status === "alive" && r.messenger === "web")
+      .filter((r) => r.messenger === "web" && (r.status === "alive" || r.status === "running"))
       .map((r) => r.build_id)
     const buildError = !e.target.value.length
       ? "Please select a build"
@@ -168,7 +183,7 @@ const StartRunForm = () => {
         : undefined
 
     const aliveWebRunBuildIds = runs
-      .filter((r) => r.status === "alive" && r.messenger === "web")
+      .filter((r) => r.messenger === "web" && (r.status === "alive" || r.status === "running"))
       .map((r) => r.build_id)
     const buildError = !formData.buildId
       ? "Please select a build"
@@ -215,6 +230,23 @@ const StartRunForm = () => {
     setFormData((prev) => ({ ...prev, name: `Run ${runs.length}` }))
   }, [runs])
 
+  useEffect(() => {
+    return () => {
+      setStartRunFormState({
+        formData,
+        tokenState,
+        fieldErrors,
+      })
+    }
+  }, [formData, tokenState, fieldErrors, setStartRunFormState])
+  useEffect(() => {
+    if (formState) {
+      setFormData(formState?.formData)
+      setFieldErrors(formState?.fieldErrors)
+      setTokenState(formState?.tokenState)
+    }
+  }, [])
+
   return (
     <div className='h-full w-full flex flex-col gap-3'>
       <div className='flex-grow flex flex-col'>
@@ -247,6 +279,7 @@ const StartRunForm = () => {
               onChange={handleBuildChange}
               radius='sm'
               size='sm'
+              selectedKeys={formData.buildId ? [formData.buildId] : []}
             >
               {buildNames.map((item) => (
                 <SelectItem key={item.id} textValue={item.name}>
@@ -359,7 +392,7 @@ const StartRunForm = () => {
         <Button
           onClick={handleStartRun}
           isDisabled={
-            startingRunId !== null ||
+            runStarting ||
             !!fieldErrors.build ||
             !!fieldErrors.tokenName ||
             !!fieldErrors.tokenValue
