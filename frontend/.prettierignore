@@ -1,0 +1,4 @@
+
+# Ignore unnecessary folders
+**/docs
+**/dist
