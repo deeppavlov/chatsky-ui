@@ -1,4 +1,4 @@
-import { checkBuildIsChanged } from "@/api/bot"
+import { checkBuildIsChanged, messengerType } from "@/api/bot"
 import Accordion, { StringItem } from "@/components/deliver/Accordion"
 import BuildForm from "@/components/deliver/BuildForm"
 import StartRunForm from "@/components/deliver/StartRunForm"
@@ -17,6 +17,15 @@ import { RefreshCw, SquareArrowOutUpRight, SquareIcon, X } from "lucide-react"
 import { useContext, useState } from "react"
 import CheckIcon from "@/icons/CheckIcon"
 import MicroscopeIcon from "@/icons/MicroscopeIcon"
+
+interface IMessengersMap {
+  web: string
+  telegram: string
+}
+const messengerMap: IMessengersMap = {
+  telegram: "Telegram",
+  web: "Preview",
+}
 
 const BuildManagerPage = () => {
   const { currentTab } = useContext(workspaceContext)
@@ -231,7 +240,7 @@ const BuildManagerPage = () => {
                         </div>
                       }
                     >
-                      <StringItem content={["Messenger: ", b.preset.messenger]} />
+                      <StringItem content={["Messenger: ", messengerMap[b.preset.messenger]]} />
                       <StringItem content={["Preset: ", b.preset.preset]} />
                       <StringItem content={["Date: ", formatTimestamp(b.timestamp)]} />
                       <StringItem content={["Status: ", b.status]} />
@@ -294,7 +303,7 @@ const BuildManagerPage = () => {
                       }
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
-                      <StringItem content={["Messenger: ", buildMessenger]} />
+                      <StringItem content={["Messenger: ", messengerMap[buildMessenger]]} />
                       {r.preset.tg_bot_token && (
                         <StringItem content={["Token: ", r.preset.tg_bot_token]} />
                       )}
@@ -342,7 +351,7 @@ const BuildManagerPage = () => {
                     }
                   >
                     <StringItem content={["Build: ", r.preset.build_name]} />
-                    <StringItem content={["Messenger: ", buildMessenger]} />
+                    <StringItem content={["Messenger: ", messengerMap[buildMessenger]]} />
                     {r.preset.tg_bot_token && (
                       <StringItem content={["Token: ", r.preset.tg_bot_token]} />
                     )}
@@ -394,7 +403,7 @@ const BuildManagerPage = () => {
                       }
                     >
                       <StringItem content={["Build: ", r.preset.build_name]} />
-                      <StringItem content={["Messenger: ", buildMessenger]} />
+                      <StringItem content={["Messenger: ", messengerMap[buildMessenger]]} />
                       {r.preset.tg_bot_token && (
                         <StringItem content={["Token: ", r.preset.tg_bot_token]} />
                       )}
