@@ -131,13 +131,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
 
  const onSave = () => {
   if (toFlow && toNode) {
-   const newToLink =
-    Object.prototype.hasOwnProperty.call(toFlow, 'toLink') &&
-    Array.isArray(toFlow.toLink)
-     ? toFlow.toLink
-     : []
-
-   const node = {
+   updateNodeData(data.id, {
     ...data,
     name: name,
     transition: {
@@ -145,15 +139,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
      target_node: toNode.data.id,
      is_configured: true,
     },
-   }
-
-   const isLinck = toFlow?.toLink?.map((el) => el.id).includes(data.id)
-   if (!isLinck) {
-    toFlow.toLink = [...newToLink, { ...node, flowName: flow?.name }]
-    updateFlow(toFlow)
-   }
-
-   updateNodeData(data.id, node)
+   })
    setIsConfigured(true)
    onClose()
   }

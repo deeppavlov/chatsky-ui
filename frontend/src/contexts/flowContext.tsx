@@ -236,17 +236,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   */
  const deleteFlow = useCallback(
   (flow: FlowType) => {
-   const arrLinkDelets = flow.data.nodes.map((el) => el.id)
-
    const new_flows = flows.filter((f) => f.name !== flow.name)
-   const result = new_flows.map((f) => {
-    const newToLink = f.toLink?.filter(
-     (link) => !arrLinkDelets.includes(link.id)
-    )
-    return { ...f, toLink: newToLink }
-   })
-   saveFlows(result)
-   setFlows(result)
+   saveFlows(new_flows)
+   setFlows(new_flows)
   },
   [flows]
  )

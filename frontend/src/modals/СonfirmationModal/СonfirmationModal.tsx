@@ -3,17 +3,30 @@ import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import { ModalType } from '../../types/ModalTypes'
 import { FlowType } from '../../types/FlowTypes'
 import { LinkNodeDataType } from '../../types/NodeTypes'
+import { flowContext } from '../../contexts/flowContext'
+import { useContext } from 'react'
 interface ConfirmationModalProps extends ModalType {
  flow: FlowType
  onDelete: (e: React.MouseEvent) => void
 }
 
-const getContent = (arrLink: string[]) => {
+interface Link {
+ target_flow: string
+ target_node: string
+ id: string
+ name: string
+}
+
+interface ArrLink {
+ lincks: Link[]
+}
+
+const getContent = (arrLink: Link[]): string => {
  if (arrLink.length >= 2) {
   return 'This flow is linked to other flows.'
  }
  if (arrLink.length === 1) {
-  return `This flow is linked to ${arrLink[0]}.`
+  return `This flow is linked to ${arrLink[0].name}.`
  }
 
  return 'This flow contains part of <Project name> dialog.'
@@ -26,24 +39,36 @@ const СonfirmationModal = ({
  onDelete,
  size = '3xl',
 }: ConfirmationModalProps) => {
- console.log(flow, 'СonfirmationModal ')
+ const { flows } = useContext(flowContext)
 
- const getLinckNodeOut = () => {
-  const linkNodes = flow.data.nodes.filter((node) => node.type === 'link_node');
+ const myFlows = flows.filter((el) => el.name !== 'Global')
 
-  if (linkNodes.length !== 0) {
-    const transitions = linkNodes.map((node) =>
-      (node.data as LinkNodeDataType).transition.target_flow
-    );
-    return [...new Set(transitions)];
-  }
-  return [];
- }
+ const arrLink = myFlows.map((el: FlowType) => {
+  const name = el.name
+  const lincks = el.data.nodes
+   .filter((el) => el.type === 'link_node')
+   .map((linck) => {
+    if ('transition' in linck.data) {
+     const { target_flow, target_node } = (linck.data as LinkNodeDataType).transition
+     const id = el.id
 
- const linckNodeIn = (flow?.toLink?.map((el) => el.flowName) ?? []).filter((name): name is string => !!name);
- const linckNodeOut = getLinckNodeOut()
+     return { target_flow, target_node, id, name }
+    }
+    return null
+   })
+   .filter((linck) => linck !== null)
 
- const arrLink = [...new Set([...linckNodeIn, ...linckNodeOut])]
+  return { lincks }
+ })
+
+ const result = arrLink
+  .map((el) => {
+   const res = el.lincks.filter((linck) => linck.target_flow === flow.name)
+   return res
+  })
+  .flat()
+
+  console.log(result)
 
  return (
   <Modal
@@ -59,7 +84,7 @@ const СonfirmationModal = ({
     {`Do you want to delete ${flow.name}?`}
    </ModalHeader>
    <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
-    <div>{getContent(arrLink)}</div>
+    <div>{getContent(result)}</div>
    </ModalBody>
    <ModalFooter className="flex-row flex justify-between items-center">
     <div className="flex justify-between w-full">
