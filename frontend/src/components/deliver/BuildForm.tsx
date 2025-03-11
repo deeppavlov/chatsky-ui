@@ -16,7 +16,7 @@ export interface IFormData {
 
 const messengers = [
   { label: "Telegram", key: "telegram" },
-  { label: "Web", key: "web" },
+  { label: "Preview", key: "web" },
 ]
 
 const BuildForm = () => {
@@ -130,7 +130,7 @@ const BuildForm = () => {
             <Select
               aria-label='Messenger'
               labelPlacement='outside'
-              placeholder='Web'
+              placeholder='Preview'
               selectedKeys={[formData.messenger]}
               value={formData.messenger}
               onChange={handleMessengerChange}
