@@ -17,10 +17,10 @@ const ChatList = () => {
 
   useLayoutEffect(() => {
     if (chats.length !== 0) {
-      setChatId(chats[0].id)
+      setChatId(chatId >= 0 ? chatId : chats[0].id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [chats])
 
   return (
     <div className='flex flex-col p-3 relative h-full'>

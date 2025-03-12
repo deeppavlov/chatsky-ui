@@ -1,4 +1,7 @@
 RESPONSES_FILE = "responses"
+"""Name of the file which contains all custom `Responses` for Chatsky to use."""
 CONDITIONS_FILE = "conditions"
+"""Name of the file which contains all custom `Conditions` for Chatsky to use."""
 CUSTOM_FILE = "custom"
+"""Name of the directory which contains the files with custom `Conditions` and `Responses` for Chatsky to use."""
 UNIQUE_BUILD_TOKEN = "UNIQUE_BUILD_TOKEN_{build_id}"

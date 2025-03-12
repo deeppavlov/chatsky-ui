@@ -5,6 +5,8 @@ import { FlowType } from "../types/FlowTypes"
 import { AppNode } from "../types/NodeTypes"
 import { flowContext } from "./flowContext"
 import { NotificationsContext } from "./notificationsContext"
+import { IFormState } from "@/components/deliver/StartRunForm"
+import { IFormData } from "@/components/deliver/BuildForm"
 
 export type PageType = "edit" | "deliver" | "inspect" | "settings"
 
@@ -30,8 +32,12 @@ type WorkspaceContextType = {
   managerMode: boolean
   setManagerMode: React.Dispatch<React.SetStateAction<boolean>>
   toggleManagerMode: () => void
-  currentPage: PageType
-  setCurrentPage: React.Dispatch<React.SetStateAction<PageType>>
+  currentTab: PageType
+  setCurrentTab: React.Dispatch<React.SetStateAction<PageType>>
+  startRunFormState: IFormState | null
+  setStartRunFormState: React.Dispatch<React.SetStateAction<IFormState | null>>
+  buildFormData: IFormData | null
+  setBuildFormData: React.Dispatch<React.SetStateAction<IFormData | null>>
 }
 
 export const workspaceContext = createContext<WorkspaceContextType>({
@@ -53,8 +59,12 @@ export const workspaceContext = createContext<WorkspaceContextType>({
   managerMode: false,
   setManagerMode: () => {},
   toggleManagerMode: () => {},
-  currentPage: "edit",
-  setCurrentPage: () => {},
+  currentTab: "edit",
+  setCurrentTab: () => {},
+  startRunFormState: null,
+  setStartRunFormState: () => {},
+  buildFormData: null,
+  setBuildFormData: () => {},
 } as WorkspaceContextType)
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
@@ -66,11 +76,13 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   const { flows, quietSaveFlows, setFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
   const [modalsOpened, setModalsOpened] = useState(0)
+  const [startRunFormState, setStartRunFormState] = useState<IFormState | null>(null)
+  const [buildFormData, setBuildFormData] = useState<IFormData | null>(null)
   const { notification: n } = useContext(NotificationsContext)
 
   const pageTypes: PageType[] = ["edit", "deliver", "inspect", "settings"]
   const pageType = searchParams.get("page")?.toLowerCase() as PageType
-  const [currentPage, setCurrentPage] = useState<PageType>(
+  const [currentTab, setCurrentTab] = useState<PageType>(
     pageTypes.includes(pageType) ? pageType : "edit"
   )
 
@@ -185,8 +197,12 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         managerMode,
         setManagerMode,
         toggleManagerMode,
-        currentPage,
-        setCurrentPage,
+        currentTab,
+        setCurrentTab,
+        startRunFormState,
+        setStartRunFormState,
+        buildFormData,
+        setBuildFormData,
       }}
     >
       {children}
