@@ -35,7 +35,7 @@ const ManageFlowsModal = ({
 }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
   const { notification: n } = useContext(NotificationsContext)
-  const [newFlows, setNewFlows] = useState<FlowType[]>([...flows] ?? [])
+  const [newFlows, setNewFlows] = useState<FlowType[]>([...flows])
   const { flowId } = useParams()
   const [flow, setFlow] = useState<FlowType>(
     newFlows.find((_flow) => _flow.name === flowId) ?? [][0],
@@ -61,9 +61,9 @@ const ManageFlowsModal = ({
   }, [flowId, newFlows, isOpen])
 
   const onFlowSelect = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     setFlow(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       () => newFlows.find((_flow) => _flow.name === e.target.name) ?? [][0],
     )
   }

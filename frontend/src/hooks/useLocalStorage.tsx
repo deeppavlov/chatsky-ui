@@ -4,9 +4,9 @@ function useLocalStorage<S>(
   key: string,
   initialState: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>] {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   const [state, setState] = useState<S>(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     JSON.parse(localStorage.getItem(key)) ?? initialState,
   )
 
