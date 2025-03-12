@@ -312,7 +312,6 @@ const ConditionModal = ({
     <BasicCondition
      condition={currentCondition}
      setData={(state, setState) => {
-      // const newState = validateConditionBasic(state)
       ref.current = { state: { ...state }, setState }
       setCurrentCondition(state)
      }}

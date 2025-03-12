@@ -1,17 +1,8 @@
-import {
- Button,
- Input,
- //  ModalBody,
- ModalContent,
- //  ModalFooter,
- //  ModalHeader,
- ModalProps,
-} from '@nextui-org/react'
+import { Button, Input, ModalProps } from '@nextui-org/react'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import { Edge, useReactFlow } from '@xyflow/react'
 import { HelpCircle, TrashIcon } from 'lucide-react'
 import React, { useCallback, useContext, useEffect } from 'react'
-// import ModalComponent from "../../components/ModalComponent";
 import { flowContext } from '../../contexts/flowContext'
 import { undoRedoContext } from '../../contexts/undoRedoContext'
 import EditPenIcon from '../../icons/EditPenIcon'
@@ -41,8 +32,12 @@ const NodeModal = ({
   DefaultNodeType,
   Edge
  >()
- const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext)
+ const { quietSaveFlows, validateNodeDeletion, flows } = useContext(flowContext)
  const { takeSnapshot } = useContext(undoRedoContext)
+
+ const [errors, setErrors] = React.useState<{
+  name?: { isInvalid: boolean; errorMessage: string }
+ }>({})
 
  useEffect(() => {
   setNodeDataState(
@@ -51,9 +46,40 @@ const NodeModal = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [isOpen])
 
+ const validateNodeName = () => {
+  if (nodeDataState.name === '') {
+   setErrors({
+    ...errors,
+    name: { isInvalid: true, errorMessage: 'Please fill every field' },
+   })
+   return true
+  }
+  if (isUniqueValue('name')) {
+   setErrors({
+    ...errors,
+    name: { isInvalid: true, errorMessage: 'Name must be unique' },
+   })
+   return true
+  }
+  return false
+ }
+
+ const isUniqueValue = (key: keyof DefaultNodeDataType) => {
+  const nodes = getNodes()
+   .filter((node) => node.type === 'default_node')
+   .filter((el) => el.id !== nodeDataState.id)
+   .map((node) => node.data[key])
+  return nodes.includes(nodeDataState[key])
+ }
+
  const setDataStateValue = useCallback(
   (e: React.ChangeEvent<HTMLInputElement>) => {
-   setNodeDataState({ ...nodeDataState, [e.target.name]: e.target.value.trim() })
+   setNodeDataState({
+    ...nodeDataState,
+    [e.target.name]: e.target.value.trim(),
+   })
+
+   setErrors({ ...errors, name: { isInvalid: false, errorMessage: '' } })
   },
   [nodeDataState, setNodeDataState]
  )
@@ -70,6 +96,10 @@ const NodeModal = ({
  }
 
  const onNodeSave = () => {
+  if (validateNodeName()) {
+   return
+  }
+
   takeSnapshot()
   updateNodeData(data.id, { ...nodeDataState })
   quietSaveFlows()
@@ -204,8 +234,7 @@ const NodeModal = ({
        value={nodeDataState.name}
        onChange={setDataStateValue}
        autoComplete="off"
-       isInvalid={nodeDataState.name === ''}
-       errorMessage={nodeDataState.name === '' ? 'Please fill every field' : ''}
+       {...errors.name}
       />
       <span className="relative">
        <Input
