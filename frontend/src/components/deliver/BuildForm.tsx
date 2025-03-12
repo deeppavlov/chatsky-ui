@@ -1,11 +1,11 @@
-import { checkBuildIsChanged, messengerType } from "@/api/bot"
-import { buildContext } from "@/contexts/buildContext"
-import { Button, Input, Select, SelectItem } from "@nextui-org/react"
-import { QuestionMarkIcon } from "@radix-ui/react-icons"
-import { useContext, useEffect, useState } from "react"
-import FormControl from "../../UI/FormControl"
-import RebuildModal from "@/modals/RebuildModal/RebuildModal"
-import { PopUpContext } from "@/contexts/popUpContext"
+import { checkBuildIsChanged, messengerType } from '@/api/bot'
+import { buildContext } from '@/contexts/buildContext'
+import { PopUpContext } from '@/contexts/popUpContext'
+import RebuildModal from '@/modals/RebuildModal/RebuildModal'
+import { Button, Input, Select, SelectItem } from '@nextui-org/react'
+import { QuestionMarkIcon } from '@radix-ui/react-icons'
+import { useContext, useEffect, useState } from 'react'
+import FormControl from '../../UI/FormControl'
 
 interface IFormData {
   name: string
@@ -14,8 +14,8 @@ interface IFormData {
 }
 
 const messengers = [
-  { label: "Telegram", key: "telegram" },
-  { label: "Web", key: "web" },
+  { label: 'Telegram', key: 'telegram' },
+  { label: 'Web', key: 'web' },
 ]
 
 const BuildForm = () => {
@@ -24,8 +24,8 @@ const BuildForm = () => {
 
   const initialData: IFormData = {
     name: `Build ${builds.length}`,
-    messenger: "web",
-    preset: "None",
+    messenger: 'web',
+    preset: 'None',
   }
   const [formData, setFormData] = useState<IFormData>(initialData)
 
@@ -41,13 +41,13 @@ const BuildForm = () => {
       (prev) =>
         ({
           ...prev,
-          messenger: e.target.value || "web",
-        } as IFormData)
+          messenger: e.target.value || 'web',
+        }) as IFormData,
     )
   }
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, preset: e.target.value || "None" }))
+    setFormData((prev) => ({ ...prev, preset: e.target.value || 'None' }))
   }
 
   const handleConfirmRebuild = () => {
@@ -56,13 +56,13 @@ const BuildForm = () => {
         id='rebuild'
         onRebuild={async () => {
           await buildStart({
-            end_status: "success",
+            end_status: 'success',
             ...formData,
             name: formData.name || `Build ${builds.length}`,
           })
         }}
       />,
-      "rebuild"
+      'rebuild',
     )
   }
 
@@ -75,7 +75,7 @@ const BuildForm = () => {
     }
 
     await buildStart({
-      end_status: "success",
+      end_status: 'success',
       ...formData,
       name: formData.name || `Build ${builds.length}`,
     })
@@ -86,8 +86,8 @@ const BuildForm = () => {
   }, [builds])
 
   return (
-    <div className='h-full w-full flex flex-col gap-3'>
-      <div className='flex-grow flex flex-col'>
+    <div className='flex h-full w-full flex-col gap-3'>
+      <div className='flex flex-grow flex-col'>
         {/* NAME FIELD */}
         <FormControl
           label='Name'
@@ -100,8 +100,12 @@ const BuildForm = () => {
               size='sm'
               variant='underlined'
               classNames={{
-                inputWrapper: ["border-none", "data-[focus=true]:after:h-0", "shadow-none"],
-                input: ["w-full", "truncate", "placeholder:text-input-border"],
+                inputWrapper: [
+                  'border-none',
+                  'data-[focus=true]:after:h-0',
+                  'shadow-none',
+                ],
+                input: ['w-full', 'truncate', 'placeholder:text-input-border'],
               }}
             />
           }
@@ -115,7 +119,7 @@ const BuildForm = () => {
               aria-label='Messenger'
               labelPlacement='outside'
               placeholder='Web'
-              defaultSelectedKeys={["web"]}
+              defaultSelectedKeys={['web']}
               value={formData.messenger}
               onChange={handleMessengerChange}
               radius='sm'
@@ -136,13 +140,13 @@ const BuildForm = () => {
               aria-label='Preset'
               placeholder='No preset'
               labelPlacement='outside'
-              defaultSelectedKeys={["None"]}
+              defaultSelectedKeys={['None']}
               value={formData.preset}
               onChange={handlePresetChange}
               radius='sm'
               size='sm'
             >
-              {[{ key: "None", label: "No preset" }].map((item) => (
+              {[{ key: 'None', label: 'No preset' }].map((item) => (
                 <SelectItem key={item.key}>{item.label}</SelectItem>
               ))}
             </Select>
@@ -152,12 +156,12 @@ const BuildForm = () => {
 
       <div className='flex gap-3'>
         <Button isIconOnly className='rounded-full'>
-          <QuestionMarkIcon className='w-5 h-5' />
+          <QuestionMarkIcon className='h-5 w-5' />
         </Button>
         <Button
           onClick={handleBuild}
           isDisabled={buildPending}
-          className='font-semibold bg-foreground text-background rounded-lg w-full'
+          className='w-full rounded-lg bg-foreground font-semibold text-background'
         >
           Build
         </Button>

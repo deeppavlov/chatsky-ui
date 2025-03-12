@@ -1,6 +1,6 @@
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
-import classNames from "classnames"
-import React, { forwardRef } from "react"
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import classNames from 'classnames'
+import React, { forwardRef } from 'react'
 
 export type DropdownItemType = {
   label: string
@@ -54,13 +54,12 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
     return (
       <DropdownMenu.Root>
         {/* Триггер для Dropdown */}
-        <DropdownMenu.Trigger
-          autoFocus={false}
-          asChild>
+        <DropdownMenu.Trigger autoFocus={false} asChild>
           <div
             autoFocus={false}
-            className='focus:outline-1 outline-border rounded-lg group'
-            tabIndex={0}>
+            className='group rounded-lg outline-border focus:outline-1'
+            tabIndex={0}
+          >
             {triggerContent}
           </div>
         </DropdownMenu.Trigger>
@@ -72,20 +71,23 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
               event.preventDefault()
             }}
             asChild
-            key={"dropdown-content"}
+            key={'dropdown-content'}
             sideOffset={5}
             align='start'
             side='bottom'
-            className='z-[99] min-w-56 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out data-[state=open]:zoom-in'>
+            className='data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out data-[state=open]:zoom-in z-[99] min-w-56 data-[state=closed]:animate-out data-[state=open]:animate-in'
+          >
             <div
               className={classNames(
-                "bg-background border border-border rounded-xl p-2 origin-top-left"
-              )}>
+                'origin-top-left rounded-xl border border-border bg-background p-2',
+              )}
+            >
               {groups.map((group, groupIndex) => (
                 <DropdownMenu.Group
                   title={group.title}
                   key={`group-${groupIndex}`}
-                  className='grid gap-1'>
+                  className='grid gap-1'
+                >
                   {group.items.map((item, index) => (
                     <DropdownMenu.Item
                       key={item.value}
@@ -97,9 +99,10 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                       }}
                       disabled={item.disabled}
                       className={classNames(
-                        `flex items-center justify-between px-3 py-2 rounded-lg outline-none transition-colors !duration-150 data-[highlighted]:bg-bg-secondary border border-transparent data-[highlighted]:border-border ${item.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} `,
-                        item.className
-                      )}>
+                        `flex items-center justify-between rounded-lg border border-transparent px-3 py-2 outline-none transition-colors !duration-150 data-[highlighted]:border-border data-[highlighted]:bg-bg-secondary ${item.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} `,
+                        item.className,
+                      )}
+                    >
                       {/* Иконка */}
                       <div className='flex items-center'>
                         {item.icon && <span className='mr-2'>{item.icon}</span>}
@@ -107,7 +110,9 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                       </div>
                       {/* Шорткат */}
                       {item.shortcut && (
-                        <span className='ml-auto text-gray-400'>{item.shortcut}</span>
+                        <span className='ml-auto text-gray-400'>
+                          {item.shortcut}
+                        </span>
                       )}
                     </DropdownMenu.Item>
                   ))}
@@ -123,7 +128,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
     )
-  }
+  },
 )
 
 export default Dropdown

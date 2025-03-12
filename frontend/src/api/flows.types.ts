@@ -1,5 +1,4 @@
-import { FlowType } from "../types/FlowTypes"
-
+import { FlowType } from '../types/FlowTypes'
 
 export type GetFlowsResponseType = {
   data: {

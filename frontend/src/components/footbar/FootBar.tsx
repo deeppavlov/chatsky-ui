@@ -1,17 +1,24 @@
-import { Button, Popover, PopoverTrigger, Tab, Tabs, useDisclosure } from "@nextui-org/react"
-import classNames from "classnames"
-import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import { Key, memo, useCallback, useContext, useState } from "react"
-import { Link, useSearchParams } from "react-router-dom"
-import { MetaContext } from "../../contexts/metaContext"
-import { NotificationsContext } from "../../contexts/notificationsContext"
-import { PageType, workspaceContext } from "../../contexts/workspaceContext"
-import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
-import LocalStorageIcon from "../../icons/footbar/LocalStorageIcon"
-import { Logo } from "../../icons/Logo"
-import LocalStorage from "../../modals/LocalStorage/LocalStorage"
-import { parseSearchParams } from "../../utils"
-import { NotificationsWindow } from "../notifications/NotificationsWindow"
+import {
+  Button,
+  Popover,
+  PopoverTrigger,
+  Tab,
+  Tabs,
+  useDisclosure,
+} from '@nextui-org/react'
+import classNames from 'classnames'
+import { BellRing, EditIcon, Rocket, Settings } from 'lucide-react'
+import { Key, memo, useCallback, useContext, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { MetaContext } from '../../contexts/metaContext'
+import { NotificationsContext } from '../../contexts/notificationsContext'
+import { PageType, workspaceContext } from '../../contexts/workspaceContext'
+import MonitorIcon from '../../icons/buildmenu/MonitorIcon'
+import LocalStorageIcon from '../../icons/footbar/LocalStorageIcon'
+import { Logo } from '../../icons/Logo'
+import LocalStorage from '../../modals/LocalStorage/LocalStorage'
+import { parseSearchParams } from '../../utils'
+import { NotificationsWindow } from '../notifications/NotificationsWindow'
 
 const FootBar = memo(() => {
   const {
@@ -35,7 +42,7 @@ const FootBar = memo(() => {
         page: pageKey,
       })
     },
-    [searchParams, setSearchParams, setCurrentPage]
+    [searchParams, setSearchParams, setCurrentPage],
   )
   // const findDefaultSelectedKey = useCallback(() => {
   //   if (settingsPage) {
@@ -50,22 +57,22 @@ const FootBar = memo(() => {
   return (
     <div
       data-testid='footbar'
-      className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'
+      className='absolute bottom-0 flex h-12 w-screen items-center justify-between border-t border-border bg-overlay px-2'
     >
-      <div className='absolute w-full flex items-center justify-center'>
+      <div className='absolute flex w-full items-center justify-center'>
         <Tabs
           onSelectionChange={onSelectionChange}
           defaultSelectedKey={currentPage}
           variant='light'
           className=''
           classNames={{
-            cursor: "border border-foreground bg-background",
-            tab: "w-32 h-9",
-            panel: "p-0 m-0 w-0 h-0",
+            cursor: 'border border-foreground bg-background',
+            tab: 'w-32 h-9',
+            panel: 'p-0 m-0 w-0 h-0',
           }}
         >
           <Tab
-            key={"edit"}
+            key={'edit'}
             title={
               <span className='flex items-center gap-2'>
                 <EditIcon />
@@ -74,7 +81,7 @@ const FootBar = memo(() => {
             }
           ></Tab>
           <Tab
-            key={"deliver"}
+            key={'deliver'}
             // isDisabled
             title={
               <span className='flex items-center gap-2'>
@@ -84,7 +91,7 @@ const FootBar = memo(() => {
             }
           ></Tab>
           <Tab
-            key={"inspect"}
+            key={'inspect'}
             title={
               <span className='flex items-center gap-2'>
                 <MonitorIcon />
@@ -93,7 +100,7 @@ const FootBar = memo(() => {
             }
           ></Tab>
           <Tab
-            key={"settings"}
+            key={'settings'}
             title={
               <span className='flex items-center gap-2'>
                 <Settings />
@@ -105,13 +112,15 @@ const FootBar = memo(() => {
       </div>
       <Link
         data-testid='logo'
-        to={"/app/home"}
-        className='flex items-center gap-1 z-10 cursor-pointer'
+        to={'/app/home'}
+        className='z-10 flex cursor-pointer items-center gap-1'
       >
         <Logo />
         <div className='flex items-end justify-start gap-1'>
-          <span className='flex font-bold text-lg'>Chatsky UI</span>
-          <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
+          <span className='flex text-lg font-bold'>Chatsky UI</span>
+          <span className='flex text-sm font-semibold text-neutral-400'>
+            v {version}
+          </span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>
@@ -119,8 +128,8 @@ const FootBar = memo(() => {
           isDisabled
           onClick={onLocalStorageOpen}
           className={classNames(
-            "local-storage-button px-2 cursor-pointer rounded-small h-9 flex items-center bg-transparent justify-center gap-2 border border-transparent hover:bg-background hover:border-foreground hover:text-foreground",
-            isLocalStorageOpen && "bg-background border-foreground"
+            'local-storage-button flex h-9 cursor-pointer items-center justify-center gap-2 rounded-small border border-transparent bg-transparent px-2 hover:border-foreground hover:bg-background hover:text-foreground',
+            isLocalStorageOpen && 'border-foreground bg-background',
           )}
         >
           <LocalStorageIcon className='local-storage-button-hover:stroke-0' />
@@ -135,17 +144,26 @@ const FootBar = memo(() => {
           <PopoverTrigger>
             <Button
               isIconOnly
-              className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'
+              className='flex h-9 items-center justify-center rounded-small border border-transparent bg-transparent hover:border-foreground hover:bg-background'
             >
-              {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length > 0 && (
-                <span className='absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full w-4 h-4 flex items-center justify-center'>
-                  {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length}
+              {notifications.filter((nt) =>
+                ['error', 'warning'].includes(nt.type),
+              ).length > 0 && (
+                <span className='absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white'>
+                  {
+                    notifications.filter((nt) =>
+                      ['error', 'warning'].includes(nt.type),
+                    ).length
+                  }
                 </span>
               )}
-              <BellRing className='w-5 h-5' />
+              <BellRing className='h-5 w-5' />
             </Button>
           </PopoverTrigger>
-          <NotificationsWindow isOpen={isNotificationsOpen} setIsOpen={setIsNotificationsOpen} />
+          <NotificationsWindow
+            isOpen={isNotificationsOpen}
+            setIsOpen={setIsNotificationsOpen}
+          />
         </Popover>
       </div>
       <LocalStorage isOpen={isLocalStorageOpen} onClose={onLocalStorageClose} />

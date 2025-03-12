@@ -1,17 +1,17 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { AxiosError } from 'axios'
+import { createContext, useContext, useEffect, useState } from 'react'
 import {
   buildApiStatusType,
   get_runs,
   localRunType,
-  runMinifyApiType,
-  runPresetType,
   run_start,
   run_status,
   run_stop,
   run_stop_all,
-} from "../api/bot"
-import { NotificationsContext } from "./notificationsContext"
-import { AxiosError } from "axios"
+  runMinifyApiType,
+  runPresetType,
+} from '../api/bot'
+import { NotificationsContext } from './notificationsContext'
 
 export type runApiType = {
   id: number
@@ -57,14 +57,14 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const { notification: n } = useContext(NotificationsContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
-    setRuns(runs.map((run) => ({ ...run, type: "run" })))
+    setRuns(runs.map((run) => ({ ...run, type: 'run' })))
   }
 
   const getRunInitial = async () => {
     const data = await get_runs()
     if (data) {
       const _runs: localRunType[] = data.map((run) => {
-        return { ...run, type: "run" }
+        return { ...run, type: 'run' }
       })
       setRuns(_runs)
     }
@@ -76,7 +76,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
   const runStart = async (
     build_id: string,
-    { end_status = "success", ...restParams }: runPresetType
+    { end_status = 'success', ...restParams }: runPresetType,
   ) => {
     setStartingRunId(runs.length)
 
@@ -103,25 +103,27 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           await new Promise((resolve) => setTimeout(resolve, 1000))
           const { status } = await run_status(started_run.id)
 
-          if (status !== "running") {
+          if (status !== 'running') {
             // Обновляем состояние, если статус изменился
-            setRuns((prev) => prev.map((r) => (run_id === r.id ? { ...r, status } : r)))
+            setRuns((prev) =>
+              prev.map((r) => (run_id === r.id ? { ...r, status } : r)),
+            )
             isMonitoring = false
 
             switch (status) {
-              case "alive":
+              case 'alive':
                 n.add({
-                  title: "Run started!",
-                  message: "",
-                  type: "success",
+                  title: 'Run started!',
+                  message: '',
+                  type: 'success',
                 })
                 break
 
-              case "failed":
+              case 'failed':
                 n.add({
-                  title: "Run failed!",
-                  message: "Unknown run error. Please check your script.",
-                  type: "error",
+                  title: 'Run failed!',
+                  message: 'Unknown run error. Please check your script.',
+                  type: 'error',
                 })
                 break
 
@@ -136,12 +138,15 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     } catch (error) {
-      console.error("Error during run start:", error)
+      console.error('Error during run start:', error)
       setStartingRunId(null)
       n.add({
-        title: "Run error!",
-        message: error instanceof AxiosError ? error.message : "An unexpected error occurred.",
-        type: "error",
+        title: 'Run error!',
+        message:
+          error instanceof AxiosError
+            ? error.message
+            : 'An unexpected error occurred.',
+        type: 'error',
       })
     } finally {
       setStartingRunId(null)
@@ -156,30 +161,32 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         if (counter > 10) {
           clearInterval(timerId)
           n.add({
-            message: "",
-            title: "Error stopping the run!",
-            type: "error",
+            message: '',
+            title: 'Error stopping the run!',
+            type: 'error',
           })
         }
         counter += 1
 
         const { status } = await run_status(run_id)
-        if (status === "stopped") {
+        if (status === 'stopped') {
           clearInterval(timerId)
-          setRunsHandler(runs.map((r) => (r.id === run_id ? { ...r, status } : r)))
+          setRunsHandler(
+            runs.map((r) => (r.id === run_id ? { ...r, status } : r)),
+          )
           n.add({
-            message: "",
-            title: "Run stopped!",
-            type: "info",
+            message: '',
+            title: 'Run stopped!',
+            type: 'info',
           })
         }
       }, 1000)
     } catch (error) {
       console.log(error)
       n.add({
-        message: "",
-        title: "Error stopping the run!",
-        type: "error",
+        message: '',
+        title: 'Error stopping the run!',
+        type: 'error',
       })
     }
   }
@@ -193,29 +200,29 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         if (counter > 10) {
           clearInterval(timerId)
           n.add({
-            message: "",
-            title: "Error stopping the run!",
-            type: "error",
+            message: '',
+            title: 'Error stopping the run!',
+            type: 'error',
           })
         }
         counter += 1
         const runs = await get_runs()
-        if (runs.every((r) => r.status !== "alive")) {
+        if (runs.every((r) => r.status !== 'alive')) {
           clearInterval(timerId)
           setRunsHandler(runs)
           n.add({
-            message: "",
-            title: "All runs stopped!",
-            type: "info",
+            message: '',
+            title: 'All runs stopped!',
+            type: 'info',
           })
         }
       }, 1000)
     } catch (error) {
       console.log(error)
       n.add({
-        message: "",
-        title: "Error stopping the run!",
-        type: "error",
+        message: '',
+        title: 'Error stopping the run!',
+        type: 'error',
       })
     } finally {
       setRunStopping(false)

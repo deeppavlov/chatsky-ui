@@ -1,13 +1,16 @@
-import React from "react"
+import React from 'react'
 
-const ListViewIcon = ({stroke='var(--foreground)'}: React.SVGAttributes<SVGSVGElement>) => {
+const ListViewIcon = ({
+  stroke = 'var(--foreground)',
+}: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       width='24'
       height='24'
       viewBox='0 0 24 24'
       fill='none'
-      xmlns='http://www.w3.org/2000/svg'>
+      xmlns='http://www.w3.org/2000/svg'
+    >
       <path
         d='M9 7C9 6.59375 9.3125 6.25 9.75 6.25H18.25C18.6562 6.25 19 6.59375 19 7C19 7.4375 18.6562 7.75 18.25 7.75H9.75C9.3125 7.75 9 7.4375 9 7ZM9 12C9 11.5938 9.3125 11.25 9.75 11.25H18.25C18.6562 11.25 19 11.5938 19 12C19 12.4375 18.6562 12.75 18.25 12.75H9.75C9.3125 12.75 9 12.4375 9 12ZM18.25 17.75H9.75C9.3125 17.75 9 17.4375 9 17C9 16.5938 9.3125 16.25 9.75 16.25H18.25C18.6562 16.25 19 16.5938 19 17C19 17.4375 18.6562 17.75 18.25 17.75Z'
         fill={stroke}

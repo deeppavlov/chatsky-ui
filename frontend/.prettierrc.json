@@ -4,7 +4,7 @@
   "jsxSingleQuote": true,
   "arrowParens": "always",
   "trailingComma": "all",
-  "printWidth": 120,
+  "printWidth": 80,
   "bracketSpacing": true,
   "jsxBracketSameLine": false,
   "quoteProps": "as-needed",
@@ -26,5 +26,8 @@
   ],
   "importOrderSortSpecifiers": true,
   "importOrderGroupNamespaceSpecifiers": true,
-  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"]
+  "plugins": [
+    "@ianvs/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss"
+  ]
 }
