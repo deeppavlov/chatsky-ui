@@ -43,32 +43,29 @@ const СonfirmationModal = ({
 
  const myFlows = flows.filter((el) => el.name !== 'Global')
 
- const arrLink = myFlows.map((el: FlowType) => {
+ const arrLinks = myFlows.map((el: FlowType) => {
   const name = el.name
-  const lincks = el.data.nodes
+  const links = el.data.nodes
    .filter((el) => el.type === 'link_node')
-   .map((linck) => {
-    if ('transition' in linck.data) {
-     const { target_flow, target_node } = (linck.data as LinkNodeDataType).transition
-     const id = el.id
+   .map((link) => {
+    const { target_flow, target_node } = (link.data as LinkNodeDataType)
+     .transition
+    const id = el.id
 
-     return { target_flow, target_node, id, name }
-    }
-    return null
+    return { target_flow, target_node, id, name }
    })
-   .filter((linck) => linck !== null)
 
-  return { lincks }
+  return { links }
  })
 
- const result = arrLink
+ const result = arrLinks
   .map((el) => {
-   const res = el.lincks.filter((linck) => linck.target_flow === flow.name)
+   const res = el.links.filter((link) => link.target_flow === flow.name)
    return res
   })
   .flat()
 
-  console.log(result)
+ console.log(result)
 
  return (
   <Modal
