@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react'
 
 const CheckIcon = ({ className }: React.SVGAttributes<SVGSVGElement>) => {
   return (

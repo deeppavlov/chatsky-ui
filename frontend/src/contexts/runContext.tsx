@@ -1,18 +1,18 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { delay } from '@/utils'
+import { AxiosError } from 'axios'
+import { createContext, useContext, useEffect, useState } from 'react'
 import {
   buildApiStatusType,
   get_runs,
   localRunType,
-  runMinifyApiType,
-  runPresetType,
   run_start,
   run_status,
   run_stop,
   run_stop_all,
-} from "../api/bot"
-import { NotificationsContext } from "./notificationsContext"
-import { AxiosError } from "axios"
-import { delay } from "@/utils"
+  runMinifyApiType,
+  runPresetType,
+} from '../api/bot'
+import { NotificationsContext } from './notificationsContext'
 
 export type runApiType = {
   id: number
@@ -68,14 +68,14 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const { notification: n } = useContext(NotificationsContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
-    setRuns(runs.map((run) => ({ ...run, type: "run" })))
+    setRuns(runs.map((run) => ({ ...run, type: 'run' })))
   }
 
   const getRunInitial = async () => {
     const data = await get_runs()
     if (data) {
       const _runs: localRunType[] = data.map((run) => {
-        return { ...run, type: "run" }
+        return { ...run, type: 'run' }
       })
       setRuns(_runs)
     }
@@ -87,7 +87,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
   const runStart = async (
     build_id: string,
-    { end_status = "success", ...restParams }: runPresetType
+    { end_status = 'success', ...restParams }: runPresetType,
   ) => {
     setStartingRunId(runs.length)
     setRunStarting(true)
@@ -110,33 +110,35 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
       // 4. Мониторинг статуса рана
 
-      let status: buildApiStatusType = "running"
+      let status: buildApiStatusType = 'running'
 
-      while (status === "running") {
+      while (status === 'running') {
         try {
           status = (await run_status(started_run.id)).status
-          status === "running" && (await delay(1000))
+          status === 'running' && (await delay(1000))
         } catch (e) {
           console.log(e)
           await delay(1000)
         }
       }
 
-      setRuns((prev) => prev.map((r) => (run_id === r.id ? { ...r, status } : r)))
+      setRuns((prev) =>
+        prev.map((r) => (run_id === r.id ? { ...r, status } : r)),
+      )
       switch (status) {
-        case "alive":
+        case 'alive':
           n.add({
-            title: "Run started!",
-            message: "",
-            type: "success",
+            title: 'Run started!',
+            message: '',
+            type: 'success',
           })
           break
 
-        case "failed":
+        case 'failed':
           n.add({
-            title: "Run failed!",
-            message: "Unknown run error. Please check your script.",
-            type: "error",
+            title: 'Run failed!',
+            message: 'Unknown run error. Please check your script.',
+            type: 'error',
           })
           break
 
@@ -144,11 +146,14 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
           break
       }
     } catch (error) {
-      console.error("Error during run start:", error)
+      console.error('Error during run start:', error)
       n.add({
-        title: "Run error!",
-        message: error instanceof AxiosError ? error.message : "An unexpected error occurred.",
-        type: "error",
+        title: 'Run error!',
+        message:
+          error instanceof AxiosError
+            ? error.message
+            : 'An unexpected error occurred.',
+        type: 'error',
       })
     } finally {
       setStartingRunId(null)
@@ -162,20 +167,20 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await run_stop(run_id)
 
-      let status: buildApiStatusType = "alive"
+      let status: buildApiStatusType = 'alive'
 
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
           isTimeoutReached = true
-          reject(new Error("Timeout error"))
+          reject(new Error('Timeout error'))
         }, 10000)
       })
 
       const stopRunPromise = (async () => {
-        while (status !== "stopped" && !isTimeoutReached) {
+        while (status !== 'stopped' && !isTimeoutReached) {
           try {
             status = (await run_status(run_id)).status
-            status !== "stopped" && (await delay(1000))
+            status !== 'stopped' && (await delay(1000))
           } catch (e) {
             console.log(e)
             await delay(1000)
@@ -186,16 +191,16 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       await Promise.race([stopRunPromise, timeoutPromise])
       setRunsHandler(runs.map((r) => (r.id === run_id ? { ...r, status } : r)))
       n.add({
-        message: "",
-        title: "Run stopped!",
-        type: "info",
+        message: '',
+        title: 'Run stopped!',
+        type: 'info',
       })
     } catch (error) {
       console.log(error)
       n.add({
-        message: "",
-        title: "Error stopping the run!",
-        type: "error",
+        message: '',
+        title: 'Error stopping the run!',
+        type: 'error',
       })
     } finally {
       setStoppingRunIds((ids) => ids.filter((id) => id !== run_id))
@@ -209,35 +214,35 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       await run_stop_all()
 
       let runs = await get_runs()
-      let isAllStopped = runs.every((r) => r.status !== "alive")
+      let isAllStopped = runs.every((r) => r.status !== 'alive')
 
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
           isTimeoutReached = true
-          reject(new Error("Timeout error"))
+          reject(new Error('Timeout error'))
         }, 10000)
       })
       const stopRunsPromise = (async () => {
         while (!isAllStopped && !isTimeoutReached) {
           await delay(1000)
           runs = await get_runs()
-          isAllStopped = runs.every((r) => r.status !== "alive")
+          isAllStopped = runs.every((r) => r.status !== 'alive')
         }
       })()
       await Promise.race([stopRunsPromise, timeoutPromise])
 
       setRunsHandler(runs)
       n.add({
-        message: "",
-        title: "All runs stopped!",
-        type: "info",
+        message: '',
+        title: 'All runs stopped!',
+        type: 'info',
       })
     } catch (error) {
       console.log(error)
       n.add({
-        message: "",
-        title: "Error stopping the run!",
-        type: "error",
+        message: '',
+        title: 'Error stopping the run!',
+        type: 'error',
       })
     } finally {
       setRunStopping(false)

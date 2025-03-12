@@ -1,13 +1,22 @@
-import { Button } from "@nextui-org/react"
-import { useContext } from "react"
-import { PopUpContext } from "../../contexts/popUpContext"
-import { CustomModalProps, Modal, ModalBody, ModalFooter } from "../ModalComponents"
-import { Title } from "@radix-ui/react-dialog"
+import { Button } from '@nextui-org/react'
+import { Title } from '@radix-ui/react-dialog'
+import { useContext } from 'react'
+import { PopUpContext } from '../../contexts/popUpContext'
+import {
+  CustomModalProps,
+  Modal,
+  ModalBody,
+  ModalFooter,
+} from '../ModalComponents'
+
 type RestoreBuildModalProps = CustomModalProps & {
   onRestore: () => void
 }
 
-const RestoreBuildModal = ({ id = "restore-build-modal", onRestore }: RestoreBuildModalProps) => {
+const RestoreBuildModal = ({
+  id = 'restore-build-modal',
+  onRestore,
+}: RestoreBuildModalProps) => {
   const { closePopUp } = useContext(PopUpContext)
 
   const onCancelHandler = () => {
@@ -19,10 +28,18 @@ const RestoreBuildModal = ({ id = "restore-build-modal", onRestore }: RestoreBui
   }
 
   return (
-    <Modal size='sm' className='w-full' id={id} isOpen={true} onClose={onCancelHandler}>
+    <Modal
+      size='sm'
+      className='w-full'
+      id={id}
+      isOpen={true}
+      onClose={onCancelHandler}
+    >
       <div className='flex items-center justify-between pb-4'>
         <Title>
-          <h2 className='text-base font-bold'>Are you sure you want to restore an old build?</h2>
+          <h2 className='text-base font-bold'>
+            Are you sure you want to restore an old build?
+          </h2>
         </Title>
       </div>
       <ModalBody>
@@ -35,8 +52,8 @@ const RestoreBuildModal = ({ id = "restore-build-modal", onRestore }: RestoreBui
           Cancel
         </Button>
         <Button
-          className='flex-grow bg-foreground text-background rounded-lg'
-          color={"default"}
+          className='flex-grow rounded-lg bg-foreground text-background'
+          color={'default'}
           onClick={onRestoreHandler}
         >
           Confirm

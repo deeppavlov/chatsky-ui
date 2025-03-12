@@ -1,6 +1,6 @@
-import { FC, PropsWithChildren, ReactNode, useRef, useState } from "react"
-import { ChevronRightIcon } from "lucide-react"
-import cn from "classnames"
+import cn from 'classnames'
+import { ChevronRightIcon } from 'lucide-react'
+import { FC, PropsWithChildren, ReactNode, useRef, useState } from 'react'
 
 export type AccordionButtonHandler = {
   start: (id: number) => void
@@ -15,7 +15,7 @@ interface Props extends PropsWithChildren {
 
 export const StringItem = ({ content }: { content: [string, string] }) => (
   <div>
-    <span className='text-input-border text-sm'>{content[0]}</span>
+    <span className='text-sm text-input-border'>{content[0]}</span>
     <span className='text-sm'>{content[1]}</span>
   </div>
 )
@@ -30,20 +30,20 @@ const Accordion: FC<Props> = ({ title, children, infoBlock, isLoading }) => {
       <div
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "relative p-2 rounded-lg flex items-center gap-1 cursor-pointer h-10 overflow-hidden",
-          isOpen && "bg-btn-accent"
+          'relative flex h-10 cursor-pointer items-center gap-1 overflow-hidden rounded-lg p-2',
+          isOpen && 'bg-btn-accent',
         )}
       >
         {isLoading && (
-          <div className='absolute bg-[#3399CC] w-full h-full animate-fill-progress opacity-10 z-0'></div>
+          <div className='absolute z-0 h-full w-full animate-fill-progress bg-[#3399CC] opacity-10'></div>
         )}
         <ChevronRightIcon
           className={cn(
-            "size-4 transition-all duration-300 stroke-input-border shrink-0",
-            isOpen && "rotate-90"
+            'size-4 shrink-0 stroke-input-border transition-all duration-300',
+            isOpen && 'rotate-90',
           )}
         />
-        <span className='text-sm font-semibold flex-grow truncate sm:basis-4/6 2xl:basis-auto'>
+        <span className='flex-grow truncate text-sm font-semibold sm:basis-4/6 2xl:basis-auto'>
           {title}
         </span>
         {infoBlock}
@@ -53,11 +53,11 @@ const Accordion: FC<Props> = ({ title, children, infoBlock, isLoading }) => {
       <div
         ref={contentRef}
         style={{
-          height: isOpen ? `${contentRef.current?.scrollHeight}px` : "0",
-          transition: "height 0.3s ease",
-          overflow: "hidden",
+          height: isOpen ? `${contentRef.current?.scrollHeight}px` : '0',
+          transition: 'height 0.3s ease',
+          overflow: 'hidden',
         }}
-        className='overflow-hidden ps-6 pe-2 flex flex-col mt-1'
+        className='mt-1 flex flex-col overflow-hidden pe-2 ps-6'
       >
         {children}
       </div>

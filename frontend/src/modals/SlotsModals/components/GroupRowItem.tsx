@@ -1,8 +1,8 @@
-import { Button, TableCell, TableRow, useDisclosure } from "@nextui-org/react"
-import NewWindowIcon from "../../../icons/NewWindowIcon"
-import TrashIcon from "../../../icons/TrashIcon"
-import { SlotsGroupType } from "../../../types/FlowTypes"
-import { SlotsNodeDataType } from "../../../types/NodeTypes"
+import { Button, TableCell, TableRow, useDisclosure } from '@nextui-org/react'
+import NewWindowIcon from '../../../icons/NewWindowIcon'
+import TrashIcon from '../../../icons/TrashIcon'
+import { SlotsGroupType } from '../../../types/FlowTypes'
+import { SlotsNodeDataType } from '../../../types/NodeTypes'
 
 type GroupRowItemProps = {
   group: SlotsGroupType
@@ -11,7 +11,11 @@ type GroupRowItemProps = {
 }
 
 const GroupRowItem = ({ data, setData, group }: GroupRowItemProps) => {
-  const { onOpen: onGroupOpen, onClose: onGroupClose, isOpen: isGroupOpen } = useDisclosure()
+  const {
+    onOpen: onGroupOpen,
+    onClose: onGroupClose,
+    isOpen: isGroupOpen,
+  } = useDisclosure()
 
   return (
     <TableRow key={group.id}>
@@ -22,7 +26,9 @@ const GroupRowItem = ({ data, setData, group }: GroupRowItemProps) => {
           {group.slots.slice(0, 3).map((slot, idx) => (
             <>
               {idx === 2 && group.slots.length > 3 ? (
-                <li className='text-sm text-gray-400'>+ {group.slots.length - 2} more</li>
+                <li className='text-sm text-gray-400'>
+                  + {group.slots.length - 2} more
+                </li>
               ) : (
                 idx === 2 && <li>{slot.name}</li>
               )}
@@ -32,18 +38,10 @@ const GroupRowItem = ({ data, setData, group }: GroupRowItemProps) => {
         </ul>
       </TableCell>
       <TableCell>
-        <Button
-          size='sm'
-          isIconOnly
-          variant='light'
-          color='danger'>
+        <Button size='sm' isIconOnly variant='light' color='danger'>
           <TrashIcon />
         </Button>
-        <Button
-          size='sm'
-          isIconOnly
-          variant='light'
-          color='default'>
+        <Button size='sm' isIconOnly variant='light' color='default'>
           <NewWindowIcon />
         </Button>
       </TableCell>

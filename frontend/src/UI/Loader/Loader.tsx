@@ -1,9 +1,16 @@
-import classNames from "classnames"
-import React from "react"
-import "./loader.css"
+import classNames from 'classnames'
+import React from 'react'
+import './loader.css'
 
 const Loader = ({ className }: React.HTMLAttributes<HTMLSpanElement>) => {
-  return <span className={classNames("w-5 h-5 inline-block border border-foreground !border-b-transparent rounded-full loader-rotation", className)}></span>
+  return (
+    <span
+      className={classNames(
+        'loader-rotation inline-block h-5 w-5 rounded-full border border-foreground !border-b-transparent',
+        className,
+      )}
+    ></span>
+  )
 }
 
 export default Loader

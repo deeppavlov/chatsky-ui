@@ -1,5 +1,3 @@
-
-
 export type apiPresetType = {
   name: string
   duration: number
