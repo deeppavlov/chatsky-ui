@@ -1,6 +1,30 @@
 {
-  "semi": true,
+  "semi": false,
   "singleQuote": true,
+  "jsxSingleQuote": true,
+  "arrowParens": "always",
   "trailingComma": "all",
-  "printWidth": 120
+  "printWidth": 120,
+  "bracketSpacing": true,
+  "jsxBracketSameLine": false,
+  "quoteProps": "as-needed",
+  "endOfLine": "lf",
+  "importOrder": [
+    "^/(.*)$",
+    "^assets/(.*)$",
+    "^router/(.*)$",
+    "^types/(.*)$",
+    "^context/(.*)$",
+    "^constants/(.*)$",
+    "^mapping/(.*)$",
+    "^api/(.*)$",
+    "^hooks/(.*)$",
+    "^utils/(.*)$",
+    "^ui/(.*)$",
+    "^components/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true,
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"]
 }
