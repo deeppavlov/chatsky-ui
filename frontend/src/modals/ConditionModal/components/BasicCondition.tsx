@@ -607,8 +607,6 @@ const BasicCondition = ({
 
  const [state, setState] = useState(defState)
 
- console.log(state, 'state 11111111')
-
  useEffect(() => {
   const { conditionGroups: conditionGroupsIgnored, ...newState } = state
   const newCondition = {

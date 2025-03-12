@@ -6,33 +6,33 @@ import {
  //  ModalFooter,
  //  ModalHeader,
  ModalProps,
-} from "@nextui-org/react";
-import { Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents";
-import { Edge, useReactFlow } from "@xyflow/react";
-import { HelpCircle, TrashIcon } from "lucide-react";
-import React, { useCallback, useContext, useEffect } from "react";
+} from '@nextui-org/react'
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
+import { Edge, useReactFlow } from '@xyflow/react'
+import { HelpCircle, TrashIcon } from 'lucide-react'
+import React, { useCallback, useContext, useEffect } from 'react'
 // import ModalComponent from "../../components/ModalComponent";
-import { flowContext } from "../../contexts/flowContext";
-import { undoRedoContext } from "../../contexts/undoRedoContext";
-import EditPenIcon from "../../icons/EditPenIcon";
-import { DefaultNodeDataType, DefaultNodeType } from "../../types/NodeTypes";
-import ConditionRow from "./components/ConditionRow";
+import { flowContext } from '../../contexts/flowContext'
+import { undoRedoContext } from '../../contexts/undoRedoContext'
+import EditPenIcon from '../../icons/EditPenIcon'
+import { DefaultNodeDataType, DefaultNodeType } from '../../types/NodeTypes'
+import ConditionRow from './components/ConditionRow'
 
 type NodeModalProps = {
- data: DefaultNodeDataType;
- size?: ModalProps["size"];
- isOpen: boolean;
- onClose: () => void;
- onResponseModalOpen: () => void;
- nodeDataState: DefaultNodeDataType;
- setNodeDataState: React.Dispatch<React.SetStateAction<DefaultNodeDataType>>;
-};
+ data: DefaultNodeDataType
+ size?: ModalProps['size']
+ isOpen: boolean
+ onClose: () => void
+ onResponseModalOpen: () => void
+ nodeDataState: DefaultNodeDataType
+ setNodeDataState: React.Dispatch<React.SetStateAction<DefaultNodeDataType>>
+}
 
 const NodeModal = ({
  data,
  isOpen,
  onClose,
- size = "3xl",
+ size = '3xl',
  onResponseModalOpen,
  nodeDataState,
  setNodeDataState,
@@ -40,66 +40,66 @@ const NodeModal = ({
  const { getNodes, setNodes, updateNodeData } = useReactFlow<
   DefaultNodeType,
   Edge
- >();
- const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext);
- const { takeSnapshot } = useContext(undoRedoContext);
+ >()
+ const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext)
+ const { takeSnapshot } = useContext(undoRedoContext)
 
  useEffect(() => {
   setNodeDataState(
    getNodes().find((node) => node.data.id === data.id)?.data ?? data
-  );
+  )
   // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [isOpen]);
+ }, [isOpen])
 
  const setDataStateValue = useCallback(
   (e: React.ChangeEvent<HTMLInputElement>) => {
-   setNodeDataState({ ...nodeDataState, [e.target.name]: e.target.value });
+   setNodeDataState({ ...nodeDataState, [e.target.name]: e.target.value.trim() })
   },
   [nodeDataState, setNodeDataState]
- );
+ )
 
  const setTextResponseValue = (e: React.ChangeEvent<HTMLInputElement>) => {
   setNodeDataState({
    ...nodeDataState,
    response: {
     ...nodeDataState.response!,
-    type: "text",
+    type: 'text',
     data: [{ text: e.target.value, priority: 1 }],
    },
-  });
- };
+  })
+ }
 
  const onNodeSave = () => {
-  takeSnapshot();
-  updateNodeData(data.id, { ...nodeDataState });
-  quietSaveFlows();
-  onClose();
- };
+  takeSnapshot()
+  updateNodeData(data.id, { ...nodeDataState })
+  quietSaveFlows()
+  onClose()
+ }
 
  const onNodeDelete = () => {
   const is_deletion_valid = validateNodeDeletion({
    data,
    id: data.id,
    position: { x: 0, y: 0 },
-   type: "default_node",
-  });
-  if (!is_deletion_valid) return -1;
-  takeSnapshot();
-  const nodes = getNodes();
-  const new_nodes = nodes.filter((node) => node.data.id !== data.id);
-  setNodes(new_nodes);
-  quietSaveFlows();
-  onClose();
- };
+   type: 'default_node',
+  })
+  if (!is_deletion_valid) return -1
+  takeSnapshot()
+  const nodes = getNodes()
+  const new_nodes = nodes.filter((node) => node.data.id !== data.id)
+  setNodes(new_nodes)
+  quietSaveFlows()
+  onClose()
+ }
 
  const deleteCondition = (id: string) => {
   if (nodeDataState.conditions) {
    setNodeDataState({
     ...nodeDataState,
     conditions: nodeDataState.conditions.filter((c) => c.id !== id),
-   });
+   })
   }
- };
+ }
 
  return (
   <>
@@ -191,8 +191,8 @@ const NodeModal = ({
     isOpen={isOpen}
     onClose={onClose}
    >
-    <ModalHeader>{"Edit node"}</ModalHeader>
-    <ModalBody className={"flex flex-1 flex-col gap-3 py-2"}>
+    <ModalHeader>{'Edit node'}</ModalHeader>
+    <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
      <label></label>
      <div className="grid gap-4">
       <Input
@@ -203,6 +203,9 @@ const NodeModal = ({
        name="name"
        value={nodeDataState.name}
        onChange={setDataStateValue}
+       autoComplete="off"
+       isInvalid={nodeDataState.name === ''}
+       errorMessage={nodeDataState.name === '' ? 'Please fill every field' : ''}
       />
       <span className="relative">
        <Input
@@ -212,12 +215,12 @@ const NodeModal = ({
         name="response"
         variant="bordered"
         disabled
-        value={nodeDataState.response?.data[0].text ?? "No text response"}
+        value={nodeDataState.response?.data[0].text ?? 'No text response'}
         onChange={setTextResponseValue}
        />
        <button
         onClick={() => {
-         onResponseModalOpen();
+         onResponseModalOpen()
         }}
         className="absolute right-3 top-9"
        >
@@ -262,11 +265,7 @@ const NodeModal = ({
     </ModalFooter>
    </Modal>
   </>
- );
-};
+ )
+}
 
-//flex py-4 px-6 flex-initial text-large font-semibold hedr
-// class="flex flex-1 flex-col gap-3 px-6 py-2"  body
-//flex-row gap-2 px-6 py-4 flex justify-between items-center futer
-
-export default NodeModal;
+export default NodeModal

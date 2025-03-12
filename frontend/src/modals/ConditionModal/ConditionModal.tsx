@@ -91,6 +91,11 @@ const ConditionModal = ({
   is_create || !condition ? generateNewConditionBase() : condition
  )
 
+ const [errorObject, setError] = useState({
+  errorMessage: '',
+  isInvalid: false,
+ })
+
  const ref = useRef<{
   state: conditionType
   setState: (data: conditionType) => void
@@ -173,7 +178,7 @@ const ConditionModal = ({
     arrError.push(true)
    }
 
-   (data.data as ICondition[]).forEach((item: ICondition) => {
+   ;(data.data as ICondition[]).forEach((item: ICondition) => {
     if (item.structure === 'not') {
      const { error: _, ...res } = item.data as ICondition
      const isEmpty =
@@ -360,6 +365,19 @@ const ConditionModal = ({
   setLintStatus(() => null)
  }, [selected])
 
+ useEffect(() => {
+  if (currentCondition.name === '') {
+   setError({ isInvalid: true, errorMessage: 'Please fill every field' })
+  }
+
+  if (currentCondition.name !== '') {
+   setError({ isInvalid: false, errorMessage: '' })
+  }
+  if (!validateConditionName(is_create)) {
+   setError({ isInvalid: false, errorMessage: '' })
+  }
+ }, [currentCondition.name])
+
  const onCloseHandler = () => {
   closePopUp(id)
  }
@@ -369,11 +387,13 @@ const ConditionModal = ({
 
   const newState = validateConditionBasic(currentCondition)
 
+  const isNamePython = currentCondition.name.replace(/[A-Za-z]/g, '') === ''
+
   if (!newState.status && ref.current?.setState) {
    ref.current.setState(newState.condition.data as conditionType)
   }
 
-  if (validate_name.status && newState.status) {
+  if (validate_name.status && newState.status && isNamePython) {
    updateNodeData(data.id, {
     ...data,
     conditions: is_create
@@ -386,11 +406,16 @@ const ConditionModal = ({
    onCloseHandler()
   } else {
    if (!validate_name.status) {
-    n.add({
-     title: 'Saving error!',
-     message: `Condition name is not valid: \n ${validate_name.reason}`,
-     type: 'error',
-    })
+    setError({ isInvalid: true, errorMessage: 'Name must be unique' })
+   }
+   if (currentCondition.type === 'python') {
+    const text = currentCondition.name.replace(/[A-Za-z]/g, '')
+    text.trim() === ''
+     ? null
+     : setError({
+        errorMessage: 'Please use Latin alphabet only',
+        isInvalid: true,
+       })
    }
   }
  }
@@ -482,7 +507,7 @@ const ConditionModal = ({
       )}
      </Tabs>
     </label>
-    <div className="grid grid-cols-4 items-center gap-4 mt-4 mb-2">
+    <div className="grid grid-cols-4 gap-4 mt-4 mb-2">
      <DefInput
       className="col-span-3"
       label="Name"
@@ -496,6 +521,7 @@ const ConditionModal = ({
         name: e.target.value.replace(/\s/g, ''),
        })
       }
+      {...errorObject}
      />
      <DefInput
       label="Priority"
@@ -581,6 +607,7 @@ const ConditionModal = ({
       data-testid="save-condition-button"
       onClick={saveCondition}
       className="bg-foreground text-background"
+      isDisabled={errorObject.isInvalid || condition?.name.trim() === ''}
      >
       Save condition
      </Button>
