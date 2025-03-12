@@ -33,6 +33,7 @@ const PopUpProvider = ({ children }: PopUpProviderProps) => {
   const [popUpElements, setPopUpElements] = useState<
     { id: string; element: JSX.Element }[]
   >([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [closingId, setClosingId] = useState<string | null>(null)
 
   useEffect(() => {

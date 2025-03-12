@@ -82,6 +82,7 @@ const SlotsGroupModal = ({
     setSubgroups(
       nodeData.groups.filter((g) => g.subgroup_to === group?.id) ?? [],
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData])
 
   const onSave = () => {
@@ -147,6 +148,7 @@ const SlotsGroupModal = ({
       setParentGroup(null)
       setCurrentGroup({ ...currentGroup, subgroup_to: '' })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSubGroup])
 
   return (

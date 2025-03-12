@@ -1,6 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
 import { Edge, OnBeforeDelete, ReactFlowInstance } from '@xyflow/react'
-import { AxiosError } from 'axios'
 import React, {
   createContext,
   useCallback,
@@ -14,7 +14,6 @@ import { get_flows, save_flows } from '../api/flows'
 import { FLOW_COLORS } from '../consts'
 import { FlowType, SlotsGroupType, SlotType } from '../types/FlowTypes'
 import { AppNode, SlotsNodeType } from '../types/NodeTypes'
-import { parseGroups } from '../utils'
 import { MetaContext } from './metaContext'
 import { NotificationsContext } from './notificationsContext'
 
@@ -182,7 +181,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   // initial get flows
   useEffect(() => {
     getFlows()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -198,9 +196,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     const slots = groups.map((group) => group.slots).flat()
     setSlots(slots)
     setGroups(groups)
-    const parsed_groups = await parseGroups(groups)
     try {
-      await save_flows(flows, parsed_groups)
+      await save_flows(flows)
       setFlows(flows)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
 import EditPenIcon from '../../../icons/EditPenIcon'
@@ -33,6 +34,7 @@ const SlotItem = ({
       method,
       value,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, type, method, value])
 
   return (

@@ -97,10 +97,12 @@ const BuildForm = () => {
       setBuildFormData(formData)
     }
   }, [formData, setBuildFormData])
+
   useEffect(() => {
     if (buildFormData) {
       setFormData(buildFormData)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

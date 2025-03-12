@@ -1,7 +1,6 @@
-import { interfaceType } from '@/contexts/flowContext'
 import { $v1 } from '.'
 import { FlowType } from '../types/FlowTypes'
-import { ParsedSlot } from '../utils'
+// import { ParsedSlot } from '../utils'
 import { GetFlowsResponseType, SaveFlowsResponseType } from './flows.types'
 
 export const get_flows = async (
@@ -13,7 +12,7 @@ export const get_flows = async (
 
 export const save_flows = async (
   flows: FlowType[],
-  slots?: Record<string, ParsedSlot> | null,
+  // slots?: Record<string, ParsedSlot> | null,
 ): Promise<SaveFlowsResponseType> => {
   // const hasValidSlots = slots && Object.values(slots).some(slot => Object.keys(slot).length > 0);
 

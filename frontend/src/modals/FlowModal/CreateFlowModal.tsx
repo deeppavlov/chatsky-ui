@@ -3,7 +3,6 @@ import {
   Checkbox,
   Input,
   //  ModalBody,
-  ModalContent,
   //  ModalFooter,
   //  ModalHeader,
   Select,
@@ -11,7 +10,6 @@ import {
 } from '@nextui-org/react'
 import { HelpCircle } from 'lucide-react'
 import { useContext, useState } from 'react'
-import ModalComponent from '../../components/ModalComponent'
 import { FLOW_COLORS } from '../../consts'
 import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'

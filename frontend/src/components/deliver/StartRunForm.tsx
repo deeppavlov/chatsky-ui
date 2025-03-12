@@ -271,12 +271,14 @@ const StartRunForm = () => {
       })
     }
   }, [formData, tokenState, fieldErrors, setStartRunFormState])
+
   useEffect(() => {
     if (formState) {
       setFormData(formState?.formData)
       setFieldErrors(formState?.fieldErrors)
       setTokenState(formState?.tokenState)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

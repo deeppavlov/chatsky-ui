@@ -23,13 +23,7 @@ export type emojiPickerType = {
   onEmojiClick?: onEmojiClickType
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const EmojiPicker = ({
-  data,
-  lazy = false,
-  theme = 'auto',
-  onEmojiClick,
-}: emojiPickerType) => {
+const EmojiPicker = ({ data, onEmojiClick }: emojiPickerType) => {
   const [visibleData, setVisibleData] = useState<EmojiType[]>(
     useDeferredValue(data.slice(0, 84)),
   )

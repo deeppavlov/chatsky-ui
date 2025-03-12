@@ -1,4 +1,4 @@
-import { Button, TableCell, TableRow, useDisclosure } from '@nextui-org/react'
+import { Button, TableCell, TableRow } from '@nextui-org/react'
 import NewWindowIcon from '../../../icons/NewWindowIcon'
 import TrashIcon from '../../../icons/TrashIcon'
 import { SlotsGroupType } from '../../../types/FlowTypes'
@@ -10,13 +10,7 @@ type GroupRowItemProps = {
   setData: React.Dispatch<React.SetStateAction<SlotsNodeDataType>>
 }
 
-const GroupRowItem = ({ data, setData, group }: GroupRowItemProps) => {
-  const {
-    onOpen: onGroupOpen,
-    onClose: onGroupClose,
-    isOpen: isGroupOpen,
-  } = useDisclosure()
-
+const GroupRowItem = ({ group }: GroupRowItemProps) => {
   return (
     <TableRow key={group.id}>
       <TableCell> </TableCell>

@@ -1,7 +1,7 @@
 import * as ContextMenu from '@radix-ui/react-context-menu'
 import { Handle, Position, useReactFlow } from '@xyflow/react'
 import { useContext, useEffect, useState } from 'react'
-import { CONDITION_LABELS, conditionTypeIcons } from '../../../consts'
+import { conditionTypeIcons } from '../../../consts'
 import { PopUpContext } from '../../../contexts/popUpContext'
 import ConditionModal from '../../../modals/ConditionModal/ConditionModal'
 import { conditionLabelType } from '../../../types/ConditionTypes'
@@ -9,6 +9,7 @@ import { NodeComponentConditionType } from '../../../types/NodeTypes'
 
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const { openPopUp } = useContext(PopUpContext)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [label, setLabel] = useState<conditionLabelType>(
     condition.data.transition_type ?? 'manual',
   )

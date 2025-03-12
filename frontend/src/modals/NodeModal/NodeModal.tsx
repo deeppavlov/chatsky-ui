@@ -2,7 +2,6 @@ import {
   Button,
   Input,
   //  ModalBody,
-  ModalContent,
   //  ModalFooter,
   //  ModalHeader,
   ModalProps,

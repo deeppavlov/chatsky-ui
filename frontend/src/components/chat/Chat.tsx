@@ -101,7 +101,6 @@ const Chat = memo(() => {
     setIsEmoji(false)
 
     inputRef.current?.focus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId])
 
   useEffect(() => {

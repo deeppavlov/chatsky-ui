@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import SearchIcon from '@/icons/SearchIcon'
 import DefCombobox from '@/UI/Input/DefCombobox'
 import { TableCell, TableRow } from '@nextui-org/react'
@@ -37,7 +39,6 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
         },
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeConditionValue = (value: string) => {

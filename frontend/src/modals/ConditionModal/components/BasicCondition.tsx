@@ -3,14 +3,14 @@ import DefInput from '@/UI/Input/DefInput'
 import DefSelect from '@/UI/Input/DefSelect'
 import DefTextarea from '@/UI/Input/DefTextarea'
 import { Button, Checkbox } from '@nextui-org/react'
-import _, { isArray } from 'lodash'
+import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { ConditionModalContentType } from '../ConditionModal'
 
 interface IDefObject {
   text?: string
   flags?: { caseSensitive: boolean }
-  data?: IDefObject[] | IDefObject | {}
+  data?: IDefObject[] | IDefObject | Record<string, unknown>
   id?: string
   pattern?: string
   structure?: string
@@ -166,7 +166,7 @@ const disabledConditionGroup = (state: IState): IConditionGroup[] => {
   const arrKeyMap = mapStructures[conditionStructures]
 
   const newConditionGroups = state.conditionGroups.map((group) => {
-    if (group.hasOwnProperty('disabled')) {
+    if (Object.hasOwn(group, 'disabled')) {
       group.disabled =
         group.key &&
         arrKeyMap.includes(group.key) &&
@@ -504,7 +504,7 @@ const InputText: React.FC<{
 
 const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
   const defState: IState =
-    condition.data.hasOwnProperty('structure') && condition.data.structure
+    Object.hasOwn(condition.data, 'structure') && condition.data.structure
       ? {
           ...condition.data,
           conditionGroups,
@@ -515,6 +515,7 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
   const [state, setState] = useState(defState)
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { conditionGroups: conditionGroupsIgnored, ...newState } = state
 
     const newCondition = {
@@ -526,6 +527,7 @@ const BasicCondition = ({ condition, setData }: ConditionModalContentType) => {
       },
     }
     setData(newCondition)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
   const TextConditions = isAnyOrAll(state.structure) ? (

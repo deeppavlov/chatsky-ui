@@ -24,7 +24,7 @@ interface DropdownProps {
 }
 
 const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
-  ({ groups, onSelect, triggerContent }, ref) => {
+  ({ groups, onSelect, triggerContent }) => {
     // const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
     // const [currentGroupIndex, setCurrentGroupIndex] = useState<number | null>(null)
 
@@ -88,7 +88,7 @@ const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                   key={`group-${groupIndex}`}
                   className='grid gap-1'
                 >
-                  {group.items.map((item, index) => (
+                  {group.items.map((item) => (
                     <DropdownMenu.Item
                       key={item.value}
                       onSelect={() => {

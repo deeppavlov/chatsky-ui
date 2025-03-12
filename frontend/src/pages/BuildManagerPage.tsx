@@ -1,4 +1,4 @@
-import { checkBuildIsChanged, messengerType } from '@/api/bot'
+import { checkBuildIsChanged } from '@/api/bot'
 import Accordion, { StringItem } from '@/components/deliver/Accordion'
 import BuildForm from '@/components/deliver/BuildForm'
 import StartRunForm from '@/components/deliver/StartRunForm'
