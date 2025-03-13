@@ -56,7 +56,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     const getBuildInitial = async () => {
       const builds = await get_builds()
       if (builds) {
-        setBuildsHandler(builds)
+        setBuildsHandler(builds.sort((a, b) => b.id - a.id))
       }
     }
     getBuildInitial()
