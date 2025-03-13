@@ -160,10 +160,10 @@ def build_scenario(
 
 @cli.command("run_bot")
 def run_bot(
-    project_dir: Path = typer.Option(None, help="The project directory created by the `init` command"),
-    preset: str = typer.Option("success", help="Could be one of: success, failure, loop"),
-    run_id: int = 0,
-) -> None:
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
+    preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
+    run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
+):
     """
     Runs the bot with one of three various presets.
 
@@ -185,9 +185,9 @@ def run_bot(
 
 @cli.command("run_scenario")
 def run_scenario(
-    project_dir: Path = typer.Option(Path("."), help="The project directory created by the `init` command"),
-    run_id: int = 0,
-) -> None:
+    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
+):
     """
     Runs the bot with preset `success`.
 
@@ -199,12 +199,15 @@ def run_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
     script_path = settings.scripts_dir / "build.yaml"
+    dialogue_db_path = settings.databases_dir / f"run_{run_id}.db"
 
-    command_to_run = f"python {project_dir}/app.py --script-path {script_path} --run_id {run_id}"
+    command_to_run = f"python {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path}"
     try:
         asyncio.run(_execute_command(command_to_run))
     except FileNotFoundError:
-        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path} --run_id {run_id}"
+        command_to_run = (
+            f"python3 {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path}"
+        )
         asyncio.run(_execute_command(command_to_run))
 
 

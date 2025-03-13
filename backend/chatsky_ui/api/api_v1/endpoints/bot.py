@@ -442,7 +442,21 @@ async def respond(
 
 @router.get("/get_chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
 async def get_chat_records(
-    run_id: Union[int, str], user_id: int, pagination: Pagination = Depends()
+    run_id: int,
+    user_id: int,
+    pagination: Pagination = Depends(),
+    sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
     """Gets the records of a user's chat from a specified run."""
-    return await SQLiteExtractor().fetch_chat_records(run_id, user_id, pagination.offset(), pagination.limit)
+    try:
+        return await sqlite_extractor.fetch_chat_records(run_id, user_id, pagination.offset(), pagination.limit)
+    except IndexError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given id not found in the database.",
+        ) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
