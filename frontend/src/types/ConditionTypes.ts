@@ -37,20 +37,20 @@ export type conditionType = {
 }
 
 export type conditionLabelType =
- | "manual"
- | "forward"
- | "backward"
- | "current"
- | "fallback"
- | "start"
- | "previous"
+  | 'manual'
+  | 'forward'
+  | 'backward'
+  | 'current'
+  | 'fallback'
+  | 'start'
+  | 'previous'
 
 export interface ICondition {
- text?: string
- flags?: { caseSensitive: boolean }
- id?: string
- pattern?: string
- structure?: string
- error?: boolean
- data?: ICondition
+  text?: string
+  flags?: { caseSensitive: boolean }
+  id?: string
+  pattern?: string
+  structure?: string
+  error?: boolean
+  data?: ICondition
 }

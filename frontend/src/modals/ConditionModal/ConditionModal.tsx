@@ -576,7 +576,6 @@ const ConditionModal = ({
             {...errorObject}
           />
           <DefInput
-
             label='Priority'
             variant='bordered'
             labelPlacement='outside'

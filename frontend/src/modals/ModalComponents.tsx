@@ -5,119 +5,118 @@ import { X } from 'lucide-react'
 import { forwardRef } from 'react'
 
 export type CustomModalProps = {
- id?: string
- onClose?: () => void
+  id?: string
+  onClose?: () => void
 }
 
 // Базовая обертка для модального окна
 export type ModalProps = {
- id?: string
- isOpen: boolean
- onClose: () => void
- children: React.ReactNode
- size?:
-  | 'xs'
-  | 'sm'
-  | 'md'
-  | 'lg'
-  | 'xl'
-  | '2xl'
-  | '3xl'
-  | '4xl'
-  | '5xl'
-  | '6xl'
-  | '7xl'
-  | 'full'
- className?: string
+  id?: string
+  isOpen: boolean
+  onClose: () => void
+  children: React.ReactNode
+  size?:
+    | 'xs'
+    | 'sm'
+    | 'md'
+    | 'lg'
+    | 'xl'
+    | '2xl'
+    | '3xl'
+    | '4xl'
+    | '5xl'
+    | '6xl'
+    | '7xl'
+    | 'full'
+  className?: string
 }
 
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(
- ({ id, isOpen, onClose, children, size = '3xl', className }, ref) => {
-  return (
-   <Dialog.Root open={isOpen} onOpenChange={onClose}>
-    <Dialog.Portal container={document.getElementById('modal_root')}>
-     <Dialog.Overlay id={id} asChild>
-      <motion.div
-       className="w-screen h-screen flex items-center justify-center fixed inset-0 z-50 bg-black/20"
-       initial={{ opacity: 0 }}
-       animate={{ opacity: 1 }}
-       exit={{ opacity: 0 }}
-      />
-     </Dialog.Overlay>
-     <Dialog.Content asChild>
-      <motion.div
-       key={id}
-       ref={ref}
-       className={classNames(
-        `fixed z-50 w-full max-w-${size} p-6 bg-background rounded-2xl shadow-lg`,
-        className
-       )}
-       initial={{ opacity: 0, scale: 0.95 }}
-       animate={{ opacity: 1, scale: 1 }}
-       exit={{ opacity: 0, scale: 0.95 }}
-       transition={{ duration: 0.15 }}
-      >
-       {children}
-      </motion.div>
-     </Dialog.Content>
-    </Dialog.Portal>
-   </Dialog.Root>
-  )
- }
+  ({ id, isOpen, onClose, children, size = '3xl', className }, ref) => {
+    return (
+      <Dialog.Root open={isOpen} onOpenChange={onClose}>
+        <Dialog.Portal container={document.getElementById('modal_root')}>
+          <Dialog.Overlay id={id} asChild>
+            <motion.div
+              className='fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-black/20'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+          </Dialog.Overlay>
+          <Dialog.Content asChild>
+            <motion.div
+              key={id}
+              ref={ref}
+              className={classNames(
+                `fixed z-50 w-full max-w-${size} rounded-2xl bg-background p-6 shadow-lg`,
+                className,
+              )}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+            >
+              {children}
+            </motion.div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    )
+  },
 )
 
 Modal.displayName = 'Modal'
 
 type ModalHeaderProps = {
- children: React.ReactNode
- className?: string
- showCloseButton?: boolean
+  children: React.ReactNode
+  className?: string
+  showCloseButton?: boolean
 }
 
 export const ModalHeader = ({
- children,
- showCloseButton = true,
- className,
+  children,
+  showCloseButton = true,
+  className,
 }: ModalHeaderProps) => (
- <div
-  className={classNames('flex items-center justify-between pb-4', className)}
- >
-  <Dialog.Title>{children}</Dialog.Title>
+  <div
+    className={classNames('flex items-center justify-between pb-4', className)}
+  >
+    <Dialog.Title>{children}</Dialog.Title>
 
-  {showCloseButton && (
-   <Dialog.Close asChild>
-    <button className="text-foreground bg-background hover:bg-bg-secondary transition-colors rounded-lg p-0.5">
-     <X size={20} />
-    </button>
-   </Dialog.Close>
-  )}
- </div>
+    {showCloseButton && (
+      <Dialog.Close asChild>
+        <button className='rounded-lg bg-background p-0.5 text-foreground transition-colors hover:bg-bg-secondary'>
+          <X size={20} />
+        </button>
+      </Dialog.Close>
+    )}
+  </div>
 )
 
 type ModalBodyProps = {
- children: React.ReactNode
- className?: string
+  children: React.ReactNode
+  className?: string
 }
 
 export const ModalBody = ({ children, className }: ModalBodyProps) => (
- <div
-  className={classNames(
-   'max-h-[70vh] overflow-y-scroll scrollbar-hide',
-   className
-  )}
- >
-  {children}
- </div>
-
+  <div
+    className={classNames(
+      'max-h-[70vh] overflow-y-scroll scrollbar-hide',
+      className,
+    )}
+  >
+    {children}
+  </div>
 )
 
 type ModalFooterProps = {
- children: React.ReactNode
- className?: string
+  children: React.ReactNode
+  className?: string
 }
 
 export const ModalFooter = ({ children, className }: ModalFooterProps) => (
- <div className={classNames('flex justify-end gap-2 pt-4', className)}>
-  {children}
- </div>
+  <div className={classNames('flex justify-end gap-2 pt-4', className)}>
+    {children}
+  </div>
 )

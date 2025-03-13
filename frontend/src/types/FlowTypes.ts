@@ -1,5 +1,5 @@
-import { Edge, ReactFlowJsonObject } from "@xyflow/react"
-import { AppNode, LinkNodeDataType } from "./NodeTypes"
+import { Edge, ReactFlowJsonObject } from '@xyflow/react'
+import { AppNode, LinkNodeDataType } from './NodeTypes'
 
 export type FlowType = {
   id: string
