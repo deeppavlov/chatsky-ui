@@ -69,7 +69,7 @@ class Settings:
         self.conditions_path = self.custom_dir / "conditions.py"
         self.responses_path = self.custom_dir / "responses.py"
         self.scripts_dir = self.work_directory / "bot/scripts"
-        self.databases_dir = self.work_directory / "bot/databases"
+        self.databases_dir = self.work_directory / "bot/databases/context_storage.db"
 
     def save_config(self):
         if not self.temp_conf.exists():

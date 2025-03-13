@@ -27,10 +27,11 @@ class SQLiteExtractor:
 
     async def extract_user_context(self, run_id: str, user_id: int):
         try:
-            database = f"{settings.databases_dir}" + f"/run_{run_id}.db"
+            database = f"{settings.database_path}"
+            ctx_id = f"{run_id}_{user_id}"
             with sqlite3.connect(database) as conn:
                 cur = conn.cursor()
-                cur.execute("SELECT * FROM contexts WHERE id = ?", (user_id,))
+                cur.execute("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
                 rows = cur.fetchall()
                 return rows
         except sqlite3.Error:
