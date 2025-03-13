@@ -152,8 +152,6 @@ const ResponseModal = ({
   }
  }
 
- console.log(selected)
-
  return (
   <Modal
    className="min-h-[584px] flex flex-col"

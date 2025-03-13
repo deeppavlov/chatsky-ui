@@ -40,6 +40,25 @@ import _ from 'lodash'
 export type ConditionModalContentType = {
  condition: conditionType
  setData: React.Dispatch<React.SetStateAction<conditionType>>
+ ref?: any
+ error?: {
+  group: boolean
+  slot: boolean
+  values: {
+   group: string
+   slot: string
+  }
+ }
+ setError?: React.Dispatch<
+  React.SetStateAction<{
+   group: boolean
+   slot: boolean
+   values: {
+    group: string
+    slot: string
+   }
+  }>
+ >
 }
 
 type ConditionModalProps = CustomModalProps & {
@@ -99,6 +118,11 @@ const ConditionModal = ({
  const ref = useRef<{
   state: conditionType
   setState: (data: conditionType) => void
+ }>()
+
+ const refSlot = useRef<{
+  state: conditionType
+  setState: (data: { group: boolean; slot: boolean }) => void
  }>()
 
  const validateConditionName = (is_create: boolean) => {
@@ -298,7 +322,15 @@ const ConditionModal = ({
     />
    ),
    slot: (
-    <SlotCondition condition={currentCondition} setData={setCurrentCondition} />
+    <SlotCondition
+     condition={currentCondition}
+     setData={(state, setState) => {
+      if (setState) {
+       refSlot.current = { state: { ...state }, setState }
+      }
+      setCurrentCondition(state)
+     }}
+    />
    ),
    button: <div>Button</div>,
    python: (
@@ -381,18 +413,31 @@ const ConditionModal = ({
   closePopUp(id)
  }
 
+ const isValidCurrentCondition = () => {
+  if (currentCondition.type === 'python') {
+   return currentCondition.name.replace(/[A-Za-z]/g, '') === ''
+  }
+  if (currentCondition.type === 'basic') {
+   const newState = validateConditionBasic(currentCondition)
+
+   if (!newState.status && ref.current?.setState) {
+    ref.current.setState(newState.condition.data as conditionType)
+   }
+   return newState.status
+  }
+  if (currentCondition.type === 'slot') {
+   if (currentCondition.data.slot === '' && refSlot.current?.setState) {
+    refSlot.current.setState({ group: true, slot: true })
+    return false
+   }
+   return true
+  }
+ }
+
  const saveCondition = () => {
   const validate_name: ValidateErrorType = validateConditionName(is_create)
 
-  const newState = validateConditionBasic(currentCondition)
-
-  const isNamePython = currentCondition.name.replace(/[A-Za-z]/g, '') === ''
-
-  if (!newState.status && ref.current?.setState) {
-   ref.current.setState(newState.condition.data as conditionType)
-  }
-
-  if (validate_name.status && newState.status && isNamePython) {
+  if (validate_name.status && isValidCurrentCondition()) {
    updateNodeData(data.id, {
     ...data,
     conditions: is_create
