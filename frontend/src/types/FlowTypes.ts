@@ -18,7 +18,7 @@ export type SlotType = {
   type: 'RegexpSlot' | ''
   method: string
   value: string
-  match_group_idx: number
+  match_group_idx?: number
 }
 
 export type SlotsGroupType = {
