@@ -1,5 +1,5 @@
-import React, { createContext, useEffect, useState } from "react"
-import { get_condition_methods } from "../api/services"
+import React, { createContext, useEffect, useState } from 'react'
+import { get_condition_methods } from '../api/services'
 
 // context to set JSX element on the DOM
 
@@ -36,7 +36,11 @@ const IdeProvider = ({ children }: PopUpProviderProps) => {
     getConditionMethods()
   }, [])
 
-  return <IdeContext.Provider value={{ methods, setMethods }}>{children}</IdeContext.Provider>
+  return (
+    <IdeContext.Provider value={{ methods, setMethods }}>
+      {children}
+    </IdeContext.Provider>
+  )
 }
 
 export default IdeProvider

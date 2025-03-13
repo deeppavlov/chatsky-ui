@@ -1,27 +1,45 @@
-import { Button } from '@nextui-org/react'; // или заменить на любой другой компонент кнопки
-import { useContext } from 'react';
-import { PopUpContext } from '../contexts/popUpContext';
-import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from './ModalComponents';
+import { Button } from '@nextui-org/react' // или заменить на любой другой компонент кнопки
+import { useContext } from 'react'
+import { PopUpContext } from '../contexts/popUpContext'
+import {
+  CustomModalProps,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from './ModalComponents'
 
 type AlertModalProps = CustomModalProps & {
-  title: React.ReactNode;
-  description: React.ReactNode;
-  actionText?: React.ReactNode;
-  cancelText?: React.ReactNode;
-  onAction: () => void;
-  onCancel?: () => void;
-  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full";
-};
+  title: React.ReactNode
+  description: React.ReactNode
+  actionText?: React.ReactNode
+  cancelText?: React.ReactNode
+  onAction: () => void
+  onCancel?: () => void
+  size?:
+    | 'xs'
+    | 'sm'
+    | 'md'
+    | 'lg'
+    | 'xl'
+    | '2xl'
+    | '3xl'
+    | '4xl'
+    | '5xl'
+    | '6xl'
+    | '7xl'
+    | 'full'
+}
 
 const AlertModal = ({
-  id="alert-modal",
+  id = 'alert-modal',
   title,
   description,
-  actionText = "Confirm",
-  cancelText = "Cancel",
+  actionText = 'Confirm',
+  cancelText = 'Cancel',
   onAction,
   onCancel,
-  size = "md",
+  size = 'md',
 }: AlertModalProps) => {
   const { closePopUp } = useContext(PopUpContext)
 
@@ -31,28 +49,28 @@ const AlertModal = ({
   }
 
   const onActionHandler = () => {
-    onAction();
+    onAction()
     closePopUp(id)
   }
 
   return (
     <Modal id={id} size={size} isOpen={true} onClose={onCancelHandler}>
       <ModalHeader>
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className='text-xl font-bold'>{title}</h2>
       </ModalHeader>
       <ModalBody>
         <p>{description}</p>
       </ModalBody>
       <ModalFooter>
-        <Button variant="ghost" onClick={onCancelHandler}>
+        <Button variant='ghost' onClick={onCancelHandler}>
           {cancelText}
         </Button>
-        <Button color="danger" onClick={onActionHandler}>
+        <Button color='danger' onClick={onActionHandler}>
           {actionText}
         </Button>
       </ModalFooter>
     </Modal>
-  );
-};
+  )
+}
 
-export default AlertModal;
+export default AlertModal

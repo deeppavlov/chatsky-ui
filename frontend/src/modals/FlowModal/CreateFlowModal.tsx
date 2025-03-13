@@ -1,292 +1,294 @@
 import {
- Button,
- Checkbox,
- Input,
- //  ModalBody,
- ModalContent,
- //  ModalFooter,
- //  ModalHeader,
- Select,
- SelectItem,
-} from "@nextui-org/react";
-import { Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents";
-import { HelpCircle } from "lucide-react";
-import { useContext, useState } from "react";
-import ModalComponent from "../../components/ModalComponent";
-import { FLOW_COLORS } from "../../consts";
-import { flowContext } from "../../contexts/flowContext";
-import { NotificationsContext } from "../../contexts/notificationsContext";
-import { ModalType } from "../../types/ModalTypes";
-import { generateNewFlow, validateFlowName } from "../../utils";
+  Button,
+  Checkbox,
+  Input,
+  //  ModalBody,
+  //  ModalFooter,
+  //  ModalHeader,
+  Select,
+  SelectItem,
+} from '@nextui-org/react'
+import { HelpCircle } from 'lucide-react'
+import { useContext, useState } from 'react'
+import { FLOW_COLORS } from '../../consts'
+import { flowContext } from '../../contexts/flowContext'
+import { NotificationsContext } from '../../contexts/notificationsContext'
+import { ModalType } from '../../types/ModalTypes'
+import { generateNewFlow, validateFlowName } from '../../utils'
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 
 interface CreateFlowModalProps extends ModalType {}
 
 export type CreateFlowType = {
- name: string;
- description: string;
- color: string;
- subflow: string;
-};
+  name: string
+  description: string
+  color: string
+  subflow: string
+}
 
 const CreateFlowModal = ({
- isOpen,
- onClose,
- size = "3xl",
+  isOpen,
+  onClose,
+  size = '3xl',
 }: CreateFlowModalProps) => {
- const { flows, setFlows, saveFlows } = useContext(flowContext);
- const { notification: n } = useContext(NotificationsContext);
- const [flow, setFlow] = useState<CreateFlowType>({
-  name: "",
-  description: "",
-  color: "",
-  subflow: "Global",
- });
- const [isSubFlow, setIsSubFlow] = useState(false);
+  const { flows, setFlows, saveFlows } = useContext(flowContext)
+  const { notification: n } = useContext(NotificationsContext)
+  const [flow, setFlow] = useState<CreateFlowType>({
+    name: '',
+    description: '',
+    color: '',
+    subflow: 'Global',
+  })
+  const [isSubFlow, setIsSubFlow] = useState(false)
 
- const onFlowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setFlow({
-   ...flow,
-   [e.target.name]: e.target.value,
-  });
- };
-
- const onFlowSave = () => {
-  if (!validateFlowName(flow.name, flows)) {
-   return n.add({
-    title: "Warning!",
-    message: "Flow name is not valid.",
-    type: "warning",
-   });
+  const onFlowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFlow({
+      ...flow,
+      [e.target.name]: e.target.value,
+    })
   }
-  if (flow.color && flow.subflow) {
-   const newFlow = generateNewFlow(flow);
-   setFlows([...flows, newFlow]);
-   saveFlows([...flows, newFlow]);
-   setFlow({
-    name: "",
-    description: "",
-    color: "",
-    subflow: "Global",
-   });
-   setIsSubFlow(false);
-   onClose();
-  } else {
-   n.add({
-    title: "Creating error!",
-    message: "Please fill all the fields correctly.",
-    type: "error",
-   });
+
+  const onFlowSave = () => {
+    if (!validateFlowName(flow.name, flows)) {
+      return n.add({
+        title: 'Warning!',
+        message: 'Flow name is not valid.',
+        type: 'warning',
+      })
+    }
+    if (flow.color && flow.subflow) {
+      const newFlow = generateNewFlow(flow)
+      setFlows([...flows, newFlow])
+      saveFlows([...flows, newFlow])
+      setFlow({
+        name: '',
+        description: '',
+        color: '',
+        subflow: 'Global',
+      })
+      setIsSubFlow(false)
+      onClose()
+    } else {
+      n.add({
+        title: 'Creating error!',
+        message: 'Please fill all the fields correctly.',
+        type: 'error',
+      })
+    }
   }
- };
 
- return (
-  // <ModalComponent
-  //  className="bg-background min-h-[584px]"
-  //  motionProps={{
-  //   initial: { opacity: 0, scale: 0.95 },
-  //   animate: { opacity: 1, scale: 1 },
-  //  }}
-  //  isOpen={true}
-  //  onClose={onClose}
-  //  size={size}
-  // >
-  //  <ModalContent>
-  //   <ModalHeader>{"Create flow"}</ModalHeader>
-  //   <ModalBody >
-  //    <div className="grid gap-4">
-  //     <Input
-  //      data-testid="flow-name-input"
-  //      label="Name"
-  //      labelPlacement="outside"
-  //      placeholder="Enter flow's name here"
-  //      name="name"
-  //      onChange={onFlowChange}
-  //      value={flow.name}
-  //      min={2}
-  //     />
-  //     <Input
-  //      label="Description"
-  //      labelPlacement="outside"
-  //      placeholder="Enter flow's description here"
-  //      name="description"
-  //      onChange={onFlowChange}
-  //      value={flow.description}
-  //     />
-  //    </div>
-  //    <div>
-  //     <label className="text-sm font-medium mb-1 block"> Color </label>
-  //     <div className="flex items-center gap-2">
-  //      {FLOW_COLORS.map((color) => (
-  //       <button
-  //        data-testid={`flow-color-${color.replace("#", "")}`}
-  //        key={color}
-  //        onClick={() => setFlow({ ...flow, color })}
-  //        className="rounded-full w-8 h-8 transition-all"
-  //        style={{
-  //         backgroundColor: color,
-  //         border: flow.color === color ? "4px solid var(--foreground)" : "none",
-  //        }}
-  //       ></button>
-  //      ))}
-  //     </div>
-  //    </div>
-  //    <div className="grid gap-2">
-  //     <div className="flex items-center gap-2">
-  //      <label className="text-sm font-medium"> Subflow </label>
-  //      <Checkbox
-  //       onChange={() => setIsSubFlow(!isSubFlow)}
-  //       checked={isSubFlow}
-  //      />
-  //     </div>
-  //     <div
-  //      className="grid transition-all z-10"
-  //      style={{
-  //       gridTemplateRows: isSubFlow ? "1fr" : "0fr",
-  //      }}
-  //     >
-  //      <div className="min-h-0 overflow-hidden">
-  //       <Select
-  //        classNames={{
-  //         listboxWrapper: "max-h-48",
-  //         popoverContent: "bg-background",
-  //        }}
-  //        aria-label="Dependent from"
-  //        label="Dependent from"
-  //        labelPlacement="outside"
-  //        items={flows}
-  //        name="subflow"
-  //        onChange={(e) => {
-  //         if (e.target.value !== "") {
-  //          setFlow({ ...flow, subflow: e.target.value });
-  //         } else {
-  //          setFlow({ ...flow, subflow: "Global" });
-  //         }
-  //        }}
-  //        selectedKeys={[flow.subflow]}
-  //       >
-  //        {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
-  //       </Select>
-  //      </div>
-  //     </div>
-  //    </div>
-  //   </ModalBody>
-  //   <ModalFooter className="flex justify-between items-center">
-  //    <div className="flex items-center justify-start gap-2">
-  //     <Button isIconOnly className="rounded-full">
-  //      <HelpCircle />
-  //     </Button>
-  //    </div>
-  //    <div>
-  //     <Button
-  //      data-testid="flow-save-btn"
-  //      onClick={onFlowSave}
-  //      className="bg-foreground text-background"
-  //     >
-  //      Create flow
-  //     </Button>
-  //    </div>
-  //   </ModalFooter>
-  //  </ModalContent>
-  // </ModalComponent>
+  return (
+    // <ModalComponent
+    //  className="bg-background min-h-[584px]"
+    //  motionProps={{
+    //   initial: { opacity: 0, scale: 0.95 },
+    //   animate: { opacity: 1, scale: 1 },
+    //  }}
+    //  isOpen={true}
+    //  onClose={onClose}
+    //  size={size}
+    // >
+    //  <ModalContent>
+    //   <ModalHeader>{"Create flow"}</ModalHeader>
+    //   <ModalBody >
+    //    <div className="grid gap-4">
+    //     <Input
+    //      data-testid="flow-name-input"
+    //      label="Name"
+    //      labelPlacement="outside"
+    //      placeholder="Enter flow's name here"
+    //      name="name"
+    //      onChange={onFlowChange}
+    //      value={flow.name}
+    //      min={2}
+    //     />
+    //     <Input
+    //      label="Description"
+    //      labelPlacement="outside"
+    //      placeholder="Enter flow's description here"
+    //      name="description"
+    //      onChange={onFlowChange}
+    //      value={flow.description}
+    //     />
+    //    </div>
+    //    <div>
+    //     <label className="text-sm font-medium mb-1 block"> Color </label>
+    //     <div className="flex items-center gap-2">
+    //      {FLOW_COLORS.map((color) => (
+    //       <button
+    //        data-testid={`flow-color-${color.replace("#", "")}`}
+    //        key={color}
+    //        onClick={() => setFlow({ ...flow, color })}
+    //        className="rounded-full w-8 h-8 transition-all"
+    //        style={{
+    //         backgroundColor: color,
+    //         border: flow.color === color ? "4px solid var(--foreground)" : "none",
+    //        }}
+    //       ></button>
+    //      ))}
+    //     </div>
+    //    </div>
+    //    <div className="grid gap-2">
+    //     <div className="flex items-center gap-2">
+    //      <label className="text-sm font-medium"> Subflow </label>
+    //      <Checkbox
+    //       onChange={() => setIsSubFlow(!isSubFlow)}
+    //       checked={isSubFlow}
+    //      />
+    //     </div>
+    //     <div
+    //      className="grid transition-all z-10"
+    //      style={{
+    //       gridTemplateRows: isSubFlow ? "1fr" : "0fr",
+    //      }}
+    //     >
+    //      <div className="min-h-0 overflow-hidden">
+    //       <Select
+    //        classNames={{
+    //         listboxWrapper: "max-h-48",
+    //         popoverContent: "bg-background",
+    //        }}
+    //        aria-label="Dependent from"
+    //        label="Dependent from"
+    //        labelPlacement="outside"
+    //        items={flows}
+    //        name="subflow"
+    //        onChange={(e) => {
+    //         if (e.target.value !== "") {
+    //          setFlow({ ...flow, subflow: e.target.value });
+    //         } else {
+    //          setFlow({ ...flow, subflow: "Global" });
+    //         }
+    //        }}
+    //        selectedKeys={[flow.subflow]}
+    //       >
+    //        {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
+    //       </Select>
+    //      </div>
+    //     </div>
+    //    </div>
+    //   </ModalBody>
+    //   <ModalFooter className="flex justify-between items-center">
+    //    <div className="flex items-center justify-start gap-2">
+    //     <Button isIconOnly className="rounded-full">
+    //      <HelpCircle />
+    //     </Button>
+    //    </div>
+    //    <div>
+    //     <Button
+    //      data-testid="flow-save-btn"
+    //      onClick={onFlowSave}
+    //      className="bg-foreground text-background"
+    //     >
+    //      Create flow
+    //     </Button>
+    //    </div>
+    //   </ModalFooter>
+    //  </ModalContent>
+    // </ModalComponent>
 
-  <Modal
-   className="bg-background min-h-[584px]"
-   isOpen={isOpen}
-   onClose={onClose}
-   size={size}
-  >
-   <ModalHeader>{"Create flow"}</ModalHeader>
-   <ModalBody className={"flex flex-1 flex-col gap-3 py-2 min-h-[480px]"}>
-    <div className="grid gap-4">
-     <Input
-      data-testid="flow-name-input"
-      label="Name"
-      labelPlacement="outside"
-      placeholder="Enter flow's name here"
-      name="name"
-      onChange={onFlowChange}
-      value={flow.name}
-      min={2}
-     />
-     <Input
-      label="Description"
-      labelPlacement="outside"
-      placeholder="Enter flow's description here"
-      name="description"
-      onChange={onFlowChange}
-      value={flow.description}
-     />
-    </div>
-    <label className="text-sm font-medium mb-1 block"> Color </label>
-    <div className="flex items-center gap-2">
-     {FLOW_COLORS.map((color) => (
-      <button
-       data-testid={`flow-color-${color.replace("#", "")}`}
-       key={color}
-       onClick={() => setFlow({ ...flow, color })}
-       className="rounded-full w-8 h-8 transition-all"
-       style={{
-        backgroundColor: color,
-        border: flow.color === color ? "4px solid var(--foreground)" : "none",
-       }}
-      ></button>
-     ))}
-    </div>
-    <div className="grid gap-2">
-     <div className="flex items-center gap-2">
-      <label className="text-sm font-medium"> Subflow </label>
-      <Checkbox onChange={() => setIsSubFlow(!isSubFlow)} checked={isSubFlow} />
-     </div>
-     <div
-      className="grid transition-all z-10"
-      style={{
-       gridTemplateRows: isSubFlow ? "1fr" : "0fr",
-      }}
-     >
-      <div className="min-h-0 overflow-hidden">
-       <Select
-        classNames={{
-         listboxWrapper: "max-h-48",
-         popoverContent: "bg-background",
-        }}
-        aria-label="Dependent from"
-        label="Dependent from"
-        labelPlacement="outside"
-        items={flows}
-        name="subflow"
-        onChange={(e) => {
-         if (e.target.value !== "") {
-          setFlow({ ...flow, subflow: e.target.value });
-         } else {
-          setFlow({ ...flow, subflow: "Global" });
-         }
-        }}
-        selectedKeys={[flow.subflow]}
-       >
-        {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
-       </Select>
-      </div>
-     </div>
-    </div>
-   </ModalBody>
-   <ModalFooter className="flex-row flex justify-between items-center ">
-    <div className="flex items-center justify-start gap-2">
-     <Button isIconOnly className="rounded-full">
-      <HelpCircle />
-     </Button>
-    </div>
-    <div>
-     <Button
-      data-testid="flow-save-btn"
-      onClick={onFlowSave}
-      className="bg-foreground text-background"
-     >
-      Create flow
-     </Button>
-    </div>
-   </ModalFooter>
-  </Modal>
- );
-};
+    <Modal
+      className='min-h-[584px] bg-background'
+      isOpen={isOpen}
+      onClose={onClose}
+      size={size}
+    >
+      <ModalHeader>{'Create flow'}</ModalHeader>
+      <ModalBody className={'flex min-h-[480px] flex-1 flex-col gap-3 py-2'}>
+        <div className='grid gap-4'>
+          <Input
+            data-testid='flow-name-input'
+            label='Name'
+            labelPlacement='outside'
+            placeholder="Enter flow's name here"
+            name='name'
+            onChange={onFlowChange}
+            value={flow.name}
+            min={2}
+          />
+          <Input
+            label='Description'
+            labelPlacement='outside'
+            placeholder="Enter flow's description here"
+            name='description'
+            onChange={onFlowChange}
+            value={flow.description}
+          />
+        </div>
+        <label className='mb-1 block text-sm font-medium'> Color </label>
+        <div className='flex items-center gap-2'>
+          {FLOW_COLORS.map((color) => (
+            <button
+              data-testid={`flow-color-${color.replace('#', '')}`}
+              key={color}
+              onClick={() => setFlow({ ...flow, color })}
+              className='h-8 w-8 rounded-full transition-all'
+              style={{
+                backgroundColor: color,
+                border:
+                  flow.color === color ? '4px solid var(--foreground)' : 'none',
+              }}
+            ></button>
+          ))}
+        </div>
+        <div className='grid gap-2'>
+          <div className='flex items-center gap-2'>
+            <label className='text-sm font-medium'> Subflow </label>
+            <Checkbox
+              onChange={() => setIsSubFlow(!isSubFlow)}
+              checked={isSubFlow}
+            />
+          </div>
+          <div
+            className='z-10 grid transition-all'
+            style={{
+              gridTemplateRows: isSubFlow ? '1fr' : '0fr',
+            }}
+          >
+            <div className='min-h-0 overflow-hidden'>
+              <Select
+                classNames={{
+                  listboxWrapper: 'max-h-48',
+                  popoverContent: 'bg-background',
+                }}
+                aria-label='Dependent from'
+                label='Dependent from'
+                labelPlacement='outside'
+                items={flows}
+                name='subflow'
+                onChange={(e) => {
+                  if (e.target.value !== '') {
+                    setFlow({ ...flow, subflow: e.target.value })
+                  } else {
+                    setFlow({ ...flow, subflow: 'Global' })
+                  }
+                }}
+                selectedKeys={[flow.subflow]}
+              >
+                {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
+              </Select>
+            </div>
+          </div>
+        </div>
+      </ModalBody>
+      <ModalFooter className='flex flex-row items-center justify-between'>
+        <div className='flex items-center justify-start gap-2'>
+          <Button isIconOnly className='rounded-full'>
+            <HelpCircle />
+          </Button>
+        </div>
+        <div>
+          <Button
+            data-testid='flow-save-btn'
+            onClick={onFlowSave}
+            className='bg-foreground text-background'
+          >
+            Create flow
+          </Button>
+        </div>
+      </ModalFooter>
+    </Modal>
+  )
+}
 
-export default CreateFlowModal;
+export default CreateFlowModal

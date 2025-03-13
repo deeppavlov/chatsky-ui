@@ -7,9 +7,7 @@ export const Preloader = () => {
       {/* //   <div id="preloader">
     //     <div id="loader"></div>
     //   </div> */}
-      <span className="loader"></span>
-
+      <span className='loader'></span>
     </div>
-
   )
 }

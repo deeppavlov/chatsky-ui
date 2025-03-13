@@ -5,9 +5,9 @@ import {
   EdgeProps,
   getBezierPath,
   useReactFlow,
-} from "@xyflow/react"
-import { X } from "lucide-react"
-import "./buttonedge.css"
+} from '@xyflow/react'
+import { X } from 'lucide-react'
+import './buttonedge.css'
 
 export default function CustomEdge({
   id,
@@ -36,26 +36,24 @@ export default function CustomEdge({
 
   return (
     <>
-      <BaseEdge
-        path={edgePath}
-        markerEnd={markerEnd}
-        style={style}
-      />
+      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
       <EdgeLabelRenderer>
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 12,
             // everything inside EdgeLabelRenderer has no pointer events by default
             // if you have an interactive element, set pointer-events: all
-            pointerEvents: "all",
+            pointerEvents: 'all',
           }}
-          className='nodrag nopan'>
+          className='nodrag nopan'
+        >
           <button
-            className='p-0.5 rounded-full bg-neutral-300 text-black flex items-center justify-center border-2 border-transparent transition-colors hover:border-background'
-            onClick={onEdgeClick}>
-            <X className="w-4 h-4 stroke-neutral-800" />
+            className='flex items-center justify-center rounded-full border-2 border-transparent bg-neutral-300 p-0.5 text-black transition-colors hover:border-background'
+            onClick={onEdgeClick}
+          >
+            <X className='h-4 w-4 stroke-neutral-800' />
           </button>
         </div>
       </EdgeLabelRenderer>

@@ -77,7 +77,7 @@ class RegexpSlotConverter(SlotsConverter):
             id=slot["id"],
             name=slot["name"],
             regexp=slot["value"],
-            match_group_idx=slot.get("match_group_idx", 1),
+            match_group_idx=slot.get("match_group_idx", 0),
         )
 
     def _convert(self):

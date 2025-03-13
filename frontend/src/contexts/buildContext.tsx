@@ -1,17 +1,17 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { createContext, useContext, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
-  buildApiStatusType,
-  buildMinifyApiType,
-  buildPresetType,
   build_start,
   build_status,
   build_stop,
+  buildApiStatusType,
+  buildMinifyApiType,
+  buildPresetType,
   get_builds,
   localBuildType,
-} from "../api/bot"
-import { NotificationsContext } from "./notificationsContext"
+} from '../api/bot'
+import { NotificationsContext } from './notificationsContext'
 
 type BuildContextType = {
   builds: localBuildType[]
@@ -19,7 +19,7 @@ type BuildContextType = {
   buildPending: boolean
   setBuildPending: React.Dispatch<React.SetStateAction<boolean>>
   buildStart: (
-    options: buildPresetType
+    options: buildPresetType,
   ) => Promise<{ status: buildApiStatusType; build_id?: number }>
   buildStop: (buildId: number) => void
   setBuildsHandler: (builds: buildMinifyApiType[]) => void
@@ -30,7 +30,7 @@ export const buildContext = createContext({
   setBuilds: () => {},
   buildPending: false,
   setBuildPending: () => {},
-  buildStart: async () => ({ status: "failed", build_id: 0 }),
+  buildStart: async () => ({ status: 'failed', build_id: 0 }),
   buildStop: () => {},
   setBuildsHandler: () => {},
 } as BuildContextType)
@@ -46,9 +46,9 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     setBuilds(() =>
       builds.map((build) => ({
         ...build,
-        type: "build",
-        runs: build.runs.map((run) => ({ ...run, type: "run" })),
-      }))
+        type: 'build',
+        runs: build.runs.map((run) => ({ ...run, type: 'run' })),
+      })),
     )
   }
 
@@ -63,15 +63,23 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const buildStart = async ({
-    end_status = "completed",
+    end_status = 'completed',
     name,
     preset,
     messenger,
-  }: buildPresetType): Promise<{ status: buildApiStatusType; build_id?: number }> => {
+  }: buildPresetType): Promise<{
+    status: buildApiStatusType
+    build_id?: number
+  }> => {
     setBuildPending(true)
 
     try {
-      const { build_id } = await build_start({ end_status, name, preset, messenger })
+      const { build_id } = await build_start({
+        end_status,
+        name,
+        preset,
+        messenger,
+      })
 
       let started_build = await get_builds(build_id)
       while (!started_build) {
@@ -86,35 +94,37 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         const status_res = await build_status(build_id)
         const status = status_res.status
 
-        if (status !== "running" && status !== "alive") {
+        if (status !== 'running' && status !== 'alive') {
           flag = false
-          setBuilds((builds) => builds.map((b) => (b.id === build_id ? { ...b, status } : b)))
+          setBuilds((builds) =>
+            builds.map((b) => (b.id === build_id ? { ...b, status } : b)),
+          )
           handleBuildCompletion(status)
           return { status, build_id }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     } catch (error) {
-      console.error("Build start error:", error)
-      return { status: "failed" }
+      console.error('Build start error:', error)
+      return { status: 'failed' }
     } finally {
       setBuildPending(false)
     }
-    return { status: "failed" }
+    return { status: 'failed' }
   }
 
   const handleBuildCompletion = (status: buildApiStatusType) => {
-    if (status === "completed") {
+    if (status === 'completed') {
       n.add({
-        title: "Build successfully!",
-        message: "",
-        type: "success",
+        title: 'Build successfully!',
+        message: '',
+        type: 'success',
       })
-    } else if (status === "failed") {
+    } else if (status === 'failed') {
       n.add({
-        title: "Build failed!",
-        message: "Unknown build error. Please check your script.",
-        type: "error",
+        title: 'Build failed!',
+        message: 'Unknown build error. Please check your script.',
+        type: 'error',
       })
     }
   }
@@ -124,16 +134,16 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
       await build_stop(buildId)
       setBuildPending(() => false)
       n.add({
-        title: "Build stopped!",
-        message: "",
-        type: "info",
+        title: 'Build stopped!',
+        message: '',
+        type: 'info',
       })
     } catch (error) {
       console.log(error)
       n.add({
-        title: "Build stop error!",
+        title: 'Build stop error!',
         message: (error as Error).message,
-        type: "error",
+        type: 'error',
       })
     }
   }

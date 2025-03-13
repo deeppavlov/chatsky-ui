@@ -1,13 +1,17 @@
-import React from "react"
+import React from 'react'
 
-const EditNodeIcon = ({fill='var(--foreground)', fillOpacity='0.7'}: React.SVGAttributes<SVGSVGElement>) => {
+const EditNodeIcon = ({
+  fill = 'var(--foreground)',
+  fillOpacity = '0.7',
+}: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       width='18'
       height='22'
       viewBox='0 0 18 22'
       fill='none'
-      xmlns='http://www.w3.org/2000/svg'>
+      xmlns='http://www.w3.org/2000/svg'
+    >
       <path
         d='M13.75 1V5C13.75 5.41 14.09 5.75 14.5 5.75C14.91 5.75 15.25 5.41 15.25 5V1C15.25 0.590001 14.91 0.25 14.5 0.25C14.09 0.25 13.75 0.59 13.75 1Z'
         fill={fill}

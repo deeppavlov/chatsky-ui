@@ -1,8 +1,8 @@
-import classNames from "classnames"
-import { useContext } from "react"
-import { useNavigate } from "react-router-dom"
-import { flowContext } from "../../contexts/flowContext"
-import { FlowType } from "../../types/FlowTypes"
+import classNames from 'classnames'
+import { useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { flowContext } from '../../contexts/flowContext'
+import { FlowType } from '../../types/FlowTypes'
 
 const FlowItem = ({
   flow,
@@ -13,7 +13,7 @@ const FlowItem = ({
   activeFlow: string
 }) => {
   const navigate = useNavigate()
-  const { flows: contextFlows} = useContext(flowContext)
+  const { flows: contextFlows } = useContext(flowContext)
 
   return (
     <>
@@ -22,26 +22,30 @@ const FlowItem = ({
           <div
             key={flow.name}
             onClick={() => {
-              if (flow.name !== "Global") navigate(`/app/flow/${flow.name}`)
+              if (flow.name !== 'Global') navigate(`/app/flow/${flow.name}`)
             }}
             className={classNames(
-              "w-full flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer",
-              flow.name === "Global" && "mb-2",
-              flow.name === activeFlow && "bg-bg-secondary",
-            )}>
+              'flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1',
+              flow.name === 'Global' && 'mb-2',
+              flow.name === activeFlow && 'bg-bg-secondary',
+            )}
+          >
             <span
               style={{
-                backgroundColor: flow.color ?? "#999",
+                backgroundColor: flow.color ?? '#999',
               }}
-              className='block min-w-4 min-h-4 rounded-full'></span>
+              className='block min-h-4 min-w-4 rounded-full'
+            ></span>
             <p>
               {flow?.name}
-              {flow?.name === "Global" && <span className="text-xs"> (in progress)</span>}
+              {flow?.name === 'Global' && (
+                <span className='text-xs'> (in progress)</span>
+              )}
             </p>
           </div>
           <div className='pl-3'>
             {contextFlows.filter((f) => f.subflow === flow.name).length > 0 && (
-              <div className="border-l pl-1">
+              <div className='border-l pl-1'>
                 {contextFlows
                   .filter((f) => f.subflow === flow.name)
                   .map((f) => (

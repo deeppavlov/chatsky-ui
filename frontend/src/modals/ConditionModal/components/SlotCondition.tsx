@@ -1,45 +1,50 @@
-import SearchIcon from "@/icons/SearchIcon"
-import DefCombobox from "@/UI/Input/DefCombobox"
-import { TableCell, TableRow } from "@nextui-org/react"
-import { useContext, useEffect, useState } from "react"
-import { flowContext } from "../../../contexts/flowContext"
-import { SlotType } from "../../../types/FlowTypes"
-import DefSelect from "../../../UI/Input/DefSelect"
-import DefTable from "../../../UI/Table/DefTable"
-import { ConditionModalContentType } from "../ConditionModal"
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import SearchIcon from '@/icons/SearchIcon'
+import DefCombobox from '@/UI/Input/DefCombobox'
+import { TableCell, TableRow } from '@nextui-org/react'
+import { useContext, useEffect, useState } from 'react'
+import { flowContext } from '../../../contexts/flowContext'
+import { SlotType } from '../../../types/FlowTypes'
+import DefSelect from '../../../UI/Input/DefSelect'
+import DefTable from '../../../UI/Table/DefTable'
+import { ConditionModalContentType } from '../ConditionModal'
 
 const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
   const { groups: _groups } = useContext(flowContext)
 
   const [groups, setGroups] = useState(_groups)
-  const [slots, setSlots] = useState<SlotType[]>(groups.flatMap((group) => group.slots))
+  const [slots, setSlots] = useState<SlotType[]>(
+    groups.flatMap((group) => group.slots),
+  )
   const [selectedSlot, setSelectedSlot] = useState(
-    slots.find((slot) => slot.id === condition.data.slot)?.name ?? ""
+    slots.find((slot) => slot.id === condition.data.slot)?.name ?? '',
   )
   const [selectedGroup, setSelectedGroup] = useState(
     groups.find(
-      (group) => group.id === slots.find((slot) => slot.id === condition.data.slot)?.group_id
-    )?.name ?? ""
+      (group) =>
+        group.id ===
+        slots.find((slot) => slot.id === condition.data.slot)?.group_id,
+    )?.name ?? '',
   )
 
   useEffect(() => {
     if (!condition.data.slot) {
       setData({
         ...condition,
-        type: "slot",
+        type: 'slot',
         data: {
           ...condition.data,
-          slot: "",
+          slot: '',
         },
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeConditionValue = (value: string) => {
     setData({
       ...condition,
-      type: "slot",
+      type: 'slot',
       data: {
         ...condition.data,
         slot: value,
@@ -52,13 +57,13 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
       const slot = slots.find((s) => s.name === selectedSlot)
       if (slot) {
         setSelectedGroup(
-          groups.find((g) => g.slots.some((s) => s.id === slot.id))?.name ?? "group name error"
+          groups.find((g) => g.slots.some((s) => s.id === slot.id))?.name ??
+            'group name error',
         )
         changeConditionValue(slot.id)
       }
     }
   }, [groups, selectedSlot, slots])
-
 
   return (
     <div>
@@ -71,18 +76,23 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
           items={slots.map((slot) => slot.name)}
           placeholder='Search slot name'
         />
-        <p className='my-2.5 text-sm'>The following slot will be filled for future use:</p>
-        <DefTable headers={["Parameter", "Value"]}>
+        <p className='my-2.5 text-sm'>
+          The following slot will be filled for future use:
+        </p>
+        <DefTable headers={['Parameter', 'Value']}>
           <TableRow className='h-12'>
             <TableCell className='w-1/2'>Group</TableCell>
             <TableCell className='w-1/2'>
               <DefSelect
                 mini
-                className='w-3/4 min-h-8 h-8'
+                className='h-8 min-h-8 w-3/4'
                 defaultValue={selectedGroup}
                 onValueChange={(value) => setSelectedGroup(value)}
-                items={groups.map((group) => ({ value: group.name, key: group.id }))}
-                placeholder="Choose group"
+                items={groups.map((group) => ({
+                  value: group.name,
+                  key: group.id,
+                }))}
+                placeholder='Choose group'
               />
             </TableCell>
           </TableRow>
@@ -91,19 +101,21 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
             <TableCell className='w-1/2'>
               <DefSelect
                 mini
-                className='w-3/4 min-h-8 h-8'
+                className='h-8 min-h-8 w-3/4'
                 defaultValue={selectedSlot}
                 disabled={!selectedGroup}
                 items={slots
                   .filter(
-                    (slot) => slot.group_id === groups.find((g) => g.name === selectedGroup)?.id
+                    (slot) =>
+                      slot.group_id ===
+                      groups.find((g) => g.name === selectedGroup)?.id,
                   )
                   .map((slot) => ({
                     key: slot.id,
                     value: slot.name,
                   }))}
-                  placeholder="Choose slot"
-                  onValueChange={(value) => setSelectedSlot(value)}
+                placeholder='Choose slot'
+                onValueChange={(value) => setSelectedSlot(value)}
               />
             </TableCell>
           </TableRow>

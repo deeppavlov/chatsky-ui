@@ -1,6 +1,9 @@
-import React from "react"
+import React from 'react'
 
-const NodesIcon = ({ className, fill='var(--foreground)' }: React.SVGAttributes<SVGSVGElement>) => {
+const NodesIcon = ({
+  className,
+  fill = 'var(--foreground)',
+}: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -8,7 +11,8 @@ const NodesIcon = ({ className, fill='var(--foreground)' }: React.SVGAttributes<
       height='20'
       viewBox='0 0 24 20'
       className={className}
-      fill={fill}>
+      fill={fill}
+    >
       <path
         strokeWidth='0'
         fillRule='evenodd'
