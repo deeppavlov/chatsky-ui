@@ -8,7 +8,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BuildManagerPage from './BuildManagerPage'
 import Flow from './Flow'
-import Inspect from './Inspect'
+import Inspect from './InspectPage'
 import Settings from './Settings'
 
 const TabsWrapper = () => {
