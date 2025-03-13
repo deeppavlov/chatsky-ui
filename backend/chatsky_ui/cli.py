@@ -199,14 +199,13 @@ def run_scenario(
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
     script_path = settings.scripts_dir / "build.yaml"
-    dialogue_db_path = settings.databases_dir / f"run_{run_id}.db"
 
-    command_to_run = f"python {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path}"
+    command_to_run = f"python {project_dir}/app.py --script-path {script_path} --dialogue-db-path {settings.database_path} --run-id {run_id}"
     try:
         asyncio.run(_execute_command(command_to_run))
     except FileNotFoundError:
         command_to_run = (
-            f"python3 {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path}"
+            f"python3 {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path} --run-id {run_id}"
         )
         asyncio.run(_execute_command(command_to_run))
 
