@@ -52,10 +52,10 @@ const Logs = ({ item }: IProps) => {
       top: containerRef.current.scrollHeight,
       behavior: 'smooth',
     })
-  }, [logs.length])
+  }, [logs])
 
   return (
-    <div className='flex flex-col pe-6 ps-9'>
+    <div className='flex w-full flex-col pe-6 ps-9'>
       {item.type === 'build' ? (
         <div>
           <h4 className='my-4 flex items-center gap-1 text-xl font-semibold'>
@@ -165,9 +165,9 @@ const Logs = ({ item }: IProps) => {
       <ScrolledContainer ref={containerRef} className='h-0 flex-grow pt-2'>
         <div className='px-4'>
           {logs?.map((string, i) => (
-            <span key={i} className='text-sm font-medium text-text-secondary'>
+            <p key={i} className='text-sm font-medium text-text-secondary'>
               {string}
-            </span>
+            </p>
           ))}
         </div>
       </ScrolledContainer>

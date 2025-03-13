@@ -47,11 +47,14 @@ const Inspect = memo(() => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [builds, runs])
+  }, [builds, runs, searchParams])
 
   useLayoutEffect(() => {
     currItemRef.current &&
-      currItemRef.current.scrollIntoView({ behavior: 'smooth' })
+      currItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
   }, [currentItem])
 
   return (
@@ -81,7 +84,7 @@ const Inspect = memo(() => {
                           : null
                       }
                       onClick={() => {
-                        setCurrentItem(b)
+                        // setCurrentItem(b)
                         setSearchParams({
                           page: 'inspect',
                           build_id: b.id.toString(),
@@ -137,11 +140,11 @@ const Inspect = memo(() => {
                               'bg-red-200', // спросить у Миши, как выделять выбранный ран
                           )}
                           onClick={() => {
-                            setCurrentItem({
-                              ...r,
-                              build_id: b.id,
-                              type: 'run',
-                            })
+                            // setCurrentItem({
+                            //   ...r,
+                            //   build_id: b.id,
+                            //   type: 'run',
+                            // })
 
                             setSearchParams({
                               page: 'inspect',
