@@ -12,11 +12,12 @@ export type FlowType = {
 
 export type SlotType = {
   id: string
-  name: string 
+  name: string
   group_id: string
   type: "RegexpSlot" | ""
   method: string
   value: string
+  match_group_idx: number
 }
 
 export type SlotsGroupType = {
