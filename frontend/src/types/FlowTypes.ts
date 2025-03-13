@@ -1,5 +1,5 @@
 import { Edge, ReactFlowJsonObject } from "@xyflow/react"
-import { AppNode } from "./NodeTypes"
+import { AppNode, LinkNodeDataType } from "./NodeTypes"
 
 export type FlowType = {
   id: string
@@ -8,6 +8,7 @@ export type FlowType = {
   color?: string
   subflow?: string
   data: ReactFlowJsonObject<AppNode, Edge>
+  toLink?: LinkNodeDataType[]
 }
 
 export type SlotType = {

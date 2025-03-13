@@ -129,103 +129,101 @@ const SlotsGroupModal = ({
   }, [isSubGroup])
 
   return (
-    <Modal
-      id={id}
-      isOpen={true}
-      onClose={onCloseHandler}
-      size='3xl'>
-      <ModalHeader className='flex items-center justify-start gap-2 text-lg font-semibold'>
-        <div className='flex items-center gap-2'>
-          <SlotsConditionIcon />
-          <p>{is_create ? "New" : "Edit"} group</p>
+   <Modal id={id} isOpen={true} onClose={onCloseHandler} size="3xl">
+    <ModalHeader className="flex items-center justify-start gap-2 text-lg font-semibold">
+     <div className="flex items-center gap-2">
+      <SlotsConditionIcon />
+      <p>{is_create ? 'New' : 'Edit'} group</p>
+     </div>
+    </ModalHeader>
+    <ModalBody>
+     <div>
+      <DefInput
+       label="Group name"
+       placeholder="Enter name of this group..."
+       value={currentGroup.name}
+       onValueChange={(name) => setCurrentGroup({ ...currentGroup, name })}
+      />
+      {groups.length >= (is_create ? 1 : 2) && (
+       <div className="flex items-center gap-1.5 mt-1 h-8">
+        <div className="flex items-center gap-1">
+         <p className="text-xs">Standalone</p>
+         <Switch
+          size="sm"
+          isSelected={isSubGroup}
+          onValueChange={setIsSubGroup}
+         />
+         <p className="text-xs">Subgroup</p>
         </div>
-      </ModalHeader>
-      <ModalBody>
-        <div>
-          <DefInput
-            label='Group name'
-            placeholder='Enter name of this group...'
-            value={currentGroup.name}
-            onValueChange={(name) => setCurrentGroup({ ...currentGroup, name })}
-          />
-          {groups.length >= (is_create ? 1 : 2) && (
-            <div className='flex items-center gap-1.5 mt-1 h-8'>
-              <div className='flex items-center gap-1'>
-                <p className='text-xs'>Standalone</p>
-                <Switch
-                  size='sm'
-                  isSelected={isSubGroup}
-                  onValueChange={setIsSubGroup}
-                />
-                <p className='text-xs'>Subgroup</p>
-              </div>
-              {isSubGroup && (
-                <DefSelect
-                  mini
-                  defaultValue={parentGroup?.name ?? ""}
-                  onValueChange={(value) => {
-                    const parent_group = nodeData.groups.find((g) => g.name === value)
-                    if (parent_group) {
-                      setParentGroup({
-                        ...parent_group,
-                        subgroups: [...(parent_group.subgroups ?? []), currentGroup.id],
-                      })
-                      setCurrentGroup({ ...currentGroup, subgroup_to: parent_group.id })
-                    }
-                  }}
-                  placeholder='Select parent group'
-                  className='w-1/3 h-8 min-h-8'
-                  items={nodeData.groups
-                    .filter((g) => g.id !== currentGroup.id)
-                    .map((g) => ({ key: g.name, value: g.name }))}
-                />
-              )}
-            </div>
-          )}
-        </div>
-        {!is_create && subgroups.length > 0 && (
-          <div className='mt-4'>
-            <p className='text-sm font-medium mb-2'>Subgroups</p>
-            <SlotsGroupsTable
-              groups={subgroups}
-              setGroups={setSubgroups}
-              nodeData={nodeData}
-              setNodeData={setNodeData}
-              onDeleteGroupHandler={onDeleteTableGroupHandler}
-            />
-          </div>
+        {isSubGroup && (
+         <DefSelect
+          mini
+          defaultValue={parentGroup?.name ?? ''}
+          onValueChange={(value) => {
+           const parent_group = nodeData.groups.find((g) => g.name === value)
+           if (parent_group) {
+            setParentGroup({
+             ...parent_group,
+             subgroups: [...(parent_group.subgroups ?? []), currentGroup.id],
+            })
+            setCurrentGroup({ ...currentGroup, subgroup_to: parent_group.id })
+           }
+          }}
+          placeholder="Select parent group"
+          className="w-1/3 h-8 min-h-8"
+          items={nodeData.groups
+           .filter((g) => g.id !== currentGroup.id)
+           .map((g) => ({ key: g.name, value: g.name }))}
+         />
         )}
-        <div className='grid gap-4 mt-6'>
-          {currentGroup.slots.map((slot) => (
-            <SlotItem
-              key={slot.id}
-              slot={slot}
-              setSlots={(updatedSlot) =>
-                setCurrentGroup((prevGroup) => ({
-                  ...prevGroup,
-                  slots: prevGroup.slots.map((s) => (s.id === updatedSlot.id ? updatedSlot : s)),
-                }))
-              }
-              onDelete={(slotId) =>
-                setCurrentGroup((prevGroup) => ({
-                  ...prevGroup,
-                  slots: prevGroup.slots.filter((s) => s.id !== slotId),
-                }))
-              }
-            />
-          ))}
-        </div>
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          className='bg-btn-accent text-black'
-          onClick={onAddSlot}>
-          <Plus className='stroke-black' />
-          New slot
-        </Button>
-        <Button onClick={onSaveHandler}>Save group</Button>
-      </ModalFooter>
-    </Modal>
+       </div>
+      )}
+     </div>
+     {!is_create && subgroups.length > 0 && (
+      <div className="mt-4">
+       <p className="text-sm font-medium mb-2">Subgroups</p>
+       <SlotsGroupsTable
+        groups={subgroups}
+        setGroups={setSubgroups}
+        nodeData={nodeData}
+        setNodeData={setNodeData}
+        onDeleteGroupHandler={onDeleteTableGroupHandler}
+       />
+      </div>
+     )}
+     <div className="grid gap-4 mt-6">
+      {currentGroup.slots.map((slot) => (
+       <SlotItem
+        key={slot.id}
+        slot={slot}
+        setSlots={(updatedSlot) =>
+         setCurrentGroup((prevGroup) => ({
+          ...prevGroup,
+          slots: prevGroup.slots.map((s) =>
+           s.id === updatedSlot.id ? updatedSlot : s
+          ),
+         }))
+        }
+        onDelete={(slotId) =>
+         setCurrentGroup((prevGroup) => ({
+          ...prevGroup,
+          slots: prevGroup.slots.filter((s) => s.id !== slotId),
+         }))
+        }
+       />
+      ))}
+     </div>
+    </ModalBody>
+    <ModalFooter>
+     <Button className="bg-btn-accent text-white" onClick={onAddSlot}>
+      <Plus className="stroke-white" />
+      New slot
+     </Button>
+     <Button className="bg-foreground text-background" onClick={onSaveHandler}>
+      Save group
+     </Button>
+    </ModalFooter>
+   </Modal>
   )
 }
 

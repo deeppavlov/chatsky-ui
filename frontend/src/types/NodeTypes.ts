@@ -30,6 +30,7 @@ export type LinkNodeDataType = {
     target_node: string
     is_configured?: boolean | undefined
   }
+  flowName?: string
 }
 
 export type SlotsNodeDataType = {
