@@ -1,18 +1,18 @@
-import { Button, Input, ModalProps } from "@nextui-org/react"
-import { Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents"
-import { Edge, useReactFlow } from "@xyflow/react"
-import { HelpCircle, TrashIcon } from "lucide-react"
-import React, { useCallback, useContext, useEffect } from "react"
+import { Button, Input, ModalProps } from '@nextui-org/react'
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
+import { Edge, useReactFlow } from '@xyflow/react'
+import { HelpCircle, TrashIcon } from 'lucide-react'
+import React, { useCallback, useContext, useEffect } from 'react'
 
-import { flowContext } from "../../contexts/flowContext"
-import { undoRedoContext } from "../../contexts/undoRedoContext"
-import EditPenIcon from "../../icons/EditPenIcon"
-import { DefaultNodeDataType, DefaultNodeType } from "../../types/NodeTypes"
-import ConditionRow from "./components/ConditionRow"
+import { flowContext } from '../../contexts/flowContext'
+import { undoRedoContext } from '../../contexts/undoRedoContext'
+import EditPenIcon from '../../icons/EditPenIcon'
+import { DefaultNodeDataType, DefaultNodeType } from '../../types/NodeTypes'
+import ConditionRow from './components/ConditionRow'
 
 type NodeModalProps = {
  data: DefaultNodeDataType
- size?: ModalProps["size"]
+ size?: ModalProps['size']
  isOpen: boolean
  onClose: () => void
  onResponseModalOpen: () => void
@@ -24,7 +24,7 @@ const NodeModal = ({
  data,
  isOpen,
  onClose,
- size = "3xl",
+ size = '3xl',
  onResponseModalOpen,
  nodeDataState,
  setNodeDataState,
@@ -50,14 +50,12 @@ const NodeModal = ({
   [nodeDataState, setNodeDataState]
  )
 
- console.log(nodeDataState, "nodeDataState")
-
  const setTextResponseValue = (e: React.ChangeEvent<HTMLInputElement>) => {
   setNodeDataState({
    ...nodeDataState,
    response: {
     ...nodeDataState.response!,
-    type: "text",
+    type: 'text',
     data: [{ text: e.target.value, priority: 1 }],
    },
   })
@@ -75,7 +73,7 @@ const NodeModal = ({
    data,
    id: data.id,
    position: { x: 0, y: 0 },
-   type: "default_node",
+   type: 'default_node',
   })
   if (!is_deletion_valid) return -1
   takeSnapshot()
@@ -103,8 +101,8 @@ const NodeModal = ({
     isOpen={isOpen}
     onClose={onClose}
    >
-    <ModalHeader>{"Edit node"}</ModalHeader>
-    <ModalBody className={"flex flex-1 flex-col gap-3 py-2"}>
+    <ModalHeader>{'Edit node'}</ModalHeader>
+    <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
      <label></label>
      <div className="grid gap-4">
       <Input
@@ -146,18 +144,13 @@ const NodeModal = ({
         <div>ACTIONS</div>
        </div>
        <div className="grid">
-        {nodeDataState.conditions?.map(
-         (cnd) => (
-          console.log(cnd),
-          (
-           <ConditionRow
-            deleteConditionFn={deleteCondition}
-            key={cnd.id}
-            cnd={cnd}
-           />
-          )
-         )
-        )}
+        {nodeDataState.conditions?.map((cnd) => (
+         <ConditionRow
+          deleteConditionFn={deleteCondition}
+          key={cnd.id}
+          cnd={cnd}
+         />
+        ))}
        </div>
       </div>
      </div>
