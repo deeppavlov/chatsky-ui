@@ -2,22 +2,13 @@ import { Button, Divider, Select, SelectItem, Switch } from '@nextui-org/react'
 import { MoonIcon, SunIcon } from 'lucide-react'
 import { memo, useContext } from 'react'
 import { themeContext } from '../contexts/themeContext'
-import { workspaceContext } from '../contexts/workspaceContext'
 
 const Settings = memo(() => {
-  const { currentTab } = useContext(workspaceContext)
   const { theme, toggleTheme } = useContext(themeContext)
 
   return (
     <>
-      <div
-        style={{
-          transform:
-            currentTab === 'settings' ? 'translateX(0)' : 'translateX(100%)',
-          // display: settingsPage ? "block" : "none",
-        }}
-        className='absolute left-0 top-0 h-screen w-screen bg-background px-12 pb-14 pt-24 transition-all duration-300'
-      >
+      <div className='absolute left-0 top-0 h-screen w-screen bg-background px-12 pb-14 pt-24 transition-all duration-300'>
         <h2 className='mb-4 text-2xl font-semibold'>Settings</h2>
         <div className='grid h-full grid-cols-6 gap-8 pb-14'>
           <div className='col-span-1 flex w-full gap-4'>
