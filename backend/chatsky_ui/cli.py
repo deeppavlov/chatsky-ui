@@ -13,6 +13,7 @@ Helper Functions:
     _execute_command: Asynchronously executes a shell command.
     _execute_command_file: Reads a command from a JSON file and executes it.
 """
+
 import asyncio
 import json
 import os
@@ -160,8 +161,8 @@ def build_scenario(
 
 @cli.command("run_bot")
 def run_bot(
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
-    preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
+    project_dir: Path = typer.Option(None, help="The project directory created by the `init` command"),
+    preset: str = typer.Option("success", help="Could be one of: success, failure, loop"),
     run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
 ):
     """
@@ -185,7 +186,7 @@ def run_bot(
 
 @cli.command("run_scenario")
 def run_scenario(
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
+    project_dir: Path = typer.Option(Path("."), help="The project directory created by the `init` command"),
     run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
 ):
     """
@@ -200,12 +201,16 @@ def run_scenario(
     settings.set_config(work_directory=project_dir)
     script_path = settings.scripts_dir / "build.yaml"
 
-    command_to_run = f"python {project_dir}/app.py --script-path {script_path} --dialogue-db-path {settings.database_path} --run-id {run_id}"
+    command_to_run = (
+        f"python {project_dir}/app.py --script-path {script_path}"
+        f" --dialogue-db-path {settings.database_path} --run-id {run_id}"
+    )
     try:
         asyncio.run(_execute_command(command_to_run))
     except FileNotFoundError:
         command_to_run = (
-            f"python3 {project_dir}/app.py --script-path {script_path} --dialogue-db-path {dialogue_db_path} --run-id {run_id}"
+            f"python3 {project_dir}/app.py --script-path {script_path}"
+            f" --dialogue-db-path {settings.database_path} --run-id {run_id}"
         )
         asyncio.run(_execute_command(command_to_run))
 
