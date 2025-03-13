@@ -12,6 +12,7 @@ import {
   runMinifyApiType,
   runPresetType,
 } from '../api/bot'
+import { buildContext } from './buildContext'
 import { NotificationsContext } from './notificationsContext'
 
 export type runApiType = {
@@ -66,6 +67,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
   const [stoppingRunIds, setStoppingRunIds] = useState<number[]>([])
   const [runs, setRuns] = useState<localRunType[]>([])
   const { notification: n } = useContext(NotificationsContext)
+  const { setBuilds } = useContext(buildContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
     setRuns(runs.map((run) => ({ ...run, type: 'run' })))
@@ -77,7 +79,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       const _runs: localRunType[] = data.map((run) => {
         return { ...run, type: 'run' }
       })
-      setRuns(_runs)
+      setRuns(_runs.sort((a, b) => b.id - a.id))
     }
   }
 
@@ -107,6 +109,13 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         started_run = await get_runs(run_id)
       }
       setRunsHandler([...runs, started_run])
+      setBuilds((builds) =>
+        builds.map((b) =>
+          b.id === started_run.build_id
+            ? { ...b, runs: [...b.runs, { ...started_run, type: 'run' }] }
+            : b,
+        ),
+      )
 
       // 4. Мониторинг статуса рана
 
@@ -124,6 +133,18 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
       setRuns((prev) =>
         prev.map((r) => (run_id === r.id ? { ...r, status } : r)),
+      )
+      setBuilds((builds) =>
+        builds.map((build) =>
+          build.id === started_run.build_id
+            ? {
+                ...build,
+                runs: build.runs.map((run) =>
+                  run.id === run_id ? { ...run, status } : run,
+                ),
+              }
+            : build,
+        ),
       )
       switch (status) {
         case 'alive':
@@ -190,6 +211,20 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
 
       await Promise.race([stopRunPromise, timeoutPromise])
       setRunsHandler(runs.map((r) => (r.id === run_id ? { ...r, status } : r)))
+      const stoppedRun = runs.find((r) => r.id === run_id) as runMinifyApiType
+      setBuilds((builds) =>
+        builds.map((build) =>
+          build.id === stoppedRun.build_id
+            ? {
+                ...build,
+                runs: build.runs.map((run) =>
+                  run.id === run_id ? { ...run, status } : run,
+                ),
+              }
+            : build,
+        ),
+      )
+
       n.add({
         message: '',
         title: 'Run stopped!',
@@ -232,6 +267,13 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       await Promise.race([stopRunsPromise, timeoutPromise])
 
       setRunsHandler(runs)
+      setBuilds((builds) =>
+        builds.map((build) => ({
+          ...build,
+          runs: build.runs.map((run) => ({ ...run, status: 'stopped' })),
+        })),
+      )
+
       n.add({
         message: '',
         title: 'All runs stopped!',
