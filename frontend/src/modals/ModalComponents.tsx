@@ -108,6 +108,7 @@ export const ModalBody = ({ children, className }: ModalBodyProps) => (
  >
   {children}
  </div>
+
 )
 
 type ModalFooterProps = {

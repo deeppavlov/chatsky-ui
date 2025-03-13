@@ -7,7 +7,7 @@ All PRs are reviewed by Chatsky-UI developers team. In order to make the reviewe
 
 ## Development
 We use poetry as a handy dependency management and packaging tool, which reads pyproject.toml to get specification for commands. poetry is a tool for command running automatization. If your environment does not support poetry, it can be installed as a python package with `pipx install poetry`. However, It's recommended to install isolated from the global Python environment, which prevents potential conflicts with other packages ([Installation on the official site](https://python-poetry.org/docs/#installing-with-the-official-installer:~:text=its%20own%20environment.-,Install%20Poetry,-The%20installer%20script)).
-
+For frontend development you will also require Bun - a JavaScript package manager, which you can install on Linux with Curl: `curl -fsSL https://bun.sh/install | bash`. For Windows installation or more information you can visit the [official website](https://bun.sh/).
 
 ### Prepare the Enviroment
 

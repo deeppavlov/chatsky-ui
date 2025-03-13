@@ -2,6 +2,7 @@ import { BotIcon } from '../../../icons/nodes/responses/BotIcon'
 import { NodeComponentType } from '../../../types/NodeTypes'
 
 const Response = ({ data }: NodeComponentType) => {
+
  const text = data.response.data[0]?.text ?? ''
 
  const mapping: { [key: string]: string } = {

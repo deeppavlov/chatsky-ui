@@ -1,7 +1,7 @@
-import { Button, Input } from "@nextui-org/react"
-import { Trash2Icon } from "lucide-react"
-import { useState } from "react"
-import { conditionType } from "../../../types/ConditionTypes"
+import { Button, Input } from '@nextui-org/react'
+import { Trash2Icon } from 'lucide-react'
+import { useState } from 'react'
+import { conditionType } from '../../../types/ConditionTypes'
 
 function ConditionRow({
   cnd,
@@ -12,9 +12,11 @@ function ConditionRow({
 }) {
   const [priority, setPriority] = useState(cnd.data.priority)
 
-  const changeConditionPriorityHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const changeConditionPriorityHandler = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     if (
-      (RegExp(/^[0-9]+$/).test(e.target.value) || e.target.value === "") &&
+      (RegExp(/^[0-9]+$/).test(e.target.value) || e.target.value === '') &&
       Number(e.target.value) < 100 &&
       Number(e.target.value) > 0
     ) {
@@ -30,12 +32,13 @@ function ConditionRow({
   return (
     <div
       key={cnd.id}
-      className='grid grid-cols-3 gap-4 py-1 px-4 items-center border-t border-collapse'>
+      className='grid border-collapse grid-cols-3 items-center gap-4 border-t px-4 py-1'
+    >
       <div> {cnd.name} </div>
       <div>
         <Input
           classNames={{
-            inputWrapper: "h-6 w-3/4",
+            inputWrapper: 'h-6 w-3/4',
           }}
           size='sm'
           type='number'
@@ -48,10 +51,7 @@ function ConditionRow({
         />
       </div>
       <div>
-        <Button
-          onClick={deleteConditionHandler}
-          size='sm'
-          isIconOnly>
+        <Button onClick={deleteConditionHandler} size='sm' isIconOnly>
           <Trash2Icon />
         </Button>
       </div>

@@ -7,17 +7,17 @@ import {
   ModalHeader,
   Select,
   SelectItem,
-} from "@nextui-org/react"
-import { HelpCircle, TrashIcon } from "lucide-react"
-import { useContext, useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import ModalComponent from "../../components/ModalComponent"
-import { FLOW_COLORS } from "../../consts"
-import { flowContext } from "../../contexts/flowContext"
-import { NotificationsContext } from "../../contexts/notificationsContext"
-import { FlowType } from "../../types/FlowTypes"
-import { ModalType } from "../../types/ModalTypes"
-import { validateFlowName } from "../../utils"
+} from '@nextui-org/react'
+import { HelpCircle, TrashIcon } from 'lucide-react'
+import { useContext, useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import ModalComponent from '../../components/ModalComponent'
+import { FLOW_COLORS } from '../../consts'
+import { flowContext } from '../../contexts/flowContext'
+import { NotificationsContext } from '../../contexts/notificationsContext'
+import { FlowType } from '../../types/FlowTypes'
+import { ModalType } from '../../types/ModalTypes'
+import { validateFlowName } from '../../utils'
 
 interface CreateFlowModalProps extends ModalType {}
 
@@ -28,13 +28,17 @@ export type CreateFlowType = {
   subflow: string
 }
 
-const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProps) => {
+const ManageFlowsModal = ({
+  isOpen,
+  onClose,
+  size = '3xl',
+}: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
   const { notification: n } = useContext(NotificationsContext)
-  const [newFlows, setNewFlows] = useState<FlowType[]>([...flows] ?? [])
+  const [newFlows, setNewFlows] = useState<FlowType[]>([...flows])
   const { flowId } = useParams()
   const [flow, setFlow] = useState<FlowType>(
-    newFlows.find((_flow) => _flow.name === flowId) ?? [][0]
+    newFlows.find((_flow) => _flow.name === flowId) ?? [][0],
   )
   const navigate = useNavigate()
   const [newFlow, setNewFlow] = useState<FlowType>(flow)
@@ -51,21 +55,23 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
     setFlow(() => newFlows.find((_flow) => _flow.name === flowId) ?? [][0])
     setNewFlow(() => newFlows.find((_flow) => _flow.name === flowId) ?? [][0])
 
-    if (flowId === "Global") {
+    if (flowId === 'Global') {
       setIsGlobal(true)
     }
   }, [flowId, newFlows, isOpen])
 
   const onFlowSelect = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    setFlow(() => newFlows.find((_flow) => _flow.name === e.target.name) ?? [][0])
+    setFlow(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      () => newFlows.find((_flow) => _flow.name === e.target.name) ?? [][0],
+    )
   }
 
   useEffect(() => {
     if (flow) {
       setNewFlow(flow)
-      if (flow.name === "Global") {
+      if (flow.name === 'Global') {
         setIsGlobal(true)
       } else {
         setIsGlobal(false)
@@ -81,33 +87,40 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
   }
 
   const onFlowSave = () => {
-    if (!validateFlowName(newFlow.name, newFlows) && newFlow.name !== flow.name) {
+    if (
+      !validateFlowName(newFlow.name, newFlows) &&
+      newFlow.name !== flow.name
+    ) {
       return n.add({
-        title: "Warning!",
-        message: "Flow name is not valid.",
-        type: "warning",
+        title: 'Warning!',
+        message: 'Flow name is not valid.',
+        type: 'warning',
       })
     }
     if (newFlow.color && newFlow.subflow) {
-      setFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow))])
-      saveFlows([...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow))])
+      setFlows([
+        ...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow)),
+      ])
+      saveFlows([
+        ...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow)),
+      ])
       setIsSubFlow(false)
       onClose()
     } else {
       n.add({
-        title: "Warning!",
-        message: "Please fill all the fields correctly.",
-        type: "warning",
+        title: 'Warning!',
+        message: 'Please fill all the fields correctly.',
+        type: 'warning',
       })
     }
   }
 
   const onFlowDelete = () => {
-    if (newFlow.name === "Global") {
+    if (newFlow.name === 'Global') {
       return n.add({
-        title: "Warning!",
-        message: "Global flow cannot be deleted.",
-        type: "warning",
+        title: 'Warning!',
+        message: 'Global flow cannot be deleted.',
+        type: 'warning',
       })
     } else {
       if (flowId === newFlow.name) {
@@ -120,27 +133,34 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
 
   return (
     <ModalComponent
-      className='bg-background min-h-[584px]'
-      motionProps={{ initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } }}
+      className='min-h-[584px] bg-background'
+      motionProps={{
+        initial: { opacity: 0, scale: 0.95 },
+        animate: { opacity: 1, scale: 1 },
+      }}
       isOpen={isOpen}
       onClose={onClose}
-      size={size}>
+      size={size}
+    >
       {flow && (
         <ModalContent>
-          <ModalHeader>{"Manage flows"}</ModalHeader>
+          <ModalHeader>{'Manage flows'}</ModalHeader>
           <ModalBody>
             <div className='grid grid-cols-4 gap-8'>
               <div className='col-span-1 flex flex-col items-start justify-start'>
                 {newFlows.map((_flow) => (
                   <button
-                    className='w-full p-1 rounded-lg cursor-pointer text-start'
+                    className='w-full cursor-pointer rounded-lg p-1 text-start'
                     style={{
                       backgroundColor:
-                        _flow.name === flow.name ? "var(--border)" : "var(--background)",
+                        _flow.name === flow.name
+                          ? 'var(--border)'
+                          : 'var(--background)',
                     }}
                     key={_flow.name}
                     name={_flow.name}
-                    onClick={onFlowSelect}>
+                    onClick={onFlowSelect}
+                  >
                     {_flow.name}
                   </button>
                 ))}
@@ -168,18 +188,25 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                   />
                 </div>
                 <div className='mt-4'>
-                  <label className='text-sm font-medium mb-1 block'> Color </label>
+                  <label className='mb-1 block text-sm font-medium'>
+                    {' '}
+                    Color{' '}
+                  </label>
                   <div className='flex items-center gap-2'>
                     {FLOW_COLORS.map((color) => (
                       <button
                         disabled={isGlobal}
                         key={color}
                         onClick={() => setNewFlow({ ...newFlow, color })}
-                        className='rounded-full w-8 h-8 transition-all'
+                        className='h-8 w-8 rounded-full transition-all'
                         style={{
                           backgroundColor: color,
-                          border: newFlow.color === color ? "4px solid var(--foreground)" : "none",
-                        }}></button>
+                          border:
+                            newFlow.color === color
+                              ? '4px solid var(--foreground)'
+                              : 'none',
+                        }}
+                      ></button>
                     ))}
                   </div>
                 </div>
@@ -194,30 +221,38 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
                   <div
                     className='grid transition-all'
                     style={{
-                      gridTemplateRows: "1fr",
-                    }}>
-                    <div className='min-h-0 overflow-hidden mt-4'>
+                      gridTemplateRows: '1fr',
+                    }}
+                  >
+                    <div className='mt-4 min-h-0 overflow-hidden'>
                       <Select
                         disabled={isGlobal}
                         aria-label='Dependent from'
                         label='Dependent from'
                         labelPlacement='outside'
                         items={newFlows}
-                        disabledKeys={isGlobal ? [...newFlows.map((_flow) => _flow.name)] : []}
+                        disabledKeys={
+                          isGlobal
+                            ? [...newFlows.map((_flow) => _flow.name)]
+                            : []
+                        }
                         classNames={{
-                          listboxWrapper: "max-h-48",
-                          popoverContent: "bg-background",
+                          listboxWrapper: 'max-h-48',
+                          popoverContent: 'bg-background',
                         }}
                         name='subflow'
                         onChange={(e) => {
-                          if (e.target.value !== "") {
+                          if (e.target.value !== '') {
                             setNewFlow({ ...newFlow, subflow: e.target.value })
                           } else {
-                            setNewFlow({ ...newFlow, subflow: "Global" })
+                            setNewFlow({ ...newFlow, subflow: 'Global' })
                           }
                         }}
-                        selectedKeys={newFlow.subflow ? [newFlow.subflow] : []}>
-                        {(flow) => <SelectItem key={flow.name}>{flow.name}</SelectItem>}
+                        selectedKeys={newFlow.subflow ? [newFlow.subflow] : []}
+                      >
+                        {(flow) => (
+                          <SelectItem key={flow.name}>{flow.name}</SelectItem>
+                        )}
                       </Select>
                     </div>
                   </div>
@@ -225,29 +260,27 @@ const ManageFlowsModal = ({ isOpen, onClose, size = "3xl" }: CreateFlowModalProp
               </div>
             </div>
           </ModalBody>
-          <ModalFooter className='flex justify-between items-center'>
+          <ModalFooter className='flex items-center justify-between'>
             <div className='flex items-center justify-start gap-2'>
-              <Button
-                isIconOnly
-                className='rounded-full'>
+              <Button isIconOnly className='rounded-full'>
                 <HelpCircle />
               </Button>
               <Button
                 onClick={onFlowDelete}
                 className='hover:bg-red-500'
-                isIconOnly>
+                isIconOnly
+              >
                 <TrashIcon />
               </Button>
             </div>
             <div className='flex items-center gap-2'>
-              <Button
-                onClick={onClose}
-                variant='ghost'>
+              <Button onClick={onClose} variant='ghost'>
                 Cancel
               </Button>
               <Button
                 onClick={onFlowSave}
-                className='bg-foreground text-background'>
+                className='bg-foreground text-background'
+              >
                 Save flow
               </Button>
             </div>

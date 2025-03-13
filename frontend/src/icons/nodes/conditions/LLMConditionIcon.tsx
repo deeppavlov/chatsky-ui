@@ -1,6 +1,9 @@
-import React from "react"
+import React from 'react'
 
-const LLMConditionIcon = ({className, fill="var(--foreground)"}: React.SVGAttributes<SVGSVGElement>) => {
+const LLMConditionIcon = ({
+  className,
+  fill = 'var(--foreground)',
+}: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
       className={className}
@@ -8,7 +11,8 @@ const LLMConditionIcon = ({className, fill="var(--foreground)"}: React.SVGAttrib
       height='24'
       viewBox='0 0 24 24'
       fill='none'
-      xmlns='http://www.w3.org/2000/svg'>
+      xmlns='http://www.w3.org/2000/svg'
+    >
       <path
         fillRule='evenodd'
         clipRule='evenodd'

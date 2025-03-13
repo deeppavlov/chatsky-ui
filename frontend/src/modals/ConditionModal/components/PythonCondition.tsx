@@ -1,16 +1,16 @@
-import { CompletionContext, autocompletion } from "@codemirror/autocomplete"
-import { globalCompletion, python } from "@codemirror/lang-python"
-import { indentUnit } from "@codemirror/language"
-import { andromeda } from "@uiw/codemirror-theme-andromeda"
-import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
-import ReactCodeMirror from "@uiw/react-codemirror"
-import { useContext, useEffect } from "react"
-import { IdeContext } from "../../../contexts/ideContext"
-import { themeContext } from "../../../contexts/themeContext"
-import { ConditionModalContentType } from "../ConditionModal"
-import { conditionEditorPlugin } from "../editorOptions"
+import { autocompletion, CompletionContext } from '@codemirror/autocomplete'
+import { globalCompletion, python } from '@codemirror/lang-python'
+import { indentUnit } from '@codemirror/language'
+import { andromeda } from '@uiw/codemirror-theme-andromeda'
+import { noctisLilac } from '@uiw/codemirror-theme-noctis-lilac'
+import ReactCodeMirror from '@uiw/react-codemirror'
+import { useContext, useEffect } from 'react'
+import { IdeContext } from '../../../contexts/ideContext'
+import { themeContext } from '../../../contexts/themeContext'
+import { ConditionModalContentType } from '../ConditionModal'
+import { conditionEditorPlugin } from '../editorOptions'
 
-const tabSize = "    "
+const tabSize = '    '
 
 const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
   const { theme } = useContext(themeContext)
@@ -23,7 +23,7 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
     if (!condition.data.python) {
       setData({
         ...condition,
-        type: "python",
+        type: 'python',
         data: {
           ...condition.data,
           python: {
@@ -39,11 +39,11 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
     if (condition.data.python?.action) {
       setData({
         ...condition,
-        type: "python",
+        type: 'python',
         data: {
           ...condition.data,
           python: {
-            action: `${firstString}\n${secondString}\n${condition.data.python.action.split("\n").slice(2).join("\n")}`,
+            action: `${firstString}\n${secondString}\n${condition.data.python.action.split('\n').slice(2).join('\n')}`,
           },
         },
       })
@@ -54,11 +54,11 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
   const changeConditionValue = (value: string) => {
     setData({
       ...condition,
-      type: "python",
+      type: 'python',
       data: {
         ...condition.data,
         python: {
-          action: `${firstString}\n${secondString}\n${value.split("\n").slice(2).join("\n")}`,
+          action: `${firstString}\n${secondString}\n${value.split('\n').slice(2).join('\n')}`,
         },
       },
     })
@@ -84,7 +84,13 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
     if (word.from == word.to && !context.explicit) return null
     return {
       from: word.from,
-      options: [{ label: "cnd", type: "function", info: "Chatsky conditions base methods object" }],
+      options: [
+        {
+          label: 'cnd',
+          type: 'function',
+          info: 'Chatsky conditions base methods object',
+        },
+      ],
     }
   }
 
@@ -92,12 +98,13 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
     <>
       <p className='text-sm font-medium'>Action</p>
       <div
-        className={`mt-2 w-full flex flex-col items-start justify-start gap-4 p-4 ${theme === "light" ? "bg-[#f2f1f8]" : "bg-[#24262e]"} rounded-lg font-mono`}>
+        className={`mt-2 flex w-full flex-col items-start justify-start gap-4 p-4 ${theme === 'light' ? 'bg-[#f2f1f8]' : 'bg-[#24262e]'} rounded-lg font-mono`}
+      >
         <ReactCodeMirror
           data-testid='python-condition-editor'
           style={{
             fontFamily:
-              "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+              'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
           }}
           lang='python'
           extensions={[
@@ -111,8 +118,8 @@ const PythonCondition = ({ condition, setData }: ConditionModalContentType) => {
           ]}
           value={condition.data.python?.action}
           onChange={changeConditionValue}
-          className='w-full border-none outline-none focus-within:outline-none focus:outline-none font-mono'
-          theme={theme === "light" ? noctisLilac : andromeda}
+          className='w-full border-none font-mono outline-none focus-within:outline-none focus:outline-none'
+          theme={theme === 'light' ? noctisLilac : andromeda}
           height='240px'
         />
       </div>

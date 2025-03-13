@@ -26,11 +26,11 @@ interface ICondition {
 }
 
 interface IMapping {
- [key: string]: (
-  setState: (value: IState) => void,
-  state: IState,
-  id?: string
- ) => JSX.Element
+  [key: string]: (
+    setState: (value: IState) => void,
+    state: IState,
+    id?: string,
+  ) => JSX.Element
 }
 
 interface IState {
@@ -102,11 +102,11 @@ const getValue = (state: IState, id: string): ICondition | IState => {
 }
 
 const handleValueChange = (
- setState: (value: IState) => void,
- state: IState,
- id: string | undefined,
- value: string,
- field: string
+  setState: (value: IState) => void,
+  state: IState,
+  id: string | undefined,
+  value: string,
+  field: string,
 ) => {
  if (id === undefined) {
   const result =
@@ -133,16 +133,26 @@ const handleValueChange = (
    }
    return item
   }
- )
- setState({ ...state, data: newData })
- return
+
+  const newData: IDefObject[] = (state.data as IDefObject[]).map(
+    (item: IDefObject) => {
+      if (item.id === id) {
+        return item.structure === 'not'
+          ? { ...item, data: { ...item.data, [field]: value } }
+          : { ...item, [field]: value }
+      }
+      return item
+    },
+  )
+  setState({ ...state, data: newData })
+  return
 }
 
 const handleValueChangeCheckbox = (
- setState: (value: IState) => void,
- state: IState,
- id: string | undefined,
- value: boolean
+  setState: (value: IState) => void,
+  state: IState,
+  id: string | undefined,
+  value: boolean,
 ) => {
  if (id === undefined) {
   state.structure === 'not'
@@ -162,15 +172,26 @@ const handleValueChangeCheckbox = (
      : { ...item, flags: { caseSensitive: value } }
    }
    return item
+
   }
- )
- setState({ ...state, data: newData })
+
+  const newData: IDefObject[] = (state.data as IDefObject[]).map(
+    (item: IDefObject) => {
+      if (item.id === id) {
+        return item.structure === 'not'
+          ? { ...item, data: { ...item.data, flags: { caseSensitive: value } } }
+          : { ...item, flags: { caseSensitive: value } }
+      }
+      return item
+    },
+  )
+  setState({ ...state, data: newData })
 }
 
 interface IConditionGroup {
- name: string
- key?: string
- disabled?: boolean
+  name: string
+  key?: string
+  disabled?: boolean
 }
 
 const disabledConditionGroup = (state: IState): IConditionGroup[] => {
@@ -194,11 +215,24 @@ const disabledConditionGroup = (state: IState): IConditionGroup[] => {
     arrConditions.includes(group.key)
      ? true
      : false
-  }
-  return group
- })
 
- return newConditionGroups
+  }
+
+  const arrKeyMap = mapStructures[conditionStructures]
+
+  const newConditionGroups = state.conditionGroups.map((group) => {
+    if (Object.hasOwn(group, 'disabled')) {
+      group.disabled =
+        group.key &&
+        arrKeyMap.includes(group.key) &&
+        arrConditions.includes(group.key)
+          ? true
+          : false
+    }
+    return group
+  })
+
+  return newConditionGroups
 }
 
 const conditionGroups = [
@@ -216,14 +250,14 @@ const getNameCondition = (key: string) => {
 }
 
 const ConditionHeader = ({ onDelete }: { onDelete?: () => void }) => (
- <div className="flex items-center justify-between">
-  <p>Condition</p>
-  {onDelete && (
-   <button onClick={onDelete} aria-label="Delete condition">
-    <DeleteBasicConditionIcon />
-   </button>
-  )}
- </div>
+  <div className='flex items-center justify-between'>
+    <p>Condition</p>
+    {onDelete && (
+      <button onClick={onDelete} aria-label='Delete condition'>
+        <DeleteBasicConditionIcon />
+      </button>
+    )}
+  </div>
 )
 
 const getError = (state: IState, id: string | undefined = undefined) => {
@@ -442,10 +476,9 @@ const mapping: IMapping = {
            const newConditionGroups = disabledConditionGroup(newState)
            setState({ ...newState, conditionGroups: newConditionGroups })
           }}
-          items={arr.map((group, index) => ({
-           value: group.name,
-           key: index.toString(),
-           disabled: group.disabled,
+          items={arr.map((group) => ({
+            value: group.name,
+            key: group.id.toString(),
           }))}
           placeholder="Choose group"
          />
@@ -550,15 +583,15 @@ const mapping: IMapping = {
 }
 
 const TextMessage: React.FC<{ title: string; text: string }> = ({
- title,
- text,
+  title,
+  text,
 }) => {
- return (
-  <div className="">
-   <p>{title}</p>
-   <p className="text-[12px]">{text}</p>
-  </div>
- )
+  return (
+    <div className=''>
+      <p>{title}</p>
+      <p className='text-[12px]'>{text}</p>
+    </div>
+  )
 }
 
 const InputText: React.FC<{

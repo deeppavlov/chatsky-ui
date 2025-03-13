@@ -1,5 +1,7 @@
 import classNames from 'classnames'
+
 import { useDisclosure } from '@nextui-org/react'
+
 import { Edit } from 'lucide-react'
 import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -51,6 +53,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
      >
       <TrashIcon className="stroke-foreground w-5 h-5" />
      </button>
+
     </div>
     <p className="">{flow.description}</p>
    </div>

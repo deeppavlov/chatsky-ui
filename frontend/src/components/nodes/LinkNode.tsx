@@ -19,11 +19,14 @@ import {
  TableRow,
  Tooltip,
  useDisclosure,
+
 } from '@nextui-org/react'
 import { Edge, Handle, Position, useReactFlow } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import classNames from 'classnames'
+
 import { useParams } from 'react-router-dom'
+
 import { AlertTriangle, Link2 } from 'lucide-react'
 import { memo, useContext, useEffect, useMemo, useState } from 'react'
 import { flowContext } from '../../contexts/flowContext'
@@ -35,7 +38,6 @@ import { AppNode, LinkNodeDataType } from '../../types/NodeTypes'
 
 const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
  const { flowId } = useParams()
-
  const { updateNodeData } = useReactFlow<AppNode, Edge>()
  const { onOpen, onClose, isOpen } = useDisclosure()
  const { flows, deleteNode, updateFlow } = useContext(flowContext)
@@ -68,6 +70,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   }
   if (!data.transition.is_configured) {
    onOpen()
+
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
  }, [data.transition.target_node])
@@ -83,6 +86,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
  ) => {
   setToNode(
    toFlow?.data.nodes.find((node) => node.data.name === e.target.value)
+
   )
  }
 
@@ -97,6 +101,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
    ),
   [TO_FLOW?.data.nodes, data.transition.target_node]
  )
+
 
  /**
   * This useEffect checks the TO_FLOW and TO_NODE values is correct, and calls error if not

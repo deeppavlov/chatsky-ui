@@ -6,7 +6,7 @@ Subpackages
 
 .. toctree::
    :glob:
-   :maxdepth: 4
+   :maxdepth: 1
 
    chatsky_ui/*
 

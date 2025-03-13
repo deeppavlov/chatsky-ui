@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
 import { Edge, OnBeforeDelete, ReactFlowInstance } from '@xyflow/react'
+
 import { AxiosError } from 'axios'
 import React, {
  createContext,
@@ -7,6 +9,7 @@ import React, {
  useContext,
  useEffect,
  useState,
+
 } from 'react'
 import { useParams } from 'react-router-dom'
 import { v4 } from 'uuid'
@@ -61,6 +64,7 @@ const globalFlow: FlowType = {
 export type CustomReactFlowInstanceType = ReactFlowInstance<AppNode, Edge>
 
 type TabContextType = {
+
  reactFlowInstance: CustomReactFlowInstanceType | null
  setReactFlowInstance: React.Dispatch<
   React.SetStateAction<CustomReactFlowInstanceType | null>
@@ -118,6 +122,7 @@ const initialValue: TabContextType = {
 export type interfaceType = {
  interface: 'tg' | 'ui'
  token?: string
+
 }
 
 export const flowContext = createContext(initialValue)
@@ -149,22 +154,25 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   screenLoading.addScreenLoading()
   try {
    const { data } = await get_flows(build_id)
-
+   
    if (data.flows) {
     const slot_nodes: SlotsNodeType[] = data.flows
      .map((flow) => flow.data.nodes)
      .flat()
      .filter((node) => node.type === 'slots_node') as SlotsNodeType[]
+
     const groups = slot_nodes.map((node) => node.data.groups).flat()
     const slots = groups.map((group) => group.slots).flat()
     setSlots(slots)
     setGroups(groups)
+
     if (data.flows.some((flow) => flow.name === 'Global')) {
      setFlows(data.flows)
      return data.flows
     } else {
      setFlows([globalFlow, ...data.flows])
      return [globalFlow, ...data.flows]
+
     }
    } else {
     setFlows([globalFlow])
@@ -208,7 +216,6 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
     title: 'Error',
     message: error?.message ?? 'Something went wrong',
     type: 'error',
-   })
   }
  }
 
@@ -275,6 +282,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
      title: 'Warning!',
      message: "Can't delete start node",
      type: 'warning',
+
     })
     return false
    }

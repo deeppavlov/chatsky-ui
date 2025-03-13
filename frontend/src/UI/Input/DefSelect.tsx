@@ -1,8 +1,8 @@
-import { CheckIcon, ChevronDownIcon } from "@radix-ui/react-icons"
-import * as RadixSelect from "@radix-ui/react-select"
-import classNames from "classnames"
-import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons'
+import * as RadixSelect from '@radix-ui/react-select'
+import classNames from 'classnames'
+import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
 type ItemSelectType = {
  key: string
@@ -33,11 +33,13 @@ const DefSelect = ({
  isInvalid = false,
  errorMessage = "",
 }: DefSelectProps) => {
+
  const [selectedValue, setSelectedValue] = useState(defaultValue || "")
 
  useEffect(() => {
   setSelectedValue(defaultValue || "")
  }, [defaultValue])
+
 
  const handleChange = (value: string) => {
   setSelectedValue(value)
@@ -108,6 +110,7 @@ const DefSelect = ({
    )}
   </div>
  )
+
 }
 
 export default DefSelect

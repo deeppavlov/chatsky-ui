@@ -4,7 +4,13 @@
    contain the root `toctree` directive.
 
 Welcome to Chatsky-UI's documentation!
-==================================
+======================================
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :caption: Get Started:
+
+   get_started
 
 .. toctree::
    :maxdepth: 2

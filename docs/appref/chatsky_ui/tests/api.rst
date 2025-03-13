@@ -1,7 +1,7 @@
-chatsky_ui.tests.api package
+tests.api package
 =====================
 
-chatsky_ui.tests.api.test\_bot module
+tests.api.test\_bot module
 ------------------------------
 
 .. automodule:: chatsky_ui.tests.api.test_bot
@@ -9,10 +9,26 @@ chatsky_ui.tests.api.test\_bot module
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.tests.api.test\_flows module
+tests.api.test\_config module
+---------------------------------
+
+.. automodule:: chatsky_ui.tests.api.test_config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.api.test\_flows module
 --------------------------------
 
 .. automodule:: chatsky_ui.tests.api.test_flows
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tests.api.test\_services module
+-----------------------------------
+
+.. automodule:: chatsky_ui.tests.api.test_services
    :members:
    :undoc-members:
    :show-inheritance:

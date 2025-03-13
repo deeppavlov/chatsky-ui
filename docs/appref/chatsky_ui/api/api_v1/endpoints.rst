@@ -1,7 +1,7 @@
-chatsky_ui.api.api\_v1.endpoints package
+endpoints package
 =========================
 
-chatsky_ui.api.api\_v1.endpoints.bot module
+endpoints.bot module
 ----------------------------
 
 .. automodule:: chatsky_ui.api.api_v1.endpoints.bot
@@ -9,7 +9,7 @@ chatsky_ui.api.api\_v1.endpoints.bot module
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.api.api\_v1.endpoints.chatsky\_services module
+endpoints.chatsky\_services module
 --------------------------------------
 
 .. automodule:: chatsky_ui.api.api_v1.endpoints.chatsky_services
@@ -17,7 +17,7 @@ chatsky_ui.api.api\_v1.endpoints.chatsky\_services module
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.api.api\_v1.endpoints.flows module
+endpoints.flows module
 ------------------------------
 
 .. automodule:: chatsky_ui.api.api_v1.endpoints.flows

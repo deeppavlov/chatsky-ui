@@ -23,6 +23,9 @@ jobs:
       - name: setup Bun
         run: npm install -g bun
 
+      - name: Copy readme for pypi description
+        run: cp README.md backend/README.md
+
       - name: build frontend
         run: |
           bun install

@@ -1,3 +1,4 @@
+
 import ButtonConditionIcon from '@/icons/nodes/conditions/ButtonConditionIcon'
 import CodeConditionIcon from '@/icons/nodes/conditions/CodeConditionIcon'
 import CustomConditionIcon from '@/icons/nodes/conditions/CustomConditionIcon'
@@ -62,9 +63,9 @@ export type ConditionModalContentType = {
 }
 
 type ConditionModalProps = CustomModalProps & {
- data: DefaultNodeDataType
- condition?: conditionType
- is_create?: boolean
+  data: DefaultNodeDataType
+  condition?: conditionType
+  is_create?: boolean
 }
 
 type ConditionModalTab =
@@ -81,8 +82,8 @@ type LintStatusType = {
 }
 
 export type ValidateErrorType = {
- status: boolean
- reason: string
+  status: boolean
+  reason: string
 }
 
 const ConditionModal = ({
@@ -383,12 +384,6 @@ const ConditionModal = ({
       message: validate_action.reason,
      }))
     }
-    setTestConditionPending(() => false)
-    return false
-   }
-  } else {
-   setTestConditionPending(() => false)
-   return true
   }
  }
 

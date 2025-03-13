@@ -15,7 +15,7 @@ export type SlotType = {
   id: string
   name: string
   group_id: string
-  type: "RegexpSlot" | ""
+  type: 'RegexpSlot' | ''
   method: string
   value: string
   match_group_idx: number
@@ -27,5 +27,5 @@ export type SlotsGroupType = {
   slots: SlotType[]
   subgroups?: string[]
   subgroup_to: string
-  flow: "global" | string
+  flow: 'global' | string
 }

@@ -1,8 +1,10 @@
+
 import { Button, Input, ModalProps } from '@nextui-org/react'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import { Edge, useReactFlow } from '@xyflow/react'
 import { HelpCircle, TrashIcon } from 'lucide-react'
 import React, { useCallback, useContext, useEffect } from 'react'
+
 import { flowContext } from '../../contexts/flowContext'
 import { undoRedoContext } from '../../contexts/undoRedoContext'
 import EditPenIcon from '../../icons/EditPenIcon'
@@ -131,9 +133,10 @@ const NodeModal = ({
   }
  }
 
- return (
-  <>
-   {/* <ModalComponent
+
+  return (
+    <>
+      {/* <ModalComponent
     className="bg-background min-h-[584px]"
     motionProps={{
      initial: { opacity: 0, scale: 0.95 },
