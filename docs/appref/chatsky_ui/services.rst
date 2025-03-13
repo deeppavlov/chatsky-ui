@@ -1,15 +1,17 @@
-chatsky_ui.services package
+services package
 ====================
 
-chatsky_ui.services.json\_converter module
------------------------------------
+Subpackages
+-----------
 
-.. automodule:: chatsky_ui.services.json_converter
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :glob:
+   :maxdepth: 1
 
-chatsky_ui.services.process module
+   services/*
+
+
+services.process module
 ---------------------------
 
 .. automodule:: chatsky_ui.services.process
@@ -17,18 +19,10 @@ chatsky_ui.services.process module
    :undoc-members:
    :show-inheritance:
 
-chatsky_ui.services.process\_manager module
+services.process\_manager module
 ------------------------------------
 
 .. automodule:: chatsky_ui.services.process_manager
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-chatsky_ui.services.websocket\_manager module
---------------------------------------
-
-.. automodule:: chatsky_ui.services.websocket_manager
    :members:
    :undoc-members:
    :show-inheritance:

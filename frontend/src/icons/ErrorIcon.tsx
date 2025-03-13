@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react'
 
 const ErrorIcon = ({ className }: React.SVGAttributes<SVGSVGElement>) => {
   return (

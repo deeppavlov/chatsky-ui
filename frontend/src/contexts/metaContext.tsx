@@ -1,5 +1,5 @@
-import React, { createContext, useEffect, useState } from "react"
-import { get_config_version } from "../api/meta"
+import React, { createContext, useEffect, useState } from 'react'
+import { get_config_version } from '../api/meta'
 
 // context to set JSX element on the DOM
 
@@ -15,7 +15,7 @@ type metaContextType = {
 }
 
 export const MetaContext = createContext<metaContextType>({
-  version: "",
+  version: '',
   setVersion: () => {},
   screenLoading: {
     addScreenLoading: () => {},
@@ -31,7 +31,7 @@ interface MetaProviderProps {
 
 const MetaProvider = ({ children }: MetaProviderProps) => {
   const [screenLoading, setScreenLoading] = useState<number>(0)
-  const [version, setVersion] = useState<string>("")
+  const [version, setVersion] = useState<string>('')
 
   const addScreenLoading = () => {
     setScreenLoading((prev) => prev + 1)
@@ -55,7 +55,7 @@ const MetaProvider = ({ children }: MetaProviderProps) => {
 
   useEffect(() => {
     getVersion()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -69,7 +69,8 @@ const MetaProvider = ({ children }: MetaProviderProps) => {
           value: screenLoading,
         },
         setScreenLoading,
-      }}>
+      }}
+    >
       {children}
     </MetaContext.Provider>
   )

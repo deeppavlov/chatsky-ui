@@ -1,26 +1,22 @@
-import { Button } from "@nextui-org/react"
-import { PlusIcon } from "lucide-react"
-import { memo, useContext, useState } from "react"
-import { PopUpContext } from "../../contexts/popUpContext"
-import SlotsConditionIcon from "../../icons/nodes/conditions/SlotsConditionIcon"
-import EditNodeIcon from "../../icons/nodes/EditNodeIcon"
-import SlotsGroupModal from "../../modals/SlotsModals/SlotsGroupModal"
-import SlotsNodeModal from "../../modals/SlotsModals/SlotsNodeModal"
-import { SlotsNodeDataType } from "../../types/NodeTypes"
-import SlotsGroup from "./slots/SlotsGroup"
+import { Button } from '@nextui-org/react'
+import { PlusIcon } from 'lucide-react'
+import { memo, useContext, useState } from 'react'
+import { PopUpContext } from '../../contexts/popUpContext'
+import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
+import EditNodeIcon from '../../icons/nodes/EditNodeIcon'
+import SlotsGroupModal from '../../modals/SlotsModals/SlotsGroupModal'
+import SlotsNodeModal from '../../modals/SlotsModals/SlotsNodeModal'
+import { SlotsNodeDataType } from '../../types/NodeTypes'
+import SlotsGroup from './slots/SlotsGroup'
 
 const SlotsNode = memo(({ data }: { data: SlotsNodeDataType }) => {
   const { openPopUp } = useContext(PopUpContext)
   const [nodeData, setNodeData] = useState(data)
 
-
   const onNodeModalOpen = () => {
     openPopUp(
-      <SlotsNodeModal
-        data={nodeData}
-        setData={setNodeData}
-      />,
-      "slots-node-modal"
+      <SlotsNodeModal data={nodeData} setData={setNodeData} />,
+      'slots-node-modal',
     )
   }
 
@@ -33,17 +29,14 @@ const SlotsNode = memo(({ data }: { data: SlotsNodeDataType }) => {
         group={null}
         is_create={true}
       />,
-      "slots-group-modal-create-from-node"
+      'slots-group-modal-create-from-node',
     )
   }
 
   return (
     <>
-      <div
-        id={nodeData.id}
-        data-testid={nodeData.id}
-        className='default_node'>
-        <div className='custom-drag-handle w-full flex justify-between items-center bg-node-header border-b border-border rounded-t-node pl-6 pr-4 py-2'>
+      <div id={nodeData.id} data-testid={nodeData.id} className='default_node'>
+        <div className='custom-drag-handle flex w-full items-center justify-between rounded-t-node border-b border-border bg-node-header py-2 pl-6 pr-4'>
           <div className='flex items-center justify-start gap-1.5'>
             <SlotsConditionIcon />
             <p>{nodeData.name}</p>
@@ -51,20 +44,21 @@ const SlotsNode = memo(({ data }: { data: SlotsNodeDataType }) => {
           <div className='flex items-center justify-end gap-1'>
             <Button
               onClick={onNodeModalOpen}
-              className='min-h-0 min-w-0 p-0 w-10 h-10'
+              className='h-10 min-h-0 w-10 min-w-0 p-0'
               variant='light'
-              isIconOnly>
+              isIconOnly
+            >
               <EditNodeIcon />
             </Button>
           </div>
         </div>
-        <div className='p-2.5 w-full'>
-          <p className='text-neutral-500 text-sm text-start mb-2.5 ml-2.5'>
+        <div className='w-full p-2.5'>
+          <p className='mb-2.5 ml-2.5 text-start text-sm text-neutral-500'>
             {data.description && data.description?.length
               ? data.description
               : "Collect client's data to fulfill their requests"}
           </p>
-          <div className='flex flex-col items-center justify-center gap-2 mb-3'>
+          <div className='mb-3 flex flex-col items-center justify-center gap-2'>
             {nodeData.groups &&
               nodeData.groups.map((group) => (
                 <SlotsGroup
@@ -77,8 +71,9 @@ const SlotsNode = memo(({ data }: { data: SlotsNodeDataType }) => {
           </div>
           <button
             onClick={handleNewGroupModalOpen}
-            data-testid={`${nodeData.name.toLowerCase().replace(" ", "")}-add-group-btn`}
-            className='w-full bg-node border border-border flex items-center justify-center gap-2 py-1 rounded-lg'>
+            data-testid={`${nodeData.name.toLowerCase().replace(' ', '')}-add-group-btn`}
+            className='flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-node py-1'
+          >
             <PlusIcon color='var(--foreground)' />
             Add group
           </button>

@@ -7,4 +7,5 @@ router = APIRouter()
 
 @router.get("/version")
 async def get_version():
+    """Returns current Chatsky-UI version using importlib.metadata"""
     return __version__

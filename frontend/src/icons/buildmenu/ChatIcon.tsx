@@ -1,8 +1,8 @@
-import React from "react"
+import React from 'react'
 
 const ChatIcon = ({
-  fill = "var(--foreground)",
-  fillOpacity = "0.9",
+  fill = 'var(--foreground)',
+  fillOpacity = '0.9',
   ...props
 }: React.SVGAttributes<SVGSVGElement>) => {
   return (
@@ -12,7 +12,8 @@ const ChatIcon = ({
       height='20'
       viewBox='0 0 22 20'
       fill='none'
-      xmlns='http://www.w3.org/2000/svg'>
+      xmlns='http://www.w3.org/2000/svg'
+    >
       <path
         fillRule='evenodd'
         clipRule='evenodd'

@@ -1,7 +1,7 @@
-chatsky_ui.db package
+db package
 ==============
 
-chatsky_ui.db.base module
+db.base module
 ------------------
 
 .. automodule:: chatsky_ui.db.base

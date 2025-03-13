@@ -3,9 +3,9 @@
 Process manager
 ----------------
 
-Process managers are used to manage run and build processes. They are responsible for
-starting, stopping, updating, and checking status of processes. Processes themselves
-are stored in the `processes` dictionary of process managers.
+Process managers are used to manage :py:class:`~.process.RunProcess` and :py:class:`~.process.BuildProcess`.
+They are responsible for starting, stopping, updating, and checking status of processes. Processes themselves
+are stored in the `processes` dictionary of a process manager.
 """
 
 import asyncio
@@ -30,7 +30,7 @@ from chatsky_ui.utils.repo_manager import RepoManager
 
 
 class ProcessManager(ABC):
-    """Base for build and run process managers."""
+    """Base class for build and run process managers."""
 
     _db_lock = asyncio.Lock()
 
@@ -84,7 +84,7 @@ class ProcessManager(ABC):
     async def stop(self, id_: int) -> None:
         """Stops the process with the given id.
 
-        raises:
+        Raises:
             ProcessLookupError: If the process with the given id is not found.
             RuntimeError: If the process has not started yet.
         """
@@ -97,6 +97,7 @@ class ProcessManager(ABC):
             raise
 
     async def stop_all(self) -> None:
+        """Stops all running processes then updates the database."""
         for id_, process in self.processes.items():
             if await process.check_status() in [Status.ALIVE, Status.RUNNING]:
                 await self.stop(id_)
@@ -104,10 +105,11 @@ class ProcessManager(ABC):
 
     @abstractmethod
     async def update_db_info(self):
+        """Updates the database with process information."""
         raise NotImplementedError
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:
-        """Checks the status of the process with the given id by periodically checking status`
+        """Checks the status of the process with the given id by periodically checking the status
         of the process.
 
         This updates the process status in the database every 2 seconds.
@@ -128,7 +130,7 @@ class ProcessManager(ABC):
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
     async def get_status(self, id_: int) -> Status:
-        """Checks the status of the process with the given id by calling the `check_status` method of the process."""
+        """Checks the status of the process with the given id by calling the ``check_status`` method of the process."""
         return await self.processes[id_].check_status()
 
     async def get_process_info(self, id_: int, path: Path, path_lock) -> Optional[Dict[str, Any]]:
@@ -168,6 +170,7 @@ class ProcessManager(ABC):
 
     @staticmethod
     def add_new_conf(conf: list, params: dict) -> list:  # TODO: rename conf everywhere to metadata/meta
+        """Adds new configuration to the existing configuration list."""
         for element in conf:
             if element.id == params["id"]:  # type: ignore
                 for key, value in params.items():
@@ -194,7 +197,7 @@ class RunManager(ProcessManager):
 
         Args:
             build_id (int): the build id to run
-            preset (Preset): the preset to use among ("success", "failure", "loop")
+            preset (RunPreset): the preset to use among ("success", "failure", "loop")
 
         Returns:
             int: the id of the new started process
@@ -263,7 +266,7 @@ class RunManager(ProcessManager):
         return self.last_id
 
     async def get_run_info(self, id_: int) -> Optional[Dict[str, Any]]:
-        """Returns metadata of  a specific run process identified by its unique ID."""
+        """Returns metadata of a specific run process identified by its unique ID."""
         return await super().get_process_info(id_, settings.runs_path, settings.runs_path_lock)
 
     async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
@@ -274,15 +277,19 @@ class RunManager(ProcessManager):
     async def fetch_run_logs(self, run_id: int, offset: int, limit: int) -> Optional[List[str]]:
         """Returns the logs of one run according to its id.
 
-        Number of loglines returned is based on `offset` as the start line and limited by `limit` lines.
+        Number of log lines returned is based on ``offset`` as the start line and limited by ``limit`` lines.
         """
         return await self.fetch_process_logs(run_id, offset, limit, settings.runs_path, settings.runs_path_lock)
 
     def get_port(self, run_id: int) -> Optional[int]:
+        """Returns the port number assigned to the run process with the given id."""
         return self.processes[run_id].port
 
     async def update_db_info(self) -> None:
-        # save current run info into runs_path
+        """Saves current run info into runs_path.
+
+        Also saves current run id into the corresponding build in builds_path
+        """
         async with ProcessManager._db_lock:
             self.logger.debug("Updating db run info")
             runs_conf = await read_conf(settings.runs_path, settings.runs_path_lock)
@@ -293,7 +300,7 @@ class RunManager(ProcessManager):
                 )  # TODO: Try to use the process object attributes instead of having it as dict using get_full_info
                 runs_conf = RunManager.add_new_conf(runs_conf, run_params)  # type: ignore
 
-                # save current run id into the correspoinding build in builds_path
+                # save current run id into the corresponding build in builds_path
                 for build in builds_conf:
                     if build.id == run_params["build_id"]:  # type: ignore
                         if run_params["id"] not in build.run_ids:  # type: ignore
@@ -304,13 +311,19 @@ class RunManager(ProcessManager):
 
 
 class BuildManager(ProcessManager):
-    """Process manager for converting a frontned graph to a Chatsky script."""
+    """Process manager for converting a frontend graph to a Chatsky script."""
 
     def __init__(self):
         super().__init__()
         self.last_build_time = datetime.now().replace(year=datetime.now().year - 1)
 
     async def _get_available_port(self) -> int:
+        """Finds an available port for the build process.
+
+        An available port is one that is not currently in use by any existing build process
+        and is not currently busy on the system.
+        """
+
         async def _get_busy_ports():
             builds_metadata = await self.get_full_info(0, 10000)
             return [build["port"] for build in builds_metadata if build["port"] is not None]
@@ -332,7 +345,7 @@ class BuildManager(ProcessManager):
         Starts the process and appends it to the processes list.
 
         Args:
-            preset (Preset): the preset to use among ("success", "failure", "loop")
+            preset (BuildPreset): the preset to use among ("success", "failure", "loop")
 
         Returns:
             int: the id of the new started process
@@ -371,7 +384,7 @@ class BuildManager(ProcessManager):
         return id_
 
     async def check_status(self, id_: int, *args, **kwargs) -> None:
-        """Checks the status of the process with the given id by periodically checking status`
+        """Checks the status of the process with the given id by periodically checking the status
         of the process.
 
         This updates the process status in the database every 2 seconds.
@@ -400,12 +413,12 @@ class BuildManager(ProcessManager):
     async def fetch_build_logs(self, build_id: int, offset: int, limit: int) -> Optional[List[str]]:
         """Returns the logs of one build according to its id.
 
-        Number of loglines returned is based on `offset` as the start line and limited by `limit` lines.
+        Number of log lines returned is based on ``offset`` as the start line and limited by ``limit`` lines.
         """
         return await self.fetch_process_logs(build_id, offset, limit, settings.builds_path, settings.builds_path_lock)
 
     async def update_db_info(self) -> None:
-        """Saves current build info into builds_path"""
+        """Saves current build info into builds_path."""
         async with ProcessManager._db_lock:
             builds_conf = await read_conf(settings.builds_path, settings.builds_path_lock)
             for process in self.processes.values():

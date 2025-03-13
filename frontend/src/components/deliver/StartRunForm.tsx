@@ -1,10 +1,11 @@
-import { get_tg_tokens, set_tg_token } from "@/api/flows"
-import { buildContext } from "@/contexts/buildContext"
-import { runContext } from "@/contexts/runContext"
-import { Button, Input, Select, SelectItem } from "@nextui-org/react"
-import { useContext, useEffect, useState } from "react"
-import FormControl from "../../UI/FormControl"
-import { Eye, EyeOff } from "lucide-react"
+import { get_tg_tokens, set_tg_token } from '@/api/flows'
+import { buildContext } from '@/contexts/buildContext'
+import { runContext } from '@/contexts/runContext'
+import { workspaceContext } from '@/contexts/workspaceContext'
+import { Button, Input, Select, SelectItem } from '@nextui-org/react'
+import { Eye, EyeOff } from 'lucide-react'
+import { useContext, useEffect, useState } from 'react'
+import FormControl from '../../UI/FormControl'
 
 interface IFormData {
   name: string
@@ -20,27 +21,44 @@ interface ITokenState {
   tokens: string[]
 }
 
+interface IFieldErrors {
+  build?: string
+  tokenName?: string
+  tokenValue?: string
+}
+
+export interface IFormState {
+  formData: IFormData
+  tokenState: ITokenState
+  fieldErrors: IFieldErrors
+}
+
 const inputClassNames = {
-  inputWrapper: ["border-none", "data-[focus=true]:after:h-0", "shadow-none"],
-  input: ["w-full", "truncate", "placeholder:text-input-border"],
+  inputWrapper: ['border-none', 'data-[focus=true]:after:h-0', 'shadow-none'],
+  input: ['w-full', 'truncate', 'placeholder:text-input-border'],
 }
 
 const StartRunForm = () => {
-  const { builds } = useContext(buildContext)
-  const { runs, runStart, startingRunId } = useContext(runContext)
-
-  const successBuilds = builds.filter((b) => b.status === "completed")
-  const buildNames = successBuilds.map((b) => ({ name: b.preset.name, id: b.id.toString() }))
+  const { builds: reversedBuilds } = useContext(buildContext)
+  const builds = [...reversedBuilds].reverse()
+  const { runs, runStart, runStarting } = useContext(runContext)
+  const { startRunFormState: formState, setStartRunFormState } =
+    useContext(workspaceContext)
+  const successBuilds = builds.filter((b) => b.status === 'completed')
+  const buildNames = successBuilds.map((b) => ({
+    name: b.preset.name,
+    id: b.id.toString(),
+  }))
   const usedTelegramTokens = runs
-    .filter((r) => r.messenger === "telegram" && r.status === "alive")
+    .filter((r) => r.messenger === 'telegram' && r.status === 'alive')
     .map((r) => r.preset.tg_bot_token)
 
   const initialFormData: IFormData = {
     name: `Run ${runs.length}`,
     buildId: null,
-    preset: "None",
-    tokenName: "",
-    tokenValue: "",
+    preset: 'None',
+    tokenName: '',
+    tokenValue: '',
   }
   const initialTokenState: ITokenState = {
     isTokensAdding: false,
@@ -48,22 +66,29 @@ const StartRunForm = () => {
     tokens: [],
   }
 
-  const [formData, setFormData] = useState<IFormData>(initialFormData)
-  const [tokenState, setTokenState] = useState<ITokenState>(initialTokenState)
+  const [formData, setFormData] = useState<IFormData>(
+    formState?.formData || initialFormData,
+  )
+  const [fieldErrors, setFieldErrors] = useState<IFieldErrors>(
+    formState?.fieldErrors || {},
+  )
+  const [tokenState, setTokenState] = useState<ITokenState>(
+    formState?.tokenState || initialTokenState,
+  )
   const [hidePassword, setHidePassword] = useState(true)
-  const [fieldErrors, setFieldErrors] = useState<{
-    build?: string
-    tokenName?: string
-    tokenValue?: string
-  }>({})
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, name: e.target.value }))
+    setFormData((prev) => ({
+      ...prev,
+      name: e.target.value,
+    }))
   }
 
   const handleBuildChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedBuild = successBuilds.find((b) => String(b.id) === e.target.value)
-    const isTelegram = selectedBuild?.preset.messenger === "telegram"
+    const selectedBuild = successBuilds.find(
+      (b) => String(b.id) === e.target.value,
+    )
+    const isTelegram = selectedBuild?.preset.messenger === 'telegram'
     if (isTelegram) {
       // fetch tokens
       try {
@@ -90,13 +115,17 @@ const StartRunForm = () => {
     }))
 
     const aliveWebRunBuildIds = runs
-      .filter((r) => r.status === "alive" && r.messenger === "web")
+      .filter(
+        (r) =>
+          r.messenger === 'web' &&
+          (r.status === 'alive' || r.status === 'running'),
+      )
       .map((r) => r.build_id)
     const buildError = !e.target.value.length
-      ? "Please select a build"
+      ? 'Please select a build'
       : aliveWebRunBuildIds.includes(Number(e.target.value))
-      ? "This build is already in use"
-      : undefined
+        ? 'This build is already in use'
+        : undefined
     setFieldErrors((errors) => ({
       ...errors,
       build: buildError,
@@ -104,36 +133,42 @@ const StartRunForm = () => {
   }
 
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, preset: e.target.value || "None" }))
+    setFormData((prev) => ({ ...prev, preset: e.target.value || 'None' }))
   }
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const isTokensAdding = e.target.value === "New token"
+    const isTokensAdding = e.target.value === 'New token'
     setTokenState((state) => ({
       ...state,
       isTokensAdding,
     }))
     setFormData((prev) => ({
       ...prev,
-      tokenName: isTokensAdding ? "" : e.target.value,
-      tokenValue: "",
+      tokenName: isTokensAdding ? '' : e.target.value,
+      tokenValue: '',
     }))
 
     const error = !e.target.value.length
-      ? "Please select Telegram token"
+      ? 'Please select Telegram token'
       : usedTelegramTokens.includes(e.target.value)
-      ? "This token is already in use"
-      : undefined
-    setFieldErrors((errors) => ({ ...errors, tokenValue: undefined, tokenName: error }))
+        ? 'This token is already in use'
+        : undefined
+    setFieldErrors((errors) => ({
+      ...errors,
+      tokenValue: undefined,
+      tokenName: error,
+    }))
   }
 
   const handleTokenNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((data) => ({
       ...data,
-      tokenName: e.target.value.replaceAll(" ", "_").toUpperCase(),
+      tokenName: e.target.value.replaceAll(' ', '_').toUpperCase(),
     }))
     setFieldErrors((errors) => {
-      const error = e.target.value.length ? undefined : "Please enter Telegram token name"
+      const error = e.target.value.length
+        ? undefined
+        : 'Please enter Telegram token name'
       return { ...errors, tokenName: error }
     })
   }
@@ -142,7 +177,7 @@ const StartRunForm = () => {
     setFieldErrors((errors) => {
       const error = e.target.value.length
         ? undefined
-        : "Please enter Telegram token to access the HTTP API"
+        : 'Please enter Telegram token to access the HTTP API'
       return { ...errors, tokenValue: error }
     })
   }
@@ -153,28 +188,38 @@ const StartRunForm = () => {
     if (tokenState.isTelegram) {
       if (!formData.tokenName) {
         tokenNameError = tokenState.isTokensAdding
-          ? "Please enter Telegram token name"
-          : "Please select Telegram token"
-      } else if (tokenState.tokens.includes(formData.tokenName) && tokenState.isTokensAdding) {
-        tokenNameError = "The token with this name already exists"
-      } else if (usedTelegramTokens.includes(formData.tokenName) && !tokenState.isTokensAdding) {
-        tokenNameError = "This token is already in use"
+          ? 'Please enter Telegram token name'
+          : 'Please select Telegram token'
+      } else if (
+        tokenState.tokens.includes(formData.tokenName) &&
+        tokenState.isTokensAdding
+      ) {
+        tokenNameError = 'The token with this name already exists'
+      } else if (
+        usedTelegramTokens.includes(formData.tokenName) &&
+        !tokenState.isTokensAdding
+      ) {
+        tokenNameError = 'This token is already in use'
       }
     }
 
     const tokenValueError =
       tokenState.isTokensAdding && !formData.tokenValue
-        ? "Please enter Telegram token to access the HTTP API"
+        ? 'Please enter Telegram token to access the HTTP API'
         : undefined
 
     const aliveWebRunBuildIds = runs
-      .filter((r) => r.status === "alive" && r.messenger === "web")
+      .filter(
+        (r) =>
+          r.messenger === 'web' &&
+          (r.status === 'alive' || r.status === 'running'),
+      )
       .map((r) => r.build_id)
     const buildError = !formData.buildId
-      ? "Please select a build"
+      ? 'Please select a build'
       : aliveWebRunBuildIds.includes(Number(formData.buildId))
-      ? "This build is already in use"
-      : undefined
+        ? 'This build is already in use'
+        : undefined
     setFieldErrors({
       tokenName: tokenNameError,
       tokenValue: tokenValueError,
@@ -195,18 +240,20 @@ const StartRunForm = () => {
         setTokenState((state) => ({ ...state, tokens }))
       }
       await runStart(formData.buildId, {
-        end_status: "success",
+        end_status: 'success',
         preset: formData.preset,
         name: formData.name || `Run ${runs.length}`,
-        build_name: buildNames.find((b) => b.id === formData.buildId)?.name as string,
+        build_name: buildNames.find((b) => b.id === formData.buildId)
+          ?.name as string,
         tg_bot_token: formData.tokenName,
       })
     } else {
       await runStart(formData.buildId, {
-        end_status: "success",
+        end_status: 'success',
         preset: formData.preset,
         name: formData.name || `Run ${runs.length}`,
-        build_name: buildNames.find((b) => b.id === formData.buildId)?.name as string,
+        build_name: buildNames.find((b) => b.id === formData.buildId)
+          ?.name as string,
       })
     }
   }
@@ -215,9 +262,28 @@ const StartRunForm = () => {
     setFormData((prev) => ({ ...prev, name: `Run ${runs.length}` }))
   }, [runs])
 
+  useEffect(() => {
+    return () => {
+      setStartRunFormState({
+        formData,
+        tokenState,
+        fieldErrors,
+      })
+    }
+  }, [formData, tokenState, fieldErrors, setStartRunFormState])
+
+  useEffect(() => {
+    if (formState) {
+      setFormData(formState?.formData)
+      setFieldErrors(formState?.fieldErrors)
+      setTokenState(formState?.tokenState)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <div className='h-full w-full flex flex-col gap-3'>
-      <div className='flex-grow flex flex-col'>
+    <div className='flex h-full w-full flex-col gap-3'>
+      <div className='flex flex-grow flex-col'>
         {/* NAME FIELD */}
         <FormControl
           label='Name'
@@ -247,6 +313,7 @@ const StartRunForm = () => {
               onChange={handleBuildChange}
               radius='sm'
               size='sm'
+              selectedKeys={formData.buildId ? [formData.buildId] : []}
             >
               {buildNames.map((item) => (
                 <SelectItem key={item.id} textValue={item.name}>
@@ -264,13 +331,13 @@ const StartRunForm = () => {
             <Select
               aria-label='Preset'
               labelPlacement='outside'
-              defaultSelectedKeys={["None"]}
+              defaultSelectedKeys={['None']}
               placeholder='No preset'
               onChange={handlePresetChange}
               radius='sm'
               size='sm'
             >
-              {[{ key: "None", label: "No preset" }].map((item) => (
+              {[{ key: 'None', label: 'No preset' }].map((item) => (
                 <SelectItem key={item.key}>{item.label}</SelectItem>
               ))}
             </Select>
@@ -293,7 +360,7 @@ const StartRunForm = () => {
                   radius='sm'
                   size='sm'
                 >
-                  {["New token", ...tokenState.tokens].map((item) => (
+                  {['New token', ...tokenState.tokens].map((item) => (
                     <SelectItem key={item}>{item}</SelectItem>
                   ))}
                 </Select>
@@ -328,7 +395,7 @@ const StartRunForm = () => {
                   input={
                     <>
                       <Input
-                        type={hidePassword ? "password" : "text"}
+                        type={hidePassword ? 'password' : 'text'}
                         placeholder='Enter Telegram token value'
                         value={formData.tokenValue}
                         onChange={handleTokenValueChange}
@@ -338,13 +405,19 @@ const StartRunForm = () => {
                         classNames={inputClassNames}
                       />
                       <button
-                        className='h-6 w-6 active:scale-95 hover:scale-105'
+                        className='h-6 w-6 hover:scale-105 active:scale-95'
                         onClick={() => setHidePassword((prev) => !prev)}
                       >
                         {hidePassword ? (
-                          <Eye className='text-base stroke-input-border' size={20} />
+                          <Eye
+                            className='stroke-input-border text-base'
+                            size={20}
+                          />
                         ) : (
-                          <EyeOff className='text-base stroke-input-border' size={20} />
+                          <EyeOff
+                            className='stroke-input-border text-base'
+                            size={20}
+                          />
                         )}
                       </button>
                     </>
@@ -359,12 +432,12 @@ const StartRunForm = () => {
         <Button
           onClick={handleStartRun}
           isDisabled={
-            startingRunId !== null ||
+            runStarting ||
             !!fieldErrors.build ||
             !!fieldErrors.tokenName ||
             !!fieldErrors.tokenValue
           }
-          className='font-semibold bg-foreground text-background rounded-lg w-full'
+          className='w-full rounded-lg bg-foreground font-semibold text-background'
         >
           Run
         </Button>

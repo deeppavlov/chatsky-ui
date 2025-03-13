@@ -1,5 +1,5 @@
-import { Divider } from "@nextui-org/react"
-import cn from "classnames"
+import { Divider } from '@nextui-org/react'
+import cn from 'classnames'
 
 interface IProps {
   label: string
@@ -8,28 +8,35 @@ interface IProps {
   errorMessage?: string
 }
 
-const FormString: React.FC<IProps> = ({ label, input, isError, errorMessage }) => {
+const FormString: React.FC<IProps> = ({
+  label,
+  input,
+  isError,
+  errorMessage,
+}) => {
   return (
     <div className='flex flex-col'>
       <div className='flex'>
-        <div className='flex flex-col min-w-[100px]'>
-          <div className='h-12 flex items-center mr-4'>
+        <div className='flex min-w-[100px] flex-col'>
+          <div className='mr-4 flex h-12 items-center'>
             <span
               className={cn(
-                "text-sm font-semibold whitespace-nowrap",
-                isError ? "text-danger" : "text-base"
+                'whitespace-nowrap text-sm font-semibold',
+                isError ? 'text-danger' : 'text-text-secondary',
               )}
             >
               {label}
             </span>
           </div>
         </div>
-        <div className='flex flex-col basis-full w-0'>
-          <div className='h-12 flex items-center justify-end'>{input}</div>
+        <div className='flex w-0 basis-full flex-col'>
+          <div className='flex h-12 items-center justify-end'>{input}</div>
         </div>
       </div>
-      <Divider className={cn(isError && "bg-danger")} />
-      {isError && <div className='text-danger text-xs mt-1'>{errorMessage}</div>}
+      <Divider className={cn(isError && 'bg-danger')} />
+      {isError && (
+        <div className='mt-1 text-xs text-danger'>{errorMessage}</div>
+      )}
     </div>
   )
 }

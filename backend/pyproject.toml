@@ -9,6 +9,8 @@ authors = [
     "Rami Mashkouk <rami.n.mashkouk@gmail.com>",
 ]
 readme = "README.md"
+homepage = "https://github.com/deeppavlov/chatsky-ui"
+keywords = ["chatbots"]
 packages = [{include = "chatsky_ui"}]
 
 [tool.poetry.dependencies]
