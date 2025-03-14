@@ -1,7 +1,7 @@
 import { Button, Input, ModalProps, Tab, Tabs } from '@nextui-org/react'
 // import ModalComponent from "../../components/ModalComponent";
 import { useReactFlow } from '@xyflow/react'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
@@ -47,6 +47,15 @@ const ResponseModal = ({
     setSelected(key)
   }
 
+  const [responseStor, setResponseStor] = useState({
+    [response.type]: response,
+  })
+
+  useEffect(() => {
+    const key = currentResponse.type
+    setResponseStor({ ...responseStor, [key]: currentResponse })
+  }, [currentResponse])
+
   const [errors, setErrors] = useState<{
     name?: { isInvalid: boolean; errorMessage: string }
   }>({})
@@ -83,11 +92,16 @@ const ResponseModal = ({
         <PythonResponse
           response={currentResponse}
           setData={setCurrentResponse}
+          responseStor={responseStor}
         />
       ),
       custom: <div>Custom</div>,
       text: (
-        <TextResponse response={currentResponse} setData={setCurrentResponse} />
+        <TextResponse
+          response={currentResponse}
+          setData={setCurrentResponse}
+          responseStor={responseStor}
+        />
       ),
       basic: <div>Basic</div>,
     }),

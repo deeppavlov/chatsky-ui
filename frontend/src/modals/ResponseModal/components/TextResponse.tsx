@@ -5,22 +5,26 @@ import { responseType } from '../../../types/ResponseTypes'
 const TextResponse = ({
   response,
   setData,
+  responseStor,
 }: {
   response: responseType
   setData: React.Dispatch<React.SetStateAction<responseType>>
+  responseStor: any
 }) => {
   useEffect(() => {
     if (!response.data[0].text) {
-      setData({
-        ...response,
-        type: 'text',
-        data: [
-          {
-            priority: 1,
-            text: '',
-          },
-        ],
-      })
+      responseStor.hasOwnProperty('text')
+        ? setData(responseStor['text'])
+        : setData({
+            ...response,
+            type: 'text',
+            data: [
+              {
+                priority: 1,
+                text: '',
+              },
+            ],
+          })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

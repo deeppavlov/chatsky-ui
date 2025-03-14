@@ -19,7 +19,6 @@ import Condition from './conditions/Condition'
 import Response from './responses/Response'
 
 const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { openPopUp } = useContext(PopUpContext)
 
   const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)

@@ -8,12 +8,10 @@ import { Button, Tab, Tabs } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
-import _ from 'lodash'
 import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
-import { NotificationsContext } from '../../contexts/notificationsContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
 import {
@@ -40,7 +38,7 @@ import UsingLLMConditionSection from './components/UsingLLMCondition'
 export type ConditionModalContentType = {
   condition: conditionType
   setData: React.Dispatch<React.SetStateAction<conditionType>>
-  ref?: any
+  ref?: { state: conditionType; setState: (data: conditionType) => void }
   error?: {
     group: boolean
     slot: boolean
@@ -93,7 +91,6 @@ const ConditionModal = ({
 }: ConditionModalProps) => {
   const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
-  const { notification: n } = useContext(NotificationsContext)
   const { quietSaveFlows } = useContext(flowContext)
   const [selected, setSelected] = useState<conditionTypeType>(
     condition?.type ?? 'python',

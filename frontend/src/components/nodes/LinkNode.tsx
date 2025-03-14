@@ -47,8 +47,6 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   )
   const { notification: n } = useContext(NotificationsContext)
 
-  const flow = flows.find((flow: FlowType) => flow.name === flowId)
-
   /**
    * This useEffect checks if link configured
    */

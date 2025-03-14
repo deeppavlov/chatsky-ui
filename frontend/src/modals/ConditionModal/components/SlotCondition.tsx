@@ -10,7 +10,10 @@ import DefTable from '../../../UI/Table/DefTable'
 
 export type IMyConditionModalContentType = {
   condition: conditionType
-  setData: (state: conditionType, callback?: (data: any) => void) => void
+  setData: (
+    state: conditionType,
+    callback?: (data: { group: boolean; slot: boolean }) => void,
+  ) => void
 }
 
 const SlotCondition = ({
@@ -50,7 +53,8 @@ const SlotCondition = ({
         },
       }
 
-      setData(data, (value) => setErrorValues(value))
+      setData(data)
+      setErrorValues({ group: true, slot: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
