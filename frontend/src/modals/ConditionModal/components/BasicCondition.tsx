@@ -645,7 +645,7 @@ const BasicCondition = ({
   const [state, setState] = useState(defState)
 
   useEffect(() => {
-    const { conditionGroups: conditionGroupsIgnored, ...newState } = state
+    const { conditionGroups: conditionGroupsIgnored, ...newState } = state // eslint-disable-line @typescript-eslint/no-unused-vars
     const newCondition = {
       ...condition,
       data: {
@@ -656,6 +656,7 @@ const BasicCondition = ({
     }
 
     setData(newCondition, (data) => setState({ ...state, ...data }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
   const TextConditions = isAnyOrAll(state.structure) ? (

@@ -172,13 +172,13 @@ const ConditionModal = ({
 
     const isEmpty =
       data?.structure === '' || data?.text === '' || data?.pattern === ''
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { error: _, ...res } = data as ICondition
     isEmpty ? (condition.data!.error = isEmpty) : (condition.data = res)
     arrError.push(isEmpty)
 
     if (data && data.structure === 'not') {
-      const { error: _, ...res } = condition.data!.data as ICondition
+      const { error: _, ...res } = condition.data!.data as ICondition // eslint-disable-line @typescript-eslint/no-unused-vars
 
       const isEmpty =
         data.data!.structure === '' ||
@@ -192,7 +192,7 @@ const ConditionModal = ({
 
     if (data && (data.structure === 'anyOf' || data.structure === 'allOf')) {
       const isEmptyCildren = (data.data as ICondition[]).length === 0
-      const { error: _, ...res } = data as ICondition
+      const { error: _, ...res } = data as ICondition // eslint-disable-line @typescript-eslint/no-unused-vars
 
       if (isEmptyCildren) {
         isEmptyCildren
@@ -200,10 +200,10 @@ const ConditionModal = ({
           : (condition.data = res)
         arrError.push(true)
       }
-
-      ;(data.data as ICondition[]).forEach((item: ICondition) => {
+      const dataCondition = data.data as ICondition[]
+      dataCondition.forEach((item: ICondition) => {
         if (item.structure === 'not') {
-          const { error: _, ...res } = item.data as ICondition
+          const { error: _, ...res } = item.data as ICondition // eslint-disable-line @typescript-eslint/no-unused-vars
           const isEmpty =
             item.data!.structure === '' ||
             item.data!.text === '' ||
@@ -410,8 +410,8 @@ const ConditionModal = ({
     if (!validateConditionName(is_create)) {
       setError({ isInvalid: false, errorMessage: '' })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCondition.name])
-
   const onCloseHandler = () => {
     closePopUp(id)
   }

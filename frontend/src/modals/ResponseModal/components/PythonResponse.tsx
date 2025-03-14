@@ -19,7 +19,7 @@ const PythonResponse = ({
 }: {
   response: responseType
   setData: React.Dispatch<React.SetStateAction<responseType>>
-  responseStor: any
+  responseStor: { [key: string]: responseType }
 }) => {
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
@@ -29,7 +29,7 @@ const PythonResponse = ({
 
   useEffect(() => {
     if (!response.data[0].python) {
-      responseStor.hasOwnProperty('python')
+      Object.prototype.hasOwnProperty.call(responseStor, 'python')
         ? setData({ ...responseStor['python'] })
         : setData({
             ...response,

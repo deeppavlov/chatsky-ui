@@ -22,10 +22,8 @@ const SlotCondition = ({
 }: IMyConditionModalContentType) => {
   const { groups: _groups } = useContext(flowContext)
 
-  const [groups, setGroups] = useState(_groups)
-  const [slots, setSlots] = useState<SlotType[]>(
-    groups.flatMap((group) => group.slots),
-  )
+  const [groups] = useState(_groups)
+  const [slots] = useState<SlotType[]>(groups.flatMap((group) => group.slots))
   const [selectedSlot, setSelectedSlot] = useState(
     slots.find((slot) => slot.id === condition.data.slot)?.name ?? '',
   )
@@ -81,12 +79,8 @@ const SlotCondition = ({
         changeConditionValue(slot.id)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groups, selectedSlot, slots])
-
-  const errorGroup = {
-    isInvalid: true,
-    errorMessage: 'Please select a group',
-  }
 
   const inValidGroup = selectedGroup === '' && errorValues.group
 

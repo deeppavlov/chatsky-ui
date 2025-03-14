@@ -9,11 +9,11 @@ const TextResponse = ({
 }: {
   response: responseType
   setData: React.Dispatch<React.SetStateAction<responseType>>
-  responseStor: any
+  responseStor: { [key: string]: responseType }
 }) => {
   useEffect(() => {
     if (!response.data[0].text) {
-      responseStor.hasOwnProperty('text')
+      Object.prototype.hasOwnProperty.call(responseStor, 'text')
         ? setData(responseStor['text'])
         : setData({
             ...response,

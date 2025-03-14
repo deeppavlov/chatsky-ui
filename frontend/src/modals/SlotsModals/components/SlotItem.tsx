@@ -20,8 +20,8 @@ const SlotItem = ({
   is_create_modal,
 }: SlotItemType) => {
   const [name, setName] = useState<string>(slot.name ?? '')
-  const [type, setType] = useState<'RegexpSlot' | ''>(slot.type ?? '')
-  const [method, setMethod] = useState<string>(slot.method ?? '')
+  const [type] = useState<'RegexpSlot' | ''>(slot.type ?? '')
+  const [method] = useState<string>(slot.method ?? '')
   const [value, setValue] = useState<string>(slot.value ?? '')
   const [index, setIndex] = useState<number>(slot.match_group_idx ?? 0)
 
@@ -34,6 +34,7 @@ const SlotItem = ({
       value,
       match_group_idx: index,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, type, method, value, index])
 
   return (

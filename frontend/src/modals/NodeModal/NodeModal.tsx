@@ -32,8 +32,7 @@ const NodeModal = ({
     DefaultNodeType,
     Edge
   >()
-  const { quietSaveFlows, validateNodeDeletion, flows } =
-    useContext(flowContext)
+  const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext)
   const { takeSnapshot } = useContext(undoRedoContext)
 
   const [errors, setErrors] = React.useState<{
@@ -82,6 +81,7 @@ const NodeModal = ({
 
       setErrors({ ...errors, name: { isInvalid: false, errorMessage: '' } })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodeDataState, setNodeDataState],
   )
 

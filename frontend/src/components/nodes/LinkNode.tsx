@@ -25,7 +25,6 @@ import '@xyflow/react/dist/style.css'
 import classNames from 'classnames'
 import { AlertTriangle, Link2 } from 'lucide-react'
 import { memo, useContext, useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import TrashIcon from '../../icons/TrashIcon'
@@ -34,7 +33,6 @@ import { FlowType } from '../../types/FlowTypes'
 import { AppNode, LinkNodeDataType } from '../../types/NodeTypes'
 
 const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
-  const { flowId } = useParams()
   const { updateNodeData } = useReactFlow<AppNode, Edge>()
   const { onOpen, onClose, isOpen } = useDisclosure()
   const { flows, deleteNode, updateFlow } = useContext(flowContext)

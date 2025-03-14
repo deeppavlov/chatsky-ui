@@ -18,10 +18,6 @@ interface Link {
   name: string
 }
 
-interface ArrLink {
-  lincks: Link[]
-}
-
 const getContent = (arrLink: Link[]): string => {
   if (arrLink.length >= 2) {
     return 'This flow is linked to other flows.'

@@ -54,6 +54,7 @@ const ResponseModal = ({
   useEffect(() => {
     const key = currentResponse.type
     setResponseStor({ ...responseStor, [key]: currentResponse })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentResponse])
 
   const [errors, setErrors] = useState<{
@@ -105,6 +106,7 @@ const ResponseModal = ({
       ),
       basic: <div>Basic</div>,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentResponse],
   )
 
