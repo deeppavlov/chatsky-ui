@@ -265,6 +265,7 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="refactor/http_interface_relocate",
         )
     finally:
         os.chdir(original_dir)
