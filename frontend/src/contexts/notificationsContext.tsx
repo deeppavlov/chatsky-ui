@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { createContext } from 'react'
 import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
 import useLocalStorage from '../hooks/useLocalStorage'
 
 export type notificationTypeType =
@@ -25,6 +26,7 @@ export type notificationType = {
   timestamp: number
   stack: number
   isRead: boolean
+  link?: { text: string; url: string }
 }
 
 export type createNotificationType = {
@@ -34,6 +36,7 @@ export type createNotificationType = {
   duration?: number
   timestamp?: number
   stack?: number
+  link?: { text: string; url: string }
 }
 
 type notificationsContextType = {
@@ -142,7 +145,10 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     duration = 5000,
     timestamp = Date.now(),
     stack = 1,
+    link,
   }: createNotificationType) => {
+    console.log(link)
+
     const color = notificationTypeColor(type)
     const notification = {
       title,
@@ -152,6 +158,7 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       stack,
       duration,
       isRead: false,
+      link,
     }
     setNotifications((prevNotifications) => [
       ...prevNotifications,
@@ -185,6 +192,22 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
                   {notification.message}
                 </p>
               )}
+              {notification.link &&
+                (typeof notification.link === 'object' &&
+                'url' in notification.link ? (
+                  <Link
+                    to={{
+                      pathname: location.pathname,
+                      search: notification.link.url,
+                    }}
+                  >
+                    <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                      See logs for this
+                    </span>
+                  </Link>
+                ) : (
+                  notification.link
+                ))}
             </div>
           </div>
         ),

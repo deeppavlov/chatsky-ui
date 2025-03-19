@@ -1,19 +1,11 @@
-import { delay } from '@/utils'
-import { AxiosError } from 'axios'
-import { createContext, useContext, useEffect, useState } from 'react'
-import {
-  buildApiStatusType,
-  get_runs,
-  localRunType,
-  run_start,
-  run_status,
-  run_stop,
-  run_stop_all,
-  runMinifyApiType,
-  runPresetType,
-} from '../api/bot'
-import { buildContext } from './buildContext'
+import { delay } from '@/utils';
+import { AxiosError } from 'axios';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { buildApiStatusType, get_runs, localRunType, run_start, run_status, run_stop, run_stop_all, runMinifyApiType, runPresetType } from '../api/bot';
+import { buildContext } from './buildContext';
 import { NotificationsContext } from './notificationsContext'
+
 
 export type runApiType = {
   id: number
@@ -160,6 +152,10 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
             title: 'Run failed!',
             message: 'Unknown run error. Please check your script.',
             type: 'error',
+            link: {
+              text: 'Logs',
+              url: `?page=inspect&run_id=${started_run.id}&type=run`,
+            },
           })
           break
 

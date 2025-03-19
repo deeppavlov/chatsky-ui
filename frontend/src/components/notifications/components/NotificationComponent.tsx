@@ -152,6 +152,20 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
               {new Date(notification.timestamp).toLocaleString()}
             </p>
           )}
+          {notification.link && (
+            typeof notification.link === 'object' && 'url' in notification.link ? (
+              <a
+                href={notification.link.url}
+                className='mt-1 block text-xs text-blue-500 hover:underline'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                {notification.link.text}
+              </a>
+            ) : (
+              notification.link
+            )
+          )}
         </div>
       </div>
     </div>

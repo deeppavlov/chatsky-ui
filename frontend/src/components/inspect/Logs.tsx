@@ -96,7 +96,7 @@ const Logs = ({ item }: IProps) => {
               </span>
               {item.preset.end_status}
             </p>
-            <p>
+            {/* <p>
               <span className='mr-1 font-medium text-neutral-500'>
                 Logs file path:
               </span>
@@ -107,7 +107,7 @@ const Logs = ({ item }: IProps) => {
               >
                 {item.log_path}
               </a>
-            </p>
+            </p> */}
           </div>
         </div>
       ) : (
@@ -147,7 +147,7 @@ const Logs = ({ item }: IProps) => {
               </span>
               {item.timestamp}
             </p>
-            <p>
+            {/* <p>
               <span className='mr-1 font-medium text-neutral-500'>
                 Logs file path:
               </span>
@@ -158,7 +158,7 @@ const Logs = ({ item }: IProps) => {
               >
                 {item.log_path}
               </a>
-            </p>
+            </p> */}
           </div>
         </div>
       )}
