@@ -160,6 +160,8 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       isRead: false,
       link,
     }
+
+    console.log(notification)
     setNotifications((prevNotifications) => [
       ...prevNotifications,
       notification,
@@ -192,22 +194,18 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
                   {notification.message}
                 </p>
               )}
-              {notification.link &&
-                (typeof notification.link === 'object' &&
-                'url' in notification.link ? (
-                  <Link
-                    to={{
-                      pathname: location.pathname,
-                      search: notification.link.url,
-                    }}
-                  >
-                    <span className='cursor-pointer text-sm font-semibold text-condition-default'>
-                      See logs for this
-                    </span>
-                  </Link>
-                ) : (
-                  notification.link
-                ))}
+              {notification.link && (
+                <Link
+                  to={{
+                    pathname: location.pathname,
+                    search: notification.link.url,
+                  }}
+                >
+                  <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                    {notification.link.text} &rarr;
+                  </span>
+                </Link>
+              )}
             </div>
           </div>
         ),

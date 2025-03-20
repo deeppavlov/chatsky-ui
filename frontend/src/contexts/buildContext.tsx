@@ -129,7 +129,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         message: 'Unknown build error. Please check your script.',
         type: 'error',
         link: {
-          text: 'Logs',
+          text: 'See logs for this build',
           url: `?page=inspect&build_id=${build_id}&type=build`,
         },
       })

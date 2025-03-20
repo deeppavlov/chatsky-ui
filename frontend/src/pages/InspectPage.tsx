@@ -1,5 +1,6 @@
 import Chat from '@/components/chat/Chat'
 import Logs from '@/components/inspect/Logs'
+import BackIcon from '@/icons/BackIcon'
 import CheckIcon from '@/icons/CheckIcon'
 import ScrolledContainer from '@/UI/ScrolledContainer/ScrolledContainer'
 import { Divider, Spinner } from '@nextui-org/react'
@@ -14,7 +15,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { localBuildType, localRunType } from '../api/bot'
 import { buildContext } from '../contexts/buildContext'
 import { runContext } from '../contexts/runContext'
@@ -29,6 +30,8 @@ const Inspect = memo(() => {
   >(null)
 
   const currItemRef = useRef<HTMLButtonElement>(null)
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (searchParams.get('type') === 'run') {
@@ -45,8 +48,6 @@ const Inspect = memo(() => {
     } else {
       setCurrentItem(builds.at(0) ?? null)
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [builds, runs, searchParams])
 
   useLayoutEffect(() => {
@@ -60,7 +61,16 @@ const Inspect = memo(() => {
   return (
     <div className='absolute grid h-screen w-screen grid-cols-6 gap-6 bg-background pb-12 pl-8 pr-0 pt-14 transition-transform duration-300'>
       <div className='flex flex-col gap-4 pt-12'>
-        <h1 className='text-[24px] font-semibold leading-9'>Logs</h1>
+        <div
+          onClick={() => navigate(-1)}
+          className='flex items-center gap-[24px]'
+        >
+          <BackIcon
+            className='cursor-pointer rounded-lg border-border bg-bg-secondary bg-foreground'
+            stroke='var(--background)'
+          />
+          <h1 className='text-[24px] font-semibold leading-9'>Logs</h1>
+        </div>
 
         <ScrolledContainer className='h-0 flex-grow'>
           <Accordion.Root
