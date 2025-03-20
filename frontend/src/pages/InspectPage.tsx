@@ -3,7 +3,7 @@ import Logs from '@/components/inspect/Logs'
 import BackIcon from '@/icons/BackIcon'
 import CheckIcon from '@/icons/CheckIcon'
 import ScrolledContainer from '@/UI/ScrolledContainer/ScrolledContainer'
-import { Divider, Spinner } from '@nextui-org/react'
+import { Button, Divider, Spinner } from '@nextui-org/react'
 import * as Accordion from '@radix-ui/react-accordion'
 import cn from 'classnames'
 import { ChevronRightIcon, X } from 'lucide-react'
@@ -61,14 +61,14 @@ const Inspect = memo(() => {
   return (
     <div className='absolute grid h-screen w-screen grid-cols-6 gap-6 bg-background pb-12 pl-8 pr-0 pt-14 transition-transform duration-300'>
       <div className='flex flex-col gap-4 pt-12'>
-        <div
-          onClick={() => navigate(-1)}
-          className='flex items-center gap-[24px]'
-        >
-          <BackIcon
-            className='cursor-pointer rounded-lg border-border bg-bg-secondary bg-foreground'
-            stroke='var(--background)'
-          />
+        <div className='flex items-center gap-[24px]'>
+          <Button onClick={() => navigate(-1)} className='bg-transparent'>
+            <BackIcon
+              className='cursor-pointer rounded-lg border-border bg-bg-secondary bg-foreground'
+              stroke='var(--background)'
+            />
+          </Button>
+
           <h1 className='text-[24px] font-semibold leading-9'>Logs</h1>
         </div>
 
