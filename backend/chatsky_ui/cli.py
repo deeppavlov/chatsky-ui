@@ -13,6 +13,7 @@ Helper Functions:
     _execute_command: Asynchronously executes a shell command.
     _execute_command_file: Reads a command from a JSON file and executes it.
 """
+
 import asyncio
 import json
 import os
@@ -265,7 +266,6 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="refactor/http_interface_relocate",
         )
     finally:
         os.chdir(original_dir)
