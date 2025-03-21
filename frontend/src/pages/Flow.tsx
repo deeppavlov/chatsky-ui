@@ -290,10 +290,13 @@ export default function Flow() {
         const defaltNode = nodes.filter((node) => node.type === 'default_node')
 
         const arrResponse = defaltNode
-          .filter((node): node is AppNode & { data: DefaultNodeDataType } => node.type === 'default_node')
+          .filter(
+            (node): node is AppNode & { data: DefaultNodeDataType } =>
+              node.type === 'default_node',
+          )
           .map((node) => node.data.response.name)
 
-        const iterGenName = (count: number = 1) => {
+        const iterGenName = (count: number = 1): string => {
           const newName = `${NODES[type].response.name}${count}`
           const isUnique = !arrResponse.includes(newName)
           if (isUnique) {
