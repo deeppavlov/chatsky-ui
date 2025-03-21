@@ -34,7 +34,7 @@ import { undoRedoContext } from '../contexts/undoRedoContext'
 import { workspaceContext } from '../contexts/workspaceContext'
 import '../index.css'
 import { FlowType } from '../types/FlowTypes'
-import { AppNode, NodesTypes } from '../types/NodeTypes'
+import { AppNode, DefaultNodeDataType, NodesTypes } from '../types/NodeTypes'
 import { responseType } from '../types/ResponseTypes'
 import { Preloader } from '../UI/Preloader/Preloader'
 import Fallback from './Fallback'
@@ -285,7 +285,23 @@ export default function Flow() {
         START_FALLBACK_FLAGS.push('fallback')
       }
       let newNode = {} as AppNode
+
       if (type === 'default_node') {
+        const defaltNode = nodes.filter((node) => node.type === 'default_node')
+
+        const arrResponse = defaltNode
+          .filter((node): node is AppNode & { data: DefaultNodeDataType } => node.type === 'default_node')
+          .map((node) => node.data.response.name)
+
+        const iterGenName = (count: number = 1) => {
+          const newName = `${NODES[type].response.name}${count}`
+          const isUnique = !arrResponse.includes(newName)
+          if (isUnique) {
+            return newName
+          }
+          return iterGenName(count + 1)
+        }
+
         newNode = {
           id: newId,
           type,
@@ -301,7 +317,10 @@ export default function Flow() {
             conditions: NODES[type].conditions,
             global_conditions: [],
             local_conditions: [],
-            response: NODES[type].response as responseType,
+            response: {
+              ...NODES[type].response,
+              name: iterGenName(),
+            } as responseType,
           },
         }
       }

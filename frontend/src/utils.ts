@@ -52,10 +52,20 @@ export const parseSearchParams = (
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
 }
 
-export const generateNewConditionBase = (): conditionType => {
+export const generateNewConditionBase = (
+  conditions: conditionType[],
+): conditionType => {
+  const regex = /^NewCnd\d/
+  const arrName = conditions.map((condition) => condition.name)
+
+  const lastItem = arrName.filter((name) => regex.test(name)).at(-1)
+  const lastNumber = lastItem ? parseInt(lastItem.replace(/\D/g, '')) : 0
+
+  const newName = `NewCnd${lastNumber + 1}`
+
   return {
     id: 'condition_' + v4(),
-    name: 'NewCnd',
+    name: arrName.includes('NewCnd') ? newName : 'NewCnd',
     type: 'python',
     data: {
       priority: 1,

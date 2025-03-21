@@ -83,11 +83,14 @@ const ConditionModal = ({
   }
 
   const [currentCondition, setCurrentCondition] = useState(
-    is_create || !condition ? generateNewConditionBase() : condition,
+    is_create || !condition
+      ? generateNewConditionBase(data.conditions)
+      : condition,
   )
 
   const validateConditionName = (is_create: boolean) => {
     const nodes = getNodes() as AppNode[]
+
     if (!is_create) {
       const is_name_valid = !nodes.some(
         (node: AppNode) =>
