@@ -1,5 +1,3 @@
-import * as s from 'cypress'
-
 const flow1NodeResponses = [
   { title: 'testFlow1_node_1_response', response: 'starting node response' },
   {
