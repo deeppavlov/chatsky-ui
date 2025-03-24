@@ -85,6 +85,7 @@
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@types/bun": "latest",
+    "@types/cypress": "^1.1.6",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.0",
     "@types/node": "^22.5.5",
@@ -95,6 +96,7 @@
     "@typescript-eslint/parser": "^7.0.2",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
+    "cypress": "^14.2.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-react-hooks": "^4.6.0",
