@@ -4,7 +4,7 @@ Default node represents the state of the dialogue at the moment - the current bo
 
 You can see the default node on the image (_Coming soon_). The node name is placed at the top and is created only for your convenience. The responsе is located below, and all user replies - conditions - are located below it. 
 
-![Picture20](../../assets/pic30.png)
+![Picture30](../../../assets/pic30.png)
 
 ## Response
 
@@ -12,7 +12,7 @@ During the response configuration process, you enter the name of the response an
 
 ### Prompt
 
-![Picture37](../../assets/pic37.png)
+![Picture37](../../../assets/pic37.png)
 
 You can configure the response using an LLM prompt. This way, the bot's response will be unique every time and able to repeat the sentiment you need for the dialogue.
 
@@ -26,7 +26,7 @@ You can also test the prompt. To do this, click the ‘Test prompt’ button and
 
 ### Python
 
-![Picture38](../../assets/pic38.png)
+![Picture38](../../../assets/pic38.png)
 
 Python code is one of the most versatile ways to create a bot response, but it requires the ability to work with code. 
 
@@ -39,7 +39,7 @@ You can also highlight individual code snippets and save them as components. The
 
 ### Quote
 
-![Picture39](../../assets/pic39.png)
+![Picture39](../../../assets/pic39.png)
 
 This is the simplest, but also the least versatile way to create a reponse. Just write the name of the response and a quote that the bot will send to the user in every dialogue cycle.
 
@@ -51,7 +51,7 @@ Conditions can be configured in a number of ways:
 
 ### Prompt
 
-![Picture31](../../assets/pic31.png)
+![Picture31](../../../assets/pic31.png)
 
 Similarly to responses, you can describe a condition with a prompt using an LLM.
 
@@ -66,7 +66,7 @@ You can also test your prompt before saving the condition. Click on the 'Test pr
 
 ### Basic
 
-![Picture36](../../assets/pic36.png)
+![Picture36](../../../assets/pic36.png)
 
 Basic conditions are designed for beginners and include only the simplest ways of configuring a condition. Condition title in this case is purely optional, however it helps distinguish the conditions you have created in the long run.
 
@@ -81,7 +81,7 @@ There are six structures of basic conditions:
 
 ### Slots
 
-![Picture32](../../assets/pic32.png)
+![Picture32](../../../assets/pic32.png)
 
 This condition type can be satisfied if user sends a message that contains the chosen slot.
 
@@ -89,7 +89,7 @@ To use slot condition, you need to first create a Slots node. Then, to configure
 
 ### Button
 
-![Picture33](../../assets/pic33.png)
+![Picture33](../../../assets/pic33.png)
 
 Button condition can only be used in Telegram messenger interface. It replaces entering a message manually with a set of buttons which can be helpful for bots with linear structure.
 
@@ -103,7 +103,7 @@ There are three types of button conditions:
 
 ### Python
 
-![Picture34](../../assets/pic34.png)
+![Picture34](../../../assets/pic34.png)
 
 Similar to python responses. During the setup process, you need to set:
 
@@ -114,7 +114,7 @@ You can also highlight individual code snippets and save them as components. The
 
 ### Intents
 
-![Picture35](../../assets/pic35.png)
+![Picture35](../../../assets/pic35.png)
 
 Intents condition allows you to select any number of intents which can be found in user’s message. To use this type of condition, you first need to upload intents to the library.
 
@@ -126,13 +126,13 @@ Press the settings button next to the node name to configure your nodes even fur
 
 In the settings window you can rename your node, enter its response window, set conditions’ priorities and even rearrange conditions list by dragging them up and down.
 
-![Picture40](../../assets/pic40.png)
+![Picture40](../../../assets/pic40.png)
 
 ## Transitions
 
 Every default node has to be connected to another one to work. Transitions work as such: a condition triggered in one node leads to a response in another node. To connect nodes, select a condition in the first one that has to be triggered, find the orange circle in the right hand side and drag it to the blue circle in the second node’s response.
 
-![Picture41](../../assets/pic41.png)
+![Picture41](../../../assets/pic41.png)
 
 Note that a condition has to be linked to a single response, however different conditions can be linked to a single response.
 
@@ -147,7 +147,7 @@ Here is the list of all transition functions:
 5. To start - transitions to the start node
 6. To fallback - transitions to the fallback node
 
-![Picture42](../../assets/pic42.png)
+![Picture42](../../../assets/pic42.png)
 
 To apply a transition function, instead of dragging an orange circle next to a condition, click on it and a small window with all the functions will appear.
 
@@ -155,4 +155,4 @@ In order to make some of the functions work properly, you should check your grap
 
 You can access the list view by pressing the list button in the top bar of the Edit page. This view shows not only simple transitions, but also every function’s destination. If you want to rearrange some of your nodes, simply drag them up or down and drop where you prefer. All the transition functions will adjust automatically.
 
-![Picture13](../../assets/pic43.png)
+![Picture13](../../../assets/pic43.png)
