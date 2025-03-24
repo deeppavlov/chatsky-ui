@@ -121,7 +121,7 @@ const ResponseModal = ({
 
     if (
       selected === 'python' &&
-      currentResponse.name.replace(/[A-Za-z]/g, '') !== ''
+      currentResponse.name.replace(/[A-Za-z_]/g, '') !== ''
     ) {
       setErrors({
         ...errors,
@@ -226,7 +226,7 @@ const ResponseModal = ({
             onChange={(e) => {
               setCurrentResponse({
                 ...currentResponse,
-                name: e.target.value.replace(/\s/g, ''),
+                name: e.target.value.replaceAll(' ', '_'),
               })
               setErrors((prevErrors) => ({
                 ...prevErrors,

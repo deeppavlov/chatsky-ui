@@ -418,7 +418,7 @@ const ConditionModal = ({
 
   const isValidCurrentCondition = () => {
     if (currentCondition.type === 'python') {
-      return currentCondition.name.replace(/[A-Za-z]/g, '') === ''
+      return currentCondition.name.replace(/[A-Za-z_]/g, '') === ''
     }
     if (currentCondition.type === 'basic') {
       const newState = validateConditionBasic(currentCondition)
@@ -458,7 +458,7 @@ const ConditionModal = ({
         setError({ isInvalid: true, errorMessage: 'Name must be unique' })
       }
       if (currentCondition.type === 'python') {
-        const text = currentCondition.name.replace(/[A-Za-z]/g, '')
+        const text = currentCondition.name.replace(/[A-Za-z_]/g, '')
         text.trim() === ''
           ? null
           : setError({
@@ -567,7 +567,7 @@ const ConditionModal = ({
             onChange={(e) =>
               setCurrentCondition({
                 ...currentCondition,
-                name: e.target.value.replace(/\s/g, ''),
+                name: e.target.value.replaceAll(' ', '_'),
               })
             }
             {...errorObject}
