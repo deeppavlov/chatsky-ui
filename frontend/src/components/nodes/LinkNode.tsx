@@ -170,6 +170,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
               left: '-0.335rem',
               zIndex: 10,
             }}
+            data-testid={`${data.id}-input-handle`}
           />
           <Popover radius='sm'>
             <PopoverTrigger>
@@ -219,6 +220,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
         size='xl'
         isOpen={isOpen}
         onClose={onClose}
+        data-testid='linkNodeModal'
       >
         <ModalContent>
           <ModalHeader>
@@ -269,6 +271,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                   </TableCell>
                   <TableCell className='w-1/2'>
                     <Select
+                      data-testid='linkNode-flowSelect'
                       classNames={{
                         trigger: 'min-h-8 h-8 py-0',
                         value: 'text-sm',
@@ -294,6 +297,7 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                   </TableCell>
                   <TableCell className='w-1/2'>
                     <Select
+                      data-testid='linkNode-nodeSelect'
                       classNames={{
                         trigger: 'min-h-8 h-8 py-0',
                         value: 'text-sm',

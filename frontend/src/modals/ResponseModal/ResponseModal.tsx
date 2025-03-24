@@ -148,6 +148,7 @@ const ResponseModal = ({
       size={size}
       isOpen={isOpen}
       onClose={onClose}
+      data-testid='response-modal'
     >
       <ModalHeader className='flex items-center gap-2'>
         Edit response

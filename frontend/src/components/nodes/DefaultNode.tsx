@@ -73,6 +73,7 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             {!data.id.includes('LOCAL_NODE') &&
               !data.id.includes('GLOBAL_NODE') && (
                 <Handle
+                  data-testid={`${data.id}-input-handle`}
                   isConnectableEnd
                   position={Position.Left}
                   type='target'
@@ -113,19 +114,20 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
           </div>
         </div>
         <div className='flex w-full cursor-default flex-col items-center justify-center gap-2 p-2.5'>
-          <div
+          <button
             className='mb-1 flex w-full cursor-pointer items-center justify-start rounded-lg border border-border px-2 py-2 transition-colors hover:border-node-selected'
             onClick={onResponseOpen}
+            data-testid='response-edit-btn'
           >
             <Response data={data} />
-          </div>
+          </button>
           <div className='flex w-full flex-col gap-2'>
             {data.conditions?.map((condition) => (
               <Condition key={condition.id} data={data} condition={condition} />
             ))}
           </div>
           <button
-            data-testid={`${data.name.toLowerCase().replace(' ', '')}-add-condition-btn`}
+            data-testid='add-condition-btn'
             onClick={onConditionModalOpen}
             className='add-cnd-btn'
           >

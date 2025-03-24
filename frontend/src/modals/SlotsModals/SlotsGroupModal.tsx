@@ -152,7 +152,13 @@ const SlotsGroupModal = ({
   }, [isSubGroup])
 
   return (
-    <Modal id={id} isOpen={true} onClose={onCloseHandler} size='3xl'>
+    <Modal
+      id={id}
+      isOpen={true}
+      onClose={onCloseHandler}
+      size='3xl'
+      data-testid='slots-group-modal'
+    >
       <ModalHeader className='flex items-center justify-start gap-2 text-lg font-semibold'>
         <div className='flex items-center gap-2'>
           <SlotsConditionIcon />
@@ -162,6 +168,7 @@ const SlotsGroupModal = ({
       <ModalBody>
         <div>
           <DefInput
+            data-testid='slots-group-name'
             label='Group name'
             placeholder='Enter name of this group...'
             value={currentGroup.name}

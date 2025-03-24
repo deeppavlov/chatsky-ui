@@ -48,6 +48,7 @@ const SlotItem = ({
             className='bg-transparent focus:outline-none focus:placeholder:text-transparent'
             type='text'
             placeholder='New slot'
+            data-testid='slot-name'
           />
         </div>
         {!is_create_modal && (
@@ -77,6 +78,7 @@ const SlotItem = ({
           placeholder='Select slot method'
         /> */}
         <DefTextarea
+          data-testid='slot-value'
           value={value}
           onValueChange={setValue}
           className='col-span-2'
