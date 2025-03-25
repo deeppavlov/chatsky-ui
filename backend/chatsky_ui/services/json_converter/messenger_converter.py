@@ -30,7 +30,7 @@ class MessengerConverter(BaseConverter):
         """
         if self.messenger.web is not None:
             return {
-                "external:chatsky_ui.services.http_interface.HTTPMessengerInterface": {
+                "external:chatsky_ui.clients.http_interface.HTTPMessengerInterface": {
                     "port": self.messenger.chatsky_port
                 }
             }
