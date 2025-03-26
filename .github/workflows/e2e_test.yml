@@ -109,7 +109,7 @@ jobs:
 
       - name: setup project poetry and install dependencies
         run: |
-          poetry add $(CURDIR)/backend/dist/*.whl
+          poetry add $PWD/backend/dist/*.whl
           python -m poetry install --no-interaction
         working-directory: my_project
           
@@ -123,7 +123,9 @@ jobs:
         run: npm install -g bun
 
       - name: Install frontend dependencies
-        run: bun install
+        run: |
+          bun install
+          bun run install:e2e
         working-directory: frontend
 
       - name: Cypress run
