@@ -37,7 +37,7 @@ jobs:
 
   build_backend:
     runs-on: ubuntu-latest
-    needs: build_frontend
+    # needs: build_frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -78,7 +78,7 @@ jobs:
 
   run_app:
     runs-on: ubuntu-latest
-    needs: build_backend
+    # needs: build_backend
     steps:
       - uses: actions/checkout@v4
 
@@ -101,11 +101,9 @@ jobs:
       - name: Create dist directory
         run: mkdir -p backend/dist
 
-      - name: Download backend dist
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-dist
-          path: backend/dist
+      - name: build wheel
+        run: python -m poetry build
+        working-directory: backend
 
       - name: Install dependencies
         run: |
@@ -115,7 +113,9 @@ jobs:
       - name: Run back & front
         run: |
           python -m chatsky.ui run_app &
-          sleep 10
+          for i in {1..30}; do
+            curl -sSf http://localhost:8000/app && break || sleep 1
+          done
         working-directory: my_project
 
       - name: Install bun
@@ -123,8 +123,8 @@ jobs:
 
       - name: Install frontend dependencies
         run: |
-          bun install
           bun run install:e2e
+          bun install
         working-directory: frontend
 
       - name: Cypress run
