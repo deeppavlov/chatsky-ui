@@ -101,9 +101,11 @@ jobs:
       - name: Create dist directory
         run: mkdir -p backend/dist
 
-      - name: build wheel
-        run: python -m poetry build
-        working-directory: backend
+      - name: Download backend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/dist
 
       - name: Install dependencies
         run: |
