@@ -123,12 +123,13 @@ jobs:
 
       - name: Install frontend dependencies
         run: |
-          bun run install:e2e
           bun install
         working-directory: frontend
 
       - name: Cypress run
-        run:
-          bun run cypress run
-        working-directory: frontend
-
+        uses: cypress-io/github-action@v6
+        with:
+          install-command: bun run install:e2e
+          command: bun run e2e:chrome
+          working-directory: frontend
+          browser: chrome
