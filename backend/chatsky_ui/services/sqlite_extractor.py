@@ -15,7 +15,7 @@ class SQLiteExtractor:
 
     def __init__(self):
         self._logger = None
-        self.connection = sqlite3.connect(f"{settings.database_path}")
+        self.connection = None
 
     @property
     def logger(self):
@@ -28,6 +28,8 @@ class SQLiteExtractor:
 
     async def extract_user_context(self, run_id: str, user_id: int):
         try:
+            if self.connection == None:
+                self.connection = sqlite3.connect(f"{settings.database_path}")
             ctx_id = f"{run_id}_{user_id}"
             with self.connection as conn:
                 cur = conn.cursor()
