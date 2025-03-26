@@ -107,9 +107,10 @@ jobs:
           name: backend-dist
           path: backend/dist
 
-      - name: setup project poetry and install dependencies
+      - name: Install dependencies
         run: |
-          poetry add $PWD/../backend/dist/*.whl
+          python -m poetry remove chatsky-ui || true
+          python -m poetry add $PWD/../backend/dist/*.whl
           python -m poetry install --no-interaction
         working-directory: my_project
           
