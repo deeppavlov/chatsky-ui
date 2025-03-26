@@ -112,7 +112,7 @@ jobs:
           
       - name: Run back & front
         run: |
-          python -m chatsky.ui run_app &
+          chatsky.ui run_app &
           for i in {1..30}; do
             curl -sSf http://localhost:8000/app && break || sleep 1
           done
