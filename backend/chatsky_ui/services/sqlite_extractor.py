@@ -3,6 +3,7 @@ from typing import Union
 
 from chatsky import Context
 from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
@@ -15,6 +16,7 @@ class SQLiteExtractor:
 
     def __init__(self):
         self._logger = None
+        self.engine = create_async_engine(f"{settings.database_path}", pool_pre_ping=True)
 
     @property
     def logger(self):
@@ -27,10 +29,9 @@ class SQLiteExtractor:
 
     async def extract_user_context(self, run_id: str, user_id: int):
         try:
-            database = f"{settings.database_path}"
             ctx_id = f"{run_id}_{user_id}"
-            with sqlite3.connect(database) as conn:
-                cur = conn.cursor()
+            async with self.engine.connect() as conn:
+                cur = await conn.cursor()
                 cur.execute("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
                 rows = cur.fetchall()
                 return rows
@@ -45,7 +46,7 @@ class SQLiteExtractor:
             return Context.model_validate_json(context)
         except ValidationError:
             self.logger.error(
-                "Extracted Context doesn't match the current Chatsky version's Context." "(probably it's outdated)"
+                "Extracted Context doesn't match the current Chatsky version's Context." "(it's probably outdated)"
             )
             return None
 
