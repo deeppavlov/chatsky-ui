@@ -21,7 +21,7 @@ class SQLiteExtractor:
 
     def get_sqlite_uri(self):
         separator = "///" if system() == "Windows" else "////"
-        return f"sqlite+aiosqlite:{separator}{settings.database_path}"
+        return f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
 
     @property
     def logger(self):
