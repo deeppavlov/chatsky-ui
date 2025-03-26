@@ -37,7 +37,7 @@ jobs:
 
   build_backend:
     runs-on: ubuntu-latest
-    # needs: build_frontend
+    needs: build_frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -78,7 +78,7 @@ jobs:
 
   run_app:
     runs-on: ubuntu-latest
-    # needs: build_backend
+    needs: build_backend
     steps:
       - uses: actions/checkout@v4
 
