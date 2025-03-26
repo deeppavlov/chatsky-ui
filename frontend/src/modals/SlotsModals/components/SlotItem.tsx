@@ -44,7 +44,7 @@ const SlotItem = ({
           <EditPenIcon />
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value.replaceAll(' ', '_'))}
             className='bg-transparent focus:outline-none focus:placeholder:text-transparent'
             type='text'
             placeholder='New slot'

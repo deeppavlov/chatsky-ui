@@ -3,7 +3,7 @@ import { flowContext } from '@/contexts/flowContext'
 import { Button, Switch } from '@nextui-org/react' // Можно заменить на свой UI-компонент
 import { useReactFlow } from '@xyflow/react'
 import { Plus } from 'lucide-react'
-import { useContext, useEffect, useState } from 'react'
+import React, {useContext, useEffect, useState } from 'react'
 import { v4 } from 'uuid'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import { PopUpContext } from '../../contexts/popUpContext'
@@ -54,7 +54,7 @@ const SlotsGroupModal = ({
     return (
       group ?? {
         id: id,
-        name: 'New group',
+        name: 'New_Group',
         slots: [generateNewSlot(id)],
         subgroups: [],
         subgroup_to: '',
@@ -62,6 +62,9 @@ const SlotsGroupModal = ({
       }
     )
   })
+  const [errors, setErrors] = React.useState<{
+    name?: { isInvalid: boolean; errorMessage: string }
+  }>({})
 
   useEffect(() => {
     if (group) {
@@ -92,11 +95,11 @@ const SlotsGroupModal = ({
         (slot) => slot.name && slot.group_id && slot.type && slot.value,
       )
     ) {
-      return n.add({
-        type: 'warning',
-        title: 'Warning',
-        message: 'All fields are required!',
+      setErrors({
+        ...errors,
+        name: { isInvalid: true, errorMessage: 'All fields are required!' },
       })
+      return
     } else {
       const newData = {
         ...nodeData,
@@ -165,7 +168,12 @@ const SlotsGroupModal = ({
             label='Group name'
             placeholder='Enter name of this group...'
             value={currentGroup.name}
-            onValueChange={(name) => setCurrentGroup({ ...currentGroup, name })}
+            onValueChange={(name) =>
+              setCurrentGroup({ ...currentGroup, name: name.replaceAll(' ', '_') })
+            }
+            variant='bordered'
+            errorMessage={errors.name?.errorMessage}
+            isInvalid={errors.name?.isInvalid}
           />
           {groups.length >= (is_create ? 1 : 2) && (
             <div className='mt-1 flex h-8 items-center gap-1.5'>
@@ -246,8 +254,8 @@ const SlotsGroupModal = ({
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button className='bg-btn-accent text-white' onClick={onAddSlot}>
-          <Plus className='stroke-white' />
+        <Button className='' onClick={onAddSlot}>
+          <Plus className='' />
           New slot
         </Button>
         <Button

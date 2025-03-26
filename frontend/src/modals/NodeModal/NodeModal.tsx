@@ -52,16 +52,16 @@ const NodeModal = ({
         ...errors,
         name: { isInvalid: true, errorMessage: 'Please fill every field' },
       })
-      return true
+      return false
     }
     if (isUniqueValue('name')) {
       setErrors({
         ...errors,
         name: { isInvalid: true, errorMessage: 'Name must be unique' },
       })
-      return true
+      return false
     }
-    return false
+    return true
   }
 
   const isUniqueValue = (key: keyof DefaultNodeDataType) => {
@@ -76,7 +76,7 @@ const NodeModal = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setNodeDataState({
         ...nodeDataState,
-        [e.target.name]: e.target.value.trim(),
+        [e.target.name]: e.target.value,
       })
 
       setErrors({ ...errors, name: { isInvalid: false, errorMessage: '' } })
@@ -97,7 +97,7 @@ const NodeModal = ({
   }
 
   const onNodeSave = () => {
-    if (validateNodeName()) {
+    if (!validateNodeName()) {
       return
     }
 
