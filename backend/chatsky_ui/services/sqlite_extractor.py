@@ -1,4 +1,5 @@
 import sqlite3
+from platform import system
 from typing import Union
 
 from chatsky import Context
@@ -16,7 +17,11 @@ class SQLiteExtractor:
 
     def __init__(self):
         self._logger = None
-        self.engine = create_async_engine(f"{settings.database_path}", pool_pre_ping=True)
+        self.engine = create_async_engine(self.get_sqlite_uri(), pool_pre_ping=True)
+
+    def get_sqlite_uri(self):
+        separator = "///" if system() == "Windows" else "////"
+        return f"sqlite+aiosqlite:{separator}{settings.database_path}"
 
     @property
     def logger(self):
