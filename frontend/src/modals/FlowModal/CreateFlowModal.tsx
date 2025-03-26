@@ -48,10 +48,22 @@ const CreateFlowModal = ({
       ...flow,
       [e.target.name]: e.target.value,
     })
-    setErrors({
-      ...errors,
-      [e.target.name]: { isInvalid: false, errorMessage: '' },
-    })
+    if (validateFlowName(flow.name, flows)) {
+      setErrors({
+        ...errors,
+        [e.target.name]: { isInvalid: false, errorMessage: '' },
+      })
+    }
+  }
+
+  const onColorChange = (color: string) => {
+    setFlow({ ...flow, color })
+    if (color) {
+      setErrors({
+        ...errors,
+        color: { isInvalid: false, errorMessage: '' },
+      })
+    }
   }
 
   const onFlowSave = () => {
@@ -228,7 +240,7 @@ const CreateFlowModal = ({
             <button
               data-testid={`flow-color-${color.replace('#', '')}`}
               key={color}
-              onClick={() => setFlow({ ...flow, color })}
+              onClick={() => onColorChange(color)}
               className='h-8 w-8 rounded-full transition-all'
               style={{
                 backgroundColor: color,

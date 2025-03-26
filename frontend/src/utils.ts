@@ -30,7 +30,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 }
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
-  return !flows.some((flow) => flow.name === name)
+  return !flows.some((flow) => flow.name === name) && name.length >= 1
 }
 
 export function capitalizeFirstWord(str: string) {

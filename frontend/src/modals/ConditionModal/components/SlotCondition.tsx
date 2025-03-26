@@ -51,8 +51,8 @@ const SlotCondition = ({
         },
       }
 
-      setData(data, (errorValues) => {
-        setErrorValues({ ...errorValues, group: true, slot: true })
+      setData(data, () => {
+        setErrorValues({group: true, slot: true })
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
