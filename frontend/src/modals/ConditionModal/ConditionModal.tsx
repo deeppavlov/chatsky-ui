@@ -10,6 +10,7 @@ import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
 import { useContext, useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
@@ -70,10 +71,12 @@ const ConditionModal = ({
   const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
   const { notification: n } = useContext(NotificationsContext)
-  const { quietSaveFlows } = useContext(flowContext)
+  const { quietSaveFlows, flows } = useContext(flowContext)
   const [selected, setSelected] = useState<conditionTypeType>(
     condition?.type ?? 'python',
   )
+
+  const { flowId } = useParams()
   const [lintStatus, setLintStatus] = useState<LintStatusType | null>(null)
   const [testConditionPending, setTestConditionPending] = useState(false)
 
@@ -82,9 +85,46 @@ const ConditionModal = ({
     setSelected(key)
   }
 
+  console.log(flows, 'flows')
+
+  const arr = flows
+    .filter((flow) => flow.name !== 'Global')
+    .map((flow) => {
+      return {
+        name: flow.name,
+        collection: flow.data.nodes
+          .filter((node) => node.type === 'default_node')
+          .map((node) =>
+            node.data.conditions.map((condition) => condition.name),
+          ),
+      }
+    })
+
+  console.log(arr, 'arr')
+
+  const allNameCondidionFlows = arr
+    .map((flow) => {
+      return flow.collection
+    })
+    .flat()
+
+  console.log(arr, 'arr')
+
+  const iterGenName = (count: number = 1): string => {
+    const newName = `${flowId}_NewCnd_${count}`
+    console.log
+    const isUnique = !allNameCondidionFlows.includes(newName)
+    if (isUnique) {
+      return newName
+    }
+    return iterGenName(count + 1)
+  }
+
+  const initConditionName = iterGenName()
+
   const [currentCondition, setCurrentCondition] = useState(
     is_create || !condition
-      ? generateNewConditionBase(data.conditions)
+      ? generateNewConditionBase(initConditionName)
       : condition,
   )
 

@@ -52,23 +52,10 @@ export const parseSearchParams = (
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
 }
 
-export const generateNewConditionBase = (
-  conditions: conditionType[],
-): conditionType => {
-  const arrName = conditions.map((condition) => condition.name)
-
-  const iterGenName = (count: number = 1): string => {
-    const newName = `NewCnd${count}`
-    const isUnique = !arrName.includes(newName)
-    if (isUnique) {
-      return newName
-    }
-    return iterGenName(count + 1)
-  }
-
+export const generateNewConditionBase = (name: string): conditionType => {
   return {
     id: 'condition_' + v4(),
-    name: arrName.includes('NewCnd') ? iterGenName() : 'NewCnd',
+    name: name,
     type: 'python',
     data: {
       priority: 1,
