@@ -1,11 +1,8 @@
 import sqlite3
-from platform import system
 from typing import Union
 
 from chatsky import Context
 from pydantic import ValidationError
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
@@ -18,11 +15,7 @@ class SQLiteExtractor:
 
     def __init__(self):
         self._logger = None
-        self.engine = create_async_engine(self.get_sqlite_uri(), pool_pre_ping=True)
-
-    def get_sqlite_uri(self):
-        separator = "///" if system() == "Windows" else "////"
-        return f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
+        self.connection = sqlite3.connect(f"{settings.database_path}")
 
     @property
     def logger(self):
@@ -36,10 +29,10 @@ class SQLiteExtractor:
     async def extract_user_context(self, run_id: str, user_id: int):
         try:
             ctx_id = f"{run_id}_{user_id}"
-            async with self.engine.connect() as conn:
-                stmt = select(self.table.c.context).where(self.table.c.id == ctx_id)
-                result = await conn.execute(stmt)
-                rows = result.fetchall()
+            with self.connection as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
+                rows = cur.fetchall()
                 return rows
         except sqlite3.Error:
             self.logger.error("Connection to db failed or database structure is too different.")
