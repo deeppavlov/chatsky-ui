@@ -109,14 +109,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m poetry remove chatsky-ui || true
-          python -m poetry add $PWD/../backend/dist/*.whl
-          python -m poetry install --no-interaction
+          python -m pip install $PWD/../backend/dist/*.whl
         working-directory: my_project
           
       - name: Run back & front
         run: |
-          python -m poetry run chatsky.ui run_app &
+          python -m chatsky.ui run_app &
           sleep 10
         working-directory: my_project
 
