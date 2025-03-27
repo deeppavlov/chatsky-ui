@@ -35,7 +35,7 @@ import { AppNode, LinkNodeDataType } from '../../types/NodeTypes'
 const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
   const { updateNodeData } = useReactFlow<AppNode, Edge>()
   const { onOpen, onClose, isOpen } = useDisclosure()
-  const { flows, deleteNode } = useContext(flowContext)
+  const { flows, deleteNode, updateFlow } = useContext(flowContext)
   const [name, setName] = useState(data.name ?? '')
   const [toFlow, setToFlow] = useState<FlowType>()
   const [toNode, setToNode] = useState<AppNode>()
@@ -126,9 +126,6 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
     }
   }
 
-  /**
-   * Link data save function
-   */
   const onSave = () => {
     if (toFlow && toNode) {
       updateNodeData(data.id, {
@@ -189,7 +186,15 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                 size='sm'
                 isIconOnly
                 color='danger'
-                onClick={() => deleteNode(data.id)}
+                onClick={() => {
+                  if (toFlow && toFlow.toLink) {
+                    toFlow.toLink = toFlow.toLink.filter(
+                      (link) => link.id !== data.id,
+                    )
+                    updateFlow(toFlow)
+                  }
+                  deleteNode(data.id)
+                }}
               >
                 <TrashIcon className='stroke-white' />
               </Button>
@@ -283,7 +288,17 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                       selectedKeys={toFlow ? [toFlow.name] : []}
                       onChange={handleFlowSelectionChange}
                       size='sm'
-                      items={flows}
+                      items={
+                        flows.filter((flow) => {
+                          return ![
+                            'Global flow',
+                            'Global node',
+                            'Local node',
+                            'Global',
+                            'Local',
+                          ].includes(flow.name!)
+                        }) ?? []
+                      }
                     >
                       {(flow) => (
                         <SelectItem key={flow.name}>{flow.name}</SelectItem>
@@ -311,9 +326,12 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
                       items={
                         toFlow?.data.nodes.filter((node) => {
                           return (
-                            !['link_node', 'global', 'local'].includes(
-                              node.type!,
-                            ) &&
+                            ![
+                              'link_node',
+                              'global',
+                              'local',
+                              'slots_node',
+                            ].includes(node.type!) &&
                             !['LOCAL NODE', 'GLOBAL NODE'].includes(
                               node.data.name!,
                             )

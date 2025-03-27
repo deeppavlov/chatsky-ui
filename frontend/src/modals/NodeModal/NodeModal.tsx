@@ -1,15 +1,7 @@
-import {
-  Button,
-  Input,
-  //  ModalBody,
-  //  ModalFooter,
-  //  ModalHeader,
-  ModalProps,
-} from '@nextui-org/react'
+import { Button, Input, ModalProps } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import { HelpCircle, TrashIcon } from 'lucide-react'
 import React, { useCallback, useContext, useEffect } from 'react'
-// import ModalComponent from "../../components/ModalComponent";
 import { flowContext } from '../../contexts/flowContext'
 import { undoRedoContext } from '../../contexts/undoRedoContext'
 import EditPenIcon from '../../icons/EditPenIcon'
@@ -43,6 +35,10 @@ const NodeModal = ({
   const { quietSaveFlows, validateNodeDeletion } = useContext(flowContext)
   const { takeSnapshot } = useContext(undoRedoContext)
 
+  const [errors, setErrors] = React.useState<{
+    name?: { isInvalid: boolean; errorMessage: string }
+  }>({})
+
   useEffect(() => {
     setNodeDataState(
       getNodes().find((node) => node.data.id === data.id)?.data ?? data,
@@ -50,10 +46,42 @@ const NodeModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
+  const validateNodeName = () => {
+    if (nodeDataState.name === '') {
+      setErrors({
+        ...errors,
+        name: { isInvalid: true, errorMessage: 'Please fill every field' },
+      })
+      return false
+    }
+    if (isUniqueValue('name')) {
+      setErrors({
+        ...errors,
+        name: { isInvalid: true, errorMessage: 'Name must be unique' },
+      })
+      return false
+    }
+    return true
+  }
+
+  const isUniqueValue = (key: keyof DefaultNodeDataType) => {
+    const nodes = getNodes()
+      .filter((node) => node.type === 'default_node')
+      .filter((el) => el.id !== nodeDataState.id)
+      .map((node) => node.data[key])
+    return nodes.includes(nodeDataState[key])
+  }
+
   const setDataStateValue = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setNodeDataState({ ...nodeDataState, [e.target.name]: e.target.value })
+      setNodeDataState({
+        ...nodeDataState,
+        [e.target.name]: e.target.value,
+      })
+
+      setErrors({ ...errors, name: { isInvalid: false, errorMessage: '' } })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodeDataState, setNodeDataState],
   )
 
@@ -69,6 +97,10 @@ const NodeModal = ({
   }
 
   const onNodeSave = () => {
+    if (!validateNodeName()) {
+      return
+    }
+
     takeSnapshot()
     updateNodeData(data.id, { ...nodeDataState })
     quietSaveFlows()
@@ -102,88 +134,6 @@ const NodeModal = ({
 
   return (
     <>
-      {/* <ModalComponent
-    className="bg-background min-h-[584px]"
-    motionProps={{
-     initial: { opacity: 0, scale: 0.95 },
-     animate: { opacity: 1, scale: 1 },
-    }}
-    isOpen={true}
-    onClose={onClose}
-    size={size}
-   >
-    <ModalContent>
-     <ModalHeader>{"Edit node"}</ModalHeader>
-     <ModalBody>
-      <label></label>
-      <div className="grid gap-4">
-       <Input
-        label="Name"
-        labelPlacement="outside"
-        placeholder="Enter node's name here"
-        variant="bordered"
-        name="name"
-        value={nodeDataState.name}
-        onChange={setDataStateValue}
-       />
-       <span className="relative">
-        <Input
-         label="Response"
-         labelPlacement="outside"
-         placeholder="Enter node's response here"
-         name="response"
-         variant="bordered"
-         disabled
-         value={nodeDataState.response?.data[0].text ?? "No text response"}
-         onChange={setTextResponseValue}
-        />
-        <button
-         onClick={() => {
-          onResponseModalOpen();
-         }}
-         className="absolute right-3 top-9"
-        >
-         <EditPenIcon />
-        </button>
-       </span>
-      </div>
-      <div>
-       <p className="text-sm font-medium mb-2 mt-2"> Conditions (x) </p>
-       <div className="border border-border rounded-xl">
-        <div className="grid grid-cols-3 gap-4 px-4 py-2">
-         <div>NAME</div>
-         <div>PRIORITY</div>
-         <div>ACTIONS</div>
-        </div>
-        <div className="grid">
-         {nodeDataState.conditions?.map((cnd) => (
-          <ConditionRow
-           deleteConditionFn={deleteCondition}
-           key={cnd.id}
-           cnd={cnd}
-          />
-         ))}
-        </div>
-       </div>
-      </div>
-     </ModalBody>
-     <ModalFooter className="flex justify-between items-center">
-      <div className="flex items-center justify-start gap-2">
-       <Button isIconOnly className="rounded-full">
-        <HelpCircle />
-       </Button>
-       <Button onClick={onNodeDelete} className="hover:bg-red-500" isIconOnly>
-        <TrashIcon />
-       </Button>
-      </div>
-      <div>
-       <Button onClick={onNodeSave} className="bg-foreground text-background">
-        Save node
-       </Button>
-      </div>
-     </ModalFooter>
-    </ModalContent>
-   </ModalComponent> */}
       <Modal
         className='flex min-h-[584px] flex-col'
         size={size}
@@ -202,6 +152,8 @@ const NodeModal = ({
               name='name'
               value={nodeDataState.name}
               onChange={setDataStateValue}
+              autoComplete='off'
+              {...errors.name}
             />
             <span className='relative'>
               <Input
@@ -272,9 +224,5 @@ const NodeModal = ({
     </>
   )
 }
-
-//flex py-4 px-6 flex-initial text-large font-semibold hedr
-// class="flex flex-1 flex-col gap-3 px-6 py-2"  body
-//flex-row gap-2 px-6 py-4 flex justify-between items-center futer
 
 export default NodeModal

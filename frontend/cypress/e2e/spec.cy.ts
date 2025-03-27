@@ -167,7 +167,7 @@ describe('Flow creation and editing process', () => {
         .find('button[data-testid=slots-add-group-btn]')
         .click()
       cy.get('input[data-testid=slots-group-name]').clear().type('Test group')
-      cy.get('input[data-testid=slot-name]').clear().type('Test slot 1')
+      cy.get('input[data-testid=slot-name]').clear().type('Test_Slot_1')
       cy.get('textarea[data-testid=slot-value]').type('^[A-Za-z]+$')
       cy.get('[data-testid=slots-group-modal]')
         .contains('button', 'Save')
@@ -185,8 +185,8 @@ describe('Flow creation and editing process', () => {
       cy.get('input[data-testid=condition-name]')
         .clear()
         .type('Test_slots_condition')
-      cy.get('[data-testid=slot-search] input').type('Test slot 1')
-      cy.get('[data-testid=slot-search]').contains('div', 'Test slot 1').click()
+      cy.get('[data-testid=slot-search] input').type('Test_Slot_1')
+      cy.get('[data-testid=slot-search]').contains('div', 'Test_Slot_1').click()
       cy.get('[data-testid=condition-modal]').contains('button', 'Save').click()
 
       // node 2
@@ -243,9 +243,6 @@ describe('Flow creation and editing process', () => {
       cy.get('[data-testid=structure-select]').click()
       cy.get('[data-testid=selectItem-all-of]').click()
 
-      cy.get('[data-testid=condition-modal]')
-        .contains('button', 'Add condition')
-        .click()
       cy.get('[data-testid=substructure-select]').click()
       cy.get('[data-testid=selectItem-include-text]').click()
       cy.get('[data-testid=basic-condition-text]').type(testText1)
@@ -274,9 +271,6 @@ describe('Flow creation and editing process', () => {
       cy.get('[data-testid=structure-select]').click()
       cy.get('[data-testid=selectItem-any-of]').click()
 
-      cy.get('[data-testid=condition-modal]')
-        .contains('button', 'Add condition')
-        .click()
       cy.get('[data-testid=substructure-select]').click()
       cy.get('[data-testid=selectItem-include-text]').click()
       cy.get('[data-testid=basic-condition-text]').type(testText1)
