@@ -120,12 +120,12 @@ const Inspect = memo(() => {
                         {b.status === 'failed' && (
                           <X
                             strokeWidth={3.5}
-                            className='size-3.5 flex-shrink-0 stroke-input-border'
+                            className='size-3.5 flex-shrink-0 stroke-red-500'
                           />
                         )}
 
                         {b.status === 'completed' && (
-                          <CheckIcon className='flex-shrink-0 fill-input-border group-data-[state=open]:fill-success' />
+                          <CheckIcon className='flex-shrink-0 fill-success' />
                         )}
                       </div>
                     </Accordion.Trigger>
@@ -174,7 +174,7 @@ const Inspect = memo(() => {
                             {r.status === 'failed' && (
                               <X
                                 strokeWidth={3.5}
-                                className='size-3.5 flex-shrink-0 stroke-input-border'
+                                className='size-3.5 flex-shrink-0 stroke-red-500'
                               />
                             )}
 

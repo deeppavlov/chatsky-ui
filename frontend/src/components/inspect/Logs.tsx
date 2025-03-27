@@ -22,6 +22,9 @@ const getLogs = {
 const Logs = ({ item }: IProps) => {
   const [logs, setLogs] = useState<string[]>([])
 
+
+
+
   useEffect(() => {
     let isMounted = true
 
@@ -61,12 +64,14 @@ const Logs = ({ item }: IProps) => {
           <h4 className='my-4 flex items-center gap-1 text-xl font-semibold'>
             <span className='flex items-center'>
               {item.status === 'completed' && (
-                <CheckCircle2 fill='var(--status-green)' stroke='white' />
+                <CheckCircle2 className='flex-shrink-0 fill-success' />
               )}
               {item.status === 'running' && (
                 <Spinner size='sm' color='warning' />
               )}
-              {item.status === 'failed' && <X />}
+              {item.status === 'failed' && (
+                <X className='size-6 flex-shrink-0 stroke-red-500' />
+              )}
             </span>
             Build {item.id}
           </h4>
@@ -81,7 +86,7 @@ const Logs = ({ item }: IProps) => {
                       : 'var(--status-red)',
                 }}
               >
-                {item.status}
+                {item.status}fadsds
               </span>
             </p>
             <p>
