@@ -30,7 +30,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 }
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
-  return !flows.some((flow) => flow.name === name) && name.length >= 2
+  return !flows.some((flow) => flow.name === name) && name.length >= 1
 }
 
 export function capitalizeFirstWord(str: string) {
@@ -159,7 +159,7 @@ export const generateNewNode = (
 export const generateNewSlot = (group_id: string): SlotType => {
   return {
     id: 'slot_' + v4(),
-    name: 'New slot',
+    name: 'New_Slot',
     group_id,
     type: 'RegexpSlot',
     method: '',

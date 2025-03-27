@@ -71,18 +71,26 @@ Modal.displayName = 'Modal'
 type ModalHeaderProps = {
   children: React.ReactNode
   className?: string
+  showCloseButton?: boolean
 }
 
-export const ModalHeader = ({ children, className }: ModalHeaderProps) => (
+export const ModalHeader = ({
+  children,
+  showCloseButton = true,
+  className,
+}: ModalHeaderProps) => (
   <div
     className={classNames('flex items-center justify-between pb-4', className)}
   >
     <Dialog.Title>{children}</Dialog.Title>
-    <Dialog.Close asChild>
-      <button className='rounded-lg bg-background p-0.5 text-foreground transition-colors hover:bg-bg-secondary'>
-        <X size={20} />
-      </button>
-    </Dialog.Close>
+
+    {showCloseButton && (
+      <Dialog.Close asChild>
+        <button className='rounded-lg bg-background p-0.5 text-foreground transition-colors hover:bg-bg-secondary'>
+          <X size={20} />
+        </button>
+      </Dialog.Close>
+    )}
   </div>
 )
 
