@@ -39,9 +39,9 @@ const CreateFlowModal = ({
   })
   const [isSubFlow, setIsSubFlow] = useState(false)
   const [errors, setErrors] = React.useState<{
-      name?: { isInvalid: boolean; errorMessage: string }
-      color?: { isInvalid: boolean; errorMessage: string }
-    }>({})
+    name?: { isInvalid: boolean; errorMessage: string }
+    color?: { isInvalid: boolean; errorMessage: string }
+  }>({})
 
   const onFlowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFlow({
@@ -250,7 +250,9 @@ const CreateFlowModal = ({
             ></button>
           ))}
           {errors.color?.isInvalid && (
-            <p className="text-red-500 text-sm mt-1">{errors.color?.errorMessage}</p>
+            <p className='mt-1 text-sm text-red-500'>
+              {errors.color?.errorMessage}
+            </p>
           )}
         </div>
         <div className='grid gap-2'>

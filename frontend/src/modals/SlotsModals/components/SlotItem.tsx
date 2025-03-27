@@ -6,11 +6,33 @@ import { SlotType } from '../../../types/FlowTypes'
 import DefInput from '../../../UI/Input/DefInput'
 import DefTextarea from '../../../UI/Input/DefTextarea'
 
+export interface IError {
+  isInvalid: boolean
+  errorMessage: string
+  id?: string
+}
+
+export interface IerrorSimple {
+  name?: IError
+  value?: IError
+}
+
+export interface IErrorDep {
+  nameGroup: IError
+  slots: {
+    id: string
+    name?: IError
+    value?: IError
+  }[]
+}
+
 type SlotItemType = {
   slot: SlotType
   setSlots: (updatedSlot: SlotType) => void
   onDelete: (slotId: string) => void
   is_create_modal?: boolean
+  errors: IerrorSimple | IErrorDep
+  setErrors: (errors: IerrorSimple | IErrorDep) => void
 }
 
 const SlotItem = ({
@@ -18,6 +40,8 @@ const SlotItem = ({
   setSlots,
   onDelete,
   is_create_modal,
+  errors,
+  setErrors,
 }: SlotItemType) => {
   const [name, setName] = useState<string>(slot.name ?? '')
   const [type] = useState<'RegexpSlot' | ''>(slot.type ?? '')
@@ -37,17 +61,46 @@ const SlotItem = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, type, method, value, index])
 
+  const currenError =
+    'name' in errors
+      ? errors
+      : (errors as IErrorDep).slots?.filter((e) => e.id === slot.id)[0]
+
   return (
     <div className='my-1'>
       <div className='mb-1 flex items-center justify-between'>
         <div className='mb-2 flex items-center gap-2'>
           <EditPenIcon />
-          <input
+          <DefInput
             value={name}
-            onChange={(e) => setName(e.target.value.replaceAll(' ', '_'))}
+            onValueChange={(value) => {
+              setName(value.replaceAll(' ', '_'))
+
+              if ('name' in errors) {
+                setErrors({
+                  ...errors,
+                  name: { isInvalid: false, errorMessage: '' },
+                })
+                return
+              }
+
+              setErrors({
+                ...errors,
+                slots: (errors as IErrorDep).slots.map((e) =>
+                  e.id === slot.id
+                    ? {
+                        ...e,
+                        name: { isInvalid: false, errorMessage: '' },
+                      }
+                    : e,
+                ),
+              })
+            }}
             className='bg-transparent focus:outline-none focus:placeholder:text-transparent'
             type='text'
             placeholder='New slot'
+            errorMessage={currenError?.name?.errorMessage}
+            isInvalid={currenError?.name?.isInvalid}
           />
         </div>
         {!is_create_modal && (
@@ -64,25 +117,34 @@ const SlotItem = ({
         )}
       </div>
       <div className='grid grid-cols-2 gap-2'>
-        {/* <DefSelect
-          defaultValue={type}
-          onValueChange={(value) => setType(value as "RegexpSlot" | "")}
-          items={[{ value: "RegexpSlot", key: "RegexpSlot" }]}
-          placeholder='Select slot type'
-        />
-        <DefSelect
-          defaultValue={method}
-          onValueChange={(value) => setMethod(value)}
-          items={[{ value: "Method1", key: "Method1" }]}
-          placeholder='Select slot method'
-        /> */}
         <DefTextarea
           value={value}
-          onValueChange={setValue}
+          onValueChange={(value) => {
+            setValue(value)
+
+            if ('value' in errors) {
+              setErrors({
+                ...errors,
+                value: { isInvalid: false, errorMessage: '' },
+              })
+              return
+            }
+
+            setErrors({
+              ...errors,
+              slots: (errors as IErrorDep).slots.map((e) =>
+                e.id === slot.id
+                  ? { ...e, value: { isInvalid: false, errorMessage: '' } }
+                  : e,
+              ),
+            })
+          }}
           className='col-span-2'
           isMultiline
           label='Slot value'
           placeholder={`Enter slot regexp\ne.g. ([a-zA-Z]+)`}
+          errorMessage={currenError?.value?.errorMessage}
+          isInvalid={currenError?.value?.isInvalid}
         />
         {value.length !== 0 && (
           <div className='flex-col-2 group col-span-2 flex w-full items-center gap-2 pt-2'>
