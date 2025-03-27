@@ -272,3 +272,5 @@ export function formatRelativeTime(
     return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month')
   return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year')
 }
+
+export const maxLengthName = 25

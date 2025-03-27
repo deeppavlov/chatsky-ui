@@ -297,7 +297,7 @@ export default function Flow() {
           .map((node) => node.data.response.name)
 
         const iterGenName = (count: number = 1): string => {
-          const newName = `${NODES[type].response.name}${count}`
+          const newName = `${flowId}_${NODES[type].response.name}_${count}`
           const isUnique = !arrResponse.includes(newName)
           if (isUnique) {
             return newName

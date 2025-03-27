@@ -13,7 +13,7 @@ import React, { useContext, useState } from 'react'
 import { FLOW_COLORS } from '../../consts'
 import { flowContext } from '../../contexts/flowContext'
 import { ModalType } from '../../types/ModalTypes'
-import { generateNewFlow, validateFlowName } from '../../utils'
+import { generateNewFlow, maxLengthName, validateFlowName } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 
 interface CreateFlowModalProps extends ModalType {}
@@ -71,6 +71,17 @@ const CreateFlowModal = ({
       setErrors({
         ...errors,
         name: { isInvalid: true, errorMessage: 'Flow name is not valid.' },
+      })
+      return
+    }
+    if (flow.name.length > maxLengthName) {
+      setErrors({
+        ...errors,
+        name: {
+          isInvalid: true,
+          errorMessage:
+            'Stream name is too long. Please keep it within 25 characters.',
+        },
       })
       return
     }

@@ -9,7 +9,7 @@ import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
@@ -92,7 +92,6 @@ const ConditionModal = ({
 }: ConditionModalProps) => {
   const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
- 
   const { quietSaveFlows, flows } = useContext(flowContext)
 
   const [selected, setSelected] = useState<conditionTypeType>(
@@ -108,8 +107,6 @@ const ConditionModal = ({
     setSelected(key)
   }
 
-  console.log(flows, 'flows')
-
   const arr = flows
     .filter((flow) => flow.name !== 'Global')
     .map((flow) => {
@@ -118,29 +115,26 @@ const ConditionModal = ({
         collection: flow.data.nodes
           .filter((node) => node.type === 'default_node')
           .map((node) =>
-            node.data.conditions.map((condition) => condition.name),
+            (node.data as DefaultNodeDataType).conditions.map((condition) => condition.name),
           ),
       }
     })
 
-  console.log(arr, 'arr')
-
   const allNameCondidionFlows = arr
-    .map((flow) => {
+    .flatMap((flow) => {
       return flow.collection
     })
     .flat()
 
-  console.log(arr, 'arr')
-
   const iterGenName = (count: number = 1): string => {
     const newName = `${flowId}_NewCnd_${count}`
-    console.log
-    const isUnique = !allNameCondidionFlows.includes(newName)
-    if (isUnique) {
-      return newName
+
+    const isNotUnique = allNameCondidionFlows.includes(newName)
+
+    if (isNotUnique) {
+      return iterGenName((count += 1))
     }
-    return iterGenName(count + 1)
+    return newName
   }
 
   const initConditionName = iterGenName()
