@@ -121,13 +121,13 @@ const ResponseModal = ({
 
     if (
       selected === 'python' &&
-      currentResponse.name.replace(/[A-Za-z_]/g, '') !== ''
+      currentResponse.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') !== ''
     ) {
       setErrors({
         ...errors,
         name: {
           isInvalid: true,
-          errorMessage: 'Please use Latin alphabet only',
+          errorMessage: 'Please use only Latin letters. Names cannot start with a number.',
         },
       })
       return

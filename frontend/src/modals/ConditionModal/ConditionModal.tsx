@@ -418,7 +418,7 @@ const ConditionModal = ({
 
   const isValidCurrentCondition = () => {
     if (currentCondition.type === 'python') {
-      return currentCondition.name.replace(/[A-Za-z_]/g, '') === ''
+      return currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') === ''
     }
     if (currentCondition.type === 'basic') {
       const newState = validateConditionBasic(currentCondition)
@@ -458,11 +458,11 @@ const ConditionModal = ({
         setError({ isInvalid: true, errorMessage: 'Name must be unique' })
       }
       if (currentCondition.type === 'python') {
-        const text = currentCondition.name.replace(/[A-Za-z_]/g, '')
+        const text = currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '')
         text.trim() === ''
           ? null
           : setError({
-              errorMessage: 'Please use Latin alphabet only',
+              errorMessage: 'Please use only Latin letters. Names cannot start with a number.',
               isInvalid: true,
             })
       }
