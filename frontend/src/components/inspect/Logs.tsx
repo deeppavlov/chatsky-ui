@@ -22,9 +22,6 @@ const getLogs = {
 const Logs = ({ item }: IProps) => {
   const [logs, setLogs] = useState<string[]>([])
 
-
-
-
   useEffect(() => {
     let isMounted = true
 
