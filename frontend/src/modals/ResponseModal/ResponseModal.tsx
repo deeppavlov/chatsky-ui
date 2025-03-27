@@ -127,7 +127,8 @@ const ResponseModal = ({
         ...errors,
         name: {
           isInvalid: true,
-          errorMessage: 'Please use only Latin letters. Names cannot start with a number.',
+          errorMessage:
+            'Please use only Latin letters. Names cannot start with a number.',
         },
       })
       return

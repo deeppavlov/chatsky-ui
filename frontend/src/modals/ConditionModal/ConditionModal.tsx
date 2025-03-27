@@ -462,7 +462,8 @@ const ConditionModal = ({
         text.trim() === ''
           ? null
           : setError({
-              errorMessage: 'Please use only Latin letters. Names cannot start with a number.',
+              errorMessage:
+                'Please use only Latin letters. Names cannot start with a number.',
               isInvalid: true,
             })
       }
