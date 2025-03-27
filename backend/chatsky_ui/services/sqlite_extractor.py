@@ -26,23 +26,41 @@ class SQLiteExtractor:
     def set_logger(self):
         self._logger = get_logger(__name__)
 
+    def _ensure_connection(self):
+        """Ensure the SQLite connection is active and valid, with up to three reconnection attempts."""
+        if self.connection is None:
+            self.connection = sqlite3.connect(f"{settings.database_path}")
+        attempts = 0
+        while attempts < 3:
+            try:
+                self.logger.info("Checking connection to the database...")
+                self.connection.execute("SELECT 1")  # Simple query to check connection
+                return
+            except sqlite3.Error:
+                self.logger.warning(f"Lost connection to the database. Reconnecting... (Attempt {attempts + 1}/3)")
+                self.connection = sqlite3.connect(f"{settings.database_path}")
+                attempts += 1
+        raise sqlite3.Error("Failed to reconnect to the database after 3 attempts.")
+
     async def extract_user_context(self, run_id: str, user_id: int):
         try:
-            if self.connection is None:
-                self.connection = sqlite3.connect(f"{settings.database_path}")
+            self._ensure_connection()
             ctx_id = f"{run_id}_{user_id}"
             with self.connection as conn:
                 cur = conn.cursor()
                 cur.execute("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
                 rows = cur.fetchall()
                 return rows
-        except sqlite3.Error:
-            self.logger.error("Connection to db failed or database structure is too different.")
+        except sqlite3.Error as e:
+            self.logger.error(f"Database error: {e}")
             return None
 
     async def get_context(self, run_id: str, user_id: int):
         try:
             query_result = await self.extract_user_context(run_id, user_id)
+            if query_result is None or len(query_result) == 0:
+                self.logger.error("No context found for the given run_id and user_id.")
+                return None
             (id, context) = query_result[0]
             return Context.model_validate_json(context)
         except ValidationError:
@@ -53,6 +71,8 @@ class SQLiteExtractor:
 
     async def fetch_chat_records(self, run_id: Union[int, str], user_id: int, offset: int, limit: int):
         context = await self.get_context(str(run_id), user_id)
+        if context is None:
+            raise ValueError("No context found for the given run_id and user_id.")
         requests = context.requests
         responses = context.responses
         result = []
