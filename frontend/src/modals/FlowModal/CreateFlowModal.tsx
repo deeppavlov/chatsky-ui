@@ -9,10 +9,9 @@ import {
   SelectItem,
 } from '@nextui-org/react'
 import { HelpCircle } from 'lucide-react'
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { FLOW_COLORS } from '../../consts'
 import { flowContext } from '../../contexts/flowContext'
-import { NotificationsContext } from '../../contexts/notificationsContext'
 import { ModalType } from '../../types/ModalTypes'
 import { generateNewFlow, validateFlowName } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
@@ -32,7 +31,6 @@ const CreateFlowModal = ({
   size = '3xl',
 }: CreateFlowModalProps) => {
   const { flows, setFlows, saveFlows } = useContext(flowContext)
-  const { notification: n } = useContext(NotificationsContext)
   const [flow, setFlow] = useState<CreateFlowType>({
     name: '',
     description: '',
@@ -40,21 +38,41 @@ const CreateFlowModal = ({
     subflow: 'Global',
   })
   const [isSubFlow, setIsSubFlow] = useState(false)
+  const [errors, setErrors] = React.useState<{
+    name?: { isInvalid: boolean; errorMessage: string }
+    color?: { isInvalid: boolean; errorMessage: string }
+  }>({})
 
   const onFlowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFlow({
       ...flow,
       [e.target.name]: e.target.value,
     })
+    if (validateFlowName(flow.name, flows)) {
+      setErrors({
+        ...errors,
+        [e.target.name]: { isInvalid: false, errorMessage: '' },
+      })
+    }
+  }
+
+  const onColorChange = (color: string) => {
+    setFlow({ ...flow, color })
+    if (color) {
+      setErrors({
+        ...errors,
+        color: { isInvalid: false, errorMessage: '' },
+      })
+    }
   }
 
   const onFlowSave = () => {
     if (!validateFlowName(flow.name, flows)) {
-      return n.add({
-        title: 'Warning!',
-        message: 'Flow name is not valid.',
-        type: 'warning',
+      setErrors({
+        ...errors,
+        name: { isInvalid: true, errorMessage: 'Flow name is not valid.' },
       })
+      return
     }
     if (flow.color && flow.subflow) {
       const newFlow = generateNewFlow(flow)
@@ -69,10 +87,9 @@ const CreateFlowModal = ({
       setIsSubFlow(false)
       onClose()
     } else {
-      n.add({
-        title: 'Creating error!',
-        message: 'Please fill all the fields correctly.',
-        type: 'error',
+      setErrors({
+        ...errors,
+        color: { isInvalid: true, errorMessage: 'Please choose flow color.' },
       })
     }
   }
@@ -205,6 +222,8 @@ const CreateFlowModal = ({
             onChange={onFlowChange}
             value={flow.name}
             min={2}
+            variant='bordered'
+            {...errors.name}
           />
           <Input
             label='Description'
@@ -221,7 +240,7 @@ const CreateFlowModal = ({
             <button
               data-testid={`flow-color-${color.replace('#', '')}`}
               key={color}
-              onClick={() => setFlow({ ...flow, color })}
+              onClick={() => onColorChange(color)}
               className='h-8 w-8 rounded-full transition-all'
               style={{
                 backgroundColor: color,
@@ -230,6 +249,11 @@ const CreateFlowModal = ({
               }}
             ></button>
           ))}
+          {errors.color?.isInvalid && (
+            <p className='mt-1 text-sm text-red-500'>
+              {errors.color?.errorMessage}
+            </p>
+          )}
         </div>
         <div className='grid gap-2'>
           <div className='flex items-center gap-2'>
