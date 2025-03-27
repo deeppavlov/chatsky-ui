@@ -1,5 +1,5 @@
-import { Edge, ReactFlowJsonObject } from "@xyflow/react"
-import { AppNode } from "./NodeTypes"
+import { Edge, ReactFlowJsonObject } from '@xyflow/react'
+import { AppNode, LinkNodeDataType } from './NodeTypes'
 
 export type FlowType = {
   id: string
@@ -8,15 +8,17 @@ export type FlowType = {
   color?: string
   subflow?: string
   data: ReactFlowJsonObject<AppNode, Edge>
+  toLink?: LinkNodeDataType[]
 }
 
 export type SlotType = {
   id: string
-  name: string 
+  name: string
   group_id: string
-  type: "RegexpSlot" | ""
+  type: 'RegexpSlot' | ''
   method: string
   value: string
+  match_group_idx?: number
 }
 
 export type SlotsGroupType = {
@@ -25,5 +27,5 @@ export type SlotsGroupType = {
   slots: SlotType[]
   subgroups?: string[]
   subgroup_to: string
-  flow: "global" | string
+  flow: 'global' | string
 }

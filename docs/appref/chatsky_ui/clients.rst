@@ -1,7 +1,7 @@
-chatsky_ui.clients package
+clients package
 ===================
 
-chatsky_ui.clients.chatsky_client module
+clients.chatsky_client module
 ----------------------
 
 .. automodule:: chatsky_ui.clients.chatsky_client

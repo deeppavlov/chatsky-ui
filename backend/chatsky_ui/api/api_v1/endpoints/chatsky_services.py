@@ -18,7 +18,14 @@ router = APIRouter()
 
 @router.get("/search/condition/{condition_name}", status_code=200)
 async def search_condition(condition_name: str) -> Dict[str, Union[str, list]]:
-    """Searches for a custom condition by name and returns its code."""
+    """Searches for a custom condition by name and returns its code.
+
+    Args:
+        condition_name (str): Name of the condition to search for.
+
+    Returns:
+        {"status": "ok", "data": response}: in case of searching for the condition successfully.
+    """
     custom_classes = get_all_classes(settings.conditions_path)
     response = [custom_class["body"] for custom_class in custom_classes if custom_class["name"] == condition_name]
     return {"status": "ok", "data": response}
@@ -26,6 +33,11 @@ async def search_condition(condition_name: str) -> Dict[str, Union[str, list]]:
 
 @router.get("/get_all_custom_conditions", status_code=200)
 async def get_all_custom_conditions_names() -> Dict[str, Union[str, list]]:
+    """Searches for all custom conditions and returns their code.
+
+    Returns:
+        {"status": "ok", "data": custom_classes}: `custom_classes` here is a list of conditions' scripts.
+    """
     all_classes = get_all_classes(settings.conditions_path)
     custom_classes = [custom_class["body"] for custom_class in all_classes]
     return {"status": "ok", "data": custom_classes}
@@ -36,6 +48,14 @@ async def lint_snippet(snippet: CodeSnippet) -> Dict[str, str]:
     """Lints a snippet with Pylint.
 
     This endpoint Joins the snippet with all imports existing in the conditions.py file and then runs Pylint on it.
+    Note that PyLint's "W,I,R,C" error codes are ignored.
+
+    Args:
+        snippet (CodeSnippet): The code snippet to run PyLint on.
+
+    Returns:
+        {"status": "ok", "message": ""}: in case PyLint ran successfully.
+        {"status": "error", "message": error}: in case PyLint found a mistake, with `message` being the error message.
     """
     code_snippet = snippet.code.replace(r"\n", "\n")
 
@@ -60,5 +80,9 @@ async def lint_snippet(snippet: CodeSnippet) -> Dict[str, str]:
 
 @router.get("/get_conditions", status_code=200)
 async def get_conditions() -> Dict[str, Union[str, list]]:
-    """Gets the chatsky's out-of-the-box conditions."""
+    """Gets the chatsky's out-of-the-box conditions.
+
+    Returns:
+        {"status": "ok", "data": chatsky_conditions}: with `data` containing a list of Chatsky conditions' info_dicts.
+    """
     return {"status": "ok", "data": get_chatsky_conditions()}

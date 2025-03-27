@@ -1,21 +1,24 @@
-import { PopUpContext } from "@/contexts/popUpContext"
-import DocumentationIcon from "@/icons/DocumentationIcon"
-import NewWindowIcon from "@/icons/NewWindowIcon"
-import TrashIcon from "@/icons/TrashIcon"
-import AlertModal from "@/modals/AlertModal"
-import SlotsGroupModal from "@/modals/SlotsModals/SlotsGroupModal"
-import { SlotsGroupType } from "@/types/FlowTypes"
-import { SlotsNodeDataType } from "@/types/NodeTypes"
-import DefTable from "@/UI/Table/DefTable"
-import { Button, Divider, TableCell, TableRow } from "@nextui-org/react"
-import React, { Fragment, useContext } from "react"
+import { PopUpContext } from '@/contexts/popUpContext'
+import DocumentationIcon from '@/icons/DocumentationIcon'
+import NewWindowIcon from '@/icons/NewWindowIcon'
+import TrashIcon from '@/icons/TrashIcon'
+import AlertModal from '@/modals/AlertModal'
+import SlotsGroupModal from '@/modals/SlotsModals/SlotsGroupModal'
+import { SlotsGroupType } from '@/types/FlowTypes'
+import { SlotsNodeDataType } from '@/types/NodeTypes'
+import DefTable from '@/UI/Table/DefTable'
+import { Button, Divider, TableCell, TableRow } from '@nextui-org/react'
+import React, { Fragment, useContext } from 'react'
 
 type Props = {
   groups: SlotsGroupType[]
   setGroups: React.Dispatch<React.SetStateAction<SlotsGroupType[]>>
   nodeData: SlotsNodeDataType
   setNodeData: React.Dispatch<React.SetStateAction<SlotsNodeDataType>>
-  onDeleteGroupHandler?: (group: SlotsGroupType, updatedGroups: SlotsGroupType[]) => void
+  onDeleteGroupHandler?: (
+    group: SlotsGroupType,
+    updatedGroups: SlotsGroupType[],
+  ) => void
 }
 
 const SlotsGroupsTable = ({
@@ -31,7 +34,7 @@ const SlotsGroupsTable = ({
     // Удаление группы
     openPopUp(
       <AlertModal
-        size={"lg"}
+        size={'lg'}
         id={`delete-group-modal-${group.id}`}
         title='Delete group'
         description={`Are you sure you want to delete "${group.name}" group?`}
@@ -42,7 +45,7 @@ const SlotsGroupsTable = ({
         }}
         actionText='Delete'
       />,
-      `delete-group-modal-${group.id}`
+      `delete-group-modal-${group.id}`,
     )
   }
 
@@ -55,12 +58,12 @@ const SlotsGroupsTable = ({
         group={group}
         is_create={false}
       />,
-      `slots-group-modal-edit-${group.id}`
+      `slots-group-modal-edit-${group.id}`,
     )
   }
 
   return (
-    <DefTable headers={[" ", "name", "contains slots", "actions"]}>
+    <DefTable headers={[' ', 'name', 'contains slots', 'actions']}>
       {groups.map((group) => (
         <TableRow key={group.id}>
           <TableCell> </TableCell>
@@ -71,7 +74,9 @@ const SlotsGroupsTable = ({
                 {group.slots.slice(0, 3).map((slot, idx) => (
                   <Fragment key={slot.id}>
                     {idx === 2 && group.slots.length > 3 ? (
-                      <li className='text-sm text-gray-400'>+ {group.slots.length - 2} more</li>
+                      <li className='text-sm text-gray-400'>
+                        + {group.slots.length - 2} more
+                      </li>
                     ) : (
                       idx === 2 && <li>{slot.name}</li>
                     )}
@@ -81,10 +86,7 @@ const SlotsGroupsTable = ({
               </ul>
               {group.subgroups && group.subgroups.length > 0 && (
                 <>
-                  <Divider
-                    orientation='horizontal'
-                    className='my-1'
-                  />
+                  <Divider orientation='horizontal' className='my-1' />
                   <ul>
                     {group.subgroups.map((s) => {
                       const subgroup = nodeData.groups.find((g) => g.id === s)
@@ -92,7 +94,8 @@ const SlotsGroupsTable = ({
                         return (
                           <li
                             key={subgroup.id}
-                            className='text-sm flex items-center gap-1'>
+                            className='flex items-center gap-1 text-sm'
+                          >
                             <DocumentationIcon />
                             {subgroup.name}
                           </li>
@@ -112,7 +115,8 @@ const SlotsGroupsTable = ({
               size='sm'
               isIconOnly
               variant='light'
-              color='danger'>
+              color='danger'
+            >
               <TrashIcon />
             </Button>
             <Button
@@ -120,7 +124,8 @@ const SlotsGroupsTable = ({
               size='sm'
               isIconOnly
               variant='light'
-              color='default'>
+              color='default'
+            >
               <NewWindowIcon />
             </Button>
           </TableCell>

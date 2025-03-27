@@ -1,11 +1,18 @@
-import { GripHorizontal } from "lucide-react";
-import React from "react";
+import { GripHorizontal } from 'lucide-react'
+import React from 'react'
 
-const DragListItem = ({ item }: { item: { name: string; color: string; type: string } }) => {
-  const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
+const DragListItem = ({
+  item,
+}: {
+  item: { name: string; color: string; type: string }
+}) => {
+  const onDragStart = (
+    event: React.DragEvent<HTMLDivElement>,
+    nodeType: string,
+  ) => {
     // if (event.dataTransfer) {
-    event.dataTransfer.setData("application/@xyflow/react", nodeType)
-    event.dataTransfer.effectAllowed = "move"
+    event.dataTransfer.setData('application/@xyflow/react', nodeType)
+    event.dataTransfer.effectAllowed = 'move'
     // }
   }
 
@@ -14,12 +21,14 @@ const DragListItem = ({ item }: { item: { name: string; color: string; type: str
       data-testid={`${item.type}-item`}
       className='drag-list-item'
       onDragStart={(event) => onDragStart(event, item.type)}
-      draggable>
+      draggable
+    >
       <span
         style={{
           backgroundColor: item.color,
         }}
-        className='drag-item-span'></span>
+        className='drag-item-span'
+      ></span>
       {item.name}
       <div className='flex items-center justify-center'>
         <GripHorizontal className='stroke-border' />

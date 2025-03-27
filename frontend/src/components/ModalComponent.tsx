@@ -1,6 +1,6 @@
-import { Modal, ModalProps } from "@nextui-org/react"
-import { useContext, useEffect, useState } from "react"
-import { workspaceContext } from "../contexts/workspaceContext"
+import { Modal, ModalProps } from '@nextui-org/react'
+import { useContext, useEffect, useState } from 'react'
+import { workspaceContext } from '../contexts/workspaceContext'
 
 const ModalComponent = ({ ...props }: ModalProps) => {
   const { setModalsOpened } = useContext(workspaceContext)
@@ -24,10 +24,19 @@ const ModalComponent = ({ ...props }: ModalProps) => {
       setModalsOpened((prev) => prev + 1)
     }
     // Пустой массив зависимостей гарантирует, что этот эффект будет выполнен только один раз, после того как компонент был смонтирован
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return <Modal {...props} portalContainer={document.querySelector(".popups-container") ?? document.body}>{props.children}</Modal>
+  return (
+    <Modal
+      {...props}
+      portalContainer={
+        document.querySelector('.popups-container') ?? document.body
+      }
+    >
+      {props.children}
+    </Modal>
+  )
 }
 
 export default ModalComponent

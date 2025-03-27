@@ -1,23 +1,25 @@
-import { CompletionContext, autocompletion } from "@codemirror/autocomplete"
-import { globalCompletion, python } from "@codemirror/lang-python"
-import { indentUnit } from "@codemirror/language"
-import { andromeda } from "@uiw/codemirror-theme-andromeda"
-import { noctisLilac } from "@uiw/codemirror-theme-noctis-lilac"
-import ReactCodeMirror from "@uiw/react-codemirror"
-import React, { useContext, useEffect } from "react"
-import { IdeContext } from "../../../contexts/ideContext"
-import { themeContext } from "../../../contexts/themeContext"
-import { responseType } from "../../../types/ResponseTypes"
-import { responseEditorPlugin } from "../../ConditionModal/editorOptions"
+import { autocompletion, CompletionContext } from '@codemirror/autocomplete'
+import { globalCompletion, python } from '@codemirror/lang-python'
+import { indentUnit } from '@codemirror/language'
+import { andromeda } from '@uiw/codemirror-theme-andromeda'
+import { noctisLilac } from '@uiw/codemirror-theme-noctis-lilac'
+import ReactCodeMirror from '@uiw/react-codemirror'
+import React, { useContext, useEffect } from 'react'
+import { IdeContext } from '../../../contexts/ideContext'
+import { themeContext } from '../../../contexts/themeContext'
+import { responseType } from '../../../types/ResponseTypes'
+import { responseEditorPlugin } from '../../ConditionModal/editorOptions'
 
-const tabSize = "    "
+const tabSize = '    '
 
 const PythonResponse = ({
   response,
   setData,
+  responseStor,
 }: {
   response: responseType
   setData: React.Dispatch<React.SetStateAction<responseType>>
+  responseStor: { [key: string]: responseType }
 }) => {
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
@@ -27,18 +29,20 @@ const PythonResponse = ({
 
   useEffect(() => {
     if (!response.data[0].python) {
-      setData({
-        ...response,
-        type: "python",
-        data: [
-          {
-            priority: 1,
-            python: {
-              action: `${firstString}\n${secondString}\n        return Message('Hello')`,
-            },
-          },
-        ],
-      })
+      Object.prototype.hasOwnProperty.call(responseStor, 'python')
+        ? setData({ ...responseStor['python'] })
+        : setData({
+            ...response,
+            type: 'python',
+            data: [
+              {
+                priority: 1,
+                python: {
+                  action: `${firstString}\n${secondString}\n        return Message('Hello')`,
+                },
+              },
+            ],
+          })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -46,12 +50,12 @@ const PythonResponse = ({
   const changeResponseValue = (value: string) => {
     setData({
       ...response,
-      type: "python",
+      type: 'python',
       data: [
         {
           priority: 1,
           python: {
-            action: `${firstString}\n${secondString}\n${value.split("\n").slice(2).join("\n")}`,
+            action: `${firstString}\n${secondString}\n${value.split('\n').slice(2).join('\n')}`,
           },
         },
       ],
@@ -62,12 +66,12 @@ const PythonResponse = ({
     if (response.data[0].python?.action) {
       setData({
         ...response,
-        type: "python",
+        type: 'python',
         data: [
           {
             priority: 1,
             python: {
-              action: `${firstString}\n${secondString}\n${response.data[0].python.action.split("\n").slice(2).join("\n")}`,
+              action: `${firstString}\n${secondString}\n${response.data[0].python.action.split('\n').slice(2).join('\n')}`,
             },
           },
         ],
@@ -96,7 +100,13 @@ const PythonResponse = ({
     if (word.from == word.to && !context.explicit) return null
     return {
       from: word.from,
-      options: [{ label: "cnd", type: "function", info: "DFF responses base methods object" }],
+      options: [
+        {
+          label: 'cnd',
+          type: 'function',
+          info: 'DFF responses base methods object',
+        },
+      ],
     }
   }
 
@@ -104,12 +114,13 @@ const PythonResponse = ({
     <>
       <p className='text-sm font-medium'>Action</p>
       <div
-        className={`mt-2 w-full flex flex-col items-start justify-start gap-4 p-4 ${theme === "light" ? "bg-[#f2f1f8]" : "bg-[#24262e]"} rounded-lg font-mono`}>
+        className={`mt-2 flex w-full flex-col items-start justify-start gap-4 p-4 ${theme === 'light' ? 'bg-[#f2f1f8]' : 'bg-[#24262e]'} rounded-lg font-mono`}
+      >
         <ReactCodeMirror
           data-testid='python-response-editor'
           style={{
             fontFamily:
-              "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+              'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
           }}
           lang='python'
           extensions={[
@@ -123,8 +134,8 @@ const PythonResponse = ({
           ]}
           value={response.data[0].python?.action}
           onChange={changeResponseValue}
-          className='w-full border-none outline-none focus-within:outline-none focus:outline-none font-mono'
-          theme={theme === "light" ? noctisLilac : andromeda}
+          className='w-full border-none font-mono outline-none focus-within:outline-none focus:outline-none'
+          theme={theme === 'light' ? noctisLilac : andromeda}
           height='240px'
         />
       </div>

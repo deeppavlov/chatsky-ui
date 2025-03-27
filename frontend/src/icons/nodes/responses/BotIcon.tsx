@@ -1,8 +1,8 @@
-import React from "react"
+import React from 'react'
 
 export const BotIcon = ({
   className,
-  fill = "var(--foreground)",
+  fill = 'var(--foreground)',
 }: React.SVGAttributes<SVGSVGElement>) => {
   return (
     <svg
@@ -11,7 +11,8 @@ export const BotIcon = ({
       width='32'
       height='32'
       viewBox='0 0 32 32'
-      fill='none'>
+      fill='none'
+    >
       <path
         d='M12.25 18.75C13.0784 18.75 13.75 18.0784 13.75 17.25C13.75 16.4216 13.0784 15.75 12.25 15.75C11.4216 15.75 10.75 16.4216 10.75 17.25C10.75 18.0784 11.4216 18.75 12.25 18.75Z'
         fill={fill}

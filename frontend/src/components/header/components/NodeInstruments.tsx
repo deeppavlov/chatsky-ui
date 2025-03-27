@@ -1,13 +1,13 @@
-import { Button, Tooltip } from "@nextui-org/react"
-import { Edge, useReactFlow } from "@xyflow/react"
-import classNames from "classnames"
-import { useContext } from "react"
-import { flowContext } from "../../../contexts/flowContext"
-import { workspaceContext } from "../../../contexts/workspaceContext"
-import FallbackNodeIcon from "../../../icons/nodes/FallbackNodeIcon"
-import StartNodeIcon from "../../../icons/nodes/StartNodeIcon"
-import { FlowType } from "../../../types/FlowTypes"
-import { AppNode } from "../../../types/NodeTypes"
+import { Button, Tooltip } from '@nextui-org/react'
+import { Edge, useReactFlow } from '@xyflow/react'
+import classNames from 'classnames'
+import { useContext } from 'react'
+import { flowContext } from '../../../contexts/flowContext'
+import { workspaceContext } from '../../../contexts/workspaceContext'
+import FallbackNodeIcon from '../../../icons/nodes/FallbackNodeIcon'
+import StartNodeIcon from '../../../icons/nodes/StartNodeIcon'
+import { FlowType } from '../../../types/FlowTypes'
+import { AppNode } from '../../../types/NodeTypes'
 
 const NodeInstruments = ({ flow }: { flow: FlowType }) => {
   const { setNodes } = useReactFlow<AppNode, Edge>()
@@ -28,32 +28,38 @@ const NodeInstruments = ({ flow }: { flow: FlowType }) => {
   return (
     <div className='flex items-center gap-1'>
       <Tooltip
-        key={"header-button-set-start"}
+        key={'header-button-set-start'}
         content='Select node as Start'
-        radius='sm'>
+        radius='sm'
+      >
         <Button
           onClick={(e) => handleNodeFlags(e, setNodes)}
           isIconOnly
           name='start'
           className={classNames(
-            "rounded-small bg-background border border-border hover:bg-overlay hover:border-border-darker",
-            selectedNodeData?.data.flags?.includes("start") && "border-success hover:bg-success-50"
-          )}>
+            'rounded-small border border-border bg-background hover:border-border-darker hover:bg-overlay',
+            selectedNodeData?.data.flags?.includes('start') &&
+              'hover:bg-success-50 border-success',
+          )}
+        >
           <StartNodeIcon />
         </Button>
       </Tooltip>
       <Tooltip
-        key={"header-button-set-fallback"}
+        key={'header-button-set-fallback'}
         content='Select node as Fallback'
-        radius='sm'>
+        radius='sm'
+      >
         <Button
           onClick={(e) => handleNodeFlags(e, setNodes)}
           isIconOnly
           name='fallback'
           className={classNames(
-            "rounded-small bg-background border border-border hover:bg-overlay hover:border-border-darker",
-            selectedNodeData?.data.flags?.includes("fallback") && "border-danger hover:bg-fallback-50"
-          )}>
+            'rounded-small border border-border bg-background hover:border-border-darker hover:bg-overlay',
+            selectedNodeData?.data.flags?.includes('fallback') &&
+              'hover:bg-fallback-50 border-danger',
+          )}
+        >
           <FallbackNodeIcon />
         </Button>
       </Tooltip>
