@@ -79,3 +79,9 @@ class SQLiteExtractor:
         for user_request, bot_response in zip(requests.values(), responses.values()):
             result.append((user_request.text, bot_response.text))
         return result
+
+    async def fetch_message_label(self, run_id: Union[int, str], user_id: int, message_id: int):
+        context = await self.get_context(str(run_id), user_id)
+        if context is None:
+            raise ValueError("No context found for the given run_id and user_id.")
+        return context.labels.get(message_id, default=None)

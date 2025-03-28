@@ -460,3 +460,25 @@ async def get_chat_records(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
+
+
+@router.get("/get_chat/{run_id}/{user_id}/{message_id}", response_model=Optional[dict], status_code=200)
+async def get_message_node(
+    run_id: int,
+    user_id: int,
+    message_id: int,
+    sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
+) -> Optional[List[str]]:
+    """Gets the node label of this turn from a user's chat."""
+    try:
+        return await sqlite_extractor.fetch_message_label(run_id, user_id, message_id)
+    except IndexError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given id not found in the database.",
+        ) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
