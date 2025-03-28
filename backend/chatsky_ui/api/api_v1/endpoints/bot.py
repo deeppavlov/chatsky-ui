@@ -469,7 +469,19 @@ async def get_message_label(
     message_id: int,
     sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
-    """Gets the node label of this turn from a user's chat."""
+    """Gets the node label of this turn from a user's chat.
+
+    Args:
+        run_id (int): The id of the process to send the message to.
+        user_id (int): ID of the user.
+        message_id (int): ID of the turn. (one turn contains both a message from the user and
+            the bot, starting from zero)
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
+
+    Raises:
+        HTTPException: With status code 404 if the build process doesn't have a messenger of type 'web'.
+        HTTPException: With status code 500 if there is an Exception caught or an internal server error.
+    """
     try:
         return await sqlite_extractor.fetch_message_label(run_id, user_id, message_id)
     except IndexError as e:
