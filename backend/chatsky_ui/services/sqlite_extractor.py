@@ -81,6 +81,7 @@ class SQLiteExtractor:
         return result
 
     async def fetch_message_label(self, run_id: Union[int, str], user_id: int, message_id: int):
+        """Gets the node label of the current Chatsky turn."""
         context = await self.get_context(str(run_id), user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
