@@ -85,4 +85,5 @@ class SQLiteExtractor:
         context = await self.get_context(str(run_id), user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
-        return context.labels.get(message_id, None)
+        label = context.labels.get(message_id, None)
+        return {"flow_name": label.flow_name, "node_name": label.node_name}
