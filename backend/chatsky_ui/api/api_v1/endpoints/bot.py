@@ -462,8 +462,8 @@ async def get_chat_records(
         )
 
 
-@router.get("/get_chat/{run_id}/{user_id}/{message_id}", response_model=Optional[dict], status_code=200)
-async def get_message_node(
+@router.get("/get_label/{run_id}/{user_id}/{message_id}", response_model=Optional[dict], status_code=200)
+async def get_message_label(
     run_id: int,
     user_id: int,
     message_id: int,

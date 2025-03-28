@@ -216,3 +216,16 @@ async def test_get_chat_records(dummy_run_id):
 
         assert get_response.status_code == 200
         assert test_result == get_response.json()
+
+
+@pytest.mark.asyncio
+async def test_get_message_label(dummy_run_id):
+    user_id = 0
+    message_id = 0
+    test_result = {"flow_name": "Greeting", "node_name": "Beginning of conversation"}
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+        get_response = await async_client.get(f"/api/v1/bot/get_label/{dummy_run_id}/{user_id}/{message_id}")
+
+        assert get_response.status_code == 200
+        assert test_result == get_response.json()
