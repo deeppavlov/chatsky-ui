@@ -75,16 +75,16 @@ const Logs = ({ item }: IProps) => {
           <div>
             <p>
               <span className='mr-1 font-medium text-neutral-500'>Status:</span>
-                <span
+              <span
                 style={{
                   color:
-                  item.status === 'completed'
-                    ? 'var(--status-green)'
-                    : 'var(--status-red)',
+                    item.status === 'completed'
+                      ? 'var(--status-green)'
+                      : 'var(--status-red)',
                 }}
-                >
+              >
                 {item.status}
-                </span>
+              </span>
             </p>
             <p>
               <span className='mr-1 font-medium text-neutral-500'>
