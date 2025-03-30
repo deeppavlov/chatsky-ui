@@ -75,16 +75,16 @@ const Logs = ({ item }: IProps) => {
           <div>
             <p>
               <span className='mr-1 font-medium text-neutral-500'>Status:</span>
-              <span
+                <span
                 style={{
                   color:
-                    item.status === 'completed'
-                      ? 'var(--status-green)'
-                      : 'var(--status-red)',
+                  item.status === 'completed'
+                    ? 'var(--status-green)'
+                    : 'var(--status-red)',
                 }}
-              >
-                {item.status}fadsds
-              </span>
+                >
+                {item.status}
+                </span>
             </p>
             <p>
               <span className='mr-1 font-medium text-neutral-500'>
@@ -116,7 +116,7 @@ const Logs = ({ item }: IProps) => {
         <div>
           <h4 className='my-4 flex items-center gap-1 text-xl font-semibold'>
             <span className='flex items-center'>
-              {item.status === 'completed' && (
+              {item.status === 'alive' && (
                 <CheckCircle2 fill='var(--status-green)' stroke='white' />
               )}
               {item.status === 'running' && (
@@ -133,7 +133,7 @@ const Logs = ({ item }: IProps) => {
               <span
                 style={{
                   color:
-                    item.status === 'completed'
+                    item.status === 'alive'
                       ? 'var(--status-green)'
                       : item.status === 'stopped'
                         ? 'var(--foreground)'

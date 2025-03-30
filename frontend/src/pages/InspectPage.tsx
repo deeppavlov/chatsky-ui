@@ -179,7 +179,7 @@ const Inspect = memo(() => {
                             )}
 
                             {r.status === 'alive' && (
-                              <CheckIcon className='flex-shrink-0 fill-input-border' />
+                              <CheckIcon className='flex-shrink-0 fill-success' />
                             )}
                           </div>
                         </button>
