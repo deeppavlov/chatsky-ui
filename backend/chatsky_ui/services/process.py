@@ -46,6 +46,7 @@ class Process(ABC):
             cmd_to_run (str): The command to run the process.
             env (dict, optional): Environment variables to be passed down to the subprocess. Defaults to None.
         """
+        self.logger.info("Starting process '%s' with command '%s'", self.id, cmd_to_run)
         self.process = await asyncio.create_subprocess_exec(
             *cmd_to_run.split(),
             stdout=asyncio.subprocess.PIPE,
