@@ -273,7 +273,6 @@ export function formatRelativeTime(
   return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year')
 }
 
-
 export const maxLengthName = 25
 
 export function getTimeDifference(date1: string, date2: string): string {
@@ -291,4 +290,3 @@ export function getTimeDifference(date1: string, date2: string): string {
   if (minutes > 0) return `${minutes} minutes`
   return `${seconds} seconds`
 }
-

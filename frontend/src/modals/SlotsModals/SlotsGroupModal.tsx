@@ -59,7 +59,7 @@ const SlotsGroupModal = ({
     .flat()
     .map((g) => g.name)
 
-  const genIterName = (iter: number = 1) => {
+  const genIterName = (iter: number = 1): string => {
     const iterName = `${flowId}_New_Group_${iter}`
     if (arrNamesSlotsGrop.includes(iterName)) {
       return genIterName(iter + 1)
