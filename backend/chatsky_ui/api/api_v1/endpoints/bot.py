@@ -459,3 +459,22 @@ async def get_chat_records(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
+
+
+@router.get("/get_chat_ids", response_model=Optional[list], status_code=200)
+async def get_chat_ids(
+    sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
+) -> Optional[List[str]]:
+    """Gets all chat ids as they are stored in the database."""
+    try:
+        return await sqlite_extractor.fetch_chat_ids()
+    except IndexError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given id not found in the database.",
+        ) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )

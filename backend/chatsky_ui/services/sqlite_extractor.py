@@ -42,18 +42,24 @@ class SQLiteExtractor:
                 attempts += 1
         raise sqlite3.Error("Failed to reconnect to the database after 3 attempts.")
 
-    async def extract_user_context(self, run_id: str, user_id: int):
+    async def execute_statement(self, stmt: Union[str, tuple]):
         try:
             self._ensure_connection()
-            ctx_id = f"{run_id}_{user_id}"
             with self.connection as conn:
                 cur = conn.cursor()
-                cur.execute("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
+                cur.execute(stmt)
                 rows = cur.fetchall()
                 return rows
         except sqlite3.Error as e:
             self.logger.error(f"Database error: {e}")
             return None
+
+    async def extract_user_context(self, run_id: str, user_id: int):
+        ctx_id = f"{run_id}_{user_id}"
+        return await self.execute_statement("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
+
+    async def extract_chat_ids(self):
+        return await self.execute_statement("SELECT id FROM contexts")
 
     async def get_context(self, run_id: str, user_id: int):
         try:
@@ -79,3 +85,9 @@ class SQLiteExtractor:
         for user_request, bot_response in zip(requests.values(), responses.values()):
             result.append((user_request.text, bot_response.text))
         return result
+
+    async def fetch_chat_ids(self):
+        ids = await self.extract_chat_ids()
+        if ids is None:
+            raise ValueError("No chat records found in the database.")
+        return ids
