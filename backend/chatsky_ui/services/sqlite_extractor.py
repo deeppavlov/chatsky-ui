@@ -42,12 +42,12 @@ class SQLiteExtractor:
                 attempts += 1
         raise sqlite3.Error("Failed to reconnect to the database after 3 attempts.")
 
-    async def execute_statement(self, stmt: Union[str, tuple]):
+    async def execute_statement(self, stmt: str, args: tuple = tuple()):
         try:
             self._ensure_connection()
             with self.connection as conn:
                 cur = conn.cursor()
-                cur.execute(stmt)
+                cur.execute(stmt, args)
                 rows = cur.fetchall()
                 return rows
         except sqlite3.Error as e:
