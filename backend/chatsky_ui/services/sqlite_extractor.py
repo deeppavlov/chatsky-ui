@@ -90,4 +90,6 @@ class SQLiteExtractor:
         ids = await self.extract_chat_ids()
         if ids is None:
             raise ValueError("No chat records found in the database.")
+
+        ids = [item[0] for item in ids]
         return ids
