@@ -292,3 +292,23 @@ export const checkBuildIsChanged = async () => {
     throw error
   }
 }
+
+export const getBuildLogs = async (build_id: number): Promise<string[]> => {
+  try {
+    const { data } = await $v1.get(`/bot/builds/logs/${build_id}`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const getRunLogs = async (run_id: number): Promise<string[]> => {
+  try {
+    const { data } = await $v1.get(`/bot/runs/logs/${run_id}`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}

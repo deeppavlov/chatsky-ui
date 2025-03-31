@@ -3,9 +3,8 @@ import { flowContext } from '@/contexts/flowContext'
 import { Button, Switch } from '@nextui-org/react' // Можно заменить на свой UI-компонент
 import { useReactFlow } from '@xyflow/react'
 import { Plus } from 'lucide-react'
-import { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { v4 } from 'uuid'
-import { NotificationsContext } from '../../contexts/notificationsContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
 import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
@@ -20,7 +19,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '../ModalComponents'
-import SlotItem from './components/SlotItem'
+import SlotItem, { IErrorDep } from './components/SlotItem'
 
 type SlotsGroupModalType = CustomModalProps & {
   data: SlotsNodeDataType
@@ -38,8 +37,8 @@ const SlotsGroupModal = ({
 }: SlotsGroupModalType) => {
   const { updateNodeData } = useReactFlow()
   const { closePopUp } = useContext(PopUpContext)
-  const { notification: n } = useContext(NotificationsContext)
-  const { quietSaveFlows } = useContext(flowContext)
+
+  const { quietSaveFlows, flows } = useContext(flowContext)
   const [nodeData, setNodeData] = useState(data)
   const [groups, setGroups] = useState<SlotsGroupType[]>(data.groups ?? [])
   const [subgroups, setSubgroups] = useState<SlotsGroupType[]>(
@@ -54,13 +53,20 @@ const SlotsGroupModal = ({
     return (
       group ?? {
         id: id,
-        name: 'New group',
+        name: 'New_Group',
         slots: [generateNewSlot(id)],
         subgroups: [],
         subgroup_to: '',
         flow: 'global',
       }
     )
+  })
+
+  console.log(currentGroup, 'currentGroup')
+
+  const [errors, setErrors] = React.useState<IErrorDep>({
+    nameGroup: { isInvalid: false, errorMessage: '' },
+    slots: [],
   })
 
   useEffect(() => {
@@ -85,6 +91,82 @@ const SlotsGroupModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData])
 
+  const isNotValidateNameGrop = () => {
+    let isError = false
+
+    const errorNameGroup = {
+      isInvalid: false,
+      errorMessage: '',
+    }
+
+    if (currentGroup.name === '') {
+      errorNameGroup.isInvalid = true
+      errorNameGroup.errorMessage = 'Group name is required!'
+      isError = true
+    }
+
+    const arrNamesSlotsGrop = flows
+      .filter((f) => f.name !== 'global')
+      .map((f) => f.data.nodes)
+      .flat()
+      .filter((n) => n.type === 'slots_node')
+      .map((s) => (s.data as SlotsNodeDataType).groups)
+      .flat()
+      .map((g) => g.name)
+
+    if (arrNamesSlotsGrop.includes(currentGroup.name)) {
+      errorNameGroup.isInvalid = true
+      errorNameGroup.errorMessage = 'Group name must be unique!'
+      isError = true
+    }
+
+    const errorsSlot = currentGroup.slots
+      .map((slot) => {
+        const arr = currentGroup.slots
+          .filter((s) => s.id !== slot.id)
+          .map((s) => s.name)
+        if (arr.includes(slot.name) || slot.value === '') {
+          isError = true
+          return {
+            id: slot.id,
+            name: {
+              isInvalid: arr.includes(slot.name),
+              errorMessage: arr.includes(slot.name)
+                ? 'Slot name must be unique!'
+                : '',
+            },
+            value: {
+              isInvalid: slot.value === '',
+              errorMessage: slot.value === '' ? 'Slot value is required!' : '',
+            },
+          }
+        }
+        return null
+      })
+      .filter((e) => e !== null)
+
+    setErrors({
+      nameGroup: errorNameGroup,
+      slots: errorsSlot.filter(
+        (
+          e,
+        ): e is {
+          id: string
+          name: { isInvalid: boolean; errorMessage: string }
+          value: { isInvalid: boolean; errorMessage: string }
+        } => e !== null,
+      ),
+    })
+
+    console.log(errors, 'errors')
+
+    if (isError) {
+      isError = true
+    }
+
+    return isError
+  }
+
   const onSave = () => {
     if (
       !currentGroup.name ||
@@ -92,36 +174,38 @@ const SlotsGroupModal = ({
         (slot) => slot.name && slot.group_id && slot.type && slot.value,
       )
     ) {
-      return n.add({
-        type: 'warning',
-        title: 'Warning',
-        message: 'All fields are required!',
-      })
-    } else {
-      const newData = {
-        ...nodeData,
-        groups: is_create
-          ? [
-              ...groups.map((g: SlotsGroupType) =>
-                g.id === parentGroup?.id ? parentGroup : g,
-              ),
-              currentGroup,
-            ]
-          : groups.map((g: SlotsGroupType) =>
-              g.id === currentGroup.id
-                ? currentGroup
-                : g.id === parentGroup?.id
-                  ? parentGroup
-                  : g,
-            ),
-      }
-      updateNodeData(data.id, newData)
-      setData(() => newData)
+      return
     }
+
+    const newData = {
+      ...nodeData,
+      groups: is_create
+        ? [
+            ...groups.map((g: SlotsGroupType) =>
+              g.id === parentGroup?.id ? parentGroup : g,
+            ),
+            currentGroup,
+          ]
+        : groups.map((g: SlotsGroupType) =>
+            g.id === currentGroup.id
+              ? currentGroup
+              : g.id === parentGroup?.id
+                ? parentGroup
+                : g,
+          ),
+    }
+
+    updateNodeData(data.id, newData)
+    setData(() => newData)
   }
 
   const onSaveHandler = () => {
+    if (isNotValidateNameGrop()) {
+      return
+    }
+
     onSave()
+
     quietSaveFlows()
     closePopUp(id)
   }
@@ -165,7 +249,19 @@ const SlotsGroupModal = ({
             label='Group name'
             placeholder='Enter name of this group...'
             value={currentGroup.name}
-            onValueChange={(name) => setCurrentGroup({ ...currentGroup, name })}
+            onValueChange={(name) => {
+              setCurrentGroup({
+                ...currentGroup,
+                name: name.replaceAll(' ', '_'),
+              })
+              setErrors({
+                ...errors,
+                nameGroup: { isInvalid: false, errorMessage: '' },
+              })
+            }}
+            variant='bordered'
+            isInvalid={errors.nameGroup.isInvalid}
+            errorMessage={errors.nameGroup.errorMessage}
           />
           {groups.length >= (is_create ? 1 : 2) && (
             <div className='mt-1 flex h-8 items-center gap-1.5'>
@@ -241,16 +337,27 @@ const SlotsGroupModal = ({
                   slots: prevGroup.slots.filter((s) => s.id !== slotId),
                 }))
               }
+              errors={errors}
+              setErrors={(newErrors) => {
+                if ('nameGroup' in newErrors) {
+                  setErrors(newErrors)
+                }
+              }}
             />
           ))}
         </div>
       </ModalBody>
       <ModalFooter>
-        <Button className='bg-btn-accent text-black' onClick={onAddSlot}>
-          <Plus className='stroke-black' />
+        <Button className='' onClick={onAddSlot}>
+          <Plus className='' />
           New slot
         </Button>
-        <Button onClick={onSaveHandler}>Save group</Button>
+        <Button
+          className='bg-foreground text-background'
+          onClick={onSaveHandler}
+        >
+          Save group
+        </Button>
       </ModalFooter>
     </Modal>
   )

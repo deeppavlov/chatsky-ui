@@ -29,7 +29,11 @@ class MessengerConverter(BaseConverter):
         or `8020` by default, if the variable isn't set.
         """
         if self.messenger.web is not None:
-            return {"chatsky.messengers.HTTPMessengerInterface": {"port": self.messenger.chatsky_port}}
+            return {
+                "external:chatsky_ui.clients.http_interface.HTTPMessengerInterface": {
+                    "port": self.messenger.chatsky_port
+                }
+            }
         elif self.messenger.telegram is not None:
             return {
                 "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": self.messenger.tg_token_name}}

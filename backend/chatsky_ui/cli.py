@@ -92,6 +92,7 @@ def _execute_command_file(project_dir: Path, command_file: str, preset: str) -> 
 
         asyncio.run(_execute_command(command_to_run))
     else:
+        logger.error("Invalid preset '%s'. Preset must be one of %s", preset, list(presets_build_file.keys()))
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
 
@@ -115,6 +116,8 @@ def build_bot(
     project_dir = project_dir or settings.work_directory
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -144,6 +147,8 @@ def build_scenario(
         project_dir (Path): The project directory.
     """
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -176,6 +181,8 @@ def run_bot(
     project_dir = project_dir or settings.work_directory
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -239,6 +246,8 @@ def run_app(
     conf_reload = conf_reload or settings.conf_reload
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
 
     settings.set_config(

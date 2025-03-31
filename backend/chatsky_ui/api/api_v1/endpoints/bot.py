@@ -29,6 +29,7 @@ async def _stop_process(id_: int, process_manager: ProcessManager, process="run"
     try:
         await process_manager.stop(id_)
     except (RuntimeError, ProcessLookupError) as e:
+        process_manager.logger.error("Error stopping process '%s': %s", id_, e)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Process not found. It may have already exited or not started yet. Please check logs.",
@@ -52,11 +53,13 @@ async def _check_process_status(id_: int, process_manager: ProcessManager) -> Di
         {"status": response}: with `response` being the status of the given process.
     """
     if id_ not in process_manager.processes:
+        process_manager.logger.error("Process '%s' not found", id_)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Process not found. It may have already exited.",
         )
     process_status = await process_manager.get_status(id_)
+    process_manager.logger.info("Process '%s' status: %s", id_, process_status)
     return {"status": process_status.value}
 
 
@@ -80,14 +83,15 @@ async def start_build(
         {"status": "ok", "build_id": build_id}: in case of **starting** the build process successfully.
     """
     try:
+        build_manager.logger.debug("Starting build process with preset '%s'", preset)
         build_id = await build_manager.start(preset)
     except RuntimeError as e:
+        build_manager.logger.error("Error starting build process: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Several builds were requested in short time. Please wait a bit and try.",
         ) from e
     background_tasks.add_task(build_manager.check_status, build_id)
-    build_manager.logger.info("Build process '%s' has started", build_id)
     return {"status": "ok", "build_id": build_id}
 
 
@@ -105,6 +109,7 @@ async def stop_build(*, build_id: int, build_manager: BuildManager = Depends(dep
     Returns:
         {"status": "ok"}: in case of stopping a process successfully.
     """
+    build_manager.logger.debug("Stopping build process '%s'", build_id)
     return await _stop_process(build_id, build_manager, process="build")
 
 
@@ -126,12 +131,15 @@ async def stop_all_builds(build_manager: BuildManager = Depends(deps.get_build_m
         {"status": "ok"}: in case of stopping all builds successfully.
     """
     try:
+        build_manager.logger.debug("Stopping all build processes")
         await build_manager.stop_all()
     except Exception as e:
+        build_manager.logger.error("Error stopping all build processes: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Please check that service's up and running.",
         ) from e
+    build_manager.logger.info("All build processes have been stopped")
     return {"status": "ok"}
 
 
@@ -154,6 +162,7 @@ async def check_build_status(
         {"status": "stopped"}: in case of a stopped process.
         {"status": "failed"}: in case of a failed-to-run process.
     """
+    build_manager.logger.debug("Checking status of build process '%s'", build_id)
     return await _check_process_status(build_id, build_manager)
 
 
@@ -168,6 +177,7 @@ async def check_graph_changes(*, build_manager: BuildManager = Depends(deps.get_
         {"status": "ok", "data": True}: in case the graph was changed since last build.
         {"status": "ok", "data": False}: in case the graph wasn't changed.
     """
+    build_manager.logger.debug("Checking if graph was changed since last build")
     if build_manager.graph_repo_manager.is_changed():
         return {"status": "ok", "data": True}
     return {"status": "ok", "data": False}
@@ -213,6 +223,7 @@ async def check_build_processes(
 
         return builds_info
 
+    build_manager.logger.debug("Checking all build processes metadata")
     builds_info = await _get_builds_info_with_runs_info(
         build_manager, run_manager, offset=pagination.offset(), limit=pagination.limit
     )
@@ -267,18 +278,22 @@ async def start_run(
         {"status": "ok", "run_id": run_id}: in case of **starting** the run process successfully.
     """
     try:
+        run_manager.logger.debug("Starting run process with preset '%s'", preset)
         run_id = await run_manager.start(build_id, preset)
     except RuntimeError as e:
+        run_manager.logger.error("Error starting run process. Several runs in short time: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Several runs were requested in short time. Please wait for 13 seconds before starting a new run.",
         ) from e
     except ConnectionError as e:
+        run_manager.logger.error("Error starting run process. Port conflict: %s", e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Port conflict error. Something went wrong. Please check the logs for more details.",
         ) from e
     except ValueError as e:
+        run_manager.logger.error("Error starting run process: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -303,7 +318,7 @@ async def stop_run(*, run_id: int, run_manager: RunManager = Depends(deps.get_ru
     Returns:
         {"status": "ok"}: in case of stopping a process successfully.
     """
-
+    run_manager.logger.debug("Stopping run process '%s'", run_id)
     return await _stop_process(run_id, run_manager, process="run")
 
 
@@ -325,12 +340,15 @@ async def stop_all_runs(run_manager: RunManager = Depends(deps.get_run_manager))
         {"status": "ok"}: in case of stopping all runs successfully.
     """
     try:
+        run_manager.logger.debug("Stopping all run processes")
         await run_manager.stop_all()
     except Exception as e:
+        run_manager.logger.error("Error stopping all run processes: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Please check that service's up and running.",
         ) from e
+    run_manager.logger.info("All run processes have been stopped")
     return {"status": "ok"}
 
 
@@ -351,6 +369,7 @@ async def check_run_status(*, run_id: int, run_manager: RunManager = Depends(dep
         {"status": "stopped"}: in case of a stopped process.
         {"status": "failed"}: in case of a failed-to-run process.
     """
+    run_manager.logger.debug("Checking status of run process '%s'", run_id)
     return await _check_process_status(run_id, run_manager)
 
 
@@ -373,10 +392,11 @@ async def check_run_processes(
         In case `run_id` is specified, the run info for that process is returned.
         Otherwise, a list with run info of all `run` processes is returned.
     """
-
     if run_id is not None:
+        run_manager.logger.debug("Checking run process '%s' metadata", run_id)
         return await run_manager.get_run_info(run_id)
     else:
+        run_manager.logger.debug("Checking all run processes metadata")
         return await run_manager.get_full_info(offset=pagination.offset(), limit=pagination.limit)
 
 
@@ -393,6 +413,7 @@ async def get_run_logs(
         run_manager (RunManager): The `run` process manager containing the `build_id` process.
         pagination (Pagination): An object containing the offset and limit parameters for paginating results.
     """
+    run_manager.logger.debug("Getting logs of run process '%s'", run_id)
     if run_id is not None:
         return await run_manager.fetch_run_logs(run_id, pagination.offset(), pagination.limit)
 
@@ -425,6 +446,7 @@ async def respond(
             detail="Build process of id '{run_id}' doesn't have a messenger of type 'web'. "
             "Check the build port and messenger in metadata.",
         )
+    run_manager.logger.debug("Sending message to Chatsky at port '%s'", build_port)
 
     async with AsyncClient() as client:
         try:
@@ -434,6 +456,7 @@ async def respond(
             )
             return response.json()
         except Exception as e:
+            run_manager.logger.error("Error sending message to Chatsky: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=f"Please check that service's up and running on the port '{build_port}'.",

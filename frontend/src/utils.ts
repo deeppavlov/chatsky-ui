@@ -30,7 +30,7 @@ export const generateNewFlow = (flow: CreateFlowType) => {
 }
 
 export const validateFlowName = (name: string, flows: FlowType[]) => {
-  return !flows.some((flow) => flow.name === name) && name.length >= 2
+  return !flows.some((flow) => flow.name === name) && name.length >= 1
 }
 
 export function capitalizeFirstWord(str: string) {
@@ -159,7 +159,7 @@ export const generateNewNode = (
 export const generateNewSlot = (group_id: string): SlotType => {
   return {
     id: 'slot_' + v4(),
-    name: 'New slot',
+    name: 'New_Slot',
     group_id,
     type: 'RegexpSlot',
     method: '',
@@ -271,4 +271,20 @@ export function formatRelativeTime(
   if (diffInSeconds < 31536000)
     return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month')
   return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year')
+}
+
+export function getTimeDifference(date1: string, date2: string): string {
+  const d1 = new Date(date1)
+  const d2 = new Date(date2)
+  let diffInSeconds = Math.abs((d2.getTime() - d1.getTime()) / 1000)
+
+  const hours = Math.floor(diffInSeconds / 3600)
+  diffInSeconds %= 3600
+  const minutes = Math.floor(diffInSeconds / 60)
+  const seconds = Math.floor(diffInSeconds % 60)
+
+  if (hours > 0 && minutes > 0) return `${hours} hours ${minutes} minutes`
+  if (hours > 0) return `${hours} hours`
+  if (minutes > 0) return `${minutes} minutes`
+  return `${seconds} seconds`
 }

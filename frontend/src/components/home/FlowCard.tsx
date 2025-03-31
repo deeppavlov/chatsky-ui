@@ -1,15 +1,18 @@
+import { useDisclosure } from '@nextui-org/react'
 import classNames from 'classnames'
 import { Edit } from 'lucide-react'
 import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import TrashIcon from '../../icons/TrashIcon'
+import СonfirmationModal from '../../modals/СonfirmationModal/СonfirmationModal'
 import { FlowType } from '../../types/FlowTypes'
 
 const FlowCard = ({ flow }: { flow: FlowType }) => {
   const [hover, setHover] = useState(false)
   const { deleteFlow } = useContext(flowContext)
   const navigate = useNavigate()
+  const { isOpen, onClose, onOpen } = useDisclosure()
 
   const deleteFlowHandler = useCallback(
     (e: React.MouseEvent) => {
@@ -41,7 +44,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
           </div>
           <button
             data-testid={`${flow.name}-delete-btn`}
-            onClick={deleteFlowHandler}
+            onClick={onOpen}
             className={`flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-transparent transition hover:border-border hover:bg-f-card-trash ${
               !hover && 'opacity-0'
             } absolute right-4 top-4 z-10`}
@@ -66,6 +69,15 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
           Edit flow
         </button>
       </div>
+      {isOpen && (
+        <СonfirmationModal
+          flow={flow}
+          size={'sm'}
+          isOpen={isOpen}
+          onClose={onClose}
+          onDelete={(e) => deleteFlowHandler(e)}
+        />
+      )}
     </div>
   )
 }

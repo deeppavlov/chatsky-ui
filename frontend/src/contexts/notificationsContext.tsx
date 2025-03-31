@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { createContext } from 'react'
 import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
 import useLocalStorage from '../hooks/useLocalStorage'
 
 export type notificationTypeType =
@@ -25,6 +26,7 @@ export type notificationType = {
   timestamp: number
   stack: number
   isRead: boolean
+  link?: { text: string; url: string }
 }
 
 export type createNotificationType = {
@@ -34,6 +36,7 @@ export type createNotificationType = {
   duration?: number
   timestamp?: number
   stack?: number
+  link?: { text: string; url: string }
 }
 
 type notificationsContextType = {
@@ -142,7 +145,10 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
     duration = 5000,
     timestamp = Date.now(),
     stack = 1,
+    link,
   }: createNotificationType) => {
+    console.log(link)
+
     const color = notificationTypeColor(type)
     const notification = {
       title,
@@ -152,7 +158,10 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       stack,
       duration,
       isRead: false,
+      link,
     }
+
+    console.log(notification)
     setNotifications((prevNotifications) => [
       ...prevNotifications,
       notification,
@@ -184,6 +193,18 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
                 <p className='whitespace-pre-wrap text-sm text-neutral-500'>
                   {notification.message}
                 </p>
+              )}
+              {notification.link && (
+                <Link
+                  to={{
+                    pathname: location.pathname,
+                    search: notification.link.url,
+                  }}
+                >
+                  <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                    {notification.link.text} &rarr;
+                  </span>
+                </Link>
               )}
             </div>
           </div>
