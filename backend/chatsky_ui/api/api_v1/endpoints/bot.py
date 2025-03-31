@@ -469,7 +469,17 @@ async def get_chat_records(
     user_id: int,
     sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
-    """Gets the records of a user's chat from a specified run."""
+    """Gets the records of a user's chat from a specified run.
+
+    Args:
+        run_id (int): The id of the process to send the message to.
+        user_id (int): ID of the user.
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
+
+    Raises:
+        HTTPException: With status code 404 if the user with the given id is not found in the database.
+        HTTPException: With status code 500 if there is an Exception caught or an internal server error.
+    """
     try:
         return await sqlite_extractor.fetch_chat_records(run_id, user_id)
     except IndexError as e:
@@ -488,14 +498,16 @@ async def get_chat_records(
 async def get_chat_ids(
     sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
-    """Gets all chat ids as they are stored in the database."""
+    """Gets all chat ids as they are stored in the database.
+
+    Args:
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
+
+    Raises:
+        HTTPException: With status code 500 if there is an Exception caught or an internal server error.
+    """
     try:
         return await sqlite_extractor.fetch_chat_ids()
-    except IndexError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User with the given id not found in the database.",
-        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
