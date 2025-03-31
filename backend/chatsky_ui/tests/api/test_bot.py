@@ -221,9 +221,7 @@ async def test_get_chat_records(dummy_run_id):
 @pytest.mark.asyncio
 async def test_get_chat_ids():
     test_result = [
-        [
-            "0_0"
-        ],
+        ["0_0"],
     ]
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
