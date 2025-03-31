@@ -69,7 +69,7 @@ class SQLiteExtractor:
             )
             return None
 
-    async def fetch_chat_records(self, run_id: Union[int, str], user_id: int, offset: int, limit: int):
+    async def fetch_chat_records(self, run_id: Union[int, str], user_id: int):
         context = await self.get_context(str(run_id), user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")

@@ -202,17 +202,13 @@ def run_scenario(
     script_path = settings.scripts_dir / "build.yaml"
 
     command_to_run = (
-        f"python {project_dir}/app.py --script-path {script_path}"
+        f"{project_dir}/app.py --script-path {script_path}"
         f" --dialogue-db-path {settings.database_path} --run-id {run_id}"
     )
     try:
-        asyncio.run(_execute_command(command_to_run))
+        asyncio.run(_execute_command("python" + command_to_run))
     except FileNotFoundError:
-        command_to_run = (
-            f"python3 {project_dir}/app.py --script-path {script_path}"
-            f" --dialogue-db-path {settings.database_path} --run-id {run_id}"
-        )
-        asyncio.run(_execute_command(command_to_run))
+        asyncio.run(_execute_command("python3" + command_to_run))
 
 
 @cli.command("run_app")
