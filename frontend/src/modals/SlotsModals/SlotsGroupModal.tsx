@@ -4,6 +4,7 @@ import { Button, Switch } from '@nextui-org/react' // Можно заменит�
 import { useReactFlow } from '@xyflow/react'
 import { Plus } from 'lucide-react'
 import React, { useContext, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { v4 } from 'uuid'
 import { PopUpContext } from '../../contexts/popUpContext'
 import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
@@ -37,7 +38,7 @@ const SlotsGroupModal = ({
 }: SlotsGroupModalType) => {
   const { updateNodeData } = useReactFlow()
   const { closePopUp } = useContext(PopUpContext)
-
+  const { flowId } = useParams()
   const { quietSaveFlows, flows } = useContext(flowContext)
   const [nodeData, setNodeData] = useState(data)
   const [groups, setGroups] = useState<SlotsGroupType[]>(data.groups ?? [])
@@ -48,12 +49,30 @@ const SlotsGroupModal = ({
   )
   const [isSubGroup, setIsSubGroup] = useState<boolean>(!!group?.subgroup_to)
   const [parentGroup, setParentGroup] = useState<SlotsGroupType | null>(null)
+
+  const arrNamesSlotsGrop = flows
+    .filter((f) => f.name !== 'global')
+    .map((f) => f.data.nodes)
+    .flat()
+    .filter((n) => n.type === 'slots_node')
+    .map((s) => (s.data as SlotsNodeDataType).groups)
+    .flat()
+    .map((g) => g.name)
+
+  const genIterName = (iter: number = 1) => {
+    const iterName = `${flowId}_New_Group_${iter}`
+    if (arrNamesSlotsGrop.includes(iterName)) {
+      return genIterName(iter + 1)
+    }
+    return iterName
+  }
+
   const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
     const id = 'group_' + v4()
     return (
       group ?? {
         id: id,
-        name: 'New_Group',
+        name: genIterName(),
         slots: [generateNewSlot(id)],
         subgroups: [],
         subgroup_to: '',
@@ -61,8 +80,6 @@ const SlotsGroupModal = ({
       }
     )
   })
-
-  console.log(currentGroup, 'currentGroup')
 
   const [errors, setErrors] = React.useState<IErrorDep>({
     nameGroup: { isInvalid: false, errorMessage: '' },
@@ -104,15 +121,6 @@ const SlotsGroupModal = ({
       errorNameGroup.errorMessage = 'Group name is required!'
       isError = true
     }
-
-    const arrNamesSlotsGrop = flows
-      .filter((f) => f.name !== 'global')
-      .map((f) => f.data.nodes)
-      .flat()
-      .filter((n) => n.type === 'slots_node')
-      .map((s) => (s.data as SlotsNodeDataType).groups)
-      .flat()
-      .map((g) => g.name)
 
     if (arrNamesSlotsGrop.includes(currentGroup.name)) {
       errorNameGroup.isInvalid = true
@@ -157,8 +165,6 @@ const SlotsGroupModal = ({
         } => e !== null,
       ),
     })
-
-    console.log(errors, 'errors')
 
     if (isError) {
       isError = true
@@ -205,7 +211,6 @@ const SlotsGroupModal = ({
     }
 
     onSave()
-
     quietSaveFlows()
     closePopUp(id)
   }

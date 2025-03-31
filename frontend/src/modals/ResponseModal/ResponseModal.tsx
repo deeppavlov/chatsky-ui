@@ -119,6 +119,17 @@ const ResponseModal = ({
       return
     }
 
+    if (currentResponse.name.length > 25) {
+      setErrors({
+        ...errors,
+        name: {
+          isInvalid: true,
+          errorMessage: 'Name must be less than 25 characters',
+        },
+      })
+      return
+    }
+
     if (
       selected === 'python' &&
       currentResponse.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') !== ''

@@ -115,7 +115,9 @@ const ConditionModal = ({
         collection: flow.data.nodes
           .filter((node) => node.type === 'default_node')
           .map((node) =>
-            (node.data as DefaultNodeDataType).conditions.map((condition) => condition.name),
+            (node.data as DefaultNodeDataType).conditions.map(
+              (condition) => condition.name,
+            ),
           ),
       }
     })
@@ -189,6 +191,16 @@ const ConditionModal = ({
           node.type === 'default_node' &&
           node.data.conditions?.some((c) => c.name === currentCondition.name),
       )
+
+      const is_name_valid_length = currentCondition.name.length <= 25
+
+      if (!is_name_valid_length) {
+        return {
+          status: false,
+          reason: 'Name must be less than 25 characters',
+        }
+      }
+
       if (!is_name_valid) {
         return {
           status: false,
@@ -455,6 +467,11 @@ const ConditionModal = ({
   }
 
   const isValidCurrentCondition = () => {
+    const maxLenghtName = currentCondition.name.length <= 25
+    if (maxLenghtName) {
+      return true
+    }
+
     if (currentCondition.type === 'python') {
       return currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') === ''
     }
@@ -493,7 +510,16 @@ const ConditionModal = ({
       onCloseHandler()
     } else {
       if (!validate_name.status) {
-        setError({ isInvalid: true, errorMessage: 'Name must be unique' })
+        if (validate_name.reason === 'Name must be unique') {
+          setError({ isInvalid: true, errorMessage: 'Name must be unique' })
+        }
+
+        if (validate_name.reason === 'Name must be less than 25 characters') {
+          setError({
+            isInvalid: true,
+            errorMessage: 'Name must be less than 25 characters',
+          })
+        }
       }
       if (currentCondition.type === 'python') {
         const text = currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '')

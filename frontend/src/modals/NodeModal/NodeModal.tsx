@@ -61,6 +61,16 @@ const NodeModal = ({
       })
       return false
     }
+    if (nodeDataState.name.length > 25) {
+      setErrors({
+        ...errors,
+        name: {
+          isInvalid: true,
+          errorMessage: 'Name must be less than 25 characters',
+        },
+      })
+      return false
+    }
     return true
   }
 

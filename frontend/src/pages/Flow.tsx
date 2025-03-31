@@ -357,6 +357,7 @@ export default function Flow() {
 
       setNodes((nds) => nds.concat(newNode))
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [takeSnapshot, reactFlowInstance, flows, setNodes, nodes],
   )
 
