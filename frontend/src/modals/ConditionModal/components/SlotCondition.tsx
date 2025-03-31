@@ -1,22 +1,29 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import SearchIcon from '@/icons/SearchIcon'
 import DefCombobox from '@/UI/Input/DefCombobox'
 import { TableCell, TableRow } from '@nextui-org/react'
 import { useContext, useEffect, useState } from 'react'
 import { flowContext } from '../../../contexts/flowContext'
+import { conditionType, conditionTypeType } from '../../../types/ConditionTypes'
 import { SlotType } from '../../../types/FlowTypes'
 import DefSelect from '../../../UI/Input/DefSelect'
 import DefTable from '../../../UI/Table/DefTable'
-import { ConditionModalContentType } from '../ConditionModal'
 
-const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
+export type IMyConditionModalContentType = {
+  condition: conditionType
+  setData: (
+    state: conditionType,
+    callback?: (data: { group: boolean; slot: boolean }) => void,
+  ) => void
+}
+
+const SlotCondition = ({
+  condition,
+  setData,
+}: IMyConditionModalContentType) => {
   const { groups: _groups } = useContext(flowContext)
 
-  const [groups, setGroups] = useState(_groups)
-  const [slots, setSlots] = useState<SlotType[]>(
-    groups.flatMap((group) => group.slots),
-  )
+  const [groups] = useState(_groups)
+  const [slots] = useState<SlotType[]>(groups.flatMap((group) => group.slots))
   const [selectedSlot, setSelectedSlot] = useState(
     slots.find((slot) => slot.id === condition.data.slot)?.name ?? '',
   )
@@ -28,17 +35,27 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
     )?.name ?? '',
   )
 
+  const [errorValues, setErrorValues] = useState({
+    group: false,
+    slot: false,
+  })
+
   useEffect(() => {
     if (!condition.data.slot) {
-      setData({
+      const data = {
         ...condition,
-        type: 'slot',
+        type: 'slot' as conditionTypeType,
         data: {
           ...condition.data,
           slot: '',
         },
+      }
+
+      setData(data, () => {
+        setErrorValues({ group: true, slot: true })
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeConditionValue = (value: string) => {
@@ -63,7 +80,12 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
         changeConditionValue(slot.id)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groups, selectedSlot, slots])
+
+  const inValidGroup = selectedGroup === '' && errorValues.group
+
+  const inValidSlot = selectedSlot === '' && errorValues.slot
 
   return (
     <div>
@@ -93,6 +115,8 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
                   key: group.id,
                 }))}
                 placeholder='Choose group'
+                isInvalid={inValidGroup}
+                errorMessage={inValidGroup ? 'Please fill every field' : ''}
               />
             </TableCell>
           </TableRow>
@@ -116,6 +140,8 @@ const SlotCondition = ({ condition, setData }: ConditionModalContentType) => {
                   }))}
                 placeholder='Choose slot'
                 onValueChange={(value) => setSelectedSlot(value)}
+                isInvalid={inValidSlot}
+                errorMessage={inValidSlot ? 'Please fill every field' : ''}
               />
             </TableCell>
           </TableRow>

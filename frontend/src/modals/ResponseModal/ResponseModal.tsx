@@ -1,10 +1,9 @@
 import { Button, Input, ModalProps, Tab, Tabs } from '@nextui-org/react'
 // import ModalComponent from "../../components/ModalComponent";
 import { useReactFlow } from '@xyflow/react'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
-import { NotificationsContext } from '../../contexts/notificationsContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
 import { responseType, responseTypeType } from '../../types/ResponseTypes'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
@@ -47,7 +46,20 @@ const ResponseModal = ({
     setCurrentResponse({ ...currentResponse, type: key })
     setSelected(key)
   }
-  const { notification: n } = useContext(NotificationsContext)
+
+  const [responseStor, setResponseStor] = useState({
+    [response.type]: response,
+  })
+
+  useEffect(() => {
+    const key = currentResponse.type
+    setResponseStor({ ...responseStor, [key]: currentResponse })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentResponse])
+
+  const [errors, setErrors] = useState<{
+    name?: { isInvalid: boolean; errorMessage: string }
+  }>({})
 
   const tabItems: {
     title: ResponseModalTab
@@ -81,24 +93,45 @@ const ResponseModal = ({
         <PythonResponse
           response={currentResponse}
           setData={setCurrentResponse}
+          responseStor={responseStor}
         />
       ),
       custom: <div>Custom</div>,
       text: (
-        <TextResponse response={currentResponse} setData={setCurrentResponse} />
+        <TextResponse
+          response={currentResponse}
+          setData={setCurrentResponse}
+          responseStor={responseStor}
+        />
       ),
       basic: <div>Basic</div>,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentResponse],
   )
 
   const saveResponse = () => {
     if (!currentResponse.name) {
-      return n.add({
-        title: 'Saving error!',
-        message: 'Response name is required!',
-        type: 'error',
+      setErrors({
+        ...errors,
+        name: { isInvalid: true, errorMessage: 'Please fill every field' },
       })
+      return
+    }
+
+    if (
+      selected === 'python' &&
+      currentResponse.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') !== ''
+    ) {
+      setErrors({
+        ...errors,
+        name: {
+          isInvalid: true,
+          errorMessage:
+            'Please use only Latin letters. Names cannot start with a number.',
+        },
+      })
+      return
     }
     if (
       flows.some((flow) =>
@@ -110,11 +143,14 @@ const ResponseModal = ({
         ),
       )
     ) {
-      return n.add({
-        title: 'Saving error!',
-        message: 'Response name must be unique!',
-        type: 'error',
+      setErrors({
+        ...errors,
+        name: {
+          isInvalid: true,
+          errorMessage: 'Response name must be unique!',
+        },
       })
+      return
     } else {
       const nodes = getNodes()
       const node = getNode(data.id)
@@ -142,6 +178,7 @@ const ResponseModal = ({
       }
     }
   }
+
   return (
     <Modal
       className='flex min-h-[584px] flex-col'
@@ -187,12 +224,17 @@ const ResponseModal = ({
             placeholder="Enter response's name here"
             value={currentResponse.name}
             isRequired
-            onChange={(e) =>
+            onChange={(e) => {
               setCurrentResponse({
                 ...currentResponse,
-                name: e.target.value.replace(/\s/g, ''),
+                name: e.target.value.replaceAll(' ', '_'),
               })
-            }
+              setErrors((prevErrors) => ({
+                ...prevErrors,
+                name: { isInvalid: false, errorMessage: '' },
+              }))
+            }}
+            {...errors.name}
           />
         </div>
         <div>{bodyItems[selected]}</div>
@@ -206,63 +248,6 @@ const ResponseModal = ({
         </Button>
       </ModalFooter>
     </Modal>
-    // <ModalComponent
-    //  className="min-h-[584px]"
-    //  size={size}
-    //  isOpen={true}
-    //  onClose={onClose}
-    // >
-    //  <ModalContent>
-    //   <ModalHeader> Edit response </ModalHeader>
-    //   <ModalBody>
-    //    <label htmlFor="">
-    //     <Tabs
-    //      disabledKeys={["llm"]}
-    //      selectedKey={selected}
-    //      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //      // @ts-ignore
-    //      onSelectionChange={setSelectedHandler}
-    //      items={tabItems}
-    //      classNames={{
-    //       tabList: "w-full",
-    //       tab: "",
-    //       cursor: "border border-contrast-border",
-    //      }}
-    //      className="bg-background w-full max-w-full"
-    //     >
-    //      {(item) => (
-    //       <Tab
-    //        key={item.value}
-    //        title={item.title}
-    //        onClick={() =>
-    //         setCurrentResponse({ ...currentResponse, type: item.value })
-    //        }
-    //       ></Tab>
-    //      )}
-    //     </Tabs>
-    //    </label>
-    //    <div>
-    //     <Input
-    //      label="Name"
-    //      variant="bordered"
-    //      labelPlacement="outside"
-    //      placeholder="Enter response's name here"
-    //      value={currentResponse.name}
-    //      isRequired
-    //      onChange={(e) =>
-    //       setCurrentResponse({ ...currentResponse, name: e.target.value })
-    //      }
-    //     />
-    //    </div>
-    //    <div>{bodyItems[selected]}</div>
-    //   </ModalBody>
-    //   <ModalFooter>
-    //    <Button onClick={saveResponse} className="bg-foreground text-background">
-    //     Save response
-    //    </Button>
-    //   </ModalFooter>
-    //  </ModalContent>
-    // </ModalComponent>
   )
 }
 

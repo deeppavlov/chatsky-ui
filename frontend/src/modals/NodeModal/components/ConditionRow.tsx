@@ -1,6 +1,6 @@
 import { Button, Input } from '@nextui-org/react'
 import { Trash2Icon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { conditionType } from '../../../types/ConditionTypes'
 
 function ConditionRow({
@@ -11,6 +11,10 @@ function ConditionRow({
   deleteConditionFn: (id: string) => void
 }) {
   const [priority, setPriority] = useState(cnd.data.priority)
+
+  useEffect(() => {
+    setPriority(cnd.data.priority)
+  }, [cnd.data.priority])
 
   const changeConditionPriorityHandler = (
     e: React.ChangeEvent<HTMLInputElement>,

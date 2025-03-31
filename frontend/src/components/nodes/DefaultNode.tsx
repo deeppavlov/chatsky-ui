@@ -1,11 +1,10 @@
-import { Button, useDisclosure } from '@nextui-org/react'
+import { Button, Tooltip, useDisclosure } from '@nextui-org/react'
 import { Handle, Position } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import classNames from 'classnames'
 import { PlusIcon } from 'lucide-react'
 import { memo, useContext, useMemo, useState } from 'react'
 import { PopUpContext } from '../../contexts/popUpContext'
-import { workspaceContext } from '../../contexts/workspaceContext'
 import EditNodeIcon from '../../icons/nodes/EditNodeIcon'
 import FallbackNodeIcon from '../../icons/nodes/FallbackNodeIcon'
 import GlobalNodeIcon from '../../icons/nodes/GlobalNodeIcon'
@@ -20,8 +19,6 @@ import Condition from './conditions/Condition'
 import Response from './responses/Response'
 
 const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { selectedNode } = useContext(workspaceContext)
   const { openPopUp } = useContext(PopUpContext)
 
   const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)
@@ -52,24 +49,36 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
   return (
     <>
       <div id={data.id} data-testid={data.id} className='default_node'>
-        {data.flags?.includes('start') && (
-          <span className='absolute -top-2 left-4 -z-20 cursor-auto rounded-small border border-[var(--node-start-label-bg)] bg-[var(--node-start-label-bg)] px-0.5 py-0.5 pb-4 text-xs font-medium text-white transition-transform hover:-z-10 hover:-translate-y-5'>
-            <StartNodeIcon
-              fill='var(--node-start-label-fg)'
-              stroke='var(--node-start-label-fg)'
-            />
-          </span>
-        )}
-        {data.flags?.includes('fallback') && (
-          <span className='absolute -top-2 left-14 -z-20 cursor-auto rounded-small border border-[var(--node-fallback-label-bg)] bg-[var(--node-fallback-label-bg)] px-0.5 py-0.5 pb-4 text-xs font-medium text-white transition-transform hover:-z-10 hover:-translate-y-5'>
-            <FallbackNodeIcon
-              fill='var(--node-fallback-label-fg)'
-              stroke='var(--node-fallback-label-fg)'
-            />
-          </span>
-        )}
-        <div className='custom-drag-handle flex w-full items-center justify-between rounded-t-node border-b border-border bg-node-header py-2 pl-6 pr-4'>
-          <div className='flex items-center'>
+        <div className='custom-drag-handle flex w-full items-center justify-between gap-[8px] rounded-t-node border-b border-border bg-node-header py-2 pl-[23px] pr-[18px]'>
+          <div className='flex'>
+            {data.flags?.includes('start') && (
+              <Tooltip
+                placement='bottom'
+                radius='sm'
+                content='Start node'
+                className='px-[12px] py-[8px]'
+              >
+                <div className='border-none bg-transparent'>
+                  <StartNodeIcon />
+                </div>
+              </Tooltip>
+            )}
+
+            {data.flags?.includes('fallback') && (
+              <Tooltip
+                placement='bottom'
+                radius='sm'
+                content='Fallback node'
+                className='px-[12px] py-[8px]'
+              >
+                <div className='border-none bg-transparent'>
+                  <FallbackNodeIcon />
+                </div>
+              </Tooltip>
+            )}
+          </div>
+
+          <div className='flex w-full items-center'>
             {!data.id.includes('LOCAL_NODE') &&
               !data.id.includes('GLOBAL_NODE') && (
                 <Handle
@@ -89,7 +98,10 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
                   }}
                 />
               )}
-            <p className='flex items-center gap-1 text-medium font-medium'>
+            <p
+              className='flex w-[218px] items-center gap-1 truncate text-medium font-medium'
+              style={{ display: 'block', textAlign: 'left' }}
+            >
               {data.id.includes('LOCAL_NODE') && <LocalNodeIcon />}
               {data.id.includes('GLOBAL_NODE') && <GlobalNodeIcon />}
               {data.name}
@@ -125,7 +137,9 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             ))}
           </div>
           <button
-            data-testid={`${data.name.toLowerCase().replace(' ', '')}-add-condition-btn`}
+            data-testid={`${data.name
+              .toLowerCase()
+              .replace(' ', '')}-add-condition-btn`}
             onClick={onConditionModalOpen}
             className='add-cnd-btn'
           >
