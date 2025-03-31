@@ -18,7 +18,7 @@ import {
   Undo,
 } from 'lucide-react'
 import { memo, useContext, useMemo } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { MetaContext } from '../../contexts/metaContext'
 import { workspaceContext } from '../../contexts/workspaceContext'
@@ -40,7 +40,6 @@ const Header = memo(() => {
     selectedNode,
     managerMode,
     toggleManagerMode,
-    currentTab,
   } = useContext(workspaceContext)
   const { flows, tab, saveFlows } = useContext(flowContext)
   const { undo, redo } = useContext(undoRedoContext)
@@ -49,6 +48,8 @@ const Header = memo(() => {
     () => flows.find((flow) => flow.name === tab),
     [flows, tab],
   )
+  const [searchParams] = useSearchParams()
+  const currentTab = searchParams.get('page')?.toLowerCase() || 'edit'
   const dropdownItems: DropdownGroupType[] = useMemo(() => {
     return [
       {

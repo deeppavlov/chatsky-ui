@@ -273,4 +273,22 @@ export function formatRelativeTime(
   return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year')
 }
 
+
 export const maxLengthName = 25
+
+export function getTimeDifference(date1: string, date2: string): string {
+  const d1 = new Date(date1)
+  const d2 = new Date(date2)
+  let diffInSeconds = Math.abs((d2.getTime() - d1.getTime()) / 1000)
+
+  const hours = Math.floor(diffInSeconds / 3600)
+  diffInSeconds %= 3600
+  const minutes = Math.floor(diffInSeconds / 60)
+  const seconds = Math.floor(diffInSeconds % 60)
+
+  if (hours > 0 && minutes > 0) return `${hours} hours ${minutes} minutes`
+  if (hours > 0) return `${hours} hours`
+  if (minutes > 0) return `${minutes} minutes`
+  return `${seconds} seconds`
+}
+

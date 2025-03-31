@@ -8,7 +8,6 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { FlowType } from '../types/FlowTypes'
 import { AppNode } from '../types/NodeTypes'
 import { flowContext } from './flowContext'
@@ -38,8 +37,6 @@ type WorkspaceContextType = {
   managerMode: boolean
   setManagerMode: React.Dispatch<React.SetStateAction<boolean>>
   toggleManagerMode: () => void
-  currentTab: PageType
-  setCurrentTab: React.Dispatch<React.SetStateAction<PageType>>
   startRunFormState: IFormState | null
   setStartRunFormState: React.Dispatch<React.SetStateAction<IFormState | null>>
   buildFormData: IFormData | null
@@ -65,8 +62,6 @@ export const workspaceContext = createContext<WorkspaceContextType>({
   managerMode: false,
   setManagerMode: () => {},
   toggleManagerMode: () => {},
-  currentTab: 'edit',
-  setCurrentTab: () => {},
   startRunFormState: null,
   setStartRunFormState: () => {},
   buildFormData: null,
@@ -81,7 +76,6 @@ export const WorkspaceProvider = ({
   const [workspaceMode, setWorkspaceMode] = useState(false)
   const [nodesLayoutMode, setNodesLayoutMode] = useState(false)
   const [managerMode, setManagerMode] = useState(false)
-  const [searchParams] = useSearchParams()
   const [selectedNode, setSelectedNode] = useState('')
   const { flows, quietSaveFlows, setFlows } = useContext(flowContext)
   const [mouseOnPane, setMouseOnPane] = useState(true)
@@ -91,12 +85,6 @@ export const WorkspaceProvider = ({
   )
   const [buildFormData, setBuildFormData] = useState<IFormData | null>(null)
   const { notification: n } = useContext(NotificationsContext)
-
-  const pageTypes: PageType[] = ['edit', 'deliver', 'inspect', 'settings']
-  const pageType = searchParams.get('page')?.toLowerCase() as PageType
-  const [currentTab, setCurrentTab] = useState<PageType>(
-    pageTypes.includes(pageType) ? pageType : 'edit',
-  )
 
   /**
    * Count opened modals for correct shortcuts work
@@ -216,8 +204,6 @@ export const WorkspaceProvider = ({
         managerMode,
         setManagerMode,
         toggleManagerMode,
-        currentTab,
-        setCurrentTab,
         startRunFormState,
         setStartRunFormState,
         buildFormData,
