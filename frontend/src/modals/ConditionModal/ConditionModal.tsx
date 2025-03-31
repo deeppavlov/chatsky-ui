@@ -129,7 +129,9 @@ const ConditionModal = ({
     .flat()
 
   const iterGenName = (count: number = 1): string => {
-    const newName = `${flowId}_NewCnd_${count}`
+    const nameFlow = (flowId?.length ?? 0 >= 15) ? flowId?.slice(0, 15) : flowId
+
+    const newName = `${nameFlow}_NewCnd_${count}`
 
     const isNotUnique = allNameCondidionFlows.includes(newName)
 
