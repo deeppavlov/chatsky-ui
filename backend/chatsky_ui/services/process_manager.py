@@ -269,7 +269,7 @@ class RunManager(ProcessManager):
                 f"--run-id {self.last_id}",
             ]
         )
-   
+
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
         await process.start(cmd_to_run, env=os.environ.copy())
