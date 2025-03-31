@@ -1,5 +1,4 @@
-
-export type responseTypeType = "python" | "llm" | "custom" | "text"
+export type responseTypeType = 'python' | 'llm' | 'custom' | 'text' | 'basic'
 
 export type responseDataType = {
   priority: number

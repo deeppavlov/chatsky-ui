@@ -1,4 +1,3 @@
-from asyncio import Lock
 from pathlib import Path
 from typing import List, Union
 
@@ -7,20 +6,37 @@ from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 from omegaconf.listconfig import ListConfig
 
-file_lock = Lock()
 
+async def read_conf(path: Path, lock) -> Union[DictConfig, ListConfig]:
+    """
+    Reads a configuration file asynchronously and returns its contents as an OmegaConf object.
+    Args:
+        path (Path): The path to the configuration file.
+        lock: An asynchronous lock to ensure inter-process-safe file access.
+    Returns:
+        Union[DictConfig, ListConfig]: The configuration data read from the file, parsed into an OmegaConf object.
+    """
 
-async def read_conf(path: Path) -> Union[DictConfig, ListConfig]:
-    async with file_lock:
+    async with lock:
         async with aiofiles.open(path, "r", encoding="UTF-8") as file:
             data = await file.read()
     omega_data = OmegaConf.create(data)  # read from a YAML string
     return omega_data
 
 
-async def write_conf(data: Union[DictConfig, ListConfig, dict, list], path: Path) -> None:
+async def write_conf(data: Union[DictConfig, ListConfig, dict, list], path: Path, lock) -> None:
+    """Writes the given configuration data to a YAML file asynchronously.
+
+    Args:
+        data (Union[DictConfig, ListConfig, dict, list]): The configuration data to write.
+        path (Path): The file path where the configuration data will be written.
+        lock: An asynchronous lock to ensure that the file writing operation is inter-process-safe.
+
+    Returns:
+        None
+    """
     yaml_conf = OmegaConf.to_yaml(data)
-    async with file_lock:
+    async with lock:
         async with aiofiles.open(path, "w", encoding="UTF-8") as file:  # TODO: change to "a" for append
             await file.write(yaml_conf)
 

@@ -1,7 +1,7 @@
-import { useContext, useEffect, useMemo } from "react"
-import { ToastOptions, Toaster } from "react-hot-toast"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
-import { themeContext } from "../contexts/themeContext"
+import { useContext, useEffect, useMemo } from 'react'
+import { Toaster, ToastOptions } from 'react-hot-toast'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { themeContext } from '../contexts/themeContext'
 
 const Index = () => {
   const navigate = useNavigate()
@@ -9,30 +9,34 @@ const Index = () => {
   const { theme } = useContext(themeContext)
 
   useEffect(() => {
-    if (pathname === "/app" || pathname === "/" || pathname === "" || pathname === "/app/") {
-      navigate("/app/home")
+    if (
+      pathname === '/app' ||
+      pathname === '/' ||
+      pathname === '' ||
+      pathname === '/app/'
+    ) {
+      navigate('/app/home')
     }
   }, [navigate, pathname])
 
   const toastOptions: ToastOptions = useMemo(
     () =>
-      theme === "light"
+      theme === 'light'
         ? {
             style: {
-              backgroundColor: "#fff",
+              backgroundColor: '#fff',
             },
-            position: "bottom-right",
+            position: 'bottom-right',
           }
         : {
             style: {
-              backgroundColor: "#333",
+              backgroundColor: '#333',
             },
-            position: "bottom-right",
+            position: 'bottom-right',
           },
-    [theme]
+    [theme],
   )
 
- 
   return (
     <div className={`${theme}`}>
       <Toaster toastOptions={toastOptions} />

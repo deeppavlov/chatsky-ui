@@ -1,6 +1,12 @@
-import { AnimatePresence } from "framer-motion"
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react"
-import { workspaceContext } from "./workspaceContext"
+import { AnimatePresence } from 'framer-motion'
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
+import { workspaceContext } from './workspaceContext'
 
 type PopUpContextType = {
   openPopUp: (element: JSX.Element, id: string) => void
@@ -14,7 +20,7 @@ export const PopUpContext = createContext<PopUpContextType>({
   openPopUp: () => {},
   closePopUp: () => {},
   setCloseEdit: () => {},
-  closeEdit: "",
+  closeEdit: '',
   popUpElements: [],
 })
 
@@ -24,9 +30,11 @@ interface PopUpProviderProps {
 
 const PopUpProvider = ({ children }: PopUpProviderProps) => {
   const { setModalsOpened } = useContext(workspaceContext)
-  const [popUpElements, setPopUpElements] = useState<{ id: string; element: JSX.Element }[]>([])
+  const [popUpElements, setPopUpElements] = useState<
+    { id: string; element: JSX.Element }[]
+  >([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [closingId, setClosingId] = useState<string | null>(null)
-
 
   useEffect(() => {
     setModalsOpened(popUpElements.length)
@@ -41,15 +49,18 @@ const PopUpProvider = ({ children }: PopUpProviderProps) => {
     // setModalsOpened((prev) => prev - 1)
     setClosingId(id)
     // Время ожидания анимации
-    setPopUpElements((prevPopUps) => prevPopUps.filter((popUp) => popUp.id !== id))
+    setPopUpElements((prevPopUps) =>
+      prevPopUps.filter((popUp) => popUp.id !== id),
+    )
     setClosingId(null)
   }
 
-  const [closeEdit, setCloseEdit] = useState("")
+  const [closeEdit, setCloseEdit] = useState('')
 
   return (
     <PopUpContext.Provider
-      value={{ openPopUp, closePopUp, closeEdit, setCloseEdit, popUpElements }}>
+      value={{ openPopUp, closePopUp, closeEdit, setCloseEdit, popUpElements }}
+    >
       {children}
       <div id='modal_root'>
         <AnimatePresence>

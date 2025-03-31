@@ -1,40 +1,46 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
-import { Edge, OnBeforeDelete, ReactFlowInstance } from "@xyflow/react"
-import { AxiosError } from "axios"
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
-import { v4 } from "uuid"
-import { get_flows, save_flows } from "../api/flows"
-import { FLOW_COLORS } from "../consts"
-import { FlowType, SlotsGroupType, SlotType } from "../types/FlowTypes"
-import { AppNode, SlotsNodeType } from "../types/NodeTypes"
-import { parseGroups } from "../utils"
-import { MetaContext } from "./metaContext"
-import { NotificationsContext } from "./notificationsContext"
+import { Edge, OnBeforeDelete, ReactFlowInstance } from '@xyflow/react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
+import { useParams } from 'react-router-dom'
+import { v4 } from 'uuid'
+import { get_flows, save_flows } from '../api/flows'
+import { FLOW_COLORS } from '../consts'
+import { FlowType, SlotsGroupType, SlotType } from '../types/FlowTypes'
+import { AppNode, SlotsNodeType } from '../types/NodeTypes'
+import { MetaContext } from './metaContext'
+import { NotificationsContext } from './notificationsContext'
+
 // import { v4 } from "uuid"
 
 const globalFlow: FlowType = {
-  id: "GLOBAL",
-  name: "Global",
-  description: "This is Global Flow. It will be able to use soon...",
+  id: 'GLOBAL',
+  name: 'Global',
+  description: 'This is Global Flow. It will be able to use soon...',
   color: FLOW_COLORS[5],
   data: {
     nodes: [
       {
         id: v4(),
-        type: "default_node",
+        type: 'default_node',
         data: {
-          id: "GLOBAL_NODE",
+          id: 'GLOBAL_NODE',
           flags: [],
           conditions: [],
           global_conditions: [],
           local_conditions: [],
-          name: "Global node",
+          name: 'Global node',
           response: {
-            id: "GLOBAL_NODE_RESPONSE",
-            name: "global_response",
-            type: "text",
-            data: [{ text: "Global node response", priority: 1 }],
+            id: 'GLOBAL_NODE_RESPONSE',
+            name: 'global_response',
+            type: 'text',
+            data: [{ text: 'Global node response', priority: 1 }],
           },
         },
         position: {
@@ -56,7 +62,9 @@ export type CustomReactFlowInstanceType = ReactFlowInstance<AppNode, Edge>
 
 type TabContextType = {
   reactFlowInstance: CustomReactFlowInstanceType | null
-  setReactFlowInstance: React.Dispatch<React.SetStateAction<CustomReactFlowInstanceType | null>>
+  setReactFlowInstance: React.Dispatch<
+    React.SetStateAction<CustomReactFlowInstanceType | null>
+  >
   tab: string
   setTab: React.Dispatch<React.SetStateAction<string>>
   flows: FlowType[]
@@ -70,7 +78,7 @@ type TabContextType = {
   quietSaveFlows: () => void
   updateFlow: (flow: FlowType) => void
   getLocaleFlows: () => FlowType[]
-  getFlows: () => void
+  getFlows: (id: number) => Promise<FlowType[]>
   deleteNode: (id: string) => void
   deleteEdge: (id: string) => void
   deleteObject: (id: string) => void
@@ -81,7 +89,7 @@ type TabContextType = {
 const initialValue: TabContextType = {
   reactFlowInstance: null,
   setReactFlowInstance: () => {},
-  tab: "",
+  tab: '',
   setTab: () => {},
   flows: [],
   setFlows: () => {},
@@ -96,7 +104,7 @@ const initialValue: TabContextType = {
   getLocaleFlows: () => {
     return []
   },
-  getFlows: async () => {},
+  getFlows: async () => [],
   deleteNode: () => {},
   deleteEdge: () => {},
   deleteObject: () => {},
@@ -108,7 +116,7 @@ const initialValue: TabContextType = {
 }
 
 export type interfaceType = {
-  interface: "tg" | "ui"
+  interface: 'tg' | 'ui'
   token?: string
 }
 
@@ -130,36 +138,41 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // set null reactFlowInstance before Init new flow
     setReactFlowInstance(null)
-    setTab(flowId || "")
+    setTab(flowId || '')
   }, [flowId])
 
   /**
    * API flows get function
    * @returns {FlowType[]} flows array
    */
-  const getFlows = async () => {
+  const getFlows = async (build_id?: number) => {
     screenLoading.addScreenLoading()
     try {
-      const { data } = await get_flows()
+      const { data } = await get_flows(build_id)
+
       if (data.flows) {
         const slot_nodes: SlotsNodeType[] = data.flows
           .map((flow) => flow.data.nodes)
           .flat()
-          .filter((node) => node.type === "slots_node") as SlotsNodeType[]
+          .filter((node) => node.type === 'slots_node') as SlotsNodeType[]
         const groups = slot_nodes.map((node) => node.data.groups).flat()
         const slots = groups.map((group) => group.slots).flat()
         setSlots(slots)
         setGroups(groups)
-        if (data.flows.some((flow) => flow.name === "Global")) {
+        if (data.flows.some((flow) => flow.name === 'Global')) {
           setFlows(data.flows)
+          return data.flows
         } else {
           setFlows([globalFlow, ...data.flows])
+          return [globalFlow, ...data.flows]
         }
       } else {
         setFlows([globalFlow])
+        return [globalFlow]
       }
     } catch (error) {
       console.error(error)
+      return []
     } finally {
       screenLoading.removeScreenLoading()
     }
@@ -168,30 +181,32 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
   // initial get flows
   useEffect(() => {
     getFlows()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
    *
    * @param {FlowType[]} flows flows to save array
    */
-  const saveFlows = async (flows: FlowType[], _interface?: interfaceType) => {
+  const saveFlows = async (flows: FlowType[]) => {
     const slot_nodes: SlotsNodeType[] = flows
       .map((flow) => flow.data.nodes)
       .flat()
-      .filter((node) => node.type === "slots_node") as SlotsNodeType[]
+      .filter((node) => node.type === 'slots_node') as SlotsNodeType[]
     const groups = slot_nodes.map((node) => node.data.groups).flat()
     const slots = groups.map((group) => group.slots).flat()
     setSlots(slots)
     setGroups(groups)
-    const parsed_groups = await parseGroups(groups)
     try {
-      await save_flows(flows, (_interface = _interface ?? { interface: "ui" }), parsed_groups)
+      await save_flows(flows)
       setFlows(flows)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
     } catch (error: AxiosError) {
-      n.add({ title: "Error", message: error?.message ?? "Something went wrong", type: "error" })
+      n.add({
+        title: 'Error',
+        message: error?.message ?? 'Something went wrong',
+        type: 'error',
+      })
     }
   }
 
@@ -200,9 +215,9 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const quietSaveFlows = async () => {
     setTimeout(async () => {
-      console.log("quiet save flows")
+      console.log('quiet save flows')
       await saveFlows(flows)
-      n.add({ message: "Flows saved", title: "DEBUG", type: "debug" })
+      n.add({ message: 'Flows saved', title: 'DEBUG', type: 'debug' })
     }, 300)
   }
 
@@ -223,7 +238,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
       saveFlows(new_flows)
       setFlows(new_flows)
     },
-    [flows]
+    [flows],
   )
 
   /**
@@ -236,7 +251,7 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
       // saveFlows(new_flows)
       setFlows(() => new_flows)
     },
-    [flows]
+    [flows],
   )
 
   /**
@@ -246,18 +261,35 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    * @returns {Promise<boolean>} Promise(boolean is_deletion_valid value)
    * ONLY FOR "OnBeforeDelete ReactFlow handler"
    */
-  const validateDeletion = ({ nodes }: { nodes: AppNode[]; edges: Edge[] }): Promise<boolean> => {
+  const validateDeletion = ({
+    nodes,
+  }: {
+    nodes: AppNode[]
+    edges: Edge[]
+  }): Promise<boolean> => {
     const is_nodes_valid = nodes.every((node) => {
-      if (node.type === "default_node" && node?.data.flags?.includes("start")) {
-        n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
+      if (node.type === 'default_node' && node?.data.flags?.includes('start')) {
+        n.add({
+          title: 'Warning!',
+          message: "Can't delete start node",
+          type: 'warning',
+        })
         return false
       }
-      if (node?.id?.includes("LOCAL")) {
-        n.add({ title: "Warning!", message: "Can't delete local node", type: "warning" })
+      if (node?.id?.includes('LOCAL')) {
+        n.add({
+          title: 'Warning!',
+          message: "Can't delete local node",
+          type: 'warning',
+        })
         return false
       }
-      if (node?.id?.includes("GLOBAL")) {
-        n.add({ title: "Warning!", message: "Can't delete global node", type: "warning" })
+      if (node?.id?.includes('GLOBAL')) {
+        n.add({
+          title: 'Warning!',
+          message: "Can't delete global node",
+          type: 'warning',
+        })
         return false
       }
       return true
@@ -273,16 +305,28 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    * @returns {boolean} boolean is_deletion_valid value
    */
   const validateNodeDeletion = (node: AppNode) => {
-    if (node.type === "default_node" && node.data.flags.includes("start")) {
-      n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
+    if (node.type === 'default_node' && node.data.flags.includes('start')) {
+      n.add({
+        title: 'Warning!',
+        message: "Can't delete start node",
+        type: 'warning',
+      })
       return false
     }
-    if (node.id.includes("LOCAL")) {
-      n.add({ title: "Warning!", message: "Can't delete local node", type: "warning" })
+    if (node.id.includes('LOCAL')) {
+      n.add({
+        title: 'Warning!',
+        message: "Can't delete local node",
+        type: 'warning',
+      })
       return false
     }
-    if (node.id.includes("GLOBAL")) {
-      n.add({ title: "Warning!", message: "Can't delete global node", type: "warning" })
+    if (node.id.includes('GLOBAL')) {
+      n.add({
+        title: 'Warning!',
+        message: "Can't delete global node",
+        type: 'warning',
+      })
       return false
     }
     return true
@@ -293,31 +337,56 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const deleteNode = useCallback(
     (id: string) => {
-      const flow = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
+      const flow = flows.find((flow) =>
+        flow.data.nodes.some((node) => node.id === id),
+      )
       if (!flow) return -1
-      const deleted_node: AppNode = flow.data.nodes.find((node) => node.id === id) as AppNode
-      if (deleted_node.type === "default_node" && deleted_node?.data.flags?.includes("start"))
-        return n.add({ title: "Warning!", message: "Can't delete start node", type: "warning" })
-      if (deleted_node?.id?.includes("LOCAL"))
-        return n.add({ title: "Warning!", message: "Can't delete local node", type: "warning" })
-      if (deleted_node?.id?.includes("GLOBAL"))
-        return n.add({ title: "Warning!", message: "Can't delete global node", type: "warning" })
-      if (deleted_node.type === "default_node" && deleted_node?.data.flags?.includes("fallback")) {
+      const deleted_node: AppNode = flow.data.nodes.find(
+        (node) => node.id === id,
+      ) as AppNode
+      if (
+        deleted_node.type === 'default_node' &&
+        deleted_node?.data.flags?.includes('start')
+      )
+        return n.add({
+          title: 'Warning!',
+          message: "Can't delete start node",
+          type: 'warning',
+        })
+      if (deleted_node?.id?.includes('LOCAL'))
+        return n.add({
+          title: 'Warning!',
+          message: "Can't delete local node",
+          type: 'warning',
+        })
+      if (deleted_node?.id?.includes('GLOBAL'))
+        return n.add({
+          title: 'Warning!',
+          message: "Can't delete global node",
+          type: 'warning',
+        })
+      if (
+        deleted_node.type === 'default_node' &&
+        deleted_node?.data.flags?.includes('fallback')
+      ) {
         // any_node.data.flags?.push("fallback")
       }
       const newNodes = flow.data.nodes.filter((node) => node.id !== id)
       const newEdges = flow.data.edges.filter(
-        (edge: Edge) => edge.source !== id && edge.target !== id
+        (edge: Edge) => edge.source !== id && edge.target !== id,
       )
       const newFlows = flows.map((flow) =>
         flow.name === flowId
-          ? { ...flow, data: { ...flow.data, nodes: newNodes, edges: newEdges } }
-          : flow
+          ? {
+              ...flow,
+              data: { ...flow.data, nodes: newNodes, edges: newEdges },
+            }
+          : flow,
       )
       saveFlows(newFlows)
       setFlows(newFlows)
     },
-    [flowId, flows, n]
+    [flowId, flows, n],
   )
 
   /**
@@ -325,19 +394,26 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const deleteEdge = useCallback(
     (id: string) => {
-      const flow = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
+      const flow = flows.find((flow) =>
+        flow.data.edges.some((edge) => edge.id === id),
+      )
       if (!flow) return -1
       const newEdges = flow.data.edges.filter((edge) => edge.id !== id)
       saveFlows(
         flows.map((flow) =>
-          flow.name === flowId ? { ...flow, data: { ...flow.data, edges: newEdges } } : flow
-        )
+          flow.name === flowId
+            ? { ...flow, data: { ...flow.data, edges: newEdges } }
+            : flow,
+        ),
       )
       setFlows((flows) =>
-        flows.map((flow) => ({ ...flow, data: { ...flow.data, edges: newEdges } }))
+        flows.map((flow) => ({
+          ...flow,
+          data: { ...flow.data, edges: newEdges },
+        })),
       )
     },
-    [flowId, flows]
+    [flowId, flows],
   )
 
   /**
@@ -345,13 +421,17 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
    */
   const deleteObject = useCallback(
     (id: string) => {
-      const flow_node = flows.find((flow) => flow.data.nodes.some((node) => node.id === id))
-      const flow_edge = flows.find((flow) => flow.data.edges.some((edge) => edge.id === id))
+      const flow_node = flows.find((flow) =>
+        flow.data.nodes.some((node) => node.id === id),
+      )
+      const flow_edge = flows.find((flow) =>
+        flow.data.edges.some((edge) => edge.id === id),
+      )
       if (!flow_node && !flow_edge) return -1
       if (flow_node) deleteNode(id)
       if (flow_edge) deleteEdge(id)
     },
-    [deleteEdge, deleteNode, flows]
+    [deleteEdge, deleteNode, flows],
   )
 
   return (
@@ -378,7 +458,8 @@ export const FlowProvider = ({ children }: { children: React.ReactNode }) => {
         deleteObject,
         validateDeletion,
         validateNodeDeletion,
-      }}>
+      }}
+    >
       {children}
     </flowContext.Provider>
   )

@@ -1,8 +1,19 @@
-import { Button } from "@nextui-org/react"
-import classNames from "classnames"
-import { AlertOctagon, AlertTriangle, Bug, CheckCircle2, Info, X } from "lucide-react"
-import { useContext, useMemo, useState } from "react"
-import { NotificationsContext, notificationType } from "../../../contexts/notificationsContext"
+import { Button } from '@nextui-org/react'
+import classNames from 'classnames'
+import {
+  AlertOctagon,
+  AlertTriangle,
+  Bug,
+  CheckCircle2,
+  Info,
+  X,
+} from 'lucide-react'
+import { useContext, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  NotificationsContext,
+  notificationType,
+} from '../../../contexts/notificationsContext'
 
 type NotificationComponentType = {
   notification: notificationType & {
@@ -16,60 +27,60 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
 
   const notificationTypeColor = (type: string) => {
     switch (type) {
-      case "success":
+      case 'success':
         return {
-          body: "bg-[#00CC991a]",
-          stack: "bg-[#00CC99]",
-          stroke: "bg-[#00CC99]",
+          body: 'bg-[#00CC991a]',
+          stack: 'bg-[#00CC99]',
+          stroke: 'bg-[#00CC99]',
         }
-      case "warning":
+      case 'warning':
         return {
-          body: "bg-[#FF95001A]",
-          stack: "bg-[#FF9500]",
-          stroke: "bg-[#FF9500]",
+          body: 'bg-[#FF95001A]',
+          stack: 'bg-[#FF9500]',
+          stroke: 'bg-[#FF9500]',
         }
-      case "error":
+      case 'error':
         return {
-          body: "bg-[#FF33331A]",
-          stack: "bg-[#FF3333]",
-          stroke: "bg-[#FF3333]",
+          body: 'bg-[#FF33331A]',
+          stack: 'bg-[#FF3333]',
+          stroke: 'bg-[#FF3333]',
         }
-      case "info":
+      case 'info':
         return {
-          body: "bg-[#3399CC1A]",
-          stack: "bg-[#3399CC]",
-          stroke: "bg-[#3399CC]",
+          body: 'bg-[#3399CC1A]',
+          stack: 'bg-[#3399CC]',
+          stroke: 'bg-[#3399CC]',
         }
-      case "debug":
+      case 'debug':
         return {
-          body: "bg-[#9999991A]",
-          stack: "bg-[#999999]",
-          stroke: "bg-[#999999]",
+          body: 'bg-[#9999991A]',
+          stack: 'bg-[#999999]',
+          stroke: 'bg-[#999999]',
         }
     }
   }
 
   const notificationColor = useMemo(
     () => notificationTypeColor(notification.type)?.body,
-    [notification.type]
+    [notification.type],
   )
 
   const notificationStackColor = useMemo(
     () => notificationTypeColor(notification.type)?.stack,
-    [notification.type]
+    [notification.type],
   )
 
   const notificationTypeIcon = (type: string) => {
     switch (type) {
-      case "success":
+      case 'success':
         return <CheckCircle2 className='stroke-green-500' />
-      case "warning":
+      case 'warning':
         return <AlertTriangle className='stroke-yellow-500' />
-      case "error":
+      case 'error':
         return <AlertOctagon className='stroke-red-500' />
-      case "info":
+      case 'info':
         return <Info className='stroke-blue-500' />
-      case "debug":
+      case 'debug':
         return <Bug />
     }
   }
@@ -81,9 +92,14 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
         nt.delete(notification.timestamp)
       }
       if (notification.stack > 1) {
-        const index = notifications.findIndex((n) => n.timestamp == notification.timestamp)
+        const index = notifications.findIndex(
+          (n) => n.timestamp == notification.timestamp,
+        )
         for (let i = 0; i <= index; i++) {
-          if (notifications[i].stack === 0 && notifications[i].message === notification.message) {
+          if (
+            notifications[i].stack === 0 &&
+            notifications[i].message === notification.message
+          ) {
             nt.delete(notifications[i].timestamp)
           }
         }
@@ -93,16 +109,15 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
   }
 
   return (
-    <div
-      className='w-full relative'
-      key={notification.timestamp}>
+    <div className='relative w-full' key={notification.timestamp}>
       <div
         className={classNames(
-          "w-full flex items-center justify-between p-2 rounded-lg transition-all",
+          'flex w-full items-center justify-between rounded-lg p-2 transition-all',
           notificationColor,
-          isDelete && "opacity-0 -translate-x-full"
-        )}>
-        <div className='w-full relative'>
+          isDelete && '-translate-x-full opacity-0',
+        )}
+      >
+        <div className='relative w-full'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center justify-start gap-2'>
               {notification.stack <= 1 ? (
@@ -111,8 +126,9 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
                 <span
                   className={classNames(
                     notificationStackColor,
-                    "w-6 h-6 text-center rounded-full text-white"
-                  )}>
+                    'h-6 w-6 rounded-full text-center text-white',
+                  )}
+                >
                   {notification.stack}
                 </span>
               )}
@@ -123,11 +139,37 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
               size='sm'
               isIconOnly
               variant='light'
-              className='p-0.5 min-h-0 min-w-0 w-5 h-5'>
-              <X className='w-4 h-4' />
+              className='h-5 min-h-0 w-5 min-w-0 p-0.5'
+            >
+              <X className='h-4 w-4' />
             </Button>
           </div>
-          {notification.message ? <p className='text-xs text-neutral-400 mt-1'>{notification.message}</p> : <p className="text-xs text-neutral-400 mt-1">{new Date(notification.timestamp).toLocaleString()}</p>}
+          {notification.message ? (
+            <p className='mt-1 text-xs text-neutral-400'>
+              {notification.message}
+            </p>
+          ) : (
+            <p className='mt-1 text-xs text-neutral-400'>
+              {new Date(notification.timestamp).toLocaleString()}
+            </p>
+          )}
+          {notification.link &&
+            (typeof notification.link === 'object' &&
+            'url' in notification.link ? (
+              <Link
+                className='mt-1 block text-xs text-blue-500 hover:underline'
+                to={{
+                  pathname: location.pathname,
+                  search: notification.link.url,
+                }}
+              >
+                <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                  {notification.link.text} &rarr;
+                </span>
+              </Link>
+            ) : (
+              notification.link
+            ))}
         </div>
       </div>
     </div>

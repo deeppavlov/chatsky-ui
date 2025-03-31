@@ -1,12 +1,14 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
 function useLocalStorage<S>(
   key: string,
-  initialState: S | (() => S)
+  initialState: S | (() => S),
 ): [S, Dispatch<SetStateAction<S>>] {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const [state, setState] = useState<S>(JSON.parse(localStorage.getItem(key)) ?? initialState)
+  const [state, setState] = useState<S>(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    JSON.parse(localStorage.getItem(key)) ?? initialState,
+  )
 
   useEffect(() => {
     const rawValue = JSON.stringify(state)

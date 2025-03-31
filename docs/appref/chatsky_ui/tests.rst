@@ -1,4 +1,4 @@
-chatsky_ui.tests package
+tests package
 =================
 
 Subpackages
@@ -6,12 +6,12 @@ Subpackages
 
 .. toctree::
    :glob:
-   :maxdepth: 4
+   :maxdepth: 1
 
    tests/*
 
 
-chatsky_ui.tests.conftest module
+tests.conftest module
 -------------------------
 
 .. automodule:: chatsky_ui.tests.conftest

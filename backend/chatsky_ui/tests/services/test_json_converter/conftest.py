@@ -137,13 +137,15 @@ def mapped_flow(info_node):
 
 
 @pytest.fixture
-def telegram_interface():
-    return {"telegram": {}}
+def telegram_messenger(unique_build_token):
+    return {"telegram": {}, "tg_token_name": unique_build_token}
 
 
 @pytest.fixture
-def chatsky_telegram_interface():
-    return {"chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": "TG_BOT_TOKEN"}}}
+def chatsky_telegram_messenger(telegram_messenger):
+    return {
+        "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": telegram_messenger["tg_token_name"]}}
+    }
 
 
 @pytest.fixture

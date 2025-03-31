@@ -1,14 +1,19 @@
-import { Button } from "@nextui-org/react"
-import { useContext } from "react"
-import { PopUpContext } from "../../contexts/popUpContext"
-import { CustomModalProps, Modal, ModalBody, ModalFooter, ModalHeader } from "../ModalComponents"
+import { Button } from '@nextui-org/react'
+import { useContext } from 'react'
+import { PopUpContext } from '../../contexts/popUpContext'
+import {
+  CustomModalProps,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from '../ModalComponents'
 
 type RebuildModalProps = CustomModalProps & {
   onRebuild: () => void
-  onNewRun: () => void
 }
 
-const RebuildModal = ({ id = "alert-modal", onRebuild, onNewRun }: RebuildModalProps) => {
+const RebuildModal = ({ id = 'alert-modal', onRebuild }: RebuildModalProps) => {
   const { closePopUp } = useContext(PopUpContext)
 
   const onCancelHandler = () => {
@@ -19,20 +24,22 @@ const RebuildModal = ({ id = "alert-modal", onRebuild, onNewRun }: RebuildModalP
     closePopUp(id)
   }
 
-  const onNewRunHandler = () => {
-    onNewRun()
-    closePopUp(id)
-  }
-
   return (
-    <Modal className='w-full max-w-[364px]' id={id} isOpen={true} onClose={onCancelHandler}>
+    <Modal
+      className='w-full max-w-[364px]'
+      id={id}
+      isOpen={true}
+      onClose={onCancelHandler}
+    >
       <ModalHeader>
-        <h2 className='text-base font-bold'>Do you want to run on current build?</h2>
+        <div className='text-base font-bold'>
+          You already have active build and run
+        </div>
       </ModalHeader>
       <ModalBody>
         <p className='text-sm leading-relaxed'>
-          The project has not changed since the last build. Would you like to rebuild it or to run
-          on the current build?
+          The project has not changed since the last build, and a new build will
+          be identical to the current one. Would you like to rebuild it anyway?
         </p>
       </ModalBody>
       <ModalFooter className='justify-center gap-4'>
@@ -41,10 +48,10 @@ const RebuildModal = ({ id = "alert-modal", onRebuild, onNewRun }: RebuildModalP
         </Button>
         <Button
           className='flex-grow bg-foreground text-background'
-          color={"default"}
-          onClick={onNewRunHandler}
+          color={'default'}
+          onClick={onCancelHandler}
         >
-          New run
+          Cancel
         </Button>
       </ModalFooter>
     </Modal>

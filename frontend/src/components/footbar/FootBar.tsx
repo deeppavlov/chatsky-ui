@@ -1,18 +1,24 @@
-import { Button, Popover, PopoverTrigger, Tab, Tabs, useDisclosure } from "@nextui-org/react"
-import classNames from "classnames"
-import { BellRing, EditIcon, Rocket, Settings } from "lucide-react"
-import { Key, memo, useCallback, useContext, useState } from "react"
-import { Link, useSearchParams } from "react-router-dom"
-import { buildContext } from "../../contexts/buildContext"
-import { MetaContext } from "../../contexts/metaContext"
-import { NotificationsContext } from "../../contexts/notificationsContext"
-import { workspaceContext } from "../../contexts/workspaceContext"
-import MonitorIcon from "../../icons/buildmenu/MonitorIcon"
-import LocalStorageIcon from "../../icons/footbar/LocalStorageIcon"
-import { Logo } from "../../icons/Logo"
-import LocalStorage from "../../modals/LocalStorage/LocalStorage"
-import { parseSearchParams } from "../../utils"
-import { NotificationsWindow } from "../notifications/NotificationsWindow"
+import {
+  Button,
+  Popover,
+  PopoverTrigger,
+  Tab,
+  Tabs,
+  useDisclosure,
+} from '@nextui-org/react'
+import classNames from 'classnames'
+import { BellRing, EditIcon, Rocket, Settings } from 'lucide-react'
+import { Key, memo, useCallback, useContext, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { MetaContext } from '../../contexts/metaContext'
+import { NotificationsContext } from '../../contexts/notificationsContext'
+import { PageType } from '../../contexts/workspaceContext'
+import MonitorIcon from '../../icons/buildmenu/MonitorIcon'
+import LocalStorageIcon from '../../icons/footbar/LocalStorageIcon'
+import { Logo } from '../../icons/Logo'
+import LocalStorage from '../../modals/LocalStorage/LocalStorage'
+import { parseSearchParams } from '../../utils'
+import { NotificationsWindow } from '../notifications/NotificationsWindow'
 
 const FootBar = memo(() => {
   const {
@@ -22,113 +28,93 @@ const FootBar = memo(() => {
   } = useDisclosure()
 
   const { version } = useContext(MetaContext)
-  const { settingsPage, setSettingsPage } = useContext(workspaceContext)
-  const { logsPage, setLogsPage } = useContext(buildContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-  const { notifications } = useContext(NotificationsContext)
+  const { notifications, notification } = useContext(NotificationsContext)
+
+  const openNotifications = () => {
+    setIsNotificationsOpen((prev) => !prev)
+    notification.set((nots) => nots.map((n) => ({ ...n, isRead: true })))
+  }
 
   const onSelectionChange = useCallback(
     (key: Key) => {
-      if (key === "Inspect") {
-        setLogsPage(true)
-        setSettingsPage(false)
-        setSearchParams({
-          ...parseSearchParams(searchParams),
-          logs_page: "opened",
-          settings: "closed",
-        })
-      } else if (key === "Settings") {
-        setLogsPage(false)
-        setSettingsPage(true)
-        setSearchParams({
-          ...parseSearchParams(searchParams),
-          logs_page: "closed",
-          settings: "opened",
-        })
-      } else {
-        setSearchParams({
-          ...parseSearchParams(searchParams),
-          logs_page: "closed",
-          settings: "closed",
-        })
-        setSettingsPage(false)
-        setLogsPage(false)
-      }
+      const pageKey = key as PageType
+      setSearchParams({
+        ...parseSearchParams(searchParams),
+        page: pageKey,
+      })
     },
-    [searchParams, setLogsPage, setSearchParams, setSettingsPage]
+    [searchParams, setSearchParams],
   )
-
-  const findDefaultSelectedKey = useCallback(() => {
-    if (settingsPage) {
-      return "Settings"
-    } else if (logsPage) {
-      return "Inspect"
-    } else {
-      return "Edit"
-    }
-  }, [logsPage, settingsPage])
 
   return (
     <div
       data-testid='footbar'
-      className='h-12 px-2 bg-overlay border-t border-border absolute bottom-0 w-screen flex items-center justify-between'>
-      <div className='absolute w-full flex items-center justify-center'>
+      className='absolute bottom-0 flex h-12 w-screen items-center justify-between border-t border-border bg-overlay px-2'
+    >
+      <div className='absolute flex w-full items-center justify-center'>
         <Tabs
+          selectedKey={searchParams.get('page') || 'edit'}
           onSelectionChange={onSelectionChange}
-          defaultSelectedKey={findDefaultSelectedKey()}
           variant='light'
           className=''
           classNames={{
-            cursor: "border border-foreground bg-background",
-            tab: "w-32 h-9",
-            panel: "p-0 m-0 w-0 h-0",
-          }}>
+            cursor: 'border border-foreground bg-background',
+            tab: 'w-32 h-9',
+            panel: 'p-0 m-0 w-0 h-0',
+          }}
+        >
           <Tab
-            key={"Edit"}
+            key={'edit'}
             title={
               <span className='flex items-center gap-2'>
                 <EditIcon />
                 Edit
               </span>
-            }></Tab>
+            }
+          ></Tab>
           <Tab
-            key={"Deliver"}
-            isDisabled
+            key={'deliver'}
+            // isDisabled
             title={
               <span className='flex items-center gap-2'>
                 <Rocket />
                 Deliver
               </span>
-            }></Tab>
+            }
+          ></Tab>
           <Tab
-            key={"Inspect"}
+            key={'inspect'}
             title={
               <span className='flex items-center gap-2'>
                 <MonitorIcon />
                 Inspect
               </span>
-            }>
-          </Tab>
+            }
+          ></Tab>
           <Tab
-            key={"Settings"}
+            key={'settings'}
             title={
               <span className='flex items-center gap-2'>
                 <Settings />
                 Settings
               </span>
-            }>
-          </Tab>
+            }
+          ></Tab>
         </Tabs>
       </div>
       <Link
         data-testid='logo'
-        to={"/app/home"}
-        className='flex items-center gap-1 z-10 cursor-pointer'>
+        to={'/app/home'}
+        className='z-10 flex cursor-pointer items-center gap-1'
+      >
         <Logo />
         <div className='flex items-end justify-start gap-1'>
-          <span className='flex font-bold text-lg'>Chatsky UI</span>
-          <span className='flex font-semibold text-neutral-400 text-sm'>v {version}</span>
+          <span className='flex text-lg font-bold'>Chatsky UI</span>
+          <span className='flex text-sm font-semibold text-neutral-400'>
+            v {version}
+          </span>
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>
@@ -136,9 +122,10 @@ const FootBar = memo(() => {
           isDisabled
           onClick={onLocalStorageOpen}
           className={classNames(
-            "local-storage-button px-2 cursor-pointer rounded-small h-9 flex items-center bg-transparent justify-center gap-2 border border-transparent hover:bg-background hover:border-foreground hover:text-foreground",
-            isLocalStorageOpen && "bg-background border-foreground"
-          )}>
+            'local-storage-button flex h-9 cursor-pointer items-center justify-center gap-2 rounded-small border border-transparent bg-transparent px-2 hover:border-foreground hover:bg-background hover:text-foreground',
+            isLocalStorageOpen && 'border-foreground bg-background',
+          )}
+        >
           <LocalStorageIcon className='local-storage-button-hover:stroke-0' />
           Local storage
         </Button>
@@ -146,17 +133,19 @@ const FootBar = memo(() => {
           placement='top-end'
           offset={30}
           isOpen={isNotificationsOpen}
-          onOpenChange={setIsNotificationsOpen}>
+          onOpenChange={openNotifications}
+        >
           <PopoverTrigger>
             <Button
               isIconOnly
-              className='rounded-small h-9 flex items-center bg-transparent justify-center border border-transparent hover:bg-background hover:border-foreground'>
-              {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length > 0 && (
-                <span className='absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full w-4 h-4 flex items-center justify-center'>
-                  {notifications.filter((nt) => ["error", "warning"].includes(nt.type)).length}
+              className='flex h-9 items-center justify-center rounded-small border border-transparent bg-transparent hover:border-foreground hover:bg-background'
+            >
+              {notifications.filter((nt) => !nt.isRead).length > 0 && (
+                <span className='absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white'>
+                  {notifications.filter((nt) => !nt.isRead).length}
                 </span>
               )}
-              <BellRing className='w-5 h-5' />
+              <BellRing className='h-5 w-5' />
             </Button>
           </PopoverTrigger>
           <NotificationsWindow
@@ -165,10 +154,7 @@ const FootBar = memo(() => {
           />
         </Popover>
       </div>
-      <LocalStorage
-        isOpen={isLocalStorageOpen}
-        onClose={onLocalStorageClose}
-      />
+      <LocalStorage isOpen={isLocalStorageOpen} onClose={onLocalStorageClose} />
     </div>
   )
 })

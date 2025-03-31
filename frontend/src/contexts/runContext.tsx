@@ -1,17 +1,19 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { delay } from '@/utils'
+import { AxiosError } from 'axios'
+import { createContext, useContext, useEffect, useState } from 'react'
 import {
   buildApiStatusType,
-  buildPresetType,
-  get_builds,
   get_runs,
   localRunType,
-  runMinifyApiType,
   run_start,
   run_status,
   run_stop,
-} from "../api/bot"
-import { buildContext } from "./buildContext"
-import { NotificationsContext } from "./notificationsContext"
+  run_stop_all,
+  runMinifyApiType,
+  runPresetType,
+} from '../api/bot'
+import { buildContext } from './buildContext'
+import { NotificationsContext } from './notificationsContext'
 
 export type runApiType = {
   id: number
@@ -26,14 +28,17 @@ export type runApiType = {
 type RunContextType = {
   runs: localRunType[]
   setRuns: React.Dispatch<React.SetStateAction<localRunType[]>>
-  run: localRunType | null
-  setRun: React.Dispatch<React.SetStateAction<localRunType | null>>
-  runPending: boolean
-  setRunPending: React.Dispatch<React.SetStateAction<boolean>>
-  runStart: (preset: buildPresetType) => void
+  runStarting: boolean
+  setRunStarting: React.Dispatch<React.SetStateAction<boolean>>
+  startingRunId: number | null
+  setStartingRunId: React.Dispatch<React.SetStateAction<number | null>>
+  runStopping: boolean
+  setRunStopping: React.Dispatch<React.SetStateAction<boolean>>
+  stoppingRunIds: number[]
+  setStoppingRunIds: React.Dispatch<React.SetStateAction<number[]>>
+  runStart: (build_id: string, preset: runPresetType) => void
   runStop: (run_id: number) => void
-  runStatus: buildApiStatusType
-  setRunStatus: React.Dispatch<React.SetStateAction<buildApiStatusType>>
+  stopAllRuns: (run_ids: number[]) => void
   setRunsHandler: (runs: runMinifyApiType[]) => void
 }
 
@@ -41,40 +46,40 @@ type RunContextType = {
 export const runContext = createContext({
   setRuns: () => {},
   runs: [],
-  run: null,
-  setRun: () => {},
-  runPending: false,
-  setRunPending: () => {},
+  runStarting: false,
+  setRunStarting: () => {},
+  startingRunId: null,
+  setStartingRunId: () => {},
+  runStopping: false,
+  setRunStopping: () => {},
+  stoppingRunIds: [],
+  setStoppingRunIds: () => {},
   runStart: async () => {},
   runStop: () => {},
-  setRunStatus: () => {},
-  runStatus: "stopped",
+  stopAllRuns: () => {},
   setRunsHandler: () => {},
 } as RunContextType)
 
 export const RunProvider = ({ children }: { children: React.ReactNode }) => {
-  const [run, setRun] = useState<localRunType | null>(null)
-  const [runPending, setRunPending] = useState(false)
-  const [runStatus, setRunStatus] = useState<buildApiStatusType>("stopped")
+  const [runStarting, setRunStarting] = useState(false)
+  const [startingRunId, setStartingRunId] = useState<number | null>(null)
+  const [runStopping, setRunStopping] = useState(false)
+  const [stoppingRunIds, setStoppingRunIds] = useState<number[]>([])
   const [runs, setRuns] = useState<localRunType[]>([])
-  const { setBuildsHandler } = useContext(buildContext)
   const { notification: n } = useContext(NotificationsContext)
+  const { setBuilds } = useContext(buildContext)
 
   const setRunsHandler = (runs: runMinifyApiType[]) => {
-    setRuns(runs.map((run) => ({ ...run, type: "run" })))
+    setRuns(runs.map((run) => ({ ...run, type: 'run' })))
   }
 
   const getRunInitial = async () => {
     const data = await get_runs()
     if (data) {
       const _runs: localRunType[] = data.map((run) => {
-        return { ...run, type: "run" }
+        return { ...run, type: 'run' }
       })
-      setRuns(_runs)
-      if (_runs[_runs.length - 1].status === "alive") {
-        setRun(_runs[_runs.length - 1])
-        setRunStatus("alive")
-      }
+      setRuns(_runs.sort((a, b) => b.id - a.id))
     }
   }
 
@@ -82,114 +87,230 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
     getRunInitial()
   }, [])
 
-  const runStart = async ({ end_status = "success", wait_time = 0 }: buildPresetType) => {
-    setRunPending(() => true)
-    setRunStatus("running")
+  const runStart = async (
+    build_id: string,
+    { end_status = 'success', ...restParams }: runPresetType,
+  ) => {
+    setStartingRunId(runs.length)
+    setRunStarting(true)
+    setTimeout(() => setRunStarting(false), 13000)
+
     try {
-      const builds = await get_builds()
-      const { run_id } = await run_start({ wait_time, end_status }, builds[builds.length - 1].id)
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      const started_runs = await get_runs()
-      const started_run = started_runs.find((r) => r.id === run_id)
-      if (started_run) {
-        setRun({ ...started_run, type: "run" })
-        setRuns((prev) => [
-          ...prev,
-          {
-            ...started_run,
-            type: "run",
-          },
-        ])
-        const builds = await get_builds()
-        setBuildsHandler(builds)
-        let flag = true
-        let timer = 0
-        const timerId = setInterval(() => timer++, 500)
-        while (flag) {
-          if (timer > 7200) {
-            setRunPending(() => false)
-            setRunStatus("failed")
-            n.add({
-              title: "Run timeout error!",
-              message: "",
-              type: "error",
-            })
-            return (flag = false)
-          }
-          const { status } = await run_status(started_run.id)
-          if (status === "alive") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("alive")
-            n.add({
-              message: "",
-              title: "Run started!",
-              type: "success",
-            })
-          }
-          if (status === "failed") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("failed")
-            n.add({
-              message: "Unknown run error. Please check your script.",
-              title: "Run failed!",
-              type: "error",
-            })
-          }
-          if (status === "stopped") {
-            flag = false
-            setRunPending(false)
-            setRunStatus("stopped")
-          }
-          await new Promise((resolve) => setTimeout(resolve, 500))
+      // 1. Запуск рана и получение run_id
+      const { run_id } = await run_start(build_id, {
+        end_status,
+        ...restParams,
+      })
+
+      // 2. Ожидание появления рана в списке ранов
+      let started_run = await get_runs(run_id)
+      while (!started_run) {
+        await delay(500)
+        started_run = await get_runs(run_id)
+      }
+      setRunsHandler([...runs, started_run])
+      setBuilds((builds) =>
+        builds.map((b) =>
+          b.id === started_run.build_id
+            ? { ...b, runs: [...b.runs, { ...started_run, type: 'run' }] }
+            : b,
+        ),
+      )
+
+      // 4. Мониторинг статуса рана
+
+      let status: buildApiStatusType = 'running'
+
+      while (status === 'running') {
+        try {
+          status = (await run_status(started_run.id)).status
+          status === 'running' && (await delay(1000))
+        } catch (e) {
+          console.log(e)
+          await delay(1000)
         }
-        clearInterval(timerId)
+      }
+
+      setRuns((prev) =>
+        prev.map((r) => (run_id === r.id ? { ...r, status } : r)),
+      )
+      setBuilds((builds) =>
+        builds.map((build) =>
+          build.id === started_run.build_id
+            ? {
+                ...build,
+                runs: build.runs.map((run) =>
+                  run.id === run_id ? { ...run, status } : run,
+                ),
+              }
+            : build,
+        ),
+      )
+      switch (status) {
+        case 'alive':
+          n.add({
+            title: 'Run started!',
+            message: '',
+            type: 'success',
+          })
+          break
+
+        case 'failed':
+          n.add({
+            title: 'Run failed!',
+            message: 'Unknown run error. Please check your script.',
+            type: 'error',
+            link: {
+              text: 'See logs for this run',
+              url: `?page=inspect&run_id=${started_run.id}&type=run`,
+            },
+          })
+          break
+
+        default:
+          break
       }
     } catch (error) {
-      console.log(error)
+      console.error('Error during run start:', error)
+      n.add({
+        title: 'Run error!',
+        message:
+          error instanceof AxiosError
+            ? error.message
+            : 'An unexpected error occurred.',
+        type: 'error',
+      })
     } finally {
-      setRunPending(() => false)
+      setStartingRunId(null)
+      setRunStarting(false)
     }
   }
 
   async function runStop(run_id: number) {
-    setRunPending(() => true)
+    let isTimeoutReached = false
+    setStoppingRunIds((ids) => [...ids, run_id])
     try {
-      const res = await run_stop(run_id)
-      if (res.status === "ok") {
-        setTimeout(async () => {
-          const builds = await get_builds()
-          setBuildsHandler(builds)
-          const runs = await get_runs()
-          setRunsHandler(runs)
-          setRunStatus("stopped")
-          setRunPending(() => false)
-          n.add({
-            message: "",
-            title: "Run stopped!",
-            type: "info",
-          })
-        }, 500)
-      }
+      await run_stop(run_id)
+
+      let status: buildApiStatusType = 'alive'
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          isTimeoutReached = true
+          reject(new Error('Timeout error'))
+        }, 10000)
+      })
+
+      const stopRunPromise = (async () => {
+        while (status !== 'stopped' && !isTimeoutReached) {
+          try {
+            status = (await run_status(run_id)).status
+            status !== 'stopped' && (await delay(1000))
+          } catch (e) {
+            console.log(e)
+            await delay(1000)
+          }
+        }
+      })()
+
+      await Promise.race([stopRunPromise, timeoutPromise])
+      setRunsHandler(runs.map((r) => (r.id === run_id ? { ...r, status } : r)))
+      const stoppedRun = runs.find((r) => r.id === run_id) as runMinifyApiType
+      setBuilds((builds) =>
+        builds.map((build) =>
+          build.id === stoppedRun.build_id
+            ? {
+                ...build,
+                runs: build.runs.map((run) =>
+                  run.id === run_id ? { ...run, status } : run,
+                ),
+              }
+            : build,
+        ),
+      )
+
+      n.add({
+        message: '',
+        title: 'Run stopped!',
+        type: 'info',
+      })
     } catch (error) {
       console.log(error)
+      n.add({
+        message: '',
+        title: 'Error stopping the run!',
+        type: 'error',
+      })
+    } finally {
+      setStoppingRunIds((ids) => ids.filter((id) => id !== run_id))
+    }
+  }
+
+  const stopAllRuns = async () => {
+    setRunStopping(true)
+    let isTimeoutReached = false
+    try {
+      await run_stop_all()
+
+      let runs = await get_runs()
+      let isAllStopped = runs.every((r) => r.status !== 'alive')
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          isTimeoutReached = true
+          reject(new Error('Timeout error'))
+        }, 10000)
+      })
+      const stopRunsPromise = (async () => {
+        while (!isAllStopped && !isTimeoutReached) {
+          await delay(1000)
+          runs = await get_runs()
+          isAllStopped = runs.every((r) => r.status !== 'alive')
+        }
+      })()
+      await Promise.race([stopRunsPromise, timeoutPromise])
+
+      setRunsHandler(runs)
+      setBuilds((builds) =>
+        builds.map((build) => ({
+          ...build,
+          runs: build.runs.map((run) => ({ ...run, status: 'stopped' })),
+        })),
+      )
+
+      n.add({
+        message: '',
+        title: 'All runs stopped!',
+        type: 'info',
+      })
+    } catch (error) {
+      console.log(error)
+      n.add({
+        message: '',
+        title: 'Error stopping the run!',
+        type: 'error',
+      })
+    } finally {
+      setRunStopping(false)
     }
   }
 
   return (
     <runContext.Provider
       value={{
-        run,
-        setRun,
-        runPending,
-        setRunPending,
+        runStarting,
+        setRunStarting,
+        startingRunId,
+        setStartingRunId,
+        runStopping,
+        setRunStopping,
+        stoppingRunIds,
+        setStoppingRunIds,
         runStart,
         runStop,
-        runStatus,
+        stopAllRuns,
         runs,
         setRuns,
-        setRunStatus,
         setRunsHandler,
       }}
     >

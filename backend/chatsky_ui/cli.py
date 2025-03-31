@@ -1,14 +1,29 @@
+"""
+This module provides a command-line interface (CLI) for managing and running Chatsky-UI projects on a low level.
+
+Commands:
+    build_bot: Builds the bot with one of three various presets.
+    build_scenario: Builds the bot with the preset `success`.
+    run_bot: Runs the bot with one of three various presets.
+    run_scenario: Runs the bot with the preset `success`.
+    run_app: Runs the UI for your `project_dir` on `host:port`.
+    init: Initializes a new Chatsky-UI project using an off-the-shelf template.
+
+Helper Functions:
+    _execute_command: Asynchronously executes a shell command.
+    _execute_command_file: Reads a command from a JSON file and executes it.
+"""
 import asyncio
 import json
 import os
 import string
 import sys
 from pathlib import Path
+from typing import Optional
 
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
-from typing_extensions import Annotated
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -25,7 +40,12 @@ cli = typer.Typer(
 )
 
 
-async def _execute_command(command_to_run):
+async def _execute_command(command_to_run: str) -> None:
+    """Asynchronously executes a shell command.
+
+    Args:
+        command_to_run (str): The command to execute.
+    """
     logger = get_logger(__name__)
     try:
         process = await asyncio.create_subprocess_exec(*command_to_run.split())
@@ -47,10 +67,17 @@ async def _execute_command(command_to_run):
         sys.exit(1)
 
 
-def _execute_command_file(project_dir: Path, command_file: str, preset: str):
+def _execute_command_file(project_dir: Path, command_file: str, preset: str) -> None:
+    """Reads a command from a JSON file and executes it.
+
+    Args:
+        project_dir (Path): The project directory.
+        command_file (str): The JSON file containing the command.
+        preset (str): The preset to use. it could be one of ["success", "failure", "loop"]
+    """
     logger = get_logger(__name__)
 
-    presets_build_path = settings.presets / command_file
+    presets_build_path = settings.presets_path / command_file
     with open(presets_build_path, encoding="UTF-8") as file:
         file_content = file.read()
 
@@ -64,31 +91,63 @@ def _execute_command_file(project_dir: Path, command_file: str, preset: str):
 
         asyncio.run(_execute_command(command_to_run))
     else:
+        logger.error("Invalid preset '%s'. Preset must be one of %s", preset, list(presets_build_file.keys()))
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
 
 @cli.command("build_bot")
 def build_bot(
-    project_dir: Path = None,
-    preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
-):
-    """Builds the bot with one of three various presets."""
+    build_id: int,
+    messenger: Optional[str] = typer.Option("web", help="Messenger to run chat in. Must be in ['web', 'telegram']."),
+    chatsky_port: Optional[int] = typer.Option(None, help="Port for the HTTP web server"),
+    project_dir: Optional[Path] = typer.Option(None, help="The project directory created by the `init` command"),
+    preset: Optional[str] = typer.Option("success", help="Could be one of: success, failure, loop"),
+) -> None:
+    """Builds the bot with one of three various presets.
+
+    Args:
+        build_id (int): The ID to assign to the build.
+        messenger (Optional[str]): The messenger to run chat in. Must be in ["web", "telegram"].
+        chatsky_port (Optional[int]): The port for the HTTP web server.
+        project_dir (Optional[Path]): The project directory created by the `init` command".
+        preset (str): The preset to use. Must be in ["success", "failure", "loop"].
+    """
     project_dir = project_dir or settings.work_directory
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
+
+    os.environ["build_id"] = str(build_id)
+    os.environ["messenger"] = str(messenger)
+    if chatsky_port is not None:
+        os.environ["chatsky_port"] = str(chatsky_port)
+    else:
+        os.environ.pop("chatsky_port", None)
 
     _execute_command_file(project_dir, "build.json", preset)
 
 
 @cli.command("build_scenario")
 def build_scenario(
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
-    # TODO: add custom_dir - maybe the same way like project_dir
-):
-    """Builds the bot with preset `success`"""
+    build_id: int,
+    messenger: str = typer.Option("web", help="Messenger to run chat in"),
+    chatsky_port: int = typer.Option(None, help="Port for the HTTP web server"),
+    project_dir: Path = typer.Option(Path("."), help="The project directory created by the `init` command"),
+) -> None:
+    """Builds the bot with preset `success`.
+
+    Args:
+        build_id (int): The build ID.
+        messenger (str): The messenger to run chat in.
+        chatsky_port (int): The port for the HTTP web server.
+        project_dir (Path): The project directory.
+    """
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -96,19 +155,31 @@ def build_scenario(
 
     pipeline_converter = PipelineConverter()
     pipeline_converter(
-        input_file=settings.frontend_flows_path, output_dir=settings.scripts_dir
-    )  # TODO: rename to frontend_graph_path
+        build_id=build_id,
+        input_file=settings.frontend_flows_path,
+        output_dir=settings.scripts_dir,
+        messenger=messenger,
+        chatsky_port=chatsky_port,
+    )
 
 
 @cli.command("run_bot")
 def run_bot(
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = None,
-    preset: Annotated[str, typer.Option(help="Could be one of: success, failure, loop")] = "success",
-):
-    """Runs the bot with one of three various presets."""
+    project_dir: Path = typer.Option(None, help="The project directory created by the `init` command"),
+    preset: str = typer.Option("success", help="Could be one of: success, failure, loop"),
+) -> None:
+    """
+    Runs the bot with one of three various presets.
+
+    Args:
+        project_dir (Path): "The project directory created by the `init` command".
+        preset (str): The preset to use.
+    """
     project_dir = project_dir or settings.work_directory
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -117,9 +188,14 @@ def run_bot(
 
 @cli.command("run_scenario")
 def run_scenario(
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = ".",
-):
-    """Runs the bot with preset `success`"""
+    project_dir: Path = typer.Option(Path("."), help="The project directory created by the `init` command"),
+) -> None:
+    """
+    Runs the bot with preset `success`.
+
+    Args:
+        project_dir (Path): "The project directory created by the `init` command".
+    """
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
@@ -135,19 +211,30 @@ def run_scenario(
 
 @cli.command("run_app")
 def run_app(
-    host: str = None,
-    port: int = None,
-    log_level: str = None,
-    conf_reload: Annotated[bool, typer.Option(help="True for dev-mode, False otherwise")] = None,
-    project_dir: Annotated[Path, typer.Option(help="Your Chatsky-UI project directory")] = Path("."),
+    host: Optional[str] = typer.Option(None, help="The host to run the UI on."),
+    port: Optional[int] = typer.Option(None, help="The port to run the UI on."),
+    log_level: Optional[str] = typer.Option(None, help="The log level."),
+    conf_reload: Optional[bool] = typer.Option(None, help="True for dev-mode, False otherwise"),
+    project_dir: Path = typer.Option(Path("."), help="The project directory created by the `init` command"),
 ) -> None:
-    """Runs the UI for your `project_dir` on `host:port`."""
+    """
+    Runs the UI for your `project_dir` on `host:port`.
+
+    Args:
+        host (str): The host to run the UI on.
+        port (int): The port to run the UI on.
+        log_level (str): The log level.
+        conf_reload (bool): True for dev-mode, False otherwise.
+        project_dir (Path): "The project directory created by the `init` command".
+    """
     host = host or settings.host
     port = port or settings.port
     log_level = log_level or settings.log_level
     conf_reload = conf_reload or settings.conf_reload
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
 
     settings.set_config(
@@ -166,14 +253,18 @@ def run_app(
 
 @cli.command("init")
 def init(
-    destination: Annotated[Path, typer.Option(help="Path where you want to create your project")] = None,
-    no_input: Annotated[bool, typer.Option(help="True for quick and easy initialization using default values")] = False,
-    overwrite_if_exists: Annotated[
-        bool,
-        typer.Option(help="True for replacing any project named as `my_project`)"),
-    ] = True,
-):
-    """Initializes a new Chatsky-UI project using an off-the-shelf template."""
+    destination: Path = typer.Option(None, help="Path where you want to create your project"),
+    no_input: bool = typer.Option(False, help="True for quick and easy initialization using default values"),
+    overwrite_if_exists: bool = typer.Option(True, help="True for replacing any project named as `my_project`)"),
+) -> None:
+    """
+    Initializes a new Chatsky-UI project using an off-the-shelf template.
+
+    Args:
+        destination (Path): The path where you want to create your project.
+        no_input (bool): True for quick and easy initialization using default values.
+        overwrite_if_exists (bool): True for replacing any project named as `my_project`.
+    """
     destination = destination or settings.work_directory
 
     original_dir = os.getcwd()
@@ -183,7 +274,6 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="remove-build-id",
         )
     finally:
         os.chdir(original_dir)
