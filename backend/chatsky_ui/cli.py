@@ -213,9 +213,9 @@ def run_scenario(
         f" --dialogue-db-path {settings.database_path} --run-id {run_id}"
     )
     try:
-        asyncio.run(_execute_command("python" + command_to_run))
+        asyncio.run(_execute_command("python " + command_to_run))
     except FileNotFoundError:
-        asyncio.run(_execute_command("python3" + command_to_run))
+        asyncio.run(_execute_command("python3 " + command_to_run))
 
 
 @cli.command("run_app")
