@@ -22,7 +22,7 @@ import {
 } from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
-import { generateNewConditionBase } from '../../utils'
+import { generateNewConditionBase, maxLengthName } from '../../utils'
 import AlertModal from '../AlertModal'
 import {
   CustomModalProps,
@@ -194,7 +194,7 @@ const ConditionModal = ({
           node.data.conditions?.some((c) => c.name === currentCondition.name),
       )
 
-      const is_name_valid_length = currentCondition.name.length <= 25
+      const is_name_valid_length = currentCondition.name.length <= maxLengthName
 
       if (!is_name_valid_length) {
         return {
@@ -469,7 +469,7 @@ const ConditionModal = ({
   }
 
   const isValidCurrentCondition = () => {
-    const maxLenghtName = currentCondition.name.length <= 25
+    const maxLenghtName = currentCondition.name.length <= maxLengthName
     if (maxLenghtName) {
       return true
     }

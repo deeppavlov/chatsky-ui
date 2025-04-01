@@ -23,7 +23,7 @@ import DefaultNode from '../components/nodes/DefaultNode'
 import LinkNode from '../components/nodes/LinkNode'
 import SlotsNode from '../components/nodes/SlotsNode'
 import ReactFlowCustom from '../components/ReactFlowCustom'
-import { NODE_NAMES, NODES } from '../consts'
+import { NODES } from '../consts'
 import {
   CustomReactFlowInstanceType,
   flowContext,
@@ -296,13 +296,22 @@ export default function Flow() {
           )
           .map((node) => node.data.response.name)
 
-        const iterGenName = (count: number = 1): string => {
+        const iterGenNameResponse = (count: number = 1): string => {
           const newName = `${flowId}_${NODES[type].response.name}_${count}`
           const isUnique = !arrResponse.includes(newName)
           if (isUnique) {
             return newName
           }
-          return iterGenName(count + 1)
+          return iterGenNameResponse(count + 1)
+        }
+
+        const iterGenNameNode = (count: number = 1): string => {
+          const newName = `${flowId}_defNode_${count}`
+          const isUnique = !nodes.some((node) => node.data.name === newName)
+          if (isUnique) {
+            return newName
+          }
+          return iterGenNameNode(count + 1)
         }
 
         newNode = {
@@ -312,17 +321,14 @@ export default function Flow() {
           dragHandle: NODES[type].dragHandle,
           data: {
             id: newId,
-            name:
-              NODE_NAMES.find(
-                (name) => !nodes.some((node) => node.data.name === name),
-              ) ?? 'Empty names array',
+            name: iterGenNameNode(),
             flags: START_FALLBACK_FLAGS,
             conditions: NODES[type].conditions,
             global_conditions: [],
             local_conditions: [],
             response: {
               ...NODES[type].response,
-              name: iterGenName(),
+              name: iterGenNameResponse(),
             } as responseType,
           },
         }

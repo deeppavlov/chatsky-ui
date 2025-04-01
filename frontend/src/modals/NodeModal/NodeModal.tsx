@@ -8,6 +8,7 @@ import EditPenIcon from '../../icons/EditPenIcon'
 import { DefaultNodeDataType, DefaultNodeType } from '../../types/NodeTypes'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import ConditionRow from './components/ConditionRow'
+import { maxLengthName } from '../../utils'
 
 type NodeModalProps = {
   data: DefaultNodeDataType
@@ -61,7 +62,7 @@ const NodeModal = ({
       })
       return false
     }
-    if (nodeDataState.name.length > 25) {
+    if (nodeDataState.name.length > maxLengthName) {
       setErrors({
         ...errors,
         name: {

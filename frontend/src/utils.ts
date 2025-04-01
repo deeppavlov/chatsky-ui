@@ -156,10 +156,23 @@ export const generateNewNode = (
   }
 }
 
-export const generateNewSlot = (group_id: string): SlotType => {
+export const generateNewSlot = (
+  group_id: string,
+  group: SlotsGroupType,
+): SlotType => {
+  const slot_name = group?.slots?.map((s) => s.name) ?? []
+
+  const iterGenName = (iter: number = 1): string => {
+    const name = `New_Slot_${iter}`
+    if (slot_name.includes(name)) {
+      return iterGenName(iter + 1)
+    }
+    return name
+  }
+
   return {
     id: 'slot_' + v4(),
-    name: 'New_Slot',
+    name: iterGenName(),
     group_id,
     type: 'RegexpSlot',
     method: '',

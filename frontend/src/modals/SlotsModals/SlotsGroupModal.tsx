@@ -12,7 +12,7 @@ import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
 import { SlotsNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import DefSelect from '../../UI/Input/DefSelect'
-import { generateNewSlot } from '../../utils'
+import { generateNewSlot, maxLengthName } from '../../utils'
 import {
   CustomModalProps,
   Modal,
@@ -69,14 +69,18 @@ const SlotsGroupModal = ({
 
   const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
     const id = 'group_' + v4()
+    const tempGroup = {
+      id,
+      name: genIterName(),
+      slots: [],
+      subgroups: [],
+      subgroup_to: '',
+      flow: 'global',
+    }
     return (
       group ?? {
-        id: id,
-        name: genIterName(),
-        slots: [generateNewSlot(id)],
-        subgroups: [],
-        subgroup_to: '',
-        flow: 'global',
+        ...tempGroup,
+        slots: [generateNewSlot(id, tempGroup)],
       }
     )
   })
@@ -93,7 +97,7 @@ const SlotsGroupModal = ({
   }, [group])
 
   const onAddSlot = () => {
-    const newSlot: SlotType = generateNewSlot(currentGroup.id)
+    const newSlot: SlotType = generateNewSlot(currentGroup.id, currentGroup)
     setCurrentGroup((prevGroup) => ({
       ...prevGroup,
       slots: [...prevGroup.slots, newSlot],
@@ -128,27 +132,50 @@ const SlotsGroupModal = ({
       isError = true
     }
 
+    if (currentGroup.name.length > maxLengthName) {
+      errorNameGroup.isInvalid = true
+      errorNameGroup.errorMessage =
+        'Group name must be less than 25 characters!'
+      isError = true
+    }
+
     const errorsSlot = currentGroup.slots
       .map((slot) => {
         const arr = currentGroup.slots
           .filter((s) => s.id !== slot.id)
           .map((s) => s.name)
-        if (arr.includes(slot.name) || slot.value === '') {
+
+        if (slot.name.length > maxLengthName) {
+          console.log('slot.name.length > maxLengthName')
           isError = true
           return {
             id: slot.id,
             name: {
-              isInvalid: arr.includes(slot.name),
-              errorMessage: arr.includes(slot.name)
-                ? 'Slot name must be unique!'
-                : '',
-            },
-            value: {
-              isInvalid: slot.value === '',
-              errorMessage: slot.value === '' ? 'Slot value is required!' : '',
+              isInvalid: true,
+              errorMessage: 'Slot name must be less than 25 characters!',
             },
           }
         }
+
+        if (slot.name === '') {
+          isError = true
+          return {
+            id: slot.id,
+            name: { isInvalid: true, errorMessage: 'Slot name is required!' },
+          }
+        }
+
+        if (arr.includes(slot.name)) {
+          isError = true
+          return {
+            id: slot.id,
+            name: {
+              isInvalid: true,
+              errorMessage: 'Slot name must be unique!',
+            },
+          }
+        }
+
         return null
       })
       .filter((e) => e !== null)

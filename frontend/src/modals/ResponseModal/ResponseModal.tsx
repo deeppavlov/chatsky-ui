@@ -9,6 +9,7 @@ import { responseType, responseTypeType } from '../../types/ResponseTypes'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import PythonResponse from './components/PythonResponse'
 import TextResponse from './components/TextResponse'
+import { maxLengthName } from '../../utils'
 
 type ResponseModalTab =
   | 'Using LLM'
@@ -119,7 +120,7 @@ const ResponseModal = ({
       return
     }
 
-    if (currentResponse.name.length > 25) {
+    if (currentResponse.name.length > maxLengthName) {
       setErrors({
         ...errors,
         name: {

@@ -17,7 +17,8 @@ import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import { FlowType } from '../../types/FlowTypes'
 import { ModalType } from '../../types/ModalTypes'
-import { validateFlowName } from '../../utils'
+import { validateFlowName, maxLengthName } from '../../utils'
+import { IerrorSimple } from '../SlotsModals/components/SlotItem'
 
 interface CreateFlowModalProps extends ModalType {}
 
@@ -46,6 +47,10 @@ const ManageFlowsModal = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isSubFlow, setIsSubFlow] = useState(false)
   const [isGlobal, setIsGlobal] = useState(false)
+
+  const [errors, setErrors] = useState<IerrorSimple>({
+    name: { isInvalid: false, errorMessage: '' },
+  })
 
   useEffect(() => {
     setNewFlows(() => [...flows])
@@ -76,6 +81,9 @@ const ManageFlowsModal = ({
       } else {
         setIsGlobal(false)
       }
+      setErrors({
+        name: { isInvalid: false, errorMessage: '' },
+      })
     }
   }, [flow])
 
@@ -84,6 +92,9 @@ const ManageFlowsModal = ({
       ...newFlow,
       [e.target.name]: e.target.value,
     })
+    setErrors({
+      name: { isInvalid: false, errorMessage: '' },
+    })
   }
 
   const onFlowSave = () => {
@@ -91,12 +102,23 @@ const ManageFlowsModal = ({
       !validateFlowName(newFlow.name, newFlows) &&
       newFlow.name !== flow.name
     ) {
-      return n.add({
-        title: 'Warning!',
-        message: 'Flow name is not valid.',
-        type: 'warning',
+      setErrors({
+        name: { isInvalid: true, errorMessage: 'Flow name is not valid.' },
       })
+      return
     }
+
+    if (newFlow.name.length >= maxLengthName) {
+      setErrors({
+        name: {
+          isInvalid: true,
+          errorMessage:
+            'Stream name is too long. Please keep it within 25 characters',
+        },
+      })
+      return
+    }
+
     if (newFlow.color && newFlow.subflow) {
       setFlows([
         ...newFlows.map((_flow) => (_flow.id === flow.id ? newFlow : _flow)),
@@ -176,6 +198,9 @@ const ManageFlowsModal = ({
                     onChange={onFlowChange}
                     value={newFlow.name}
                     min={2}
+                    variant='bordered'
+                    errorMessage={errors.name?.errorMessage}
+                    isInvalid={errors.name?.isInvalid}
                   />
                   <Input
                     disabled={isGlobal}
@@ -183,6 +208,7 @@ const ManageFlowsModal = ({
                     labelPlacement='outside'
                     placeholder="Enter flow's description here"
                     name='description'
+                    variant='bordered'
                     onChange={onFlowChange}
                     value={newFlow.description}
                   />
@@ -211,13 +237,6 @@ const ManageFlowsModal = ({
                   </div>
                 </div>
                 <div className='grid gap-2'>
-                  {/* <div className='flex items-center gap-2'>
-                    <label className='text-sm font-medium'> Subflow </label>
-                    <Checkbox
-                      onChange={() => setIsSubFlow(!isSubFlow)}
-                      checked={isSubFlow}
-                    />
-                  </div> */}
                   <div
                     className='grid transition-all'
                     style={{
@@ -226,6 +245,7 @@ const ManageFlowsModal = ({
                   >
                     <div className='mt-4 min-h-0 overflow-hidden'>
                       <Select
+                        variant='bordered'
                         disabled={isGlobal}
                         aria-label='Dependent from'
                         label='Dependent from'

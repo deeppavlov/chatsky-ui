@@ -6,7 +6,7 @@ import { PopUpContext } from '../../contexts/popUpContext'
 import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
 import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
 import { SlotsNodeDataType } from '../../types/NodeTypes'
-import { generateNewSlot } from '../../utils'
+import { generateNewSlot, maxLengthName } from '../../utils'
 import {
   CustomModalProps,
   Modal,
@@ -32,7 +32,7 @@ const SlotModal = ({
   const { updateNodeData } = useReactFlow()
 
   const { quietSaveFlows } = useContext(flowContext)
-  const [slot, setSlot] = useState<SlotType>(generateNewSlot(group.name))
+  const [slot, setSlot] = useState<SlotType>(generateNewSlot(group.name, group))
   const [errors, setErrors] = useState<IerrorSimple | IErrorDep>({
     name: { isInvalid: false, errorMessage: '' },
     value: { isInvalid: false, errorMessage: '' },
@@ -54,6 +54,20 @@ const SlotModal = ({
       newErrors.value = { isInvalid: true, errorMessage: 'Value is required' }
       notValid = true
     }
+
+    if (slot.name.length >= maxLengthName) {
+      newErrors.name = {
+        isInvalid: true,
+        errorMessage:
+          'Slot name is too long. Please keep it within 25 characters',
+      }
+      notValid = true
+    }
+
+    if (slot.name === '') {
+      newErrors.name = { isInvalid: true, errorMessage: 'Name is required' }
+      notValid = true
+    }
     setErrors(newErrors)
     return notValid
   }
@@ -72,7 +86,7 @@ const SlotModal = ({
 
     setData(() => newData)
     updateNodeData(data.id, newData)
-    setSlot(generateNewSlot(group.name))
+    setSlot(generateNewSlot(group.name, group))
   }
 
   const onCloseHandler = () => {
