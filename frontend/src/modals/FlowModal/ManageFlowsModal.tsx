@@ -17,7 +17,7 @@ import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import { FlowType } from '../../types/FlowTypes'
 import { ModalType } from '../../types/ModalTypes'
-import { validateFlowName, maxLengthName } from '../../utils'
+import { maxLengthName, validateFlowName } from '../../utils'
 import { IerrorSimple } from '../SlotsModals/components/SlotItem'
 
 interface CreateFlowModalProps extends ModalType {}

@@ -6,9 +6,9 @@ import { flowContext } from '../../contexts/flowContext'
 import { undoRedoContext } from '../../contexts/undoRedoContext'
 import EditPenIcon from '../../icons/EditPenIcon'
 import { DefaultNodeDataType, DefaultNodeType } from '../../types/NodeTypes'
+import { maxLengthName } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import ConditionRow from './components/ConditionRow'
-import { maxLengthName } from '../../utils'
 
 type NodeModalProps = {
   data: DefaultNodeDataType

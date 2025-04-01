@@ -6,10 +6,10 @@ import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
 import { responseType, responseTypeType } from '../../types/ResponseTypes'
+import { maxLengthName } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import PythonResponse from './components/PythonResponse'
 import TextResponse from './components/TextResponse'
-import { maxLengthName } from '../../utils'
 
 type ResponseModalTab =
   | 'Using LLM'
