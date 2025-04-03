@@ -17,7 +17,7 @@ import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import { FlowType } from '../../types/FlowTypes'
 import { ModalType } from '../../types/ModalTypes'
-import { maxLengthName, validateFlowName } from '../../utils'
+import { validateCreateFlowModal } from '../../utils'
 import { IerrorSimple } from '../SlotsModals/components/SlotItem'
 
 interface CreateFlowModalProps extends ModalType {}
@@ -98,24 +98,10 @@ const ManageFlowsModal = ({
   }
 
   const onFlowSave = () => {
-    if (
-      !validateFlowName(newFlow.name, newFlows) &&
-      newFlow.name !== flow.name
-    ) {
-      setErrors({
-        name: { isInvalid: true, errorMessage: 'Flow name is not valid.' },
-      })
-      return
-    }
+    const errorObject = validateCreateFlowModal(newFlow, newFlows)
 
-    if (newFlow.name.length >= maxLengthName) {
-      setErrors({
-        name: {
-          isInvalid: true,
-          errorMessage:
-            'Stream name is too long. Please keep it within 25 characters',
-        },
-      })
+    if (errorObject.name?.isInvalid) {
+      setErrors(errorObject)
       return
     }
 

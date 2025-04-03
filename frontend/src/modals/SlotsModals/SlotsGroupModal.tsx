@@ -12,7 +12,7 @@ import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
 import { SlotsNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import DefSelect from '../../UI/Input/DefSelect'
-import { generateNewSlot, maxLengthName } from '../../utils'
+import { generateNewSlot, validateGroupSlot } from '../../utils'
 import {
   CustomModalProps,
   Modal,
@@ -112,94 +112,6 @@ const SlotsGroupModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData])
 
-  const isNotValidateNameGrop = () => {
-    let isError = false
-
-    const errorNameGroup = {
-      isInvalid: false,
-      errorMessage: '',
-    }
-
-    if (currentGroup.name === '') {
-      errorNameGroup.isInvalid = true
-      errorNameGroup.errorMessage = 'Group name is required!'
-      isError = true
-    }
-
-    if (arrNamesSlotsGrop.includes(currentGroup.name)) {
-      errorNameGroup.isInvalid = true
-      errorNameGroup.errorMessage = 'Group name must be unique!'
-      isError = true
-    }
-
-    if (currentGroup.name.length > maxLengthName) {
-      errorNameGroup.isInvalid = true
-      errorNameGroup.errorMessage =
-        'Group name must be less than 25 characters!'
-      isError = true
-    }
-
-    const errorsSlot = currentGroup.slots
-      .map((slot) => {
-        const arr = currentGroup.slots
-          .filter((s) => s.id !== slot.id)
-          .map((s) => s.name)
-
-        if (slot.name.length > maxLengthName) {
-          console.log('slot.name.length > maxLengthName')
-          isError = true
-          return {
-            id: slot.id,
-            name: {
-              isInvalid: true,
-              errorMessage: 'Slot name must be less than 25 characters!',
-            },
-          }
-        }
-
-        if (slot.name === '') {
-          isError = true
-          return {
-            id: slot.id,
-            name: { isInvalid: true, errorMessage: 'Slot name is required!' },
-          }
-        }
-
-        if (arr.includes(slot.name)) {
-          isError = true
-          return {
-            id: slot.id,
-            name: {
-              isInvalid: true,
-              errorMessage: 'Slot name must be unique!',
-            },
-          }
-        }
-
-        return null
-      })
-      .filter((e) => e !== null)
-
-    setErrors({
-      nameGroup: errorNameGroup,
-      slots: errorsSlot.filter(
-        (
-          e,
-        ): e is {
-          id: string
-          name: { isInvalid: boolean; errorMessage: string }
-          value: { isInvalid: boolean; errorMessage: string }
-        } => e !== null,
-      ),
-    })
-
-    if (isError) {
-      isError = true
-    }
-
-    return isError
-  }
-
   const onSave = () => {
     if (
       !currentGroup.name ||
@@ -233,7 +145,13 @@ const SlotsGroupModal = ({
   }
 
   const onSaveHandler = () => {
-    if (isNotValidateNameGrop()) {
+    const errors = validateGroupSlot(currentGroup, arrNamesSlotsGrop)
+    const isError =
+      errors.nameGroup.isInvalid ||
+      errors.slots.some((slot) => slot.name?.isInvalid || slot.value?.isInvalid)
+
+    if (isError) {
+      setErrors(errors)
       return
     }
 
@@ -371,9 +289,7 @@ const SlotsGroupModal = ({
               }
               errors={errors}
               setErrors={(newErrors) => {
-                if ('nameGroup' in newErrors) {
-                  setErrors(newErrors)
-                }
+                setErrors(newErrors as IErrorDep)
               }}
             />
           ))}

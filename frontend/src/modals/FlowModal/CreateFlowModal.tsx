@@ -1,19 +1,10 @@
-import {
-  Button,
-  Checkbox,
-  Input,
-  //  ModalBody,
-  //  ModalFooter,
-  //  ModalHeader,
-  Select,
-  SelectItem,
-} from '@nextui-org/react'
+import { Button, Checkbox, Input, Select, SelectItem } from '@nextui-org/react'
 import { HelpCircle } from 'lucide-react'
 import React, { useContext, useEffect, useState } from 'react'
 import { FLOW_COLORS } from '../../consts'
 import { flowContext } from '../../contexts/flowContext'
 import { ModalType } from '../../types/ModalTypes'
-import { generateNewFlow, maxLengthName, validateFlowName } from '../../utils'
+import { generateNewFlow, validateCreateFlowModal } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 
 interface CreateFlowModalProps extends ModalType {}
@@ -59,12 +50,11 @@ const CreateFlowModal = ({
       ...flow,
       [e.target.name]: e.target.value,
     })
-    if (validateFlowName(flow.name, flows)) {
-      setErrors({
-        ...errors,
-        [e.target.name]: { isInvalid: false, errorMessage: '' },
-      })
-    }
+
+    setErrors({
+      ...errors,
+      [e.target.name]: { isInvalid: false, errorMessage: '' },
+    })
   }
 
   useEffect(() => {
@@ -84,24 +74,16 @@ const CreateFlowModal = ({
   }
 
   const onFlowSave = () => {
-    if (!validateFlowName(flow.name, flows)) {
+    const errorsValidate = validateCreateFlowModal(flow, flows)
+
+    if (errorsValidate.name?.isInvalid || errorsValidate.color?.isInvalid) {
       setErrors({
         ...errors,
-        name: { isInvalid: true, errorMessage: 'Flow name is not valid.' },
+        ...errorsValidate,
       })
       return
     }
-    if (flow.name.length > maxLengthName) {
-      setErrors({
-        ...errors,
-        name: {
-          isInvalid: true,
-          errorMessage:
-            'Stream name is too long. Please keep it within 25 characters.',
-        },
-      })
-      return
-    }
+
     if (flow.color && flow.subflow) {
       const newFlow = generateNewFlow(flow)
       setFlows([...flows, newFlow])
@@ -114,11 +96,6 @@ const CreateFlowModal = ({
       })
       setIsSubFlow(false)
       onClose()
-    } else {
-      setErrors({
-        ...errors,
-        color: { isInvalid: true, errorMessage: 'Please choose flow color.' },
-      })
     }
   }
 
