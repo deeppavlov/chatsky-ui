@@ -286,8 +286,6 @@ export function formatRelativeTime(
   return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year')
 }
 
-export const maxLengthName = 25
-
 export function getTimeDifference(date1: string, date2: string): string {
   const d1 = new Date(date1)
   const d2 = new Date(date2)
@@ -304,10 +302,20 @@ export function getTimeDifference(date1: string, date2: string): string {
   return `${seconds} seconds`
 }
 
+const maxLengthName = 25
+
+const mapErrorMessage = {
+  empty: 'Please fill every field.',
+  maxLength: 'Name must be less than 25 characters.',
+  unique: 'Name must be unique.',
+  color: 'Please choose flow color.',
+  python: 'Please use only Latin letters. Names cannot start with a number.',
+}
+
 const validateName = (name: string) => {
   if (name.replaceAll('_', '').trim() === '') {
     return {
-      name: { isInvalid: true, errorMessage: 'Please fill every field.' },
+      name: { isInvalid: true, errorMessage: mapErrorMessage.empty },
     }
   }
 
@@ -315,7 +323,7 @@ const validateName = (name: string) => {
     return {
       name: {
         isInvalid: true,
-        errorMessage: 'Name must be less than 25 characters.',
+        errorMessage: mapErrorMessage.maxLength,
       },
     }
   }
@@ -342,13 +350,13 @@ export const validateCreateFlowModal = (
 
   if (arrFlowsName.includes(flow.name)) {
     return {
-      name: { isInvalid: true, errorMessage: 'Name must be unique.' },
+      name: { isInvalid: true, errorMessage: mapErrorMessage.unique },
     }
   }
 
   if (flow.color === '') {
     return {
-      color: { isInvalid: true, errorMessage: 'Please choose flow color.' },
+      color: { isInvalid: true, errorMessage: mapErrorMessage.color },
     }
   }
 
@@ -379,15 +387,14 @@ export const validateConditionName = (
   )
 
   if (!isNameUnique) {
-    return { isInvalid: true, errorMessage: 'Name must be unique.' }
+    return { isInvalid: true, errorMessage: mapErrorMessage.unique }
   }
 
   if (currentCondition.type === 'python') {
     const text = currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '')
     if (text.trim() !== '') {
       return {
-        errorMessage:
-          'Please use only Latin letters. Names cannot start with a number.',
+        errorMessage: mapErrorMessage.python,
         isInvalid: true,
       }
     }
@@ -483,8 +490,7 @@ export const validateResponseName = (
   ) {
     return {
       isInvalid: true,
-      errorMessage:
-        'Please use only Latin letters. Names cannot start with a number.',
+      errorMessage: mapErrorMessage.python,
     }
   }
   if (
@@ -499,7 +505,7 @@ export const validateResponseName = (
   ) {
     return {
       isInvalid: true,
-      errorMessage: 'Response name must be unique!',
+      errorMessage: mapErrorMessage.unique,
     }
   }
   return {
@@ -527,7 +533,7 @@ export const validateNodeName = (
   if (nodes.some((node) => node.data.name === name && node.id !== id)) {
     return {
       isInvalid: true,
-      errorMessage: 'Name must be unique',
+      errorMessage: mapErrorMessage.unique,
     }
   }
 
@@ -546,19 +552,19 @@ export const validateGroupSlot = (
     errorMessage: '',
   }
 
-  if (currentGroup.name === '') {
+  if (currentGroup.name.replaceAll('_', '').trim() === '') {
     errorNameGroup.isInvalid = true
-    errorNameGroup.errorMessage = 'Group name is required!'
+    errorNameGroup.errorMessage = mapErrorMessage.empty
   }
 
   if (arrNamesSlotsGrop.includes(currentGroup.name)) {
     errorNameGroup.isInvalid = true
-    errorNameGroup.errorMessage = 'Group name must be unique!'
+    errorNameGroup.errorMessage = mapErrorMessage.unique
   }
 
   if (currentGroup.name.length > maxLengthName) {
     errorNameGroup.isInvalid = true
-    errorNameGroup.errorMessage = 'Group name must be less than 25 characters!'
+    errorNameGroup.errorMessage = mapErrorMessage.maxLength
   }
 
   const errorsSlot = currentGroup.slots.map((slot) => {
@@ -587,14 +593,14 @@ export const validateGroupSlot = (
       object.name.errorMessage = errorMessage
     }
 
-    if (slot.value === '') {
+    if (slot.value.replaceAll('_', '').trim() === '') {
       object.value.isInvalid = true
-      object.value.errorMessage = 'Slot value is required!'
+      object.value.errorMessage = mapErrorMessage.empty
     }
 
     if (arr.includes(slot.name)) {
       object.name.isInvalid = true
-      object.name.errorMessage = 'Slot name must be unique!'
+      object.name.errorMessage = mapErrorMessage.unique
     }
 
     return object
@@ -604,4 +610,33 @@ export const validateGroupSlot = (
     nameGroup: errorNameGroup,
     slots: errorsSlot,
   }
+}
+
+export const validateSlot = (slot: SlotType, group: SlotsGroupType) => {
+  const newErrors = {
+    name: { isInvalid: false, errorMessage: '' },
+    value: { isInvalid: false, errorMessage: '' },
+  }
+
+  const allNames = group.slots.map((s) => s.name)
+  if (allNames.includes(slot.name)) {
+    newErrors.name = {
+      isInvalid: true,
+      errorMessage: mapErrorMessage.unique,
+    }
+  }
+
+  if (slot.value.replaceAll('_', '').trim() === '') {
+    newErrors.value = { isInvalid: true, errorMessage: mapErrorMessage.empty }
+  }
+
+  const {
+    name: { isInvalid, errorMessage },
+  } = validateName(slot.name)
+
+  if (isInvalid) {
+    newErrors.name = { isInvalid, errorMessage }
+  }
+
+  return newErrors
 }

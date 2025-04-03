@@ -6,7 +6,7 @@ import { PopUpContext } from '../../contexts/popUpContext'
 import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
 import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
 import { SlotsNodeDataType } from '../../types/NodeTypes'
-import { generateNewSlot, maxLengthName } from '../../utils'
+import { generateNewSlot, validateSlot } from '../../utils'
 import {
   CustomModalProps,
   Modal,
@@ -38,40 +38,6 @@ const SlotModal = ({
     value: { isInvalid: false, errorMessage: '' },
   })
 
-  const isNotValid = () => {
-    const newErrors = {
-      name: { isInvalid: false, errorMessage: '' },
-      value: { isInvalid: false, errorMessage: '' },
-    }
-    let notValid = false
-    const allNames = group.slots.map((s) => s.name)
-    if (allNames.includes(slot.name)) {
-      newErrors.name = { isInvalid: true, errorMessage: 'Name already exists' }
-      notValid = true
-    }
-
-    if (slot.value.length === 0) {
-      newErrors.value = { isInvalid: true, errorMessage: 'Value is required' }
-      notValid = true
-    }
-
-    if (slot.name.length >= maxLengthName) {
-      newErrors.name = {
-        isInvalid: true,
-        errorMessage:
-          'Slot name is too long. Please keep it within 25 characters',
-      }
-      notValid = true
-    }
-
-    if (slot.name === '') {
-      newErrors.name = { isInvalid: true, errorMessage: 'Name is required' }
-      notValid = true
-    }
-    setErrors(newErrors)
-    return notValid
-  }
-
   const onSave = () => {
     if (!slot.name || !slot.type || !slot.value) {
       return
@@ -94,9 +60,13 @@ const SlotModal = ({
   }
 
   const onSaveHandler = () => {
-    if (isNotValid()) {
+    const errors = validateSlot(slot, group)
+
+    if (errors.name.isInvalid || errors.value.isInvalid) {
+      setErrors(errors)
       return
     }
+
     onSave()
     closePopUp(id)
     quietSaveFlows()
