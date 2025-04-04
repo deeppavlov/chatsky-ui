@@ -22,7 +22,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
     },
     [deleteFlow, flow],
   )
-
+  // flex w-full flex-col overflow-hidden whitespace-pre-wrap break-words
   return (
     <div
       onMouseEnter={() => setHover(true)}
@@ -31,7 +31,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
       data-testid={'flow-card'}
       key={flow.name}
     >
-      <div>
+      <div className='flex w-full flex-col overflow-hidden whitespace-pre-wrap break-words'>
         <div className='flex min-h-9 items-center justify-between'>
           <div className='flex items-center gap-2'>
             <span
@@ -40,7 +40,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
               }}
               className='block h-5 w-5 rounded-full'
             ></span>
-            <p className='text-lg font-medium'>{flow.name}</p>
+            <p className='text-lg font-medium truncate'>{flow.name}</p>
           </div>
           <button
             data-testid={`${flow.name}-delete-btn`}
@@ -52,7 +52,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
             <TrashIcon className='h-5 w-5 stroke-foreground' />
           </button>
         </div>
-        <p className=''>{flow.description}</p>
+        <p className='break-words whitespace-pre-wrap overflow-hidden text-ellipsis line-clamp-2'>{flow.description}</p>
       </div>
       <div className='flex w-full items-center justify-end'>
         <button

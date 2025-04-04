@@ -227,6 +227,7 @@ const SlotsGroupModal = ({
               {isSubGroup && (
                 <DefSelect
                   mini
+
                   defaultValue={parentGroup?.name ?? ''}
                   onValueChange={(value) => {
                     const parent_group = nodeData.groups.find(
@@ -247,7 +248,7 @@ const SlotsGroupModal = ({
                     }
                   }}
                   placeholder='Select parent group'
-                  className='h-8 min-h-8 w-1/3'
+                  className='h-8 min-h-8 w-1/3 w-full'
                   items={nodeData.groups
                     .filter((g) => g.id !== currentGroup.id)
                     .map((g) => ({ key: g.name, value: g.name }))}
