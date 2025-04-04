@@ -40,7 +40,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
               }}
               className='block h-5 w-5 rounded-full'
             ></span>
-            <p className='text-lg font-medium truncate'>{flow.name}</p>
+            <p className='truncate text-lg font-medium'>{flow.name}</p>
           </div>
           <button
             data-testid={`${flow.name}-delete-btn`}
@@ -52,7 +52,9 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
             <TrashIcon className='h-5 w-5 stroke-foreground' />
           </button>
         </div>
-        <p className='break-words whitespace-pre-wrap overflow-hidden text-ellipsis line-clamp-2'>{flow.description}</p>
+        <p className='line-clamp-2 overflow-hidden text-ellipsis whitespace-pre-wrap break-words'>
+          {flow.description}
+        </p>
       </div>
       <div className='flex w-full items-center justify-end'>
         <button

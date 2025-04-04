@@ -227,7 +227,6 @@ const SlotsGroupModal = ({
               {isSubGroup && (
                 <DefSelect
                   mini
-
                   defaultValue={parentGroup?.name ?? ''}
                   onValueChange={(value) => {
                     const parent_group = nodeData.groups.find(
