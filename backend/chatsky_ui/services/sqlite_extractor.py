@@ -1,9 +1,9 @@
 import sqlite3
+from platform import system
 from typing import Union
 
 from chatsky import Context
 from pydantic import ValidationError
-from platform import system
 
 from chatsky_ui.clients.context_storage import ChatskyUIContextStorage
 from chatsky_ui.core.config import settings
