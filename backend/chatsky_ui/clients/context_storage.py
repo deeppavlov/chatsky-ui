@@ -10,7 +10,6 @@ but we added the `run_id` in the beginning to differentiate between, say, Telegr
 from typing import List, Optional, Tuple
 
 from chatsky.context_storages import SQLContextStorage
-from chatsky.core import Context
 from chatsky.core.ctx_utils import ContextMainInfo
 
 
