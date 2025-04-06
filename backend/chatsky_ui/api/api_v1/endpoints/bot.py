@@ -463,7 +463,7 @@ async def respond(
             ) from e
 
 
-@router.get("/get_chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
+@router.get("/chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
 async def get_chat_records(
     run_id: int,
     user_id: int,
@@ -494,7 +494,7 @@ async def get_chat_records(
         )
 
 
-@router.get("/get_chat_ids", response_model=Optional[list], status_code=200)
+@router.get("/chat/ids", response_model=Optional[list], status_code=200)
 async def get_chat_ids(
     sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
