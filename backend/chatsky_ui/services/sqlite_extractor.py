@@ -26,13 +26,13 @@ class SQLiteExtractor:
             raise ValueError("Logger has not been configured. Call set_logger() first.")
         return self._logger
 
-    def get_database(self, run_id: int):
+    async def get_database(self, run_id: int):
         separator = "///" if system() == "Windows" else "////"
 
         db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
         if self.database == None:
             self.database = ChatskyUIContextStorage(db_uri, run_id)
-            self.database.connect()
+            await self.database.connect()
         return self.database
 
     def set_logger(self):
@@ -76,7 +76,7 @@ class SQLiteExtractor:
         so we delete the new unnecessary Context and return None.
         """
         try:
-            context = await Context.connected(self.get_database(run_id), id=str(user_id))
+            context = await Context.connected(await self.get_database(run_id), id=str(user_id))
             if await context.labels[0] == None:
                 await context.delete()
                 context = None
