@@ -56,10 +56,10 @@ class SQLiteExtractor:
 
     async def extract_user_context(self, run_id: str, user_id: int):
         ctx_id = f"{run_id}_{user_id}"
-        return await self.execute_statement("SELECT * FROM contexts WHERE id = ?", (ctx_id,))
+        return await self.execute_statement("SELECT * FROM chatsky_table_turns WHERE id = ?", (ctx_id,))
 
     async def extract_chat_ids(self):
-        return await self.execute_statement("SELECT id FROM contexts")
+        return await self.execute_statement("SELECT id FROM chatsky_table_main")
 
     async def get_context(self, run_id: str, user_id: int):
         try:
@@ -67,6 +67,7 @@ class SQLiteExtractor:
             if query_result is None or len(query_result) == 0:
                 self.logger.error("No context found for the given run_id and user_id.")
                 return None
+            self.logger.error(f"query_result is {query_result}")
             (id, context) = query_result[0]
             return Context.model_validate_json(context)
         except ValidationError:
