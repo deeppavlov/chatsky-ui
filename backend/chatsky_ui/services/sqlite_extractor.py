@@ -102,5 +102,5 @@ class SQLiteExtractor:
         if ids is None:
             raise ValueError("No chat records found in the database.")
 
-        # ids = [item[0] for item in ids]
+        ids = [item[0] for item in ids]
         return ids
