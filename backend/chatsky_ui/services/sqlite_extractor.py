@@ -32,6 +32,7 @@ class SQLiteExtractor:
         db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
         if self.database == None:
             self.database = ChatskyUIContextStorage(db_uri, run_id)
+            self.database.connect()
         return self.database
 
     def set_logger(self):
