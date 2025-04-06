@@ -30,7 +30,7 @@ class SQLiteExtractor:
         separator = "///" if system() == "Windows" else "////"
 
         db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
-        if self.database == None:
+        if self.database is None:
             self.database = ChatskyUIContextStorage(db_uri, run_id)
             await self.database.connect()
         return self.database
@@ -77,7 +77,7 @@ class SQLiteExtractor:
         """
         try:
             context = await Context.connected(await self.get_database(run_id), id=str(user_id))
-            if await context.labels[0] == None:
+            if await context.labels[0] is None:
                 await context.delete()
                 context = None
             return context
