@@ -93,7 +93,7 @@ class SQLiteExtractor:
         requests = context.requests
         responses = context.responses
         result = []
-        for user_request, bot_response in zip(requests.values(), responses.values()):
+        for user_request, bot_response in zip(await requests.values(), await responses.values()):
             result.append((user_request.text, bot_response.text))
         return result
 
