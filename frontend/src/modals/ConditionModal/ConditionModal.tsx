@@ -8,7 +8,7 @@ import { Button, Tab, Tabs } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
-import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
+import { HelpCircle, PlusCircleIcon, PlusIcon, TrashIcon } from 'lucide-react'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
@@ -22,6 +22,7 @@ import {
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import { generateNewConditionBase } from '../../utils'
+import AddButtonModals from '../AddButtonModals/AddButtonModals'
 import AlertModal from '../AlertModal'
 import {
   CustomModalProps,
@@ -30,6 +31,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '../ModalComponents'
+import ResponseModal from '../ResponseModal/ResponseModal'
 import BasicCondition from './components/BasicCondition'
 import PythonCondition from './components/PythonCondition'
 import SlotCondition from './components/SlotCondition'
@@ -108,6 +110,7 @@ const ConditionModal = ({
     is_create || !condition ? generateNewConditionBase() : condition,
   )
 
+  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
   const [errorObject, setError] = useState({
     errorMessage: '',
     isInvalid: false,
@@ -519,152 +522,173 @@ const ConditionModal = ({
   }
 
   return (
-    <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
-      <ModalHeader>
-        <div className='flex items-center gap-2'>
-          {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
-          {is_create ? 'Create condition' : 'Edit condition'}
-        </div>
-      </ModalHeader>
-      <ModalBody className='min-h-[480px]'>
-        <label>
-          <Tabs
-            disabledKeys={['llm', 'custom', 'button']}
-            selectedKey={selected}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onSelectionChange={setSelectedHandler}
-            items={tabItems}
-            classNames={{
-              tabList: 'w-full bg-table-background',
-              tab: '',
-              cursor: 'border border-contrast-border',
-            }}
-            className='w-full max-w-full bg-background'
-          >
-            {(item) => (
-              <Tab
-                key={item.value}
-                title={
-                  <div className='flex items-center gap-1 text-sm'>
-                    {item.icon} {item.title}
-                  </div>
-                }
-                onClick={() =>
-                  setCurrentCondition({ ...currentCondition, type: item.value })
-                }
-              ></Tab>
-            )}
-          </Tabs>
-        </label>
-        <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
-          <DefInput
-            className='col-span-3'
-            label='Name'
-            variant='bordered'
-            labelPlacement='outside'
-            placeholder="Enter condition's name here"
-            value={currentCondition.name}
-            onChange={(e) =>
-              setCurrentCondition({
-                ...currentCondition,
-                name: e.target.value.replaceAll(' ', '_'),
-              })
-            }
-            {...errorObject}
-          />
-          <DefInput
-            label='Priority'
-            variant='bordered'
-            labelPlacement='outside'
-            placeholder="Enter condition's priority here"
-            type='number'
-            min={0}
-            value={currentCondition.data.priority.toString()}
-            onChange={(e) =>
-              setCurrentCondition({
-                ...currentCondition,
-                data: {
-                  ...currentCondition.data,
-                  priority: parseInt(e.target.value),
-                },
-              })
-            }
-          />
-        </div>
-        <div>
-          <AnimatePresence mode='wait'>
-            <motion.div
-              key={selected}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {bodyItems[selected]}
-            </motion.div>
-          </AnimatePresence>
-          {selected === 'python' && (
-            <div
-              className='grid overflow-hidden transition-all duration-150'
-              style={{
-                gridTemplateRows: lintStatus ? '1fr' : '0fr',
+    <>
+      <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
+        <ModalHeader>
+          <div className='flex items-center gap-2'>
+            {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
+            {is_create ? 'Create condition' : 'Edit condition'}
+          </div>
+        </ModalHeader>
+        <ModalBody className='min-h-[480px]'>
+          <label>
+            <Tabs
+              disabledKeys={['llm', 'custom', 'button']}
+              selectedKey={selected}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              onSelectionChange={setSelectedHandler}
+              items={tabItems}
+              classNames={{
+                tabList: 'w-full bg-table-background',
+                tab: '',
+                cursor: 'border border-contrast-border',
               }}
+              className='w-full max-w-full bg-background'
             >
-              <div className='min-h-0 transition-all duration-150'>
-                <p
-                  className={classNames(
-                    'mt-2 rounded-lg p-2 font-mono text-xs',
-                    lintStatus?.status == 'error'
-                      ? 'bg-[var(--condition-test-error)]'
-                      : 'bg-[var(--condition-test-success)]',
-                  )}
-                >
-                  {lintStatus?.status == 'ok'
-                    ? 'Condition test passed!'
-                    : lintStatus?.message}
-                </p>
+              {(item) => (
+                <Tab
+                  key={item.value}
+                  title={
+                    <div className='flex items-center gap-1 text-sm'>
+                      {item.icon} {item.title}
+                    </div>
+                  }
+                  onClick={() =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      type: item.value,
+                    })
+                  }
+                ></Tab>
+              )}
+            </Tabs>
+          </label>
+          <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
+            <DefInput
+              className='col-span-3'
+              label='Name'
+              variant='bordered'
+              labelPlacement='outside'
+              placeholder="Enter condition's name here"
+              value={currentCondition.name}
+              onChange={(e) =>
+                setCurrentCondition({
+                  ...currentCondition,
+                  name: e.target.value.replaceAll(' ', '_'),
+                })
+              }
+              {...errorObject}
+            />
+            <DefInput
+              label='Priority'
+              variant='bordered'
+              labelPlacement='outside'
+              placeholder="Enter condition's priority here"
+              type='number'
+              min={0}
+              value={currentCondition.data.priority.toString()}
+              onChange={(e) =>
+                setCurrentCondition({
+                  ...currentCondition,
+                  data: {
+                    ...currentCondition.data,
+                    priority: parseInt(e.target.value),
+                  },
+                })
+              }
+            />
+          </div>
+          <div>
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={selected}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {bodyItems[selected]}
+              </motion.div>
+            </AnimatePresence>
+            {selected === 'python' && (
+              <div
+                className='grid overflow-hidden transition-all duration-150'
+                style={{
+                  gridTemplateRows: lintStatus ? '1fr' : '0fr',
+                }}
+              >
+                <div className='min-h-0 transition-all duration-150'>
+                  <p
+                    className={classNames(
+                      'mt-2 rounded-lg p-2 font-mono text-xs',
+                      lintStatus?.status == 'error'
+                        ? 'bg-[var(--condition-test-error)]'
+                        : 'bg-[var(--condition-test-success)]',
+                    )}
+                  >
+                    {lintStatus?.status == 'ok'
+                      ? 'Condition test passed!'
+                      : lintStatus?.message}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </ModalBody>
-      <ModalFooter className='flex items-center justify-between'>
-        <div className='flex items-center justify-start gap-2'>
-          <Button isIconOnly className='rounded-full'>
-            <HelpCircle />
-          </Button>
-          {!is_create && (
-            <Button
-              onClick={handleConfirmDeleteOpen}
-              className='hover:bg-red-500'
-              isIconOnly
-            >
-              <TrashIcon />
+            )}
+          </div>
+        </ModalBody>
+        <ModalFooter className='flex items-center justify-between'>
+          <div className='flex items-center justify-start gap-2'>
+            <Button isIconOnly className='rounded-full'>
+              <HelpCircle />
             </Button>
-          )}
-        </div>
-        <div className='flex items-end gap-2'>
-          {currentCondition.type === 'python' && (
+            {!is_create && (
+              <Button
+                onClick={handleConfirmDeleteOpen}
+                className='hover:bg-red-500'
+                isIconOnly
+              >
+                <TrashIcon />
+              </Button>
+            )}
+          </div>
+          <div className='flex items-end gap-2'>
             <Button
-              data-testid='test-condition-button'
-              onClick={testCondition}
-              isLoading={testConditionPending}
-              className=''
+              data-testid='save-condition-button'
+              onClick={() => setIsAddButtonOpen(true)}
+              isDisabled={
+                errorObject.isInvalid || condition?.name.trim() === ''
+              }
             >
-              Test condition
+              <PlusIcon />
+              Add buttons
             </Button>
-          )}
-          <Button
-            data-testid='save-condition-button'
-            onClick={saveCondition}
-            className='bg-foreground text-background'
-            isDisabled={errorObject.isInvalid || condition?.name.trim() === ''}
-          >
-            Save condition
-          </Button>
-        </div>
-      </ModalFooter>
-    </Modal>
+            {currentCondition.type === 'python' && (
+              <Button
+                data-testid='test-condition-button'
+                onClick={testCondition}
+                isLoading={testConditionPending}
+                className=''
+              >
+                Test condition
+              </Button>
+            )}
+            <Button
+              data-testid='save-condition-button'
+              onClick={saveCondition}
+              className='bg-foreground text-background'
+              isDisabled={
+                errorObject.isInvalid || condition?.name.trim() === ''
+              }
+            >
+              Save condition
+            </Button>
+          </div>
+        </ModalFooter>
+      </Modal>
+      <AddButtonModals
+        isOpen={isAddButtonOpen}
+        onClose={() => setIsAddButtonOpen(false)}
+      />
+    </>
   )
 }
 
