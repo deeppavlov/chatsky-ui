@@ -535,7 +535,7 @@ async def get_message_label(
         sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
 
     Raises:
-        HTTPException: With status code 404 if the build process doesn't have a messenger of type 'web'.
+        HTTPException: With status code 404 if the user with the given id is not found in the database.
         HTTPException: With status code 500 if there is an Exception caught or an internal server error.
     """
     try:
