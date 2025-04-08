@@ -15,7 +15,8 @@ const NodesLayout = () => {
       // @ts-ignore
       node.type !== 'link' &&
       node.data.name !== 'LOCAL NODE' &&
-      node.data.name !== 'GLOBAL NODE',
+      node.data.name !== 'GLOBAL NODE' &&
+      node.data.name !== 'Slots',
   )
   const edges = useEdges()
   const [hoveredNode, setHoveredNode] = useState<string>('')

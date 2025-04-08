@@ -186,33 +186,27 @@ async def test_start_run(
 async def test_get_chat_records(dummy_run_id):
     user_id = 0
     test_result = [
-        ["hello", "Do you want two pizzas?"],
-        ["yesss", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
+        ["hello", "Do you want a pizza?"],
         ["yes", "Some cheese in pizza?"],
         ["no", "Okay, so, your order is coming!"],
-        ["hello", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["no", "Okay, bye!"],
-        ["hello", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["yes", "Cool! Your order is coming!"],
-        ["hi", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["dtfvgybuhnjmk,l", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["no", "Okay, so, your order is coming!"],
-        ["eretgh", "Hello!"],
-        ["helo", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["no", "Okay, so, your order is coming!"],
+        ["/start", "Oops, something wrong happened"],
+        ["/start", "Hello!"],
+        ["hello", "Do you want a pizza?"],
+        ["bye", "Oops, something wrong happened"],
     ]
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+        get_response = await async_client.get(f"/api/v1/bot/chat/{dummy_run_id}/{user_id}")
+
+        assert get_response.status_code == 200
+        assert test_result == get_response.json()
+
+
+@pytest.mark.asyncio
+async def test_get_chat_ids():
+    test_result = ["0_0"]
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get(f"/api/v1/bot/get_chat/{dummy_run_id}/{user_id}")
+        get_response = await async_client.get("/api/v1/bot/chat/ids")
 
         assert get_response.status_code == 200
         assert test_result == get_response.json()
@@ -225,7 +219,7 @@ async def test_get_message_label(dummy_run_id):
     test_result = {"flow_name": "Greeting", "node_name": "Beginning of conversation"}
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get(f"/api/v1/bot/get_label/{dummy_run_id}/{user_id}/{message_id}")
+        get_response = await async_client.get(f"/api/v1/bot/chat/label/{dummy_run_id}/{user_id}/{message_id}")
 
         assert get_response.status_code == 200
         assert test_result == get_response.json()

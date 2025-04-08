@@ -102,6 +102,7 @@ class ProcessManager(ABC):
             if await process.check_status() in [Status.ALIVE, Status.RUNNING]:
                 await self.stop(id_)
         await self.update_db_info()
+        self.logger.info("DB info updated")
 
     @abstractmethod
     async def update_db_info(self):
@@ -125,7 +126,9 @@ class ProcessManager(ABC):
                 Status.FAILED,
                 Status.FAILED_WITH_UNEXPECTED_CODE,
             ]:
+                process.logger.info("Process '%s' completed with status '%s'", process.id, process.status)
                 await self.update_db_info()
+                process.logger.info("DB - Process '%s' status updated in the database", process.id)
                 break
             await asyncio.sleep(2)  # TODO: ?sleep time shouldn't be constant
 
@@ -165,7 +168,6 @@ class ProcessManager(ABC):
             self.logger.info("Offset '%s' is out of bounds ('%s' logs found)", offset, len(logs))
             return None  # TODO: raise error!
 
-        self.logger.info("Returning %s logs", len(logs))
         return logs[offset : offset + limit]
 
     @staticmethod
@@ -209,6 +211,7 @@ class RunManager(ProcessManager):
         async def _get_build_info(build_id):
             build_info = await self.get_process_info(build_id, settings.builds_path, settings.builds_path_lock) or {}
             if not build_info:
+                self.logger.error("Build id '%s' not found in the database", build_id)
                 raise ValueError(f"Build id '{build_id}' not found in the database")
             port = build_info.get("port")
             messenger = build_info["preset"]["messenger"]
@@ -218,6 +221,11 @@ class RunManager(ProcessManager):
         async def _check_available_tg_token(token_name):
             for run in await self.get_full_info(0, 10000):
                 if token_name and token_name == run["preset"]["tg_bot_token"] and run["status"] in ["running", "alive"]:
+                    self.logger.error(
+                        "Bot with token name '%s' is already in use by another run process with id: '%s'",
+                        token_name,
+                        run["id"],
+                    )
                     raise ValueError(
                         f"Bot with token name '{token_name}' is already in use "
                         f"by another run process with id: '{run['id']}'"
@@ -228,26 +236,31 @@ class RunManager(ProcessManager):
             self.logger.info("Assigning token '%s' to key '%s'", full_token_name, unique_build_token)
             token_value = os.getenv(full_token_name)
             if token_value is None:
+                self.logger.error("Token name '%s' isn't set. Please call endpoint 'flows/tg_tokens'", token_name)
                 raise ValueError(f"Token name '{token_name}' isn't set. Please call endpoint 'flows/tg_tokens'.")
             settings.add_env_vars({unique_build_token: token_value})
 
         if (datetime.now() - self.last_run_time).seconds < 13 and [
             process for process in self.processes.values() if process.status == Status.RUNNING
         ]:
+            self.logger.error("Another process is still using the build.yaml file. Can't checkout.")
             raise RuntimeError("Another process is still using the build.yaml file. Can't checkout.")
 
         self.last_id = await _get_new_id()
         build_port, messenger = await _get_build_info(build_id)
 
         if build_port is not None and not RunManager._is_available_port(build_port):
+            self.logger.error("Port conflict: port '%s' is already in use", build_port)
             raise ConnectionError(f"Port conflict: port '{build_port}' is already in use")
 
         if messenger == "telegram":
+            self.logger.debug("Starting telegram bot process")
             await _check_available_tg_token(preset.tg_bot_token)
             load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
             _assign_token_to_key_used_by_build(preset.tg_bot_token, UNIQUE_BUILD_TOKEN.format(build_id=build_id))
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
+        self.logger.info("Checked out build id '%s' to bot repo", build_id)
         cmd_to_run = " ".join(
             [
                 "chatsky.ui run_bot",
@@ -256,14 +269,16 @@ class RunManager(ProcessManager):
                 f"--run-id {self.last_id}",
             ]
         )
+
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 
         await process.start(cmd_to_run, env=os.environ.copy())
-        process.logger.debug("Started process. status: '%s'", process.process.returncode)
+        process.logger.info("Started process. status: '%s'", process.process.returncode)
         self.last_run_time = datetime.now()
 
         self.processes[self.last_id] = process
         await self.update_db_info()
+        process.logger.info("DB - Run process '%s' status updated in the database", process.id)
 
         return self.last_id
 
@@ -355,6 +370,7 @@ class BuildManager(ProcessManager):
         if [process for process in self.processes.values() if process.status == Status.RUNNING] and (
             datetime.now() - self.last_build_time
         ).seconds < 5:
+            self.logger.error("Another process is still using the build.yaml file. Can't checkout.")
             raise RuntimeError("Another process is still using the build.yaml file. Can't commit changes.")
 
         self.last_id = max([build["id"] for build in await self.get_full_info(0, 10000)])
@@ -362,13 +378,15 @@ class BuildManager(ProcessManager):
         id_ = self.last_id
 
         if self.bot_repo_manager.is_repeated_tag(id_):
+            self.logger.error("Build id '%s' already exists in the database", id_)
             raise ValueError(f"Build id '{id_}' already exists in the database")
 
         if preset.messenger == "web":
             port = await self._get_available_port()
-            self.logger.debug("Available port: %s", port)
+            self.logger.info("Web interface - Assigned port '%s' for build process '%s'", port, id_)
         else:
             port = None
+            self.logger.info("%s interface - No port assigned for build process '%s'", preset.messenger, id_)
         process = BuildProcess(id_, port, preset)
         cmd_to_run = (
             f"chatsky.ui build_bot {id_} "
@@ -402,9 +420,14 @@ class BuildManager(ProcessManager):
                 Status.FAILED,
                 Status.FAILED_WITH_UNEXPECTED_CODE,
             ]:
+                process.logger.info("Build process '%s' completed with status '%s'", process.id, process.status)
                 self.bot_repo_manager.commit_with_tag(process.id)
                 self.graph_repo_manager.commit_with_tag(process.id)
+                process.logger.info(
+                    "Build process '%s' committed to bot&graph repos with tag '%s'", process.id, process.id
+                )
                 await self.update_db_info()
+                self.logger.info("DB - Build process '%s' status updated in the database", process.id)
                 break
 
     async def get_full_info(self, offset: int, limit: int, path: Path = None) -> List[Dict[str, Any]]:
@@ -421,6 +444,7 @@ class BuildManager(ProcessManager):
 
     async def update_db_info(self) -> None:
         """Saves current build info into builds_path."""
+        self.logger.debug("Updating db build info")
         async with ProcessManager._db_lock:
             builds_conf = await read_conf(settings.builds_path, settings.builds_path_lock)
             for process in self.processes.values():

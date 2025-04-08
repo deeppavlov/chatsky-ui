@@ -15,9 +15,11 @@ const tabSize = '    '
 const PythonResponse = ({
   response,
   setData,
+  responseStor,
 }: {
   response: responseType
   setData: React.Dispatch<React.SetStateAction<responseType>>
+  responseStor: { [key: string]: responseType }
 }) => {
   const { theme } = useContext(themeContext)
   const { methods: dffMethods } = useContext(IdeContext)
@@ -27,18 +29,20 @@ const PythonResponse = ({
 
   useEffect(() => {
     if (!response.data[0].python) {
-      setData({
-        ...response,
-        type: 'python',
-        data: [
-          {
-            priority: 1,
-            python: {
-              action: `${firstString}\n${secondString}\n        return Message('Hello')`,
-            },
-          },
-        ],
-      })
+      Object.prototype.hasOwnProperty.call(responseStor, 'python')
+        ? setData({ ...responseStor['python'] })
+        : setData({
+            ...response,
+            type: 'python',
+            data: [
+              {
+                priority: 1,
+                python: {
+                  action: `${firstString}\n${secondString}\n        return Message('Hello')`,
+                },
+              },
+            ],
+          })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

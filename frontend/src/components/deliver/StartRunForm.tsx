@@ -39,8 +39,7 @@ const inputClassNames = {
 }
 
 const StartRunForm = () => {
-  const { builds: reversedBuilds } = useContext(buildContext)
-  const builds = [...reversedBuilds].reverse()
+  const { builds } = useContext(buildContext)
   const { runs, runStart, runStarting } = useContext(runContext)
   const { startRunFormState: formState, setStartRunFormState } =
     useContext(workspaceContext)

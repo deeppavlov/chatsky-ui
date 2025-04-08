@@ -8,25 +8,23 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import BuildManagerPage from './BuildManagerPage'
 import Flow from './Flow'
-import Logs from './Logs'
+import Inspect from './InspectPage'
 import Settings from './Settings'
 
 const TabsWrapper = () => {
   const [searchParams] = useSearchParams()
-  const pageTypes: Array<string> = ['edit', 'deliver', 'inspect', 'settings']
-  const page = searchParams.get('page')
-  const pageType = page && pageTypes.includes(page) ? page : 'edit'
+  const currentTab = searchParams.get('page')?.toLowerCase() || 'edit'
 
   const content = useMemo(() => {
     const pages: Record<string, JSX.Element> = {
       deliver: <BuildManagerPage />,
-      inspect: <Logs />,
+      inspect: <Inspect />,
       settings: <Settings />,
       edit: <Flow />,
     }
 
-    return pages[pageType] || <Flow />
-  }, [pageType])
+    return pages[currentTab] || <Flow />
+  }, [currentTab])
   return (
     <ReactFlowProvider>
       <PopUpProvider>
@@ -35,7 +33,7 @@ const TabsWrapper = () => {
             data-testid='flow-page'
             className='relative flex h-screen w-screen items-start overflow-x-hidden bg-background'
           >
-            {pageType === 'edit' ? <SideBar /> : <Header />}
+            {currentTab === 'edit' ? <SideBar /> : <Header />}
             {content}
             <FootBar />
           </div>
