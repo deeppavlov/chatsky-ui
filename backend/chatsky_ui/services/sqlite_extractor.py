@@ -83,7 +83,7 @@ class SQLiteExtractor:
         so we delete the new unnecessary Context and return None.
         """
         try:
-            async with await self.get_sync_lock():
+            async with sync_lock:
                 context = await Context.connected(await self.get_database(run_id), id=str(user_id))
                 if await context.labels[0] is None:
                     await context.delete()
@@ -123,3 +123,6 @@ class SQLiteExtractor:
         if label is not None:
             return {"flow_name": label.flow_name, "node_name": label.node_name}
         return None
+
+if __name__ == "__main__":
+    sync_lock = Lock()
