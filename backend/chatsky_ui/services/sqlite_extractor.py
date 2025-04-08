@@ -20,7 +20,7 @@ class SQLiteExtractor:
         self._logger = None
         self.connection = None
         self.database = None
-        self._sync_lock = Lock()
+        self._sync_lock = None
 
     @property
     def logger(self):
@@ -29,13 +29,18 @@ class SQLiteExtractor:
         return self._logger
 
     async def get_database(self, run_id: int):
-        separator = "///" if system() == "Windows" else "////"
-
-        db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
         if self.database is None:
+            separator = "///" if system() == "Windows" else "////"
+            db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
+
             self.database = ChatskyUIContextStorage(db_uri, run_id)
             await self.database.connect()
         return self.database
+
+    async def get_sync_lock(self):
+        if self._sync_lock is None:
+            self._sync_lock = Lock()
+        return self._sync_lock
 
     def set_logger(self):
         self._logger = get_logger(__name__)
