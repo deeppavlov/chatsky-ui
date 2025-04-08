@@ -1,6 +1,7 @@
 import sqlite3
 from platform import system
 from typing import Union
+from asyncio import Lock
 
 from chatsky import Context
 from pydantic import ValidationError
@@ -19,6 +20,7 @@ class SQLiteExtractor:
         self._logger = None
         self.connection = None
         self.database = None
+        self._sync_lock = Lock()
 
     @property
     def logger(self):
@@ -76,11 +78,12 @@ class SQLiteExtractor:
         so we delete the new unnecessary Context and return None.
         """
         try:
-            context = await Context.connected(await self.get_database(run_id), id=str(user_id))
-            if await context.labels[0] is None:
-                await context.delete()
-                context = None
-            return context
+            async with self._sync_lock:
+                context = await Context.connected(await self.get_database(run_id), id=str(user_id))
+                if await context.labels[0] is None:
+                    await context.delete()
+                    context = None
+                return context
         except ValidationError:
             self.logger.error(
                 "Extracted Context doesn't match the current Chatsky version's Context." "(it's probably outdated)"
