@@ -1,17 +1,20 @@
-import { Button, Input, Radio, RadioGroup } from '@nextui-org/react';
-import { ArrowUp, Paperclip, Plus, Smile } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import AttentionIcon from '../../icons/AttentionIcon';
-import BackIcon from '../../icons/BackIcon';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents';
-
+import { Button, Input, Radio, RadioGroup } from '@nextui-org/react'
+import { Edge, useReactFlow } from '@xyflow/react'
+import { ArrowUp, Paperclip, Plus, Smile } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import AttentionIcon from '../../icons/AttentionIcon'
+import BackIcon from '../../icons/BackIcon'
+import { IButtonType } from '../../types/ConditionTypes'
+import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
+import { generateNewConditionBase } from '../../utils'
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 
 const RenderButtons = ({
   type,
   buttons,
 }: {
   type: 'reply' | 'inline'
-  buttons: { text: string; colback: string; defText: string; id: number }[]
+  buttons: IButtonType[]
 }) => {
   const bg = type === 'reply' ? 'bg-background' : ''
   const bg2 = type === 'inline' ? 'bg-background' : 'bg-chat'
@@ -46,37 +49,35 @@ const RenderButtons = ({
 }
 
 const RenderCell = ({
-  state,
-  setState,
+  buttons,
+  setButtons,
   type,
   columns,
 }: {
-  state: {
-    buttons: { id: number; text: string; colback: string; defText: string }[]
-  }
-  setState: (state: {
-    buttons: { id: number; text: string; colback: string; defText: string }[]
-  }) => void
+  buttons: IButtonType[]
+  setButtons: (buttons: IButtonType[]) => void
   type: 'reply' | 'inline'
   columns: number
 }) => {
+  console.log(type)
+
   const key = type === 'inline' ? 'colback' : 'text'
 
   return (
     <div className={`grid grid-cols-${columns} gap-2`}>
-      {state.buttons.map((button, buttonIndex) => (
+      {buttons.map((button, buttonIndex) => (
         <div key={buttonIndex}>
           <Input
             value={button[key] === '' ? button.defText : button[key]}
             size='sm'
             onChange={(e) => {
-              const newButtons = state.buttons.map((button, newButtonIndex) => {
+              const newButtons = buttons.map((button, newButtonIndex) => {
                 if (buttonIndex === newButtonIndex) {
                   return { ...button, [key]: e.target.value }
                 }
                 return button
               })
-              setState({ ...state, buttons: newButtons })
+              setButtons(newButtons)
             }}
           />
         </div>
@@ -86,18 +87,14 @@ const RenderCell = ({
 }
 
 const RenderTypeButtons = ({
+  buttons,
+  setButtons,
   type,
-  state,
-  setState,
   columns,
 }: {
+  buttons: IButtonType[]
+  setButtons: (buttons: IButtonType[]) => void
   type: 'reply' | 'inline'
-  state: {
-    buttons: { id: number; text: string; colback: string; defText: string }[]
-  }
-  setState: (state: {
-    buttons: { id: number; text: string; colback: string; defText: string }[]
-  }) => void
   columns: number
 }) => {
   return (
@@ -107,9 +104,9 @@ const RenderTypeButtons = ({
           Enter display text for every button
         </h3>
         <RenderCell
-          state={state}
-          setState={setState}
-          type='reply'
+          buttons={buttons}
+          setButtons={setButtons}
+          type={'reply'}
           columns={columns}
         />
       </div>
@@ -119,7 +116,7 @@ const RenderTypeButtons = ({
             Enter display text for every button
           </h3>
           <div className='flex w-full items-center gap-2'>
-            <AttentionIcon stroke='#3300FF' />
+            <AttentionIcon width={34} stroke='#3300FF' />
             <div className='text-[12px] text-sm font-medium'>
               Buttons are only available for Telegram interface. If you are
               planning to launch your bot on different platforms, please select
@@ -127,9 +124,9 @@ const RenderTypeButtons = ({
             </div>
           </div>
           <RenderCell
-            state={state}
-            setState={setState}
-            type='inline'
+            buttons={buttons}
+            setButtons={setButtons}
+            type={'inline'}
             columns={columns}
           />
         </div>
@@ -139,27 +136,26 @@ const RenderTypeButtons = ({
 }
 
 const AddButtonModals = ({
+  data,
   isOpen,
   onClose,
+  buttons,
+  setButtons,
+  initialRows,
+  initialColumns,
 }: {
+  data: DefaultNodeDataType
   isOpen: boolean
   onClose: () => void
+  buttons: IButtonType[]
+  setButtons: (buttons: IButtonType[]) => void
+  initialRows: number
+  initialColumns: number
 }) => {
-  const [selected, setSelected] = useState('reply')
-
-  const [rows, setRows] = useState(2)
-  const [columns, setColumns] = useState(2)
-
-  const [state, setState] = useState<{
-    buttons: { id: number; text: string; colback: string; defText: string }[]
-  }>({
-    buttons: [
-      { id: 1, text: '', colback: 'colbackText 1', defText: 'Button 1' },
-      { id: 2, text: '', colback: 'colbackText 2', defText: 'Button 2' },
-      { id: 3, text: '', colback: 'colbackText 3', defText: 'Button 3' },
-      { id: 4, text: '', colback: 'colbackText 4', defText: 'Button 4' },
-    ],
-  })
+  const [selected, setSelected] = useState(buttons[0].type)
+  const { updateNodeData } = useReactFlow<AppNode, Edge>()
+  const [rows, setRows] = useState(initialRows)
+  const [columns, setColumns] = useState(initialColumns)
 
   useEffect(() => {
     const newButtons = Array.from({ length: rows * columns }, (_, index) => ({
@@ -167,20 +163,18 @@ const AddButtonModals = ({
       text: '',
       colback: `colbackText ${index + 1}`,
       defText: `Button ${index + 1}`,
+      type: selected,
     }))
 
-    const currentButtons = state.buttons.length
+    const currentButtonsLength = buttons.length
 
-    if (currentButtons > rows * columns) {
-      setState({
-        buttons: state.buttons.slice(0, rows * columns),
-      })
+    if (currentButtonsLength > rows * columns) {
+      setButtons(buttons.slice(0, rows * columns))
       return
     }
 
-    setState({
-      buttons: [...state.buttons, ...newButtons.slice(currentButtons)],
-    })
+    setButtons([...buttons, ...newButtons.slice(currentButtonsLength)])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, columns])
 
   return (
@@ -207,7 +201,7 @@ const AddButtonModals = ({
 
         <ModalBody className='flex flex-1 flex-col gap-[24px] py-2'>
           <div className='flex w-full items-center gap-2'>
-            <AttentionIcon stroke='#3300FF' />
+            <AttentionIcon width={34} stroke='#3300FF' />
             <div className='text-[12px] text-sm font-medium'>
               Buttons are only available for Telegram interface. If you are
               planning to launch your bot on different platforms, please select
@@ -239,7 +233,7 @@ const AddButtonModals = ({
                         <ArrowUp size={28} strokeWidth={1.2} />
                       </div>
                     </div>
-                    <RenderButtons buttons={state.buttons} type='reply' />
+                    <RenderButtons buttons={buttons} type='reply' />
                   </div>
                 </div>
                 <div className='flex flex-col gap-4'>
@@ -248,7 +242,7 @@ const AddButtonModals = ({
                     <div className='ml-[12px] mr-[36px] mt-[16px] rounded-lg bg-background p-[8px]'>
                       What do you like?
                     </div>
-                    <RenderButtons buttons={state.buttons} type='inline' />
+                    <RenderButtons buttons={buttons} type='inline' />
                     <div className='mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
                       <Paperclip />
 
@@ -307,13 +301,13 @@ const AddButtonModals = ({
                 className='w-16'
                 size='sm'
               />
-              <span className='text-gray-500'>5 × 5 max</span>
+              <span className='text-gray-500'>5 x 5 max</span>
             </div>
           </div>
 
           <RenderTypeButtons
-            state={state}
-            setState={setState}
+            buttons={buttons}
+            setButtons={setButtons}
             type={selected as 'inline' | 'reply'}
             columns={columns}
           />
@@ -325,10 +319,37 @@ const AddButtonModals = ({
               ?
             </Button>
           </div>
-          <Button className='ml-auto'>
+          <Button
+            className='ml-auto'
+            onClick={() => {
+              const arr = buttons.map((button, index) => {
+                const condition = generateNewConditionBase('button')
+                return {
+                  ...condition,
+                  data: { ...condition.data, button },
+                  name: `New condition ${index}`,
+                }
+              })
+
+              const newData = {
+                ...data,
+                conditions: [...data.conditions, ...arr],
+              }
+
+              updateNodeData(data.id, newData)
+
+              onClose()
+            }}
+          >
             <Plus /> Auto conditions
           </Button>
-          <Button className='bg-foreground text-background'>
+          <Button
+            className='bg-foreground text-background'
+            onClick={() => {
+              setButtons(buttons)
+              onClose()
+            }}
+          >
             Save buttons
           </Button>
         </ModalFooter>

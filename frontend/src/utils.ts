@@ -1,6 +1,6 @@
 import { v4 } from 'uuid'
 import { CreateFlowType } from './modals/FlowModal/CreateFlowModal'
-import { conditionType } from './types/ConditionTypes'
+import { conditionType, conditionTypeType } from './types/ConditionTypes'
 import { FlowType, SlotsGroupType, SlotType } from './types/FlowTypes'
 import {
   AppNode,
@@ -52,11 +52,13 @@ export const parseSearchParams = (
     .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {})
 }
 
-export const generateNewConditionBase = (): conditionType => {
+export const generateNewConditionBase = (
+  type: conditionTypeType = 'python',
+): conditionType => {
   return {
     id: 'condition_' + v4(),
     name: 'NewCnd',
-    type: 'python',
+    type,
     data: {
       priority: 1,
       transition_type: 'manual',

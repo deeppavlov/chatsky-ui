@@ -8,7 +8,7 @@ import { Button, Tab, Tabs } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
-import { HelpCircle, PlusCircleIcon, PlusIcon, TrashIcon } from 'lucide-react'
+import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
@@ -22,7 +22,6 @@ import {
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import { generateNewConditionBase } from '../../utils'
-import AddButtonModals from '../AddButtonModals/AddButtonModals'
 import AlertModal from '../AlertModal'
 import {
   CustomModalProps,
@@ -31,8 +30,8 @@ import {
   ModalFooter,
   ModalHeader,
 } from '../ModalComponents'
-import ResponseModal from '../ResponseModal/ResponseModal'
 import BasicCondition from './components/BasicCondition'
+import ButtonCondition from './components/ButtonCondition'
 import PythonCondition from './components/PythonCondition'
 import SlotCondition from './components/SlotCondition'
 import UsingLLMConditionSection from './components/UsingLLMCondition'
@@ -74,6 +73,7 @@ type ConditionModalTab =
   | 'Python code'
   | 'Custom'
   | 'Basic'
+  | 'Buttons'
 
 type LintStatusType = {
   status: 'ok' | 'error'
@@ -110,7 +110,6 @@ const ConditionModal = ({
     is_create || !condition ? generateNewConditionBase() : condition,
   )
 
-  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
   const [errorObject, setError] = useState({
     errorMessage: '',
     isInvalid: false,
@@ -336,7 +335,12 @@ const ConditionModal = ({
           }}
         />
       ),
-      button: <div>Button</div>,
+      button: (
+        <ButtonCondition
+          condition={currentCondition}
+          setData={setCurrentCondition}
+        />
+      ),
       python: (
         <PythonCondition
           condition={currentCondition}
@@ -438,10 +442,15 @@ const ConditionModal = ({
       }
       return true
     }
+    return true
   }
 
   const saveCondition = () => {
     const validate_name: ValidateErrorType = validateConditionName(is_create)
+
+    console.log(validate_name, 'validate_name')
+
+    console.log(isValidCurrentCondition(), 'isValidCurrentCondition')
 
     if (validate_name.status && isValidCurrentCondition()) {
       updateNodeData(data.id, {
@@ -454,9 +463,11 @@ const ConditionModal = ({
                 : condition,
             ),
       })
+
       quietSaveFlows()
       onCloseHandler()
     } else {
+      console.log(currentCondition, 'currentCondition')
       if (!validate_name.status) {
         setError({ isInvalid: true, errorMessage: 'Name must be unique' })
       }
@@ -533,7 +544,7 @@ const ConditionModal = ({
         <ModalBody className='min-h-[480px]'>
           <label>
             <Tabs
-              disabledKeys={['llm', 'custom', 'button']}
+              disabledKeys={['llm', 'custom']}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
@@ -651,16 +662,6 @@ const ConditionModal = ({
             )}
           </div>
           <div className='flex items-end gap-2'>
-            <Button
-              data-testid='save-condition-button'
-              onClick={() => setIsAddButtonOpen(true)}
-              isDisabled={
-                errorObject.isInvalid || condition?.name.trim() === ''
-              }
-            >
-              <PlusIcon />
-              Add buttons
-            </Button>
             {currentCondition.type === 'python' && (
               <Button
                 data-testid='test-condition-button'
@@ -684,10 +685,6 @@ const ConditionModal = ({
           </div>
         </ModalFooter>
       </Modal>
-      <AddButtonModals
-        isOpen={isAddButtonOpen}
-        onClose={() => setIsAddButtonOpen(false)}
-      />
     </>
   )
 }
