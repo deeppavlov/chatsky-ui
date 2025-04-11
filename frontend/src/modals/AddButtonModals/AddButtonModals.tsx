@@ -1,3 +1,4 @@
+import ButtonConditionIcon from '@/icons/nodes/conditions/ButtonConditionIcon'
 import { Button, Input, Radio, RadioGroup } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import { ArrowUp, Paperclip, Plus, Smile } from 'lucide-react'
@@ -195,7 +196,9 @@ const AddButtonModals = ({
                 />
               </Button>
             </div>
-            Add buttons
+
+            <ButtonConditionIcon className='size-6' />
+            <div>Add buttons</div>
           </div>
         </ModalHeader>
 
@@ -216,7 +219,7 @@ const AddButtonModals = ({
                 <div className='flex flex-col gap-4'>
                   <Radio value='reply'>Reply keyboard</Radio>
                   <div className='w-full rounded-lg border-1 border-border bg-chat'>
-                    <div className='ml-[12px] mr-[36px] mt-[16px] rounded-lg bg-background p-[8px]'>
+                    <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
                       What do you like?
                     </div>
                     <div className='mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
@@ -239,7 +242,7 @@ const AddButtonModals = ({
                 <div className='flex flex-col gap-4'>
                   <Radio value='inline'>Inline keyboard</Radio>
                   <div className='w-full rounded-lg border-1 border-border bg-chat'>
-                    <div className='ml-[12px] mr-[36px] mt-[16px] rounded-lg bg-background p-[8px]'>
+                    <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
                       What do you like?
                     </div>
                     <RenderButtons buttons={buttons} type='inline' />
