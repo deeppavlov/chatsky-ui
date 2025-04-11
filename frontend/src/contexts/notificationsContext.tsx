@@ -161,7 +161,6 @@ const NotificationsProvider = ({ children }: { children: React.ReactNode }) => {
       link,
     }
 
-    console.log(notification)
     setNotifications((prevNotifications) => [
       ...prevNotifications,
       notification,
