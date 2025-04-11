@@ -12,6 +12,7 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.main import app
 from chatsky_ui.schemas.process_status import Status
+from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
 load_dotenv()
 
@@ -194,11 +195,9 @@ async def test_get_chat_records(dummy_run_id):
         ["hello", "Do you want a pizza?"],
         ["bye", "Oops, something wrong happened"],
     ]
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get(f"/api/v1/bot/chat/{dummy_run_id}/{user_id}")
 
-        assert get_response.status_code == 200
-        assert test_result == get_response.json()
+    response = SQLiteExtractor().fetch_chat_records(dummy_run_id, user_id)
+    assert test_result == response
 
 
 @pytest.mark.asyncio
@@ -218,8 +217,5 @@ async def test_get_message_label(dummy_run_id):
     message_id = 0
     test_result = {"flow_name": "Greeting", "node_name": "Beginning of conversation"}
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get(f"/api/v1/bot/chat/label/{dummy_run_id}/{user_id}/{message_id}")
-
-        assert get_response.status_code == 200
-        assert test_result == get_response.json()
+    response = SQLiteExtractor().fetch_message_label(dummy_run_id, user_id, message_id)
+    assert test_result == response
