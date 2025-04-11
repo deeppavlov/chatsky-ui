@@ -105,3 +105,9 @@ class SQLiteExtractor:
 
         ids = [item[0] for item in ids]
         return ids
+
+    async def delete_chat_records(self, run_id: Union[int, str], user_id: int):
+        context = await self.get_context(str(run_id), user_id)
+        if context is None:
+            raise ValueError("No context found for the given run_id and user_id.")
+        await context.delete()
