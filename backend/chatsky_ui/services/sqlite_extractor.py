@@ -115,3 +115,9 @@ class SQLiteExtractor:
         if label is not None:
             return {"flow_name": label.flow_name, "node_name": label.node_name}
         return None
+
+    async def delete_chat_records(self, run_id: Union[int, str], user_id: int):
+        context = await self.get_context(str(run_id), user_id)
+        if context is None:
+            raise ValueError("No context found for the given run_id and user_id.")
+        await context.delete()
