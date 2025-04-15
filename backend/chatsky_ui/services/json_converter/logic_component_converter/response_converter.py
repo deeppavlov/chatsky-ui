@@ -1,5 +1,5 @@
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.response import CustomResponse, TextResponse
+from ....schemas.front_graph_components.info_holders.response import ButtonResponse, CustomResponse, TextResponse
 from ..base_converter import BaseConverter
 from ..consts import CUSTOM_FILE, RESPONSES_FILE
 from .service_replacer import store_custom_service
@@ -69,3 +69,59 @@ class CustomResponseConverter(ResponseConverter):
         """
         store_custom_service(settings.responses_path, [self.response.code])
         return {f"{CUSTOM_FILE}.{RESPONSES_FILE}.{self.response.name}": None}
+
+
+class ButtonResponseConverter(ResponseConverter):
+    """Converts a frontend's `ButtonResponse` into a Chatsky `Response`."""
+
+    def __init__(self, response: dict):
+        """Creates a `ButtonResponseConverter` object.
+
+        Args:
+            response (dict): The `ButtonResponse` to be converted.
+
+        Raises:
+            BadResponseException: if the provided response doesn't have required fields.
+        """
+        try:
+            data = next(iter(response["data"]))
+            self.response = ButtonResponse(
+                name=response["name"],
+                text=data["text"],
+                type=data["type"],
+                buttons=data["buttons"],
+            )
+        except KeyError as e:
+            raise BadResponseException("Missing key in button response data") from e
+
+    def create_keyboard(self) -> dict:
+        """Creates a keyboard (list of lists of `Buttons`) for use in either a
+        `ReplyKeyboardMarkup` or `InlineKeyboardMarkup` from python-telegram-bot.
+        """
+        button_classes = {
+            "inline": "external:telegram.InlineKeyboardButton",
+            "reply": "external:telegram.KeyboardButton",
+        }
+        keyboard = []
+        for new_line in self.response.buttons:
+            line = []
+            for button in new_line:
+                converted_button = {button_classes[self.response.type]: button}
+                line.append(converted_button)
+            keyboard.append(line)
+
+        keyboard_name = "inline_keyboard" if self.response.type == "inline" else "keyboard"
+        return {keyboard_name: keyboard}
+
+    def _convert(self):
+        """Converts the received text response into a Chatsky `Response`."""
+        keyboard_classes = {
+            "inline": "external:telegram.InlineKeyboardMarkup",
+            "reply": "external:telegram.ReplyKeyboardMarkup",
+        }
+        return {
+            "chatsky.Message": {
+                "text": self.response.text,
+                "reply_markup": {keyboard_classes[self.response.type]: self.create_keyboard()},
+            }
+        }
