@@ -3,9 +3,9 @@ from platform import system
 from typing import Union
 
 from chatsky import Context
+from chatsky.context_storages.sql import SQLContextStorage
 from pydantic import ValidationError
 
-from chatsky_ui.clients.context_storage import ChatskyUIContextStorage
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 
@@ -26,12 +26,12 @@ class SQLiteExtractor:
             raise ValueError("Logger has not been configured. Call set_logger() first.")
         return self._logger
 
-    async def get_database(self, run_id: int):
+    async def get_database(self):
         separator = "///" if system() == "Windows" else "////"
 
         db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
         if self.database is None:
-            self.database = ChatskyUIContextStorage(db_uri, run_id)
+            self.database = SQLContextStorage(db_uri)
             await self.database.connect()
         return self.database
 
@@ -76,14 +76,18 @@ class SQLiteExtractor:
         so we delete the new unnecessary Context and return None.
         """
         try:
-            context = await Context.connected(await self.get_database(run_id), id=str(user_id))
+            context = await Context.connected(await self.get_database(), id=f"{run_id}_{str(user_id)}")
+            # result = await context
+            # self.logger.info(f"Extracted Context's label zero is: {context.labels}")
+
             if await context.labels[0] is None:
                 await context.delete()
                 context = None
+
             return context
-        except ValidationError:
+        except ValidationError as e:
             self.logger.error(
-                "Extracted Context doesn't match the current Chatsky version's Context." "(it's probably outdated)"
+                f"Extracted Context doesn't match the current Chatsky version's Context. (it's probably outdated): {e}"
             )
             return None
 

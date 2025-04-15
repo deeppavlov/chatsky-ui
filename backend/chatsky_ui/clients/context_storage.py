@@ -17,12 +17,12 @@ class ChatskyUIContextStorage(SQLContextStorage):
     """A 'wrapper' class for all methods using `ctx_id`, making them use composite id's."""
 
     def __init__(self, path: str, run_id: int, **kwargs):
-        self.run_id = run_id
+        self.run_id = str(run_id)
         super().__init__(path, **kwargs)
 
-    def get_ctx_id(self, user_id: str):
+    def get_ctx_id(self, user_id: str) -> str:
         """Formats `ctx_id` to how the context id's are stored in the Chatsky-UI database."""
-        return f"{self.run_id}_{str(user_id)}"
+        return f"{self.run_id}_{user_id}"
 
     async def _load_main_info(self, user_id: str) -> Optional[ContextMainInfo]:
         return await super()._load_main_info(self.get_ctx_id(user_id))
