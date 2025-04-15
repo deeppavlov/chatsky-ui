@@ -43,7 +43,7 @@ run_dev_frontend: install_frontend_env ## Runs frontend in dev mode
 # backend cmds
 .PHONY: install_backend_env
 install_backend_env: ## Installs backend dependencies using poetry
-	cd ${BACKEND_DIR} && poetry install
+	cd ${BACKEND_DIR} && poetry install --with dev
 
 .PHONY: clean_backend_env
 clean_backend_env: ## Removes backend dependencies using poetry
@@ -77,28 +77,15 @@ run_dev_backend: check_project_arg install_backend_env ## Runs backend in dev mo
 	chatsky.ui run_app --project-dir ../${PROJECT_NAME} --conf-reload
 
 # backend tests
-.PHONY: unit_tests
-unit_tests: ## Runs all backend unit tests
+.PHONY: integration_tests
+integration_tests: install_backend_env ## Runs all backend integration tests
 	cd ${BACKEND_DIR} && \
 	. `poetry env info --path`/bin/activate && \
 	pytest ../${BACKEND_DIR}/chatsky_ui/tests/api ../${BACKEND_DIR}/chatsky_ui/tests/services
 
 
-.PHONY: integration_tests
-integration_tests: ## Runs all backend integration tests
-	if [ ! -d "${PROJECT_NAME}" ]; then \
-		cd "${BACKEND_DIR}" && \
-		poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists; \
-	fi
-
-	cd ${BACKEND_DIR} && \
-	. `poetry env info --path`/bin/activate && \
-	cd ../${PROJECT_NAME} && \
-	pytest ../${BACKEND_DIR}/chatsky_ui/tests/integration
-
-
 .PHONY: backend_e2e_test
-backend_e2e_test: ## Runs e2e backend test
+backend_e2e_test: install_backend_env ## Runs e2e backend test
 	if [ ! -d "${PROJECT_NAME}" ]; then \
 		cd "${BACKEND_DIR}" && \
 		poetry run chatsky.ui init --destination ../ --no-input --overwrite-if-exists; \
@@ -112,7 +99,6 @@ backend_e2e_test: ## Runs e2e backend test
 
 .PHONY: backend_tests
 backend_tests: ## Runs all backend tests
-	make unit_tests
 	make integration_tests
 	make backend_e2e_test
 
