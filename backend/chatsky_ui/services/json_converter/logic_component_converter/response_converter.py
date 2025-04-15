@@ -96,32 +96,27 @@ class ButtonResponseConverter(ResponseConverter):
 
     def create_keyboard(self) -> dict:
         """Creates a keyboard (list of lists of `Buttons`) for use in either a
-        `ReplyKeyboardMarkup` or `InlineKeyboardMarkup` from python-telegram-bot.
+        `ReplyKeyboardMarkup` or `InlineKeyboardMarkup` from `python-telegram-bot`.
         """
-        button_classes = {
+        button_type = {
             "inline": "external:telegram.InlineKeyboardButton",
             "reply": "external:telegram.KeyboardButton",
-        }
-        keyboard = []
-        for new_line in self.response.buttons:
-            line = []
-            for button in new_line:
-                converted_button = {button_classes[self.response.type]: button}
-                line.append(converted_button)
-            keyboard.append(line)
+        }[self.response.type]
+
+        keyboard = [[{button_type: button} for button in row] for row in self.response.buttons]
 
         keyboard_name = "inline_keyboard" if self.response.type == "inline" else "keyboard"
         return {keyboard_name: keyboard}
 
     def _convert(self):
         """Converts the received text response into a Chatsky `Response`."""
-        keyboard_classes = {
+        keyboard_type = {
             "inline": "external:telegram.InlineKeyboardMarkup",
             "reply": "external:telegram.ReplyKeyboardMarkup",
-        }
+        }[self.response.type]
         return {
             "chatsky.Message": {
                 "text": self.response.text,
-                "reply_markup": {keyboard_classes[self.response.type]: self.create_keyboard()},
+                "reply_markup": {keyboard_type: self.create_keyboard()},
             }
         }
