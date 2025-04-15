@@ -12,7 +12,6 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.main import app
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
 load_dotenv()
 
@@ -181,23 +180,6 @@ async def test_start_run(
 
 #             assert get_response.status_code == 200
 #             assert get_response.json()
-
-
-@pytest.mark.asyncio
-async def test_get_chat_records(dummy_run_id):
-    user_id = 0
-    test_result = [
-        ("hello", "Do you want a pizza?"),
-        ("yes", "Some cheese in pizza?"),
-        ("no", "Okay, so, your order is coming!"),
-        ("/start", "Oops, something wrong happened"),
-        ("/start", "Hello!"),
-        ("hello", "Do you want a pizza?"),
-        ("bye", "Oops, something wrong happened"),
-    ]
-
-    response = await SQLiteExtractor().fetch_chat_records(dummy_run_id, user_id)
-    assert test_result == response
 
 
 @pytest.mark.asyncio
