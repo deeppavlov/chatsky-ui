@@ -296,7 +296,7 @@ export const checkBuildIsChanged = async () => {
 export const getChatHistory = async (chatId: number, userId: number = 1) => {
   try {
     const { data }: { data: Array<[string, string]> } = await $v1.get(
-      `/bot/get_chat/${chatId}/${userId}`,
+      `/bot/chat/${chatId}/${userId}`,
     )
     return data
   } catch (error) {
@@ -307,7 +307,7 @@ export const getChatHistory = async (chatId: number, userId: number = 1) => {
 
 export const getChatIds = async () => {
   try {
-    const { data }: { data: string[] } = await $v1.get('/bot/get_chat_ids')
+    const { data }: { data: string[] } = await $v1.get('/bot/chat/ids')
     return data.map((id) => id.split('_')) // [runId, userId]
   } catch (error) {
     console.log(error)
