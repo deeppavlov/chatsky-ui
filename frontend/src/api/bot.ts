@@ -265,11 +265,9 @@ export const run_status = async (run_id: number) => {
 export const send_message = async (
   run_id: number,
   user_message: string,
-  user_id: number = 1,
+  user_id: number = 0,
 ) => {
-  const url = `bot/chat?run_id=${run_id}&user_message=${user_message}${
-    user_id ? `&user_id=${user_id}` : ''
-  }`
+  const url = `bot/chat?run_id=${run_id}&user_message=${user_message}${`&user_id=${user_id}`}`
 
   try {
     const { data }: { data: botMessage } = await $v1.post(url)
@@ -293,7 +291,7 @@ export const checkBuildIsChanged = async () => {
   }
 }
 
-export const getChatHistory = async (chatId: number, userId: number = 1) => {
+export const getChatHistory = async (chatId: number, userId: number = 0) => {
   try {
     const { data }: { data: Array<[string, string]> } = await $v1.get(
       `/bot/chat/${chatId}/${userId}`,
