@@ -463,7 +463,7 @@ async def respond(
             ) from e
 
 
-@router.get("/get_chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
+@router.get("/chat/{run_id}/{user_id}", response_model=Optional[list], status_code=200)
 async def get_chat_records(
     run_id: int,
     user_id: int,
@@ -472,9 +472,9 @@ async def get_chat_records(
     """Gets the records of a user's chat from a specified run.
 
     Args:
-        run_id (int): The id of the process to send the message to.
+        run_id (int): The id of the `Run` process.
         user_id (int): ID of the user.
-        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the chat records with.
 
     Raises:
         HTTPException: With status code 404 if the user with the given id is not found in the database.
@@ -494,7 +494,7 @@ async def get_chat_records(
         )
 
 
-@router.get("/get_chat_ids", response_model=Optional[list], status_code=200)
+@router.get("/chat/ids", response_model=Optional[list], status_code=200)
 async def get_chat_ids(
     sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
 ) -> Optional[List[str]]:
@@ -513,3 +513,40 @@ async def get_chat_ids(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
+
+
+@router.get("/chat/delete/{run_id}/{user_id}", status_code=200)
+async def delete_chat_records(
+    run_id: int,
+    user_id: int,
+    sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
+) -> Dict[str, str]:
+    """Deletes the records of a user's chat from a specified run.
+
+    Args:
+        run_id (int): The id of the `Run` process.
+        user_id (int): ID of the user.
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to delete the chat records with.
+
+    Raises:
+        HTTPException: With status code 404 if the user with the given id is not found in the database.
+        HTTPException: With status code 500 if there is an Exception caught or an internal server error.
+
+    Returns:
+        {"status": "ok"}: in case of deleting the chat records successfully.
+    """
+    try:
+        await sqlite_extractor.delete_chat_records(run_id, user_id)
+    except IndexError as e:
+        sqlite_extractor.logger.error("Error deleting chat records: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given id not found in the database.",
+        ) from e
+    except Exception as e:
+        sqlite_extractor.logger.error("Error deleting chat records: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+    return {"status": "ok"}

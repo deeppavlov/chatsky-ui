@@ -183,47 +183,11 @@ async def test_start_run(
 
 
 @pytest.mark.asyncio
-async def test_get_chat_records(dummy_run_id):
-    user_id = 0
-    test_result = [
-        ["hello", "Do you want two pizzas?"],
-        ["yesss", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["no", "Okay, so, your order is coming!"],
-        ["hello", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["no", "Okay, bye!"],
-        ["hello", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["yes", "Cool! Your order is coming!"],
-        ["hi", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["dtfvgybuhnjmk,l", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["no", "Okay, so, your order is coming!"],
-        ["eretgh", "Hello!"],
-        ["helo", "Hello!"],
-        ["hello", "Do you want two pizzas?"],
-        ["yes", "Some cheese in pizza?"],
-        ["no", "Okay, so, your order is coming!"],
-    ]
-
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get(f"/api/v1/bot/get_chat/{dummy_run_id}/{user_id}")
-
-        assert get_response.status_code == 200
-        assert test_result == get_response.json()
-
-
-@pytest.mark.asyncio
 async def test_get_chat_ids():
     test_result = ["0_0"]
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
-        get_response = await async_client.get("/api/v1/bot/get_chat_ids")
+        get_response = await async_client.get("/api/v1/bot/chat/ids")
 
         assert get_response.status_code == 200
         assert test_result == get_response.json()
