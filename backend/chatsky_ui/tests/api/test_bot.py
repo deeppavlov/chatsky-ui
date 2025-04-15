@@ -12,7 +12,6 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.main import app
 from chatsky_ui.schemas.process_status import Status
-from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
 load_dotenv()
 

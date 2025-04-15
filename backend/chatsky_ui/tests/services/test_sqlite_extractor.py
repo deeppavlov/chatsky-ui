@@ -1,4 +1,5 @@
 import pytest
+
 from ...services.sqlite_extractor import SQLiteExtractor
 
 
