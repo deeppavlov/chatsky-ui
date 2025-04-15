@@ -77,13 +77,9 @@ class SQLiteExtractor:
         """
         try:
             context = await Context.connected(await self.get_database(), id=f"{run_id}_{str(user_id)}")
-            # result = await context
-            # self.logger.info(f"Extracted Context's label zero is: {context.labels}")
-
             if await context.labels[0] is None:
                 await context.delete()
                 context = None
-
             return context
         except ValidationError as e:
             self.logger.error(
