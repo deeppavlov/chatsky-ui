@@ -27,5 +27,5 @@ class Button(BaseComponent):
 
 class ButtonResponse(Response):
     text: str
-    type: str
+    button_type: str
     buttons: List[List[dict]]

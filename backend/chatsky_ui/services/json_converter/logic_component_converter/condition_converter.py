@@ -119,3 +119,10 @@ class ButtonConditionConverter(ConditionConverter):
     def _convert(self):
         """Converts the received `ButtonCondition` into a Chatsky `Condition` and returns it."""
         return {"chatsky.conditions.HasCallbackQuery": self.condition.callback_data}
+
+    def get_pre_transitions(self):
+        """Returns an empty dictionary, because it's a button condition.
+        If anyone wants to run some code before the main condition, they can
+        insert it directly into the condition's code.
+        """
+        return {}

@@ -88,7 +88,7 @@ class ButtonResponseConverter(ResponseConverter):
             self.response = ButtonResponse(
                 name=response["name"],
                 text=data["text"],
-                type=data["type"],
+                button_type=data["button_type"],
                 buttons=data["buttons"],
             )
         except KeyError as e:
@@ -98,14 +98,14 @@ class ButtonResponseConverter(ResponseConverter):
         """Creates a keyboard (list of lists of `Buttons`) for use in either a
         `ReplyKeyboardMarkup` or `InlineKeyboardMarkup` from `python-telegram-bot`.
         """
-        button_type = {
+        button_class = {
             "inline": "external:telegram.InlineKeyboardButton",
             "reply": "external:telegram.KeyboardButton",
-        }[self.response.type]
+        }[self.response.button_type]
 
-        keyboard = [[{button_type: button} for button in row] for row in self.response.buttons]
+        keyboard = [[{button_class: button} for button in row] for row in self.response.buttons]
 
-        keyboard_name = "inline_keyboard" if self.response.type == "inline" else "keyboard"
+        keyboard_name = "inline_keyboard" if self.response.button_type == "inline" else "keyboard"
         return {keyboard_name: keyboard}
 
     def _convert(self):
@@ -113,10 +113,10 @@ class ButtonResponseConverter(ResponseConverter):
         keyboard_class = {
             "inline": "external:telegram.InlineKeyboardMarkup",
             "reply": "external:telegram.ReplyKeyboardMarkup",
-        }[self.response.type]
+        }[self.response.button_type]
         return {
             "chatsky.Message": {
-                "text": self.response.text,
+                "text": str(self.response.text),
                 "reply_markup": {keyboard_class: self.create_keyboard()},
             }
         }
