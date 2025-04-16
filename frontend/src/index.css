@@ -319,6 +319,9 @@ table thead tr:nth-child(2) {
 }
 
 .flow-card {
+  /* width: 796px;
+  height: 180px; */
+  max-width: 796px;
   width: calc(25% - 0.75rem);
   @apply relative flex h-40 flex-col items-start justify-between rounded-lg border border-border bg-background p-4 hover:border-node-selected;
 }

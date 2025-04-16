@@ -6,6 +6,7 @@ import { flowContext } from '../../contexts/flowContext'
 import { undoRedoContext } from '../../contexts/undoRedoContext'
 import EditPenIcon from '../../icons/EditPenIcon'
 import { DefaultNodeDataType, DefaultNodeType } from '../../types/NodeTypes'
+import { validateNodeName } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import ConditionRow from './components/ConditionRow'
 
@@ -36,8 +37,9 @@ const NodeModal = ({
   const { takeSnapshot } = useContext(undoRedoContext)
 
   const [errors, setErrors] = React.useState<{
-    name?: { isInvalid: boolean; errorMessage: string }
-  }>({})
+    isInvalid: boolean
+    errorMessage: string
+  }>({ isInvalid: false, errorMessage: '' })
 
   useEffect(() => {
     setNodeDataState(
@@ -46,32 +48,6 @@ const NodeModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
-  const validateNodeName = () => {
-    if (nodeDataState.name === '') {
-      setErrors({
-        ...errors,
-        name: { isInvalid: true, errorMessage: 'Please fill every field' },
-      })
-      return false
-    }
-    if (isUniqueValue('name')) {
-      setErrors({
-        ...errors,
-        name: { isInvalid: true, errorMessage: 'Name must be unique' },
-      })
-      return false
-    }
-    return true
-  }
-
-  const isUniqueValue = (key: keyof DefaultNodeDataType) => {
-    const nodes = getNodes()
-      .filter((node) => node.type === 'default_node')
-      .filter((el) => el.id !== nodeDataState.id)
-      .map((node) => node.data[key])
-    return nodes.includes(nodeDataState[key])
-  }
-
   const setDataStateValue = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setNodeDataState({
@@ -79,9 +55,8 @@ const NodeModal = ({
         [e.target.name]: e.target.value,
       })
 
-      setErrors({ ...errors, name: { isInvalid: false, errorMessage: '' } })
+      setErrors({ isInvalid: false, errorMessage: '' })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodeDataState, setNodeDataState],
   )
 
@@ -97,7 +72,10 @@ const NodeModal = ({
   }
 
   const onNodeSave = () => {
-    if (!validateNodeName()) {
+    const errors = validateNodeName(nodeDataState.name, getNodes(), data.id)
+
+    if (errors.isInvalid) {
+      setErrors({ ...errors })
       return
     }
 
@@ -153,7 +131,7 @@ const NodeModal = ({
               value={nodeDataState.name}
               onChange={setDataStateValue}
               autoComplete='off'
-              {...errors.name}
+              {...errors}
             />
             <span className='relative'>
               <Input

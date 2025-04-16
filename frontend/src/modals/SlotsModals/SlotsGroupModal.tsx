@@ -4,6 +4,7 @@ import { Button, Switch } from '@nextui-org/react' // Можно заменит�
 import { useReactFlow } from '@xyflow/react'
 import { Plus } from 'lucide-react'
 import React, { useContext, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { v4 } from 'uuid'
 import { PopUpContext } from '../../contexts/popUpContext'
 import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
@@ -11,7 +12,7 @@ import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
 import { SlotsNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import DefSelect from '../../UI/Input/DefSelect'
-import { generateNewSlot } from '../../utils'
+import { generateNewSlot, validateGroupSlot } from '../../utils'
 import {
   CustomModalProps,
   Modal,
@@ -37,7 +38,7 @@ const SlotsGroupModal = ({
 }: SlotsGroupModalType) => {
   const { updateNodeData } = useReactFlow()
   const { closePopUp } = useContext(PopUpContext)
-
+  const { flowId } = useParams()
   const { quietSaveFlows, flows } = useContext(flowContext)
   const [nodeData, setNodeData] = useState(data)
   const [groups, setGroups] = useState<SlotsGroupType[]>(data.groups ?? [])
@@ -48,21 +49,41 @@ const SlotsGroupModal = ({
   )
   const [isSubGroup, setIsSubGroup] = useState<boolean>(!!group?.subgroup_to)
   const [parentGroup, setParentGroup] = useState<SlotsGroupType | null>(null)
+
+  const arrNamesSlotsGrop = flows
+    .filter((f) => f.name !== 'global')
+    .map((f) => f.data.nodes)
+    .flat()
+    .filter((n) => n.type === 'slots_node')
+    .map((s) => (s.data as SlotsNodeDataType).groups)
+    .flat()
+    .map((g) => g.name)
+
+  const genIterName = (iter: number = 1): string => {
+    const iterName = `${flowId}_New_Group_${iter}`
+    if (arrNamesSlotsGrop.includes(iterName)) {
+      return genIterName(iter + 1)
+    }
+    return iterName
+  }
+
   const [currentGroup, setCurrentGroup] = useState<SlotsGroupType>(() => {
     const id = 'group_' + v4()
+    const tempGroup = {
+      id,
+      name: genIterName(),
+      slots: [],
+      subgroups: [],
+      subgroup_to: '',
+      flow: 'global',
+    }
     return (
       group ?? {
-        id: id,
-        name: 'New_Group',
-        slots: [generateNewSlot(id)],
-        subgroups: [],
-        subgroup_to: '',
-        flow: 'global',
+        ...tempGroup,
+        slots: [generateNewSlot(id, tempGroup)],
       }
     )
   })
-
-  console.log(currentGroup, 'currentGroup')
 
   const [errors, setErrors] = React.useState<IErrorDep>({
     nameGroup: { isInvalid: false, errorMessage: '' },
@@ -76,7 +97,7 @@ const SlotsGroupModal = ({
   }, [group])
 
   const onAddSlot = () => {
-    const newSlot: SlotType = generateNewSlot(currentGroup.id)
+    const newSlot: SlotType = generateNewSlot(currentGroup.id, currentGroup)
     setCurrentGroup((prevGroup) => ({
       ...prevGroup,
       slots: [...prevGroup.slots, newSlot],
@@ -90,82 +111,6 @@ const SlotsGroupModal = ({
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeData])
-
-  const isNotValidateNameGrop = () => {
-    let isError = false
-
-    const errorNameGroup = {
-      isInvalid: false,
-      errorMessage: '',
-    }
-
-    if (currentGroup.name === '') {
-      errorNameGroup.isInvalid = true
-      errorNameGroup.errorMessage = 'Group name is required!'
-      isError = true
-    }
-
-    const arrNamesSlotsGrop = flows
-      .filter((f) => f.name !== 'global')
-      .map((f) => f.data.nodes)
-      .flat()
-      .filter((n) => n.type === 'slots_node')
-      .map((s) => (s.data as SlotsNodeDataType).groups)
-      .flat()
-      .map((g) => g.name)
-
-    if (arrNamesSlotsGrop.includes(currentGroup.name)) {
-      errorNameGroup.isInvalid = true
-      errorNameGroup.errorMessage = 'Group name must be unique!'
-      isError = true
-    }
-
-    const errorsSlot = currentGroup.slots
-      .map((slot) => {
-        const arr = currentGroup.slots
-          .filter((s) => s.id !== slot.id)
-          .map((s) => s.name)
-        if (arr.includes(slot.name) || slot.value === '') {
-          isError = true
-          return {
-            id: slot.id,
-            name: {
-              isInvalid: arr.includes(slot.name),
-              errorMessage: arr.includes(slot.name)
-                ? 'Slot name must be unique!'
-                : '',
-            },
-            value: {
-              isInvalid: slot.value === '',
-              errorMessage: slot.value === '' ? 'Slot value is required!' : '',
-            },
-          }
-        }
-        return null
-      })
-      .filter((e) => e !== null)
-
-    setErrors({
-      nameGroup: errorNameGroup,
-      slots: errorsSlot.filter(
-        (
-          e,
-        ): e is {
-          id: string
-          name: { isInvalid: boolean; errorMessage: string }
-          value: { isInvalid: boolean; errorMessage: string }
-        } => e !== null,
-      ),
-    })
-
-    console.log(errors, 'errors')
-
-    if (isError) {
-      isError = true
-    }
-
-    return isError
-  }
 
   const onSave = () => {
     if (
@@ -200,12 +145,17 @@ const SlotsGroupModal = ({
   }
 
   const onSaveHandler = () => {
-    if (isNotValidateNameGrop()) {
+    const errors = validateGroupSlot(currentGroup, arrNamesSlotsGrop)
+    const isError =
+      errors.nameGroup.isInvalid ||
+      errors.slots.some((slot) => slot.name?.isInvalid || slot.value?.isInvalid)
+
+    if (isError) {
+      setErrors(errors)
       return
     }
 
     onSave()
-
     quietSaveFlows()
     closePopUp(id)
   }
@@ -297,7 +247,7 @@ const SlotsGroupModal = ({
                     }
                   }}
                   placeholder='Select parent group'
-                  className='h-8 min-h-8 w-1/3'
+                  className='h-8 min-h-8 w-1/3 w-full'
                   items={nodeData.groups
                     .filter((g) => g.id !== currentGroup.id)
                     .map((g) => ({ key: g.name, value: g.name }))}
@@ -339,9 +289,7 @@ const SlotsGroupModal = ({
               }
               errors={errors}
               setErrors={(newErrors) => {
-                if ('nameGroup' in newErrors) {
-                  setErrors(newErrors)
-                }
+                setErrors(newErrors as IErrorDep)
               }}
             />
           ))}

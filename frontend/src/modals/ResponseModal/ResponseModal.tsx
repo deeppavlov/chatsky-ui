@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
 import { responseType, responseTypeType } from '../../types/ResponseTypes'
+import { validateResponseName } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import PythonResponse from './components/PythonResponse'
 import TextResponse from './components/TextResponse'
@@ -58,8 +59,9 @@ const ResponseModal = ({
   }, [currentResponse])
 
   const [errors, setErrors] = useState<{
-    name?: { isInvalid: boolean; errorMessage: string }
-  }>({})
+    isInvalid: boolean
+    errorMessage: string
+  }>({ isInvalid: false, errorMessage: '' })
 
   const tabItems: {
     title: ResponseModalTab
@@ -111,71 +113,38 @@ const ResponseModal = ({
   )
 
   const saveResponse = () => {
-    if (!currentResponse.name) {
-      setErrors({
-        ...errors,
-        name: { isInvalid: true, errorMessage: 'Please fill every field' },
-      })
+    const name = currentResponse.name
+    console.log(name, 's')
+    const errors = validateResponseName(name, selected, flows, data)
+
+    if (errors.isInvalid) {
+      setErrors(errors)
       return
     }
 
-    if (
-      selected === 'python' &&
-      currentResponse.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') !== ''
-    ) {
-      setErrors({
-        ...errors,
-        name: {
-          isInvalid: true,
-          errorMessage:
-            'Please use only Latin letters. Names cannot start with a number.',
+    const nodes = getNodes()
+    const node = getNode(data.id)
+    const currentFlow = flows.find((flow) => flow.name === flowId)
+    if (node && currentFlow) {
+      const new_node = {
+        ...node,
+        data: {
+          ...node.data,
+          response: currentResponse,
         },
-      })
-      return
-    }
-    if (
-      flows.some((flow) =>
-        flow.data.nodes.some(
-          (node) =>
-            node.type === 'default_node' &&
-            node.data.response.name === currentResponse.name &&
-            node.id !== data.id,
-        ),
-      )
-    ) {
-      setErrors({
-        ...errors,
-        name: {
-          isInvalid: true,
-          errorMessage: 'Response name must be unique!',
-        },
-      })
-      return
-    } else {
-      const nodes = getNodes()
-      const node = getNode(data.id)
-      const currentFlow = flows.find((flow) => flow.name === flowId)
-      if (node && currentFlow) {
-        const new_node = {
-          ...node,
-          data: {
-            ...node.data,
-            response: currentResponse,
-          },
-        }
-        const new_nodes = nodes.map((node) =>
-          node.id === data.id ? new_node : node,
-        )
-        setNodes(() => new_nodes)
-        setData({
-          ...data,
-          response: new_node.data.response,
-        })
-        // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-        // updateFlow(currentFlow)
-        quietSaveFlows()
-        onClose()
       }
+      const new_nodes = nodes.map((node) =>
+        node.id === data.id ? new_node : node,
+      )
+      setNodes(() => new_nodes)
+      setData({
+        ...data,
+        response: new_node.data.response,
+      })
+      // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+      // updateFlow(currentFlow)
+      quietSaveFlows()
+      onClose()
     }
   }
 
@@ -225,16 +194,14 @@ const ResponseModal = ({
             value={currentResponse.name}
             isRequired
             onChange={(e) => {
+              console.log(e.target.value, 's')
               setCurrentResponse({
                 ...currentResponse,
                 name: e.target.value.replaceAll(' ', '_'),
               })
-              setErrors((prevErrors) => ({
-                ...prevErrors,
-                name: { isInvalid: false, errorMessage: '' },
-              }))
+              setErrors({ isInvalid: false, errorMessage: '' })
             }}
-            {...errors.name}
+            {...errors}
           />
         </div>
         <div>{bodyItems[selected]}</div>
