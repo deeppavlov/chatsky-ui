@@ -110,13 +110,13 @@ class ButtonResponseConverter(ResponseConverter):
 
     def _convert(self):
         """Converts the received text response into a Chatsky `Response`."""
-        keyboard_type = {
+        keyboard_class = {
             "inline": "external:telegram.InlineKeyboardMarkup",
             "reply": "external:telegram.ReplyKeyboardMarkup",
         }[self.response.type]
         return {
             "chatsky.Message": {
                 "text": self.response.text,
-                "reply_markup": {keyboard_type: self.create_keyboard()},
+                "reply_markup": {keyboard_class: self.create_keyboard()},
             }
         }

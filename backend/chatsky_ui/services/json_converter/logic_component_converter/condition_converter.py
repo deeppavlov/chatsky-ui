@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.condition import CustomCondition, SlotCondition
+from ....schemas.front_graph_components.info_holders.condition import CustomCondition, SlotCondition, ButtonCondition
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
@@ -96,3 +96,26 @@ class SlotConditionConverter(ConditionConverter):
         """
         slot_path = self.slots_conf[self.condition.slot_id]  # type: ignore
         return {slot_path: {"chatsky.processing.slots.Extract": slot_path}}
+
+
+class ButtonConditionConverter(ConditionConverter):
+    """Converts a frontend's `inline` button condition into a Chatsky `HasCallbackQuery` condition."""
+
+    def __init__(self, condition: dict):
+        """Creates a `ButtonConditionConverter` object.
+
+        Args:
+            condition (dict): The `ButtonCondition` to be converted.
+
+        Raises:
+            BadConditionException: if the provided condition doesn't have required fields.
+        """
+        self.condition = None
+        try:
+            self.condition = ButtonCondition(callback_data=condition["data"]["callback_data"], name=condition["name"])
+        except KeyError as missing_key:
+            raise BadConditionException("Missing key in button condition data") from missing_key
+
+    def _convert(self):
+        """Converts the received `ButtonCondition` into a Chatsky `Condition` and returns it."""
+        return {"chatsky.conditions.HasCallbackQuery": self.condition.callback_data}
