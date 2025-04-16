@@ -265,11 +265,9 @@ export const run_status = async (run_id: number) => {
 export const send_message = async (
   run_id: number,
   user_message: string,
-  user_id?: number,
+  user_id: number = 0,
 ) => {
-  const url = `bot/chat?run_id=${run_id}&user_message=${user_message}${
-    user_id ? `&user_id=${user_id}` : ''
-  }`
+  const url = `bot/chat?run_id=${run_id}&user_message=${user_message}${`&user_id=${user_id}`}`
 
   try {
     const { data }: { data: botMessage } = await $v1.post(url)
@@ -286,6 +284,48 @@ export const checkBuildIsChanged = async () => {
       data: { data },
     } = await $v1.get('/bot/build/is_changed')
 
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const getChatHistory = async (chatId: number, userId: number = 0) => {
+  try {
+    const { data }: { data: Array<[string, string]> } = await $v1.get(
+      `/bot/chat/${chatId}/${userId}`,
+    )
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const getChatIds = async () => {
+  try {
+    const { data }: { data: string[] } = await $v1.get('/bot/chat/ids')
+    return data.map((id) => id.split('_')) // [runId, userId]
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const getBuildLogs = async (build_id: number): Promise<string[]> => {
+  try {
+    const { data } = await $v1.get(`/bot/builds/logs/${build_id}`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const getRunLogs = async (run_id: number): Promise<string[]> => {
+  try {
+    const { data } = await $v1.get(`/bot/runs/logs/${run_id}`)
     return data
   } catch (error) {
     console.log(error)

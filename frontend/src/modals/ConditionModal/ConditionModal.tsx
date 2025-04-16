@@ -10,18 +10,20 @@ import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
-import {
-  conditionType,
-  conditionTypeType,
-  ICondition,
-} from '../../types/ConditionTypes'
+import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
-import { generateNewConditionBase } from '../../utils'
+import {
+  generateNewConditionBase,
+  validateConditionBasic,
+  validateConditionName,
+  validateConditionSlot,
+} from '../../utils'
 import AlertModal from '../AlertModal'
 import {
   CustomModalProps,
@@ -91,26 +93,70 @@ const ConditionModal = ({
 }: ConditionModalProps) => {
   const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
-  const { quietSaveFlows } = useContext(flowContext)
+  const { quietSaveFlows, flows } = useContext(flowContext)
+
   const [selected, setSelected] = useState<conditionTypeType>(
     condition?.type ?? 'python',
   )
+
+  const { flowId } = useParams()
   const [lintStatus, setLintStatus] = useState<LintStatusType | null>(null)
   const [testConditionPending, setTestConditionPending] = useState(false)
 
   const setSelectedHandler = (key: conditionTypeType) => {
     setCurrentCondition({ ...currentCondition, type: key })
     setSelected(key)
-    setError({ isInvalid: false, errorMessage: '' })
   }
 
+  const arr = flows
+    .filter((flow) => flow.name !== 'Global')
+    .map((flow) => {
+      return {
+        name: flow.name,
+        collection: flow.data.nodes
+          .filter((node) => node.type === 'default_node')
+          .map((node) =>
+            (node.data as DefaultNodeDataType).conditions.map(
+              (condition) => condition.name,
+            ),
+          ),
+      }
+    })
+
+  const allNameCondidionFlows = arr
+    .flatMap((flow) => {
+      return flow.collection
+    })
+    .flat()
+
+  const iterGenName = (count: number = 1): string => {
+    const nameFlow = (flowId?.length ?? 0 >= 15) ? flowId?.slice(0, 15) : flowId
+
+    const newName = `${nameFlow}_NewCnd_${count}`
+
+    const isNotUnique = allNameCondidionFlows.includes(newName)
+
+    if (isNotUnique) {
+      return iterGenName((count += 1))
+    }
+    return newName
+  }
+
+  const initConditionName = iterGenName()
+
   const [currentCondition, setCurrentCondition] = useState(
-    is_create || !condition ? generateNewConditionBase() : condition,
+    is_create || !condition
+      ? generateNewConditionBase(initConditionName)
+      : condition,
   )
 
-  const [errorObject, setError] = useState({
-    errorMessage: '',
+  const [errorObject, setError] = useState<{
+    name?: { isInvalid: boolean; errorMessage: string }
+    isInvalid?: boolean
+    errorMessage?: string
+  }>({
     isInvalid: false,
+    errorMessage: '',
   })
 
   const ref = useRef<{
@@ -122,105 +168,6 @@ const ConditionModal = ({
     state: conditionType
     setState: (data: { group: boolean; slot: boolean }) => void
   }>()
-
-  const validateConditionName = (is_create: boolean) => {
-    const nodes = getNodes() as AppNode[]
-    if (!is_create) {
-      const is_name_valid = !nodes.some(
-        (node: AppNode) =>
-          node.type === 'default_node' &&
-          node.data.conditions.some(
-            (c) =>
-              c.name === currentCondition.name && c.id !== currentCondition.id,
-          ),
-      )
-      if (!is_name_valid) {
-        return {
-          status: false,
-          reason: 'Name must be unique',
-        }
-      } else {
-        return {
-          status: true,
-          reason: '',
-        }
-      }
-    } else {
-      const is_name_valid = !nodes.some(
-        (node: AppNode) =>
-          node.type === 'default_node' &&
-          node.data.conditions?.some((c) => c.name === currentCondition.name),
-      )
-      if (!is_name_valid) {
-        return {
-          status: false,
-          reason: 'Name must be unique',
-        }
-      } else {
-        return {
-          status: true,
-          reason: '',
-        }
-      }
-    }
-  }
-
-  const validateConditionBasic = (condition: ICondition) => {
-    const { data } = condition
-
-    const arrError: boolean[] = []
-
-    const isEmpty =
-      data?.structure === '' || data?.text === '' || data?.pattern === ''
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { error: _, ...res } = data as ICondition
-    isEmpty ? (condition.data!.error = isEmpty) : (condition.data = res)
-    arrError.push(isEmpty)
-
-    if (data && data.structure === 'not') {
-      const { error: _, ...res } = condition.data!.data as ICondition // eslint-disable-line @typescript-eslint/no-unused-vars
-
-      const isEmpty =
-        data.data!.structure === '' ||
-        data.data!.text === '' ||
-        data.data!.pattern === ''
-      isEmpty
-        ? (condition.data!.data!.error = isEmpty)
-        : (condition.data!.data = res)
-      arrError.push(isEmpty)
-    }
-
-    if (data && (data.structure === 'anyOf' || data.structure === 'allOf')) {
-      const isEmptyCildren = (data.data as ICondition[]).length === 0
-      const { error: _, ...res } = data as ICondition // eslint-disable-line @typescript-eslint/no-unused-vars
-
-      if (isEmptyCildren) {
-        isEmptyCildren
-          ? (condition.data!.error = isEmptyCildren)
-          : (condition.data = res)
-        arrError.push(true)
-      }
-      const dataCondition = data.data as ICondition[]
-      dataCondition.forEach((item: ICondition) => {
-        if (item.structure === 'not') {
-          const { error: _, ...res } = item.data as ICondition // eslint-disable-line @typescript-eslint/no-unused-vars
-          const isEmpty =
-            item.data!.structure === '' ||
-            item.data!.text === '' ||
-            item.data!.pattern === ''
-          isEmpty ? (item.data!.error = isEmpty) : (item.data = res)
-          arrError.push(isEmpty)
-        }
-
-        const isEmpty =
-          item.structure === '' || item.text === '' || item.pattern === ''
-        isEmpty ? (item.error = isEmpty) : (item = res)
-        arrError.push(isEmpty)
-      })
-    }
-    const status = !arrError.includes(true)
-    return { condition, status }
-  }
 
   const validateConditionAction = () => {
     const reasons: string[] = []
@@ -400,47 +347,38 @@ const ConditionModal = ({
   }, [selected])
 
   useEffect(() => {
-    if (currentCondition.name === '') {
-      setError({ isInvalid: true, errorMessage: 'Please fill every field' })
-    }
-
     if (currentCondition.name !== '') {
       setError({ isInvalid: false, errorMessage: '' })
     }
-    if (!validateConditionName(is_create)) {
-      setError({ isInvalid: false, errorMessage: '' })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCondition.name])
   const onCloseHandler = () => {
     closePopUp(id)
   }
 
-  const isValidCurrentCondition = () => {
-    if (currentCondition.type === 'python') {
-      return currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') === ''
-    }
+  const validateCurrentCondition = () => {
     if (currentCondition.type === 'basic') {
       const newState = validateConditionBasic(currentCondition)
-
-      if (!newState.status && ref.current?.setState) {
-        ref.current.setState(newState.condition.data as conditionType)
-      }
-      return newState.status
-    }
-    if (currentCondition.type === 'slot') {
-      if (currentCondition.data.slot === '' && refSlot.current?.setState) {
-        refSlot.current.setState({ group: true, slot: true })
+      if (!newState.status) {
+        ref.current?.setState(newState.condition.data as conditionType)
         return false
       }
-      return true
     }
+    if (currentCondition.type === 'slot') {
+      const newState = validateConditionSlot(currentCondition)
+      if (newState.group || newState.slot) {
+        refSlot.current?.setState(newState)
+        return false
+      }
+    }
+    return true
   }
 
   const saveCondition = () => {
-    const validate_name: ValidateErrorType = validateConditionName(is_create)
+    const validateObject = validateConditionName(currentCondition, getNodes())
 
-    if (validate_name.status && isValidCurrentCondition()) {
+    const isValidCondition = validateCurrentCondition()
+
+    if (!validateObject.isInvalid && isValidCondition) {
       updateNodeData(data.id, {
         ...data,
         conditions: is_create
@@ -453,21 +391,9 @@ const ConditionModal = ({
       })
       quietSaveFlows()
       onCloseHandler()
-    } else {
-      if (!validate_name.status) {
-        setError({ isInvalid: true, errorMessage: 'Name must be unique' })
-      }
-      if (currentCondition.type === 'python') {
-        const text = currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '')
-        text.trim() === ''
-          ? null
-          : setError({
-              errorMessage:
-                'Please use only Latin letters. Names cannot start with a number.',
-              isInvalid: true,
-            })
-      }
     }
+
+    setError(validateObject)
   }
 
   const deleteCondition = () => {
@@ -519,7 +445,13 @@ const ConditionModal = ({
   }
 
   return (
-    <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
+    <Modal
+      data-tesid='condition-modal'
+      isOpen={true}
+      onClose={onCloseHandler}
+      size='3xl'
+      data-testid='condition-modal'
+    >
       <ModalHeader>
         <div className='flex items-center gap-2'>
           {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
@@ -544,6 +476,7 @@ const ConditionModal = ({
           >
             {(item) => (
               <Tab
+                data-testid={`tab-${item.value}`}
                 key={item.value}
                 title={
                   <div className='flex items-center gap-1 text-sm'>
@@ -571,7 +504,9 @@ const ConditionModal = ({
                 name: e.target.value.replaceAll(' ', '_'),
               })
             }
-            {...errorObject}
+            data-testid='condition-name'
+            isInvalid={errorObject.isInvalid}
+            errorMessage={errorObject.errorMessage}
           />
           <DefInput
             label='Priority'
@@ -590,6 +525,7 @@ const ConditionModal = ({
                 },
               })
             }
+            data-testid='condition-priority'
           />
         </div>
         <div>
@@ -658,7 +594,6 @@ const ConditionModal = ({
             data-testid='save-condition-button'
             onClick={saveCondition}
             className='bg-foreground text-background'
-            isDisabled={errorObject.isInvalid || condition?.name.trim() === ''}
           >
             Save condition
           </Button>

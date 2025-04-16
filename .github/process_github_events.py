@@ -46,7 +46,7 @@ RELEASE_CHECKLIST = """It appears this PR is a release PR (change its base from 
 Here's a release checklist:
 
 - [ ]  Changed version in pyproject.toml
-- [ ]  Changed version in cli `init` command
+- [ ]  Changed template branch to main in cli `init` command
 - [ ]  Update `poetry.lock`
 - [ ]  Change PR merge option
 - [ ]  Search for objects to be deprecated

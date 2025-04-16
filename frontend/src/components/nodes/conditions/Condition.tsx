@@ -48,6 +48,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
         {label === 'manual' && (
           <ContextMenu.Trigger>
             <Handle
+              data-testid={`${condition.id}-output-handle`}
               isConnectableStart
               isConnectable={
                 edges.filter((edge) => edge.sourceHandle === condition.id)

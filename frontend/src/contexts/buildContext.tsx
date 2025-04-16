@@ -56,7 +56,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     const getBuildInitial = async () => {
       const builds = await get_builds()
       if (builds) {
-        setBuildsHandler(builds)
+        setBuildsHandler(builds.sort((a, b) => b.id - a.id))
       }
     }
     getBuildInitial()
@@ -87,7 +87,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         started_build = await get_builds(build_id)
       }
 
-      setBuildsHandler([...builds, started_build])
+      setBuildsHandler([started_build, ...builds])
 
       let flag = true
       while (flag) {
@@ -99,7 +99,7 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
           setBuilds((builds) =>
             builds.map((b) => (b.id === build_id ? { ...b, status } : b)),
           )
-          handleBuildCompletion(status)
+          handleBuildCompletion(status, build_id)
           return { status, build_id }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -113,7 +113,10 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
     return { status: 'failed' }
   }
 
-  const handleBuildCompletion = (status: buildApiStatusType) => {
+  const handleBuildCompletion = (
+    status: buildApiStatusType,
+    build_id: number,
+  ) => {
     if (status === 'completed') {
       n.add({
         title: 'Build successfully!',
@@ -125,6 +128,10 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
         title: 'Build failed!',
         message: 'Unknown build error. Please check your script.',
         type: 'error',
+        link: {
+          text: 'See logs for this build',
+          url: `?page=inspect&build_id=${build_id}&type=build`,
+        },
       })
     }
   }
