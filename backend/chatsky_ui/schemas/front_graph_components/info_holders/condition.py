@@ -37,6 +37,7 @@ class ButtonCondition(Condition):
 
     callback_data: str  # callback_data of the button pressed
 
+
 # --------------------------------------------------------------
 # The following classes are used to define the structure of conditions in ChatskyCondition
 # --------------------------------------------------------------

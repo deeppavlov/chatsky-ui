@@ -20,6 +20,7 @@ class Button(BaseComponent):
     Here, "text" is the displayed name of the button,
     "callback_data" is only relevant for "inline" buttons.
     """
+
     text: str
     callback_data: str = None
 

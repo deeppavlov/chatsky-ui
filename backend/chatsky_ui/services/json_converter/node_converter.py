@@ -3,8 +3,16 @@ from chatsky import PRE_RESPONSE, PRE_TRANSITION, RESPONSE, TRANSITIONS
 from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .base_converter import BaseConverter
 from .logic_component_converter.chatsky_condition_converter import ChatskyConditionConverter
-from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter, ButtonConditionConverter
-from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter, ButtonResponseConverter
+from .logic_component_converter.condition_converter import (
+    ButtonConditionConverter,
+    CustomConditionConverter,
+    SlotConditionConverter,
+)
+from .logic_component_converter.response_converter import (
+    ButtonResponseConverter,
+    CustomResponseConverter,
+    TextResponseConverter,
+)
 
 
 class NodeConverter(BaseConverter):
@@ -79,9 +87,11 @@ class InfoNodeConverter(NodeConverter):
             RESPONSE: self.RESPONSE_CONVERTER[self.node.response["type"]](self.node.response)(),
             TRANSITIONS: [
                 {
-                    "dst": condition["dst"]
-                    if condition["data"]["transition_type"] == "manual" and "dst" in condition
-                    else self.MAP_TR2CHATSKY.get(condition["data"]["transition_type"], ""),
+                    "dst": (
+                        condition["dst"]
+                        if condition["data"]["transition_type"] == "manual" and "dst" in condition
+                        else self.MAP_TR2CHATSKY.get(condition["data"]["transition_type"], "")
+                    ),
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }
