@@ -2,7 +2,9 @@ import ButtonConditionIcon from '@/icons/nodes/conditions/ButtonConditionIcon'
 import { Button, Input, Radio, RadioGroup } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import { ArrowUp, Paperclip, Plus, Smile } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { flowContext } from '../../contexts/flowContext'
 import AttentionIcon from '../../icons/AttentionIcon'
 import BackIcon from '../../icons/BackIcon'
 import { IButtonType } from '../../types/ConditionTypes'
@@ -10,79 +12,154 @@ import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import { generateNewConditionBase } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 
+const chunk = <T,>(array: T[], size: number): T[][] => {
+  const chunks: T[][] = []
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size))
+  }
+  return chunks
+}
+
 const RenderButtons = ({
-  type,
   buttons,
+  selected,
+  columns,
 }: {
   type: 'reply' | 'inline'
   buttons: IButtonType[]
+  selected: string
+  columns: number
 }) => {
-  const bg = type === 'reply' ? 'bg-background' : ''
-  const bg2 = type === 'inline' ? 'bg-background' : 'bg-chat'
+  const newArr = chunk(buttons, columns)
 
-  return (
-    <div className={`grid grid-cols-2 gap-2 p-[12px] ${bg}`}>
-      {buttons.map((button, index) => {
-        if (index === buttons.length - 1) {
-          const bg3 = buttons.length % 2 === 0 ? '' : 'col-span-2'
+  return newArr.map((row, index) => {
+    const curentColumns = row
+      .map((button) => {
+        if (selected === 'reply') {
+          if (button.text === '') {
+            return 0
+          }
+          return 1
+        }
+
+        if (selected === 'inline') {
+          if (button.text === '') {
+            return 0
+          }
+          return 1
+        }
+      })
+      .filter((item) => item === 1).length
+
+    const isFirst =
+      index === 0 ? 'pt-[12px]' : index === newArr.length - 1 ? 'pb-[12px]' : ''
+
+    return (
+      <div
+        className={`grid grid-cols-${curentColumns} gap-2 pl-[10px] ${selected === 'reply' ? 'pr-[35px]' : 'pr-[10px]'} ${isFirst} m-[4px]`}
+        key={index}
+      >
+        {row.map((button, index) => {
+          if (button.text === '') {
+            return null
+          }
 
           return (
             <button
               key={index}
-              className={`flex h-[23px] items-center justify-center rounded-lg bg-background px-4 text-sm ${bg2} ${bg3}`}
+              className={`$ flex h-[23px] items-center justify-center rounded-lg bg-background px-4 text-sm`}
             >
-              {button.text === '' ? button.defText : button.text}
+              {button.text}
             </button>
           )
-        }
-
-        return (
-          <button
-            key={index}
-            className={`flex h-[23px] items-center justify-center rounded-lg bg-background px-4 text-sm ${bg2} `}
-          >
-            {button.text === '' ? button.defText : button.text}
-          </button>
-        )
-      })}
-    </div>
-  )
+        })}
+      </div>
+    )
+  })
 }
 
 const RenderCell = ({
+  selected,
   buttons,
   setButtons,
   type,
   columns,
+  error,
+  setError,
 }: {
   buttons: IButtonType[]
   setButtons: (buttons: IButtonType[]) => void
   type: 'reply' | 'inline'
   columns: number
-}) => {
-  console.log(type)
+  selected: string
 
+  error: {
+    invalid: boolean
+    id: number
+  }[]
+  setError: (error: { invalid: boolean; id: number }[]) => void
+}) => {
   const key = type === 'inline' ? 'colback' : 'text'
 
+  const getInputValue = (button: IButtonType, index: number) => {
+    if (type === 'reply') {
+      return button[key]
+    }
+
+    if (type === 'inline') {
+      return button.colback
+    }
+  }
+
   return (
-    <div className={`grid grid-cols-${columns} gap-2`}>
-      {buttons.map((button, buttonIndex) => (
-        <div key={buttonIndex}>
-          <Input
-            value={button[key] === '' ? button.defText : button[key]}
-            size='sm'
-            onChange={(e) => {
-              const newButtons = buttons.map((button, newButtonIndex) => {
-                if (buttonIndex === newButtonIndex) {
-                  return { ...button, [key]: e.target.value }
-                }
-                return button
-              })
-              setButtons(newButtons)
-            }}
-          />
-        </div>
-      ))}
+    <div className={`grid grid-cols-${columns > 5 ? 5 : columns} gap-2`}>
+      {buttons.map((button, buttonIndex) => {
+        const errorData = error.filter((item) => item.id === button.id)[0]
+
+        const getError = () => {
+          if (selected === 'reply' && type === 'reply') {
+            return errorData?.invalid
+          }
+
+          if (selected === 'inline' && type === 'inline') {
+            return errorData?.invalid
+          }
+
+          if (selected === 'inline' && type === 'reply') {
+            return false
+          }
+        }
+
+        return (
+          <div key={buttonIndex}>
+            <Input
+              isInvalid={getError()}
+              variant='bordered'
+              placeholder={`Please fill in the field in button ${buttonIndex + 1}`}
+              value={getInputValue(button, buttonIndex)}
+              size='sm'
+              onChange={(e) => {
+                const newButtons = buttons.map((button, newButtonIndex) => {
+                  if (buttonIndex === newButtonIndex) {
+                    return { ...button, [key]: e.target.value }
+                  }
+                  return button
+                })
+
+                const newError = error.map((item) => {
+                  if (item.id === button.id) {
+                    return { invalid: false, id: item.id }
+                  }
+                  return item
+                })
+
+                setButtons(newButtons)
+                setError(newError)
+              }}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -92,12 +169,40 @@ const RenderTypeButtons = ({
   setButtons,
   type,
   columns,
+  error,
+  setError,
+  selected,
 }: {
   buttons: IButtonType[]
   setButtons: (buttons: IButtonType[]) => void
   type: 'reply' | 'inline'
   columns: number
+  error: {
+    invalid: boolean
+    id: number
+  }[]
+  setError: (error: { invalid: boolean; id: number }[]) => void
+  selected: string
 }) => {
+  if (type === 'reply') {
+    return (
+      <div className={`grid gap-2`}>
+        <h3 className='mb-2 text-[12px] text-sm font-medium'>
+          Enter display text for every button
+        </h3>
+        <RenderCell
+          buttons={buttons}
+          setButtons={setButtons}
+          type={type}
+          columns={columns}
+          selected={selected}
+          error={error}
+          setError={setError}
+        />
+      </div>
+    )
+  }
+
   return (
     <>
       <div className={`grid gap-2`}>
@@ -109,29 +214,34 @@ const RenderTypeButtons = ({
           setButtons={setButtons}
           type={'reply'}
           columns={columns}
+          error={error}
+          setError={setError}
+          selected={selected}
         />
       </div>
-      {type === 'inline' && (
-        <div className={`grid gap-2`}>
-          <h3 className='mb-2 text-[12px] text-sm font-medium'>
-            Enter display text for every button
-          </h3>
-          <div className='flex w-full items-center gap-2'>
-            <AttentionIcon width={34} stroke='#3300FF' />
-            <div className='text-[12px] text-sm font-medium'>
-              Buttons are only available for Telegram interface. If you are
-              planning to launch your bot on different platforms, please select
-              another condition type.
-            </div>
+
+      <div className={`grid gap-2`}>
+        <h3 className='mb-2 text-[12px] text-sm font-medium'>
+          Enter callback data for every button
+        </h3>
+        <div className='flex w-full items-center gap-2'>
+          <AttentionIcon width={34} stroke='#009973' />
+          <div className='text-[12px] text-sm font-medium'>
+            Buttons are only available for Telegram interface. If you are
+            planning to launch your bot on different platforms, please select
+            another condition type.
           </div>
-          <RenderCell
-            buttons={buttons}
-            setButtons={setButtons}
-            type={'inline'}
-            columns={columns}
-          />
         </div>
-      )}
+        <RenderCell
+          buttons={buttons}
+          setButtons={setButtons}
+          type={'inline'}
+          columns={columns}
+          selected={selected}
+          error={error}
+          setError={setError}
+        />
+      </div>
     </>
   )
 }
@@ -140,41 +250,90 @@ const AddButtonModals = ({
   data,
   isOpen,
   onClose,
-  buttons,
-  setButtons,
-  initialRows,
-  initialColumns,
 }: {
   data: DefaultNodeDataType
   isOpen: boolean
   onClose: () => void
-  buttons: IButtonType[]
-  setButtons: (buttons: IButtonType[]) => void
-  initialRows: number
-  initialColumns: number
 }) => {
-  const [selected, setSelected] = useState(buttons[0].type)
-  const { updateNodeData } = useReactFlow<AppNode, Edge>()
-  const [rows, setRows] = useState(initialRows)
-  const [columns, setColumns] = useState(initialColumns)
+  const { updateNodeData, getNode } = useReactFlow<AppNode, Edge>()
+  const node = getNode(data.id)
+
+  const initRows = (node?.data as DefaultNodeDataType)?.buttonsData?.rows ?? 2
+  const initColumns =
+    (node?.data as DefaultNodeDataType)?.buttonsData?.columns ?? 2
+
+  const [rows, setRows] = useState(initRows || 2)
+  const [columns, setColumns] = useState(initColumns || 2)
+
+  const initButtons: IButtonType[] =
+    (node?.data as DefaultNodeDataType)?.buttonsData?.buttons ??
+    Array.from({ length: rows * columns }, (_, index) => ({
+      text: '',
+      colback: '',
+      type: selected,
+      id: index,
+    }))
+
+  const initSelected: string = initButtons?.[0]?.type ?? 'reply'
+  const [selected, setSelected] = useState<string>(initSelected)
+
+  const { flows, quietSaveFlows } = useContext(flowContext)
+  const { flowId } = useParams()
+
+  const [buttons, setButtons] = useState<IButtonType[]>(initButtons)
+
+  const [error, setError] = useState<
+    {
+      invalid: boolean
+      id: number
+    }[]
+  >([])
+
+  useEffect(() => {
+    const newButtons = buttons.map((button, index) => {
+      if (selected === 'reply') {
+        return { ...button, text: `` }
+      }
+      return { ...button, text: `button ${index + 1}`, colback: '' }
+    })
+    setButtons(newButtons)
+  }, [selected])
 
   useEffect(() => {
     const newButtons = Array.from({ length: rows * columns }, (_, index) => ({
-      id: index + 1,
       text: '',
-      colback: `colbackText ${index + 1}`,
-      defText: `Button ${index + 1}`,
+      colback: '',
       type: selected,
+      id: index,
     }))
 
     const currentButtonsLength = buttons.length
 
-    if (currentButtonsLength > rows * columns) {
-      setButtons(buttons.slice(0, rows * columns))
+    if (newButtons.length > 25) {
+      setButtons(
+        newButtons
+          .slice(0, 25)
+          .map((button) => ({ ...button, type: selected })),
+      )
       return
     }
 
-    setButtons([...buttons, ...newButtons.slice(currentButtonsLength)])
+    if (currentButtonsLength > rows * columns) {
+      setButtons(
+        buttons
+          .slice(0, rows * columns)
+          .map((button) => ({ ...button, type: selected })),
+      )
+      return
+    }
+
+    setButtons([
+      ...buttons,
+      ...newButtons.slice(currentButtonsLength).map((button) => ({
+        ...button,
+        type: selected,
+      })),
+    ])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, columns])
 
@@ -214,56 +373,82 @@ const AddButtonModals = ({
 
           <div>
             <h3 className='mb-4 font-medium'>Select type</h3>
-            <RadioGroup value={selected} onValueChange={setSelected}>
-              <div className='grid grid-cols-2 gap-4'>
+            <RadioGroup
+              value={selected}
+              onValueChange={(value) => {
+                if (value === 'inline') {
+                  setButtons(buttons.map((button) => ({ ...button, text: '' })))
+                } else {
+                  setButtons(
+                    buttons.map((button) => ({ ...button, colback: '' })),
+                  )
+                }
+                setSelected(value)
+              }}
+            >
+              <div className='grid grid-cols-2 gap-4 pb-[8px]'>
                 <div className='flex flex-col gap-4'>
                   <Radio value='reply'>Reply keyboard</Radio>
-                  <div className='w-full rounded-lg border-1 border-border bg-chat'>
-                    <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
-                      What do you like?
-                    </div>
-                    <div className='mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
-                      <Paperclip />
-
-                      <p className='mr-auto opacity-30'>Enter message...</p>
-                      <div className='flex items-center gap-0.5'>
-                        <div className='relative flex items-center justify-center'>
-                          <Smile className='hover:bg-accent h-max w-max rounded-lg p-1.5 transition' />
-
-                          <div className='absolute bottom-12 right-0 z-10 origin-top-right'></div>
-                        </div>
-
-                        <ArrowUp size={28} strokeWidth={1.2} />
-                      </div>
-                    </div>
-                    <RenderButtons buttons={buttons} type='reply' />
-                  </div>
                 </div>
                 <div className='flex flex-col gap-4'>
                   <Radio value='inline'>Inline keyboard</Radio>
-                  <div className='w-full rounded-lg border-1 border-border bg-chat'>
-                    <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
-                      What do you like?
-                    </div>
-                    <RenderButtons buttons={buttons} type='inline' />
-                    <div className='mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
-                      <Paperclip />
-
-                      <p className='mr-auto opacity-30'>Enter message...</p>
-                      <div className='flex items-center gap-0.5'>
-                        <div className='relative flex items-center justify-center'>
-                          <Smile className='hover:bg-accent h-max w-max rounded-lg p-1.5 transition' />
-
-                          <div className='absolute bottom-12 right-0 z-10 origin-top-right'></div>
-                        </div>
-
-                        <ArrowUp size={28} strokeWidth={1.2} />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </RadioGroup>
+            {selected === 'inline' && (
+              <div className='w-full rounded-lg border-1 border-border bg-chat'>
+                <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
+                  What do you like?
+                </div>
+                <div className='mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
+                  <Paperclip />
+
+                  <p className='mr-auto opacity-30'>Enter message...</p>
+                  <div className='flex items-center gap-0.5'>
+                    <div className='relative flex items-center justify-center'>
+                      <Smile className='hover:bg-accent h-max w-max rounded-lg p-1.5 transition' />
+
+                      <div className='absolute bottom-12 right-0 z-10 origin-top-right'></div>
+                    </div>
+
+                    <ArrowUp size={28} strokeWidth={1.2} />
+                  </div>
+                </div>
+                <RenderButtons
+                  buttons={buttons}
+                  type='reply'
+                  selected={selected}
+                  columns={columns}
+                />
+              </div>
+            )}
+            {selected === 'reply' && (
+              <div className='w-full rounded-lg border-1 border-border bg-chat'>
+                <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
+                  What do you like?
+                </div>
+                <RenderButtons
+                  buttons={buttons}
+                  type='inline'
+                  selected={selected}
+                  columns={columns}
+                />
+                <div className='mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
+                  <Paperclip />
+
+                  <p className='mr-auto opacity-30'>Enter message...</p>
+                  <div className='flex items-center gap-0.5'>
+                    <div className='relative flex items-center justify-center'>
+                      <Smile className='hover:bg-accent h-max w-max rounded-lg p-1.5 transition' />
+
+                      <div className='absolute bottom-12 right-0 z-10 origin-top-right'></div>
+                    </div>
+
+                    <ArrowUp size={28} strokeWidth={1.2} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -279,32 +464,30 @@ const AddButtonModals = ({
                 className='w-16'
                 size='sm'
                 onChange={(e) => {
-                  if (Number(e.target.value) > 5) {
-                    setColumns(5)
-                  } else {
-                    setColumns(Number(e.target.value))
-                  }
+                  setColumns(Number(e.target.value))
                 }}
                 isInvalid={columns > 5}
               />
               <span>x</span>
               <Input
                 variant='bordered'
-                max={5}
                 min={1}
                 type='number'
                 value={String(rows)}
                 onChange={(e) => {
-                  if (Number(e.target.value) > 5) {
-                    setRows(5)
-                  } else {
-                    setRows(Number(e.target.value))
-                  }
+                  setRows(Number(e.target.value))
                 }}
                 className='w-16'
                 size='sm'
+                isInvalid={rows > 5}
               />
-              <span className='text-gray-500'>5 x 5 max</span>
+              <span
+                className={`${
+                  rows > 5 || columns > 5 ? 'text-red-500' : 'text-gray-500'
+                }`}
+              >
+                5 x 5 max
+              </span>
             </div>
           </div>
 
@@ -313,6 +496,9 @@ const AddButtonModals = ({
             setButtons={setButtons}
             type={selected as 'inline' | 'reply'}
             columns={columns}
+            error={error}
+            setError={setError}
+            selected={selected}
           />
         </ModalBody>
 
@@ -323,33 +509,117 @@ const AddButtonModals = ({
             </Button>
           </div>
           <Button
+            isDisabled={rows > 5 || columns > 5 || buttons.length === 0}
             className='ml-auto'
             onClick={() => {
-              const arr = buttons.map((button, index) => {
-                const condition = generateNewConditionBase('button')
+              const validate = buttons.flatMap((button) => {
+                if (button.type === 'reply') {
+                  if (button.text === '') {
+                    return {
+                      invalid: true,
+                      id: button.id,
+                    }
+                  }
+                }
+
+                if (selected === 'inline') {
+                  if (button.colback === '') {
+                    return {
+                      invalid: true,
+                      id: button.id,
+                    }
+                  }
+                }
+                return []
+              })
+
+              const isValidate = validate.map((button) => button?.invalid)
+
+              if (isValidate.includes(true)) {
+                setError(validate)
+                return
+              }
+
+              const arr = flows
+                .filter((flow) => flow.name !== 'Global')
+                .map((flow) => {
+                  return {
+                    name: flow.name,
+                    collection: flow.data.nodes
+                      .filter((node) => node.type === 'default_node')
+                      .map((node) =>
+                        (node.data as DefaultNodeDataType).conditions.map(
+                          (condition) => condition.name,
+                        ),
+                      ),
+                  }
+                })
+
+              const allNameCondidionFlows = arr
+                .flatMap((flow) => {
+                  return flow.collection
+                })
+                .flat()
+
+              const cache: string[] = []
+
+              const newConditions = buttons.map((button) => {
+                const iterGenName = (count: number = 1): string => {
+                  const nameFlow =
+                    (flowId?.length ?? 0 >= 15) ? flowId?.slice(0, 15) : flowId
+
+                  const newName = `${nameFlow}_button_${count}`
+
+                  const isNotUnique = allNameCondidionFlows.includes(newName)
+
+                  if (isNotUnique || cache.includes(newName)) {
+                    return iterGenName((count += 1))
+                  }
+                  cache.push(newName)
+                  return newName
+                }
+
+                const initConditionName = iterGenName()
+
+                const condition = generateNewConditionBase(
+                  initConditionName,
+                  'button',
+                )
+
                 return {
                   ...condition,
+                  type: 'button',
                   data: { ...condition.data, button },
-                  name: `New condition ${index}`,
                 }
               })
 
               const newData = {
-                ...data,
-                conditions: [...data.conditions, ...arr],
+                ...node?.data,
+                buttons: [],
+                conditions: [
+                  ...(node?.data as DefaultNodeDataType).conditions,
+                  ...newConditions,
+                ],
               }
 
-              updateNodeData(data.id, newData)
-
+              console.log(newData)
+              updateNodeData(data.id, newData as DefaultNodeDataType)
+              setButtons([])
+              quietSaveFlows()
               onClose()
             }}
           >
-            <Plus /> Auto conditions
+            <Plus />
+            Auto conditions
           </Button>
           <Button
             className='bg-foreground text-background'
             onClick={() => {
-              setButtons(buttons)
+              updateNodeData(data.id, {
+                ...node?.data,
+                buttonsData: { buttons, rows, columns },
+              })
+              quietSaveFlows()
               onClose()
             }}
           >

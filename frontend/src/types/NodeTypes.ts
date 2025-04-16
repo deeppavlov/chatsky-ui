@@ -1,5 +1,5 @@
 import { Node } from '@xyflow/react'
-import { conditionType } from './ConditionTypes'
+import { conditionType, IButtonType } from './ConditionTypes'
 import { SlotsGroupType } from './FlowTypes'
 import { responseType } from './ResponseTypes'
 
@@ -19,6 +19,11 @@ export type DefaultNodeDataType = {
   global_conditions?: string[]
   local_conditions?: string[]
   flags: string[]
+  buttonsData?: {
+    rows: number
+    columns: number
+    buttons: IButtonType[]
+  }
 }
 
 export type LinkNodeDataType = {

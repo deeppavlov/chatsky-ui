@@ -8,7 +8,6 @@ import DefSelect from '../../../UI/Input/DefSelect'
 interface ButtonState {
   text: string
   colback: string
-  defText: string
   type: string
 }
 
@@ -103,12 +102,13 @@ const ButtonCondition = ({
 }) => {
   const initialState = {
     text: '',
-    colback: 'colbackText 1',
-    defText: 'Button 1',
+    colback: '',
     type: 'reply',
   }
 
-  const [state, setState] = useState<ButtonState>(initialState)
+  const [state, setState] = useState<ButtonState>(
+    condition.data.button ?? initialState,
+  )
 
   useEffect(() => {
     const newCondition = {

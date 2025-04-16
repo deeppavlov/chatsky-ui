@@ -17,13 +17,14 @@ export type conditionDataType = {
   }
   structure?: string
   buttons?: IButtonType[]
+  button?: IButtonType
 }
 
 export interface IButtonType {
   text: string
   colback: string
-  defText: string
   type: string
+  id: number
 }
 
 export type conditionTypeType =

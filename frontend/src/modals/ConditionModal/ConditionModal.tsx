@@ -75,7 +75,6 @@ type ConditionModalTab =
   | 'Python code'
   | 'Custom'
   | 'Basic'
-  | 'Buttons'
 
 type LintStatusType = {
   status: 'ok' | 'error'
@@ -378,17 +377,15 @@ const ConditionModal = ({
       }
     }
     return true
-    return true
   }
 
   const saveCondition = () => {
-    const validate_name: ValidateErrorType = validateConditionName(is_create)
+    const validateObject = validateConditionName(currentCondition, getNodes())
 
-    console.log(validate_name, 'validate_name')
-
-    console.log(isValidCurrentCondition(), 'isValidCurrentCondition')
+    const isValidCondition = validateCurrentCondition()
 
     if (!validateObject.isInvalid && isValidCondition) {
+      console.log(currentCondition)
       updateNodeData(data.id, {
         ...data,
         conditions: is_create
@@ -399,25 +396,11 @@ const ConditionModal = ({
                 : condition,
             ),
       })
-
       quietSaveFlows()
       onCloseHandler()
-    } else {
-      console.log(currentCondition, 'currentCondition')
-      if (!validate_name.status) {
-        setError({ isInvalid: true, errorMessage: 'Name must be unique' })
-      }
-      if (currentCondition.type === 'python') {
-        const text = currentCondition.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '')
-        text.trim() === ''
-          ? null
-          : setError({
-              errorMessage:
-                'Please use only Latin letters. Names cannot start with a number.',
-              isInvalid: true,
-            })
-      }
     }
+
+    setError(validateObject)
   }
 
   const deleteCondition = () => {
@@ -469,159 +452,152 @@ const ConditionModal = ({
   }
 
   return (
-    <>
-      <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
-        <ModalHeader>
-          <div className='flex items-center gap-2'>
-            {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
-            {is_create ? 'Create condition' : 'Edit condition'}
-          </div>
-        </ModalHeader>
-        <ModalBody className='min-h-[480px]'>
-          <label>
-            <Tabs
-              disabledKeys={['llm', 'custom']}
-              selectedKey={selected}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              onSelectionChange={setSelectedHandler}
-              items={tabItems}
-              classNames={{
-                tabList: 'w-full bg-table-background',
-                tab: '',
-                cursor: 'border border-contrast-border',
+    <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
+      <ModalHeader>
+        <div className='flex items-center gap-2'>
+          {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
+          {is_create ? 'Create condition' : 'Edit condition'}
+        </div>
+      </ModalHeader>
+      <ModalBody className='min-h-[480px]'>
+        <label>
+          <Tabs
+            disabledKeys={['llm', 'custom']}
+            selectedKey={selected}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onSelectionChange={setSelectedHandler}
+            items={tabItems}
+            classNames={{
+              tabList: 'w-full bg-table-background',
+              tab: '',
+              cursor: 'border border-contrast-border',
+            }}
+            className='w-full max-w-full bg-background'
+          >
+            {(item) => (
+              <Tab
+                key={item.value}
+                title={
+                  <div className='flex items-center gap-1 text-sm'>
+                    {item.icon} {item.title}
+                  </div>
+                }
+                onClick={() =>
+                  setCurrentCondition({ ...currentCondition, type: item.value })
+                }
+              ></Tab>
+            )}
+          </Tabs>
+        </label>
+        <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
+          <DefInput
+            className='col-span-3'
+            label='Name'
+            variant='bordered'
+            labelPlacement='outside'
+            placeholder="Enter condition's name here"
+            value={currentCondition.name}
+            onChange={(e) =>
+              setCurrentCondition({
+                ...currentCondition,
+                name: e.target.value.replaceAll(' ', '_'),
+              })
+            }
+            isInvalid={errorObject.isInvalid}
+            errorMessage={errorObject.errorMessage}
+          />
+          <DefInput
+            label='Priority'
+            variant='bordered'
+            labelPlacement='outside'
+            placeholder="Enter condition's priority here"
+            type='number'
+            min={0}
+            value={currentCondition.data.priority.toString()}
+            onChange={(e) =>
+              setCurrentCondition({
+                ...currentCondition,
+                data: {
+                  ...currentCondition.data,
+                  priority: parseInt(e.target.value),
+                },
+              })
+            }
+          />
+        </div>
+        <div>
+          <AnimatePresence mode='wait'>
+            <motion.div
+              key={selected}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {bodyItems[selected]}
+            </motion.div>
+          </AnimatePresence>
+          {selected === 'python' && (
+            <div
+              className='grid overflow-hidden transition-all duration-150'
+              style={{
+                gridTemplateRows: lintStatus ? '1fr' : '0fr',
               }}
-              className='w-full max-w-full bg-background'
             >
-              {(item) => (
-                <Tab
-                  key={item.value}
-                  title={
-                    <div className='flex items-center gap-1 text-sm'>
-                      {item.icon} {item.title}
-                    </div>
-                  }
-                  onClick={() =>
-                    setCurrentCondition({
-                      ...currentCondition,
-                      type: item.value,
-                    })
-                  }
-                ></Tab>
-              )}
-            </Tabs>
-          </label>
-          <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
-            <DefInput
-              className='col-span-3'
-              label='Name'
-              variant='bordered'
-              labelPlacement='outside'
-              placeholder="Enter condition's name here"
-              value={currentCondition.name}
-              onChange={(e) =>
-                setCurrentCondition({
-                  ...currentCondition,
-                  name: e.target.value.replaceAll(' ', '_'),
-                })
-              }
-              {...errorObject}
-            />
-            <DefInput
-              label='Priority'
-              variant='bordered'
-              labelPlacement='outside'
-              placeholder="Enter condition's priority here"
-              type='number'
-              min={0}
-              value={currentCondition.data.priority.toString()}
-              onChange={(e) =>
-                setCurrentCondition({
-                  ...currentCondition,
-                  data: {
-                    ...currentCondition.data,
-                    priority: parseInt(e.target.value),
-                  },
-                })
-              }
-            />
-          </div>
-          <div>
-            <AnimatePresence mode='wait'>
-              <motion.div
-                key={selected}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {bodyItems[selected]}
-              </motion.div>
-            </AnimatePresence>
-            {selected === 'python' && (
-              <div
-                className='grid overflow-hidden transition-all duration-150'
-                style={{
-                  gridTemplateRows: lintStatus ? '1fr' : '0fr',
-                }}
-              >
-                <div className='min-h-0 transition-all duration-150'>
-                  <p
-                    className={classNames(
-                      'mt-2 rounded-lg p-2 font-mono text-xs',
-                      lintStatus?.status == 'error'
-                        ? 'bg-[var(--condition-test-error)]'
-                        : 'bg-[var(--condition-test-success)]',
-                    )}
-                  >
-                    {lintStatus?.status == 'ok'
-                      ? 'Condition test passed!'
-                      : lintStatus?.message}
-                  </p>
-                </div>
+              <div className='min-h-0 transition-all duration-150'>
+                <p
+                  className={classNames(
+                    'mt-2 rounded-lg p-2 font-mono text-xs',
+                    lintStatus?.status == 'error'
+                      ? 'bg-[var(--condition-test-error)]'
+                      : 'bg-[var(--condition-test-success)]',
+                  )}
+                >
+                  {lintStatus?.status == 'ok'
+                    ? 'Condition test passed!'
+                    : lintStatus?.message}
+                </p>
               </div>
-            )}
-          </div>
-        </ModalBody>
-        <ModalFooter className='flex items-center justify-between'>
-          <div className='flex items-center justify-start gap-2'>
-            <Button isIconOnly className='rounded-full'>
-              <HelpCircle />
-            </Button>
-            {!is_create && (
-              <Button
-                onClick={handleConfirmDeleteOpen}
-                className='hover:bg-red-500'
-                isIconOnly
-              >
-                <TrashIcon />
-              </Button>
-            )}
-          </div>
-          <div className='flex items-end gap-2'>
-            {currentCondition.type === 'python' && (
-              <Button
-                data-testid='test-condition-button'
-                onClick={testCondition}
-                isLoading={testConditionPending}
-                className=''
-              >
-                Test condition
-              </Button>
-            )}
+            </div>
+          )}
+        </div>
+      </ModalBody>
+      <ModalFooter className='flex items-center justify-between'>
+        <div className='flex items-center justify-start gap-2'>
+          <Button isIconOnly className='rounded-full'>
+            <HelpCircle />
+          </Button>
+          {!is_create && (
             <Button
-              data-testid='save-condition-button'
-              onClick={saveCondition}
-              className='bg-foreground text-background'
-              isDisabled={
-                errorObject.isInvalid || condition?.name.trim() === ''
-              }
+              onClick={handleConfirmDeleteOpen}
+              className='hover:bg-red-500'
+              isIconOnly
             >
-              Save condition
+              <TrashIcon />
             </Button>
-          </div>
-        </ModalFooter>
-      </Modal>
-    </>
+          )}
+        </div>
+        <div className='flex items-end gap-2'>
+          {currentCondition.type === 'python' && (
+            <Button
+              data-testid='test-condition-button'
+              onClick={testCondition}
+              isLoading={testConditionPending}
+              className=''
+            >
+              Test condition
+            </Button>
+          )}
+          <Button
+            data-testid='save-condition-button'
+            onClick={saveCondition}
+            className='bg-foreground text-background'
+          >
+            Save condition
+          </Button>
+        </div>
+      </ModalFooter>
+    </Modal>
   )
 }
 

@@ -7,6 +7,7 @@ import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
 import { responseType, responseTypeType } from '../../types/ResponseTypes'
 import { validateResponseName } from '../../utils'
+import AddButtonModals from '../AddButtonModals/AddButtonModals'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import PythonResponse from './components/PythonResponse'
 import TextResponse from './components/TextResponse'
@@ -25,6 +26,8 @@ type ResponseModalProps = {
   size?: ModalProps['size']
   isOpen: boolean
   onClose: () => void
+  isAddButtonOpen: boolean
+  setIsAddButtonOpen: (isOpen: boolean) => void
 }
 
 const ResponseModal = ({
@@ -33,9 +36,11 @@ const ResponseModal = ({
   data,
   setData,
   response,
+  isAddButtonOpen,
+  setIsAddButtonOpen,
   size = '3xl',
 }: ResponseModalProps) => {
-  const { getNode, setNodes, getNodes } = useReactFlow()
+  const { getNode, setNodes, getNodes, updateNodeData } = useReactFlow()
   const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
   const [selected, setSelected] = useState<responseTypeType>(
@@ -43,21 +48,6 @@ const ResponseModal = ({
   )
   // const [nodeDataState, setNodeDataState] = useState(data)
   const [currentResponse, setCurrentResponse] = useState(response)
-  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
-
-  const initialRows = 2
-  const initialColumns = 2
-
-  const [buttons, setButtons] = useState<
-    { text: string; colback: string; defText: string; type: string }[]
-  >(
-    Array.from({ length: initialRows * initialColumns }, (_, index) => ({
-      text: '',
-      colback: `colbackText ${index + 1}`,
-      defText: `Button ${index + 1}`,
-      type: 'reply',
-    })),
-  )
 
   const setSelectedHandler = (key: responseTypeType) => {
     setCurrentResponse({ ...currentResponse, type: key })
@@ -68,6 +58,8 @@ const ResponseModal = ({
     [response.type]: response,
   })
 
+  const nodes = getNodes()
+  const node = getNode(data.id)
   useEffect(() => {
     const key = currentResponse.type
     setResponseStor({ ...responseStor, [key]: currentResponse })
@@ -130,7 +122,7 @@ const ResponseModal = ({
 
   const saveResponse = () => {
     const name = currentResponse.name
-    console.log(name, 's')
+
     const errors = validateResponseName(name, selected, flows, data)
 
     if (errors.isInvalid) {
@@ -138,8 +130,6 @@ const ResponseModal = ({
       return
     }
 
-    const nodes = getNodes()
-    const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
     if (node && currentFlow) {
       const new_node = {
@@ -210,7 +200,6 @@ const ResponseModal = ({
             value={currentResponse.name}
             isRequired
             onChange={(e) => {
-              console.log(e.target.value, 's')
               setCurrentResponse({
                 ...currentResponse,
                 name: e.target.value.replaceAll(' ', '_'),
@@ -223,14 +212,33 @@ const ResponseModal = ({
         <div>{bodyItems[selected]}</div>
       </ModalBody>
       <ModalFooter>
+        {true && (
+          <Button
+            data-testid='remove-buttons-button'
+            onClick={() => {
+              updateNodeData(data.id, {
+                ...node?.data,
+                buttonsData: {
+                  rows: 0,
+                  columns: 0,
+                  buttons: [],
+                },
+              })
+              quietSaveFlows()
+            }}
+          >
+            Remove buttons
+          </Button>
+        )}
         <Button
-          data-testid='save-condition-button'
+          data-testid='add-button-button'
           onClick={() => setIsAddButtonOpen(true)}
         >
           <PlusIcon />
           Add buttons
         </Button>
         <Button
+          data-testid='save-response-button'
           onClick={saveResponse}
           className='bg-foreground text-background'
         >
@@ -238,13 +246,9 @@ const ResponseModal = ({
         </Button>
         {isAddButtonOpen && (
           <AddButtonModals
-            initialRows={initialRows}
-            initialColumns={initialColumns}
             data={data}
             isOpen={isAddButtonOpen}
             onClose={() => setIsAddButtonOpen(false)}
-            buttons={buttons}
-            setButtons={setButtons}
           />
         )}
       </ModalFooter>

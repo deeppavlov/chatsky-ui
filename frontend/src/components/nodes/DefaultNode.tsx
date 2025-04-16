@@ -11,6 +11,8 @@ import GlobalNodeIcon from '../../icons/nodes/GlobalNodeIcon'
 import LocalNodeIcon from '../../icons/nodes/LocalNodeIcon'
 import StartNodeIcon from '../../icons/nodes/StartNodeIcon'
 import '../../index.css'
+import ButtonConditionIcon from '../../icons/nodes/conditions/ButtonConditionIcon'
+import AddButtonModals from '../../modals/AddButtonModals/AddButtonModals'
 import ConditionModal from '../../modals/ConditionModal/ConditionModal'
 import NodeModal from '../../modals/NodeModal/NodeModal'
 import ResponseModal from '../../modals/ResponseModal/ResponseModal'
@@ -20,7 +22,7 @@ import Response from './responses/Response'
 
 const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
   const { openPopUp } = useContext(PopUpContext)
-
+  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
   const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)
 
   const {
@@ -130,6 +132,14 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             onClick={onResponseOpen}
           >
             <Response data={data} />
+            {data.buttonsData.buttons?.length > 0 && (
+              <Button
+                onClick={() => setIsAddButtonOpen(true)}
+                className='h-unit-10 min-w-unit-10 bg-transparent'
+              >
+                <ButtonConditionIcon className='size-6' />
+              </Button>
+            )}
           </div>
           <div className='flex w-full flex-col gap-2'>
             {data.conditions?.map((condition) => (
@@ -156,12 +166,21 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
         setNodeDataState={setNodeDataState}
       />
       <ResponseModal
+        isAddButtonOpen={isAddButtonOpen}
+        setIsAddButtonOpen={setIsAddButtonOpen}
         data={nodeDataState}
         setData={setNodeDataState}
         isOpen={isResponseOpen}
         onClose={onResponseClose}
         response={nodeDataState.response!}
       />
+      {isAddButtonOpen && (
+        <AddButtonModals
+          isOpen={isAddButtonOpen}
+          onClose={() => setIsAddButtonOpen(false)}
+          data={nodeDataState}
+        />
+      )}
     </>
   )
 })
