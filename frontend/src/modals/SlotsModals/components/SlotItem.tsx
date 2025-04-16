@@ -101,6 +101,7 @@ const SlotItem = ({
             placeholder='New slot'
             errorMessage={currenError?.name?.errorMessage}
             isInvalid={currenError?.name?.isInvalid}
+            data-testid='slot-name'
           />
         </div>
         {!is_create_modal && (
@@ -118,6 +119,7 @@ const SlotItem = ({
       </div>
       <div className='grid grid-cols-2 gap-2'>
         <DefTextarea
+          data-testid='slot-value'
           value={value}
           onValueChange={(value) => {
             setValue(value)

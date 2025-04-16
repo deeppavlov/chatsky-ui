@@ -341,6 +341,7 @@ const mapping: IMapping = {
           }
           {...errorProps}
           type={'errorMessage'}
+          data-testid='regexp-pattern'
         />
         <div className='flex items-center gap-2 pl-[12px] pt-[12px]'>
           <Checkbox
@@ -424,6 +425,7 @@ const mapping: IMapping = {
                       disabled: group.disabled,
                     }))}
                     placeholder='Choose group'
+                    data-testid='substructure-select'
                   />
                 </div>
               )
@@ -575,6 +577,7 @@ const mapping: IMapping = {
             key: group.id.toString(),
           }))}
           placeholder='Choose group'
+          data-testid='substructure-select'
         />
         {mapping[key] && mapping[key](setState, state, id)}
       </div>
@@ -623,6 +626,7 @@ const InputText: React.FC<{
         labelPlacement='outside'
         placeholder='Enter text...'
         onChange={(e) => setState(e.target.value)}
+        data-testid='basic-condition-text'
       />
     </div>
   )
@@ -707,6 +711,7 @@ const BasicCondition = ({
             key: index.toString(),
           }))}
           placeholder='Choose group'
+          data-testid='structure-select'
         />
         {TextConditions}
       </div>

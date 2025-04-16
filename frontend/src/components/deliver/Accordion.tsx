@@ -20,12 +20,18 @@ export const StringItem = ({ content }: { content: [string, string] }) => (
   </div>
 )
 
-const Accordion: FC<Props> = ({ title, children, infoBlock, isLoading }) => {
+const Accordion: FC<Props> = ({
+  title,
+  children,
+  infoBlock,
+  isLoading,
+  ...props
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div className='w-full overflow-x-hidden'>
+    <div className='w-full overflow-x-hidden' {...props}>
       {/* BUTTON */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
