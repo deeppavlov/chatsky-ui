@@ -6,7 +6,7 @@ import { PopUpContext } from '../../contexts/popUpContext'
 import SlotsConditionIcon from '../../icons/nodes/conditions/SlotsConditionIcon'
 import { SlotsGroupType, SlotType } from '../../types/FlowTypes'
 import { SlotsNodeDataType } from '../../types/NodeTypes'
-import { generateNewSlot } from '../../utils'
+import { generateNewSlot, validateSlot } from '../../utils'
 import {
   CustomModalProps,
   Modal,
@@ -32,31 +32,11 @@ const SlotModal = ({
   const { updateNodeData } = useReactFlow()
 
   const { quietSaveFlows } = useContext(flowContext)
-  const [slot, setSlot] = useState<SlotType>(generateNewSlot(group.name))
+  const [slot, setSlot] = useState<SlotType>(generateNewSlot(group.name, group))
   const [errors, setErrors] = useState<IerrorSimple | IErrorDep>({
     name: { isInvalid: false, errorMessage: '' },
     value: { isInvalid: false, errorMessage: '' },
   })
-
-  const isNotValid = () => {
-    const newErrors = {
-      name: { isInvalid: false, errorMessage: '' },
-      value: { isInvalid: false, errorMessage: '' },
-    }
-    let notValid = false
-    const allNames = group.slots.map((s) => s.name)
-    if (allNames.includes(slot.name)) {
-      newErrors.name = { isInvalid: true, errorMessage: 'Name already exists' }
-      notValid = true
-    }
-
-    if (slot.value.length === 0) {
-      newErrors.value = { isInvalid: true, errorMessage: 'Value is required' }
-      notValid = true
-    }
-    setErrors(newErrors)
-    return notValid
-  }
 
   const onSave = () => {
     if (!slot.name || !slot.type || !slot.value) {
@@ -72,7 +52,7 @@ const SlotModal = ({
 
     setData(() => newData)
     updateNodeData(data.id, newData)
-    setSlot(generateNewSlot(group.name))
+    setSlot(generateNewSlot(group.name, group))
   }
 
   const onCloseHandler = () => {
@@ -80,9 +60,13 @@ const SlotModal = ({
   }
 
   const onSaveHandler = () => {
-    if (isNotValid()) {
+    const errors = validateSlot(slot, group)
+
+    if (errors.name.isInvalid || errors.value.isInvalid) {
+      setErrors(errors)
       return
     }
+
     onSave()
     closePopUp(id)
     quietSaveFlows()

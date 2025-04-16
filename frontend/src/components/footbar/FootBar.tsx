@@ -12,7 +12,7 @@ import { Key, memo, useCallback, useContext, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { MetaContext } from '../../contexts/metaContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
-import { PageType, workspaceContext } from '../../contexts/workspaceContext'
+import { PageType } from '../../contexts/workspaceContext'
 import MonitorIcon from '../../icons/buildmenu/MonitorIcon'
 import LocalStorageIcon from '../../icons/footbar/LocalStorageIcon'
 import { Logo } from '../../icons/Logo'
@@ -28,7 +28,6 @@ const FootBar = memo(() => {
   } = useDisclosure()
 
   const { version } = useContext(MetaContext)
-  const { currentTab, setCurrentTab } = useContext(workspaceContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const { notifications, notification } = useContext(NotificationsContext)
@@ -41,13 +40,12 @@ const FootBar = memo(() => {
   const onSelectionChange = useCallback(
     (key: Key) => {
       const pageKey = key as PageType
-      setCurrentTab(pageKey)
       setSearchParams({
         ...parseSearchParams(searchParams),
         page: pageKey,
       })
     },
-    [searchParams, setSearchParams, setCurrentTab],
+    [searchParams, setSearchParams],
   )
 
   return (
@@ -57,8 +55,8 @@ const FootBar = memo(() => {
     >
       <div className='absolute flex w-full items-center justify-center'>
         <Tabs
+          selectedKey={searchParams.get('page') || 'edit'}
           onSelectionChange={onSelectionChange}
-          defaultSelectedKey={currentTab}
           variant='light'
           className=''
           classNames={{

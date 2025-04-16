@@ -13,6 +13,7 @@ Helper Functions:
     _execute_command: Asynchronously executes a shell command.
     _execute_command_file: Reads a command from a JSON file and executes it.
 """
+
 import asyncio
 import json
 import os
@@ -91,6 +92,7 @@ def _execute_command_file(project_dir: Path, command_file: str, preset: str) -> 
 
         asyncio.run(_execute_command(command_to_run))
     else:
+        logger.error("Invalid preset '%s'. Preset must be one of %s", preset, list(presets_build_file.keys()))
         raise ValueError(f"Invalid preset '{preset}'. Preset must be one of {list(presets_build_file.keys())}")
 
 
@@ -114,6 +116,8 @@ def build_bot(
     project_dir = project_dir or settings.work_directory
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -143,6 +147,8 @@ def build_scenario(
         project_dir (Path): The project directory.
     """
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
 
@@ -162,19 +168,25 @@ def build_scenario(
 def run_bot(
     project_dir: Path = typer.Option(None, help="The project directory created by the `init` command"),
     preset: str = typer.Option("success", help="Could be one of: success, failure, loop"),
-) -> None:
+    run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
+):
     """
     Runs the bot with one of three various presets.
 
     Args:
         project_dir (Path): "The project directory created by the `init` command".
         preset (str): The preset to use.
+        run_id (int): The run_id of the `Run` process.
     """
     project_dir = project_dir or settings.work_directory
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
+
+    os.environ["run_id"] = str(run_id)
 
     _execute_command_file(project_dir, "run.json", preset)
 
@@ -182,24 +194,24 @@ def run_bot(
 @cli.command("run_scenario")
 def run_scenario(
     project_dir: Path = typer.Option(Path("."), help="The project directory created by the `init` command"),
-) -> None:
+    run_id: int = typer.Option(0, help="ID of the RunProcess to run"),
+):
     """
     Runs the bot with preset `success`.
 
     Args:
         project_dir (Path): "The project directory created by the `init` command".
+        run_id (int): The run_id of the `Run` process.
     """
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
-    script_path = settings.scripts_dir / "build.yaml"
 
-    command_to_run = f"python {project_dir}/app.py --script-path {script_path}"
+    command_to_run = f"{project_dir}/app.py --working-dir {project_dir} --run-id {run_id}"
     try:
-        asyncio.run(_execute_command(command_to_run))
+        asyncio.run(_execute_command("python " + command_to_run))
     except FileNotFoundError:
-        command_to_run = f"python3 {project_dir}/app.py --script-path {script_path}"
-        asyncio.run(_execute_command(command_to_run))
+        asyncio.run(_execute_command("python3 " + command_to_run))
 
 
 @cli.command("run_app")
@@ -226,6 +238,8 @@ def run_app(
     conf_reload = conf_reload or settings.conf_reload
 
     if not project_dir.is_dir():
+        logger = get_logger(__name__)
+        logger.error("Directory %s doesn't exist", project_dir)
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
 
     settings.set_config(

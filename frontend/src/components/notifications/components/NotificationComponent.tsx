@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react'
 import { useContext, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   NotificationsContext,
   notificationType,
@@ -152,6 +153,23 @@ const NotificationComponent = ({ notification }: NotificationComponentType) => {
               {new Date(notification.timestamp).toLocaleString()}
             </p>
           )}
+          {notification.link &&
+            (typeof notification.link === 'object' &&
+            'url' in notification.link ? (
+              <Link
+                className='mt-1 block text-xs text-blue-500 hover:underline'
+                to={{
+                  pathname: location.pathname,
+                  search: notification.link.url,
+                }}
+              >
+                <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                  {notification.link.text} &rarr;
+                </span>
+              </Link>
+            ) : (
+              notification.link
+            ))}
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import { buildContext } from '@/contexts/buildContext'
 import { flowContext } from '@/contexts/flowContext'
 import { PopUpContext } from '@/contexts/popUpContext'
 import { runContext } from '@/contexts/runContext'
-import { workspaceContext } from '@/contexts/workspaceContext'
 import CheckIcon from '@/icons/CheckIcon'
 import MicroscopeIcon from '@/icons/MicroscopeIcon'
 import Tools from '@/icons/Tools'
@@ -17,6 +16,7 @@ import { formatRelativeTime, formatTimestamp } from '@/utils'
 import { Button, Divider, Tooltip } from '@nextui-org/react'
 import { RefreshCw, SquareArrowOutUpRight, SquareIcon, X } from 'lucide-react'
 import { useContext, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 interface IMessengersMap {
   web: string
@@ -28,13 +28,8 @@ const messengerMap: IMessengersMap = {
 }
 
 const BuildManagerPage = () => {
-  const { currentTab } = useContext(workspaceContext)
   const { saveFlows, flows } = useContext(flowContext)
-  const {
-    buildStart,
-    builds: reversedBuilds,
-    buildStop,
-  } = useContext(buildContext)
+  const { buildStart, builds, buildStop } = useContext(buildContext)
   const { getFlows } = useContext(flowContext)
   const {
     runStart,
@@ -43,11 +38,9 @@ const BuildManagerPage = () => {
     startingRunId,
     runStopping,
     stoppingRunIds,
-    runs: reversedRuns,
+    runs,
   } = useContext(runContext)
   const { openPopUp } = useContext(PopUpContext)
-  const runs = [...reversedRuns].reverse()
-  const builds = [...reversedBuilds].reverse()
 
   const aliveRuns = runs.filter(
     (r) => r.status === 'alive' || r.status === 'running',
@@ -140,13 +133,7 @@ const BuildManagerPage = () => {
   }
 
   return (
-    <div
-      style={{
-        transform:
-          currentTab === 'deliver' ? 'translateX(0)' : 'translateX(100%)',
-      }}
-      className='absolute left-0 top-0 flex h-screen w-screen flex-col bg-background px-10 pb-12 pt-24 transition-all duration-300'
-    >
+    <div className='absolute left-0 top-0 flex h-screen w-screen flex-col bg-background px-10 pb-12 pt-24 transition-all duration-300'>
       {/* HEADER */}
       <div className='mb-4 flex w-full justify-between px-3 align-middle'>
         <div className='flex items-center gap-3'>
@@ -198,7 +185,7 @@ const BuildManagerPage = () => {
 
           {/* EXISTING BUILDS */}
           <div className='relative h-full'>
-            <div className='flex h-full justify-between gap-6'>
+            <div className='flex h-full justify-between'>
               <ScrolledContainer>
                 {builds.map((b) => {
                   const relativeBuildTime = formatRelativeTime(b.timestamp)
@@ -221,7 +208,7 @@ const BuildManagerPage = () => {
 
                           {b.status === 'completed' && (
                             <>
-                              <CheckIcon className='flex-shrink-0' />
+                              <CheckIcon className='flex-shrink-0 fill-success' />
                               <button
                                 onClick={handleRestoreBuild(b.id)}
                                 className='flex h-6 w-6 items-center justify-center hover:scale-105 active:scale-95'
@@ -256,16 +243,23 @@ const BuildManagerPage = () => {
                       }
                     >
                       <StringItem
-                        content={[
-                          'Messenger: ',
-                          messengerMap[b.preset.messenger],
-                        ]}
+                        content={['Messenger: ', b.preset.messenger]}
                       />
                       <StringItem content={['Preset: ', b.preset.preset]} />
                       <StringItem
                         content={['Date: ', formatTimestamp(b.timestamp)]}
                       />
                       <StringItem content={['Status: ', b.status]} />
+                      <Link
+                        to={{
+                          pathname: location.pathname,
+                          search: `?page=inspect&build_id=${b.id}&type=build`,
+                        }}
+                      >
+                        <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                          See logs for this build &rarr;
+                        </span>
+                      </Link>
                     </Accordion>
                   )
                 })}
@@ -347,6 +341,16 @@ const BuildManagerPage = () => {
                       <StringItem
                         content={['Date: ', formatTimestamp(r.timestamp)]}
                       />
+                      <Link
+                        to={{
+                          pathname: location.pathname,
+                          search: `?page=inspect&run_id=${r.id}&type=run`,
+                        }}
+                      >
+                        <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                          See logs for this run &rarr;
+                        </span>
+                      </Link>
                     </Accordion>
                   )
                 })}
@@ -406,6 +410,16 @@ const BuildManagerPage = () => {
                     <StringItem
                       content={['Date: ', formatTimestamp(r.timestamp)]}
                     />
+                    <Link
+                      to={{
+                        pathname: location.pathname,
+                        search: `?page=inspect&run_id=${r.id}&type=run`,
+                      }}
+                    >
+                      <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                        See logs for this run &rarr;
+                      </span>
+                    </Link>
                   </Accordion>
                 )
               })}
@@ -467,6 +481,16 @@ const BuildManagerPage = () => {
                       <StringItem
                         content={['Date: ', formatTimestamp(r.timestamp)]}
                       />
+                      <Link
+                        to={{
+                          pathname: location.pathname,
+                          search: `?page=inspect&run_id=${r.id}&type=run`,
+                        }}
+                      >
+                        <span className='cursor-pointer text-sm font-semibold text-condition-default'>
+                          See logs for this run &rarr;
+                        </span>
+                      </Link>
                     </Accordion>
                   )
                 })}
