@@ -206,12 +206,8 @@ def run_scenario(
     if not project_dir.is_dir():
         raise NotADirectoryError(f"Directory {project_dir} doesn't exist")
     settings.set_config(work_directory=project_dir)
-    script_path = settings.scripts_dir / "build.yaml"
 
-    command_to_run = (
-        f"{project_dir}/app.py --script-path {script_path}"
-        f" --dialogue-db-path {settings.database_path} --run-id {run_id}"
-    )
+    command_to_run = f"{project_dir}/app.py --working-dir {project_dir} --run-id {run_id}"
     try:
         asyncio.run(_execute_command("python " + command_to_run))
     except FileNotFoundError:
@@ -283,7 +279,6 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
-            checkout="feat/context_storage",
         )
     finally:
         os.chdir(original_dir)
