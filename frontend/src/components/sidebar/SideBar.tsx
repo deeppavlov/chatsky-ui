@@ -107,7 +107,6 @@ const SideBar = memo(() => {
             >
               <AccordionItem
                 name='nodes'
-                data-testid='nodes-collapse'
                 textValue='some'
                 title={
                   <div
@@ -124,7 +123,10 @@ const SideBar = memo(() => {
               <AccordionItem
                 textValue='some'
                 title={
-                  <div className='flex items-center justify-start gap-2'>
+                  <div
+                    data-testid='links-collapse-btn'
+                    className='flex items-center justify-start gap-2'
+                  >
                     <LinksIcon />
                     Links
                   </div>

@@ -199,7 +199,7 @@ const CreateFlowModal = ({
         </div>
         <div>
           <Button
-            data-testid='flow-save-btn'
+            data-testid='flow-create-btn'
             onClick={onFlowSave}
             className='bg-foreground text-background'
           >

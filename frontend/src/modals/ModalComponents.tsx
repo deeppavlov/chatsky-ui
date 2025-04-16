@@ -10,7 +10,7 @@ export type CustomModalProps = {
 }
 
 // Базовая обертка для модального окна
-export type ModalProps = {
+export type ModalProps = React.HTMLAttributes<HTMLElement> & {
   id?: string
   isOpen: boolean
   onClose: () => void
@@ -32,7 +32,10 @@ export type ModalProps = {
 }
 
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(
-  ({ id, isOpen, onClose, children, size = '3xl', className }, ref) => {
+  (
+    { id, isOpen, onClose, children, size = '3xl', className, ...props },
+    ref,
+  ) => {
     return (
       <Dialog.Root open={isOpen} onOpenChange={onClose}>
         <Dialog.Portal container={document.getElementById('modal_root')}>
@@ -44,7 +47,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
               exit={{ opacity: 0 }}
             />
           </Dialog.Overlay>
-          <Dialog.Content asChild>
+          <Dialog.Content asChild {...props}>
             <motion.div
               key={id}
               ref={ref}

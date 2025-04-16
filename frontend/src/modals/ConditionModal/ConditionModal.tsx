@@ -445,7 +445,13 @@ const ConditionModal = ({
   }
 
   return (
-    <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
+    <Modal
+      data-tesid='condition-modal'
+      isOpen={true}
+      onClose={onCloseHandler}
+      size='3xl'
+      data-testid='condition-modal'
+    >
       <ModalHeader>
         <div className='flex items-center gap-2'>
           {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
@@ -470,6 +476,7 @@ const ConditionModal = ({
           >
             {(item) => (
               <Tab
+                data-testid={`tab-${item.value}`}
                 key={item.value}
                 title={
                   <div className='flex items-center gap-1 text-sm'>
@@ -497,6 +504,7 @@ const ConditionModal = ({
                 name: e.target.value.replaceAll(' ', '_'),
               })
             }
+            data-testid='condition-name'
             isInvalid={errorObject.isInvalid}
             errorMessage={errorObject.errorMessage}
           />
@@ -517,6 +525,7 @@ const ConditionModal = ({
                 },
               })
             }
+            data-testid='condition-priority'
           />
         </div>
         <div>
