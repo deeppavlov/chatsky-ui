@@ -55,6 +55,21 @@ class SQLiteExtractor:
         raise sqlite3.Error("Failed to reconnect to the database after 3 attempts.")
 
     async def execute_statement(self, stmt: str, args: tuple = tuple()):
+        """
+        Executes a given SQL statement with optional arguments and returns the result.
+
+        Args:
+            stmt (str): The SQL statement to execute.
+            args (tuple, optional): A tuple of arguments to pass to the SQL statement. Defaults to an empty tuple.
+
+        Returns:
+            list: A list of rows fetched from the database if the query is successful.
+            None: If an error occurs during the execution of the SQL statement.
+
+        Raises:
+            sqlite3.Error: Logs the database error if an exception occurs.
+        """
+        """"""
         try:
             self._ensure_connection()
             with self.connection as conn:
