@@ -13,6 +13,7 @@ from .logic_component_converter.response_converter import (
     CustomResponseConverter,
     TextResponseConverter,
 )
+from .logic_component_converter.buttons_converter import ButtonsConverter
 
 
 class NodeConverter(BaseConverter):
@@ -24,7 +25,6 @@ class NodeConverter(BaseConverter):
     RESPONSE_CONVERTER = {
         "text": TextResponseConverter,
         "python": CustomResponseConverter,
-        "button": ButtonResponseConverter,
     }
     CONDITION_CONVERTER = {
         "python": CustomConditionConverter,
@@ -83,7 +83,7 @@ class InfoNodeConverter(NodeConverter):
         condition_converters = [
             self.CONDITION_CONVERTER[condition["type"]](condition) for condition in self.node.conditions
         ]
-        return {
+        result = {
             RESPONSE: self.RESPONSE_CONVERTER[self.node.response["type"]](self.node.response)(),
             TRANSITIONS: [
                 {
@@ -104,6 +104,10 @@ class InfoNodeConverter(NodeConverter):
             },
             PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
         }
+        buttons = self.node.response.get(buttons, default=None)
+        if buttons is not None:
+            result[PRE_RESPONSE].update({"add_buttons": ButtonsConverter(buttons)()})
+        return result
 
 
 class LinkNodeConverter(NodeConverter):
