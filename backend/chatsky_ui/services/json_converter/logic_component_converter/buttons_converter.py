@@ -1,4 +1,5 @@
 from typing import Optional
+
 from ..base_converter import BaseConverter
 from .response_converter import BadResponseException
 
@@ -26,7 +27,7 @@ class ButtonsConverter(BaseConverter):
 
     def determine_button_type(self, buttons_dict: dict) -> Optional[str]:
         """Finds out if this node sends `inline` or `reply` buttons to the user.
-        
+
         Raises: `KeyError`, if `buttons_dict` is a dictionary of the wrong structure.
         """
         if buttons_dict["exactMatch"] != [[None]]:
