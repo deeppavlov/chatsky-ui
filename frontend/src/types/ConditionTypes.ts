@@ -22,9 +22,9 @@ export type conditionDataType = {
 
 export interface IButtonType {
   text: string
-  colback: string
+  callback?: string
   type: string
-  id: number
+  id: string
 }
 
 export type conditionTypeType =

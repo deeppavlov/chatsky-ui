@@ -23,4 +23,12 @@ export type responseType = {
   name: string
   type: responseTypeType
   data: responseDataType[]
+  buttons: IButtonType[]
+}
+
+export interface IButtonType {
+  text: string
+  callback?: string
+  type: string
+  id: string
 }

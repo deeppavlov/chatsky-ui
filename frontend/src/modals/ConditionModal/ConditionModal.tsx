@@ -15,7 +15,11 @@ import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
-import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
+import {
+  conditionType,
+  conditionTypeType,
+  IButtonType,
+} from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import {
@@ -384,8 +388,35 @@ const ConditionModal = ({
 
     const isValidCondition = validateCurrentCondition()
 
+    const newResponse = () => {
+      const type = currentCondition.data.button?.type as string
+
+      const { callback, text } = currentCondition.data.button as IButtonType
+
+      const id = currentCondition.id
+
+      if (currentCondition.type === 'button') {
+        return {
+          ...data.response,
+          buttons: {
+            ...data.response.buttons,
+            [type]: [
+              ...(
+                data.response.buttons as unknown as Record<
+                  string,
+                  IButtonType[]
+                >
+              )[type],
+              type === 'hasCallback' ? { callback, text, id } : { text, id },
+            ],
+          },
+        }
+      }
+    }
+
+    console.log(newResponse())
+
     if (!validateObject.isInvalid && isValidCondition) {
-      console.log(currentCondition)
       updateNodeData(data.id, {
         ...data,
         conditions: is_create
@@ -417,11 +448,32 @@ const ConditionModal = ({
     // }
     // const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
     // setNodes(() => new_nodes)
+
+    const newButtonsResponze = () => {
+      if (currentCondition.type === 'button') {
+        const type = currentCondition.data.button?.type as string
+
+        const arrNewButtonsType = (
+          data.response.buttons as unknown as Record<string, IButtonType[]>
+        )[type].filter((item: IButtonType) => item.id !== currentCondition.id)
+
+        return {
+          ...data.response,
+          buttons: {
+            ...data.response.buttons,
+            [type]: arrNewButtonsType,
+          },
+        }
+      }
+      return data.response
+    }
+
     updateNodeData(data.id, {
       ...data,
       conditions: data.conditions?.filter(
         (condition) => condition.id !== currentCondition.id,
       ),
+      response: newButtonsResponze(),
     })
     quietSaveFlows()
     // }

@@ -132,14 +132,15 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             onClick={onResponseOpen}
           >
             <Response data={data} />
-            {data.buttonsData.buttons?.length > 0 && (
-              <Button
-                onClick={() => setIsAddButtonOpen(true)}
-                className='h-unit-10 min-w-unit-10 bg-transparent'
-              >
-                <ButtonConditionIcon className='size-6' />
-              </Button>
-            )}
+            {data.buttonsData?.buttons?.length &&
+              data.buttonsData?.buttons?.length > 0 && (
+                <Button
+                  onClick={() => setIsAddButtonOpen(true)}
+                  className='h-unit-10 min-w-unit-10 bg-transparent'
+                >
+                  <ButtonConditionIcon className='size-6' />
+                </Button>
+              )}
           </div>
           <div className='flex w-full flex-col gap-2'>
             {data.conditions?.map((condition) => (

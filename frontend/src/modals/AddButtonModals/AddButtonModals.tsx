@@ -20,12 +20,26 @@ const chunk = <T,>(array: T[], size: number): T[][] => {
   return chunks
 }
 
+const validateButtons = (buttons: IButtonType[], selected: string) => {
+  if (selected === 'exactMatch') {
+    const isNotEmpty = buttons.some((button) => button.text !== '')
+    return isNotEmpty
+  }
+
+  if (selected === 'hasCallback') {
+    const isNotEmpty = buttons.some(
+      (button) => button.callback !== '' && button.text !== '',
+    )
+    return isNotEmpty
+  }
+}
+
 const RenderButtons = ({
   buttons,
   selected,
   columns,
 }: {
-  type: 'reply' | 'inline'
+  type: 'exactMatch' | 'hasCallback'
   buttons: IButtonType[]
   selected: string
   columns: number
@@ -35,14 +49,14 @@ const RenderButtons = ({
   return newArr.map((row, index) => {
     const curentColumns = row
       .map((button) => {
-        if (selected === 'reply') {
+        if (selected === 'exactMatch') {
           if (button.text === '') {
             return 0
           }
           return 1
         }
 
-        if (selected === 'inline') {
+        if (selected === 'hasCallback') {
           if (button.text === '') {
             return 0
           }
@@ -56,7 +70,7 @@ const RenderButtons = ({
 
     return (
       <div
-        className={`grid grid-cols-${curentColumns} gap-2 pl-[10px] ${selected === 'reply' ? 'pr-[35px]' : 'pr-[10px]'} ${isFirst} m-[4px]`}
+        className={`grid grid-cols-${curentColumns} gap-2 pl-[10px] ${selected === 'exactMatch' ? 'pr-[35px]' : 'pr-[10px]'} ${isFirst} m-[4px]`}
         key={index}
       >
         {row.map((button, index) => {
@@ -89,25 +103,25 @@ const RenderCell = ({
 }: {
   buttons: IButtonType[]
   setButtons: (buttons: IButtonType[]) => void
-  type: 'reply' | 'inline'
+  type: 'exactMatch' | 'hasCallback'
   columns: number
   selected: string
 
   error: {
     invalid: boolean
-    id: number
+    id: string
   }[]
-  setError: (error: { invalid: boolean; id: number }[]) => void
+  setError: (error: { invalid: boolean; id: string }[]) => void
 }) => {
-  const key = type === 'inline' ? 'colback' : 'text'
+  const key = type === 'hasCallback' ? 'callback' : 'text'
 
-  const getInputValue = (button: IButtonType, index: number) => {
-    if (type === 'reply') {
+  const getInputValue = (button: IButtonType) => {
+    if (type === 'exactMatch') {
       return button[key]
     }
 
-    if (type === 'inline') {
-      return button.colback
+    if (type === 'hasCallback') {
+      return button.callback
     }
   }
 
@@ -117,15 +131,15 @@ const RenderCell = ({
         const errorData = error.filter((item) => item.id === button.id)[0]
 
         const getError = () => {
-          if (selected === 'reply' && type === 'reply') {
+          if (selected === 'exactMatch' && type === 'exactMatch') {
             return errorData?.invalid
           }
 
-          if (selected === 'inline' && type === 'inline') {
+          if (selected === 'hasCallback' && type === 'hasCallback') {
             return errorData?.invalid
           }
 
-          if (selected === 'inline' && type === 'reply') {
+          if (selected === 'hasCallback' && type === 'exactMatch') {
             return false
           }
         }
@@ -136,7 +150,7 @@ const RenderCell = ({
               isInvalid={getError()}
               variant='bordered'
               placeholder={`Please fill in the field in button ${buttonIndex + 1}`}
-              value={getInputValue(button, buttonIndex)}
+              value={getInputValue(button)}
               size='sm'
               onChange={(e) => {
                 const newButtons = buttons.map((button, newButtonIndex) => {
@@ -175,16 +189,16 @@ const RenderTypeButtons = ({
 }: {
   buttons: IButtonType[]
   setButtons: (buttons: IButtonType[]) => void
-  type: 'reply' | 'inline'
+  type: 'exactMatch' | 'hasCallback'
   columns: number
   error: {
     invalid: boolean
-    id: number
+    id: string
   }[]
-  setError: (error: { invalid: boolean; id: number }[]) => void
+  setError: (error: { invalid: boolean; id: string }[]) => void
   selected: string
 }) => {
-  if (type === 'reply') {
+  if (type === 'exactMatch') {
     return (
       <div className={`grid gap-2`}>
         <h3 className='mb-2 text-[12px] text-sm font-medium'>
@@ -212,7 +226,7 @@ const RenderTypeButtons = ({
         <RenderCell
           buttons={buttons}
           setButtons={setButtons}
-          type={'reply'}
+          type={'exactMatch'}
           columns={columns}
           error={error}
           setError={setError}
@@ -235,7 +249,7 @@ const RenderTypeButtons = ({
         <RenderCell
           buttons={buttons}
           setButtons={setButtons}
-          type={'inline'}
+          type={'hasCallback'}
           columns={columns}
           selected={selected}
           error={error}
@@ -258,6 +272,9 @@ const AddButtonModals = ({
   const { updateNodeData, getNode } = useReactFlow<AppNode, Edge>()
   const node = getNode(data.id)
 
+  const dataButtons =
+    (node?.data as DefaultNodeDataType)?.buttonsData?.buttons ?? []
+
   const initRows = (node?.data as DefaultNodeDataType)?.buttonsData?.rows ?? 2
   const initColumns =
     (node?.data as DefaultNodeDataType)?.buttonsData?.columns ?? 2
@@ -265,16 +282,16 @@ const AddButtonModals = ({
   const [rows, setRows] = useState(initRows || 2)
   const [columns, setColumns] = useState(initColumns || 2)
 
+  const initSelected: string = dataButtons?.[0]?.type ?? 'exactMatch'
+
   const initButtons: IButtonType[] =
-    (node?.data as DefaultNodeDataType)?.buttonsData?.buttons ??
+    dataButtons ??
     Array.from({ length: rows * columns }, (_, index) => ({
       text: '',
-      colback: '',
       type: selected,
-      id: index,
+      id: index.toString(),
     }))
 
-  const initSelected: string = initButtons?.[0]?.type ?? 'reply'
   const [selected, setSelected] = useState<string>(initSelected)
 
   const { flows, quietSaveFlows } = useContext(flowContext)
@@ -285,26 +302,44 @@ const AddButtonModals = ({
   const [error, setError] = useState<
     {
       invalid: boolean
-      id: number
+      id: string
     }[]
   >([])
 
   useEffect(() => {
     const newButtons = buttons.map((button, index) => {
-      if (selected === 'reply') {
-        return { ...button, text: `` }
+      if (selected === 'exactMatch') {
+        const { callback, ...rest } = button
+
+        return { ...rest, text: ``, type: 'exactMatch' }
       }
-      return { ...button, text: `button ${index + 1}`, colback: '' }
+
+      return {
+        ...button,
+        text: `button ${index + 1}`,
+        callback: '',
+        type: 'hasCallback',
+      }
     })
     setButtons(newButtons)
   }, [selected])
 
   useEffect(() => {
+    const data =
+      selected === 'hasCallback'
+        ? {
+            text: '',
+            callback: '',
+            type: selected,
+          }
+        : {
+            text: '',
+            type: selected,
+          }
+
     const newButtons = Array.from({ length: rows * columns }, (_, index) => ({
-      text: '',
-      colback: '',
-      type: selected,
-      id: index,
+      ...data,
+      id: index.toString(),
     }))
 
     const currentButtonsLength = buttons.length
@@ -376,11 +411,11 @@ const AddButtonModals = ({
             <RadioGroup
               value={selected}
               onValueChange={(value) => {
-                if (value === 'inline') {
+                if (value === 'hasCallback') {
                   setButtons(buttons.map((button) => ({ ...button, text: '' })))
                 } else {
                   setButtons(
-                    buttons.map((button) => ({ ...button, colback: '' })),
+                    buttons.map((button) => ({ ...button, callback: '' })),
                   )
                 }
                 setSelected(value)
@@ -388,14 +423,14 @@ const AddButtonModals = ({
             >
               <div className='grid grid-cols-2 gap-4 pb-[8px]'>
                 <div className='flex flex-col gap-4'>
-                  <Radio value='reply'>Reply keyboard</Radio>
+                  <Radio value='exactMatch'>Reply keyboard</Radio>
                 </div>
                 <div className='flex flex-col gap-4'>
-                  <Radio value='inline'>Inline keyboard</Radio>
+                  <Radio value='hasCallback'>Inline keyboard</Radio>
                 </div>
               </div>
             </RadioGroup>
-            {selected === 'inline' && (
+            {selected === 'hasCallback' && (
               <div className='w-full rounded-lg border-1 border-border bg-chat'>
                 <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
                   What do you like?
@@ -416,20 +451,20 @@ const AddButtonModals = ({
                 </div>
                 <RenderButtons
                   buttons={buttons}
-                  type='reply'
+                  type='exactMatch'
                   selected={selected}
                   columns={columns}
                 />
               </div>
             )}
-            {selected === 'reply' && (
+            {selected === 'exactMatch' && (
               <div className='w-full rounded-lg border-1 border-border bg-chat'>
                 <div className='ml-[12px] mr-[36px] mt-[16px] rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-background p-[8px]'>
                   What do you like?
                 </div>
                 <RenderButtons
                   buttons={buttons}
-                  type='inline'
+                  type='hasCallback'
                   selected={selected}
                   columns={columns}
                 />
@@ -494,7 +529,7 @@ const AddButtonModals = ({
           <RenderTypeButtons
             buttons={buttons}
             setButtons={setButtons}
-            type={selected as 'inline' | 'reply'}
+            type={selected as 'hasCallback' | 'exactMatch'}
             columns={columns}
             error={error}
             setError={setError}
@@ -512,32 +547,36 @@ const AddButtonModals = ({
             isDisabled={rows > 5 || columns > 5 || buttons.length === 0}
             className='ml-auto'
             onClick={() => {
-              const validate = buttons.flatMap((button) => {
-                if (button.type === 'reply') {
-                  if (button.text === '') {
-                    return {
-                      invalid: true,
-                      id: button.id,
+              const isValidate = validateButtons(buttons, selected)
+
+              if (!isValidate) {
+                const validate = buttons.flatMap((button) => {
+                  if (selected === 'exactMatch') {
+                    if (button.text === '') {
+                      return {
+                        invalid: true,
+                        id: button.id,
+                      }
                     }
                   }
-                }
 
-                if (selected === 'inline') {
-                  if (button.colback === '') {
-                    return {
-                      invalid: true,
-                      id: button.id,
+                  if (selected === 'hasCallback') {
+                    if (button.callback === '') {
+                      return {
+                        invalid: true,
+                        id: button.id,
+                      }
                     }
                   }
+                  return []
+                })
+
+                const isValidate = validate.map((button) => button?.invalid)
+
+                if (isValidate.includes(true)) {
+                  setError(validate)
+                  return
                 }
-                return []
-              })
-
-              const isValidate = validate.map((button) => button?.invalid)
-
-              if (isValidate.includes(true)) {
-                setError(validate)
-                return
               }
 
               const arr = flows
@@ -563,7 +602,14 @@ const AddButtonModals = ({
 
               const cache: string[] = []
 
-              const newConditions = buttons.map((button) => {
+              const filteredButtons =
+                selected === 'exactMatch'
+                  ? buttons.filter((button) => button.text !== '')
+                  : buttons.filter(
+                      (button) => button.callback !== '' && button.text !== '',
+                    )
+
+              const newConditions = filteredButtons.map((button) => {
                 const iterGenName = (count: number = 1): string => {
                   const nameFlow =
                     (flowId?.length ?? 0 >= 15) ? flowId?.slice(0, 15) : flowId
@@ -589,21 +635,60 @@ const AddButtonModals = ({
                 return {
                   ...condition,
                   type: 'button',
-                  data: { ...condition.data, button },
+                  data: {
+                    ...condition.data,
+                    button: { ...button, id: condition.id },
+                  },
                 }
               })
 
+              const allConditions = [
+                ...(node?.data as DefaultNodeDataType).conditions,
+                ...newConditions,
+              ]
+
+              const responseButtom = {
+                exactMatch: [
+                  ...allConditions
+                    .filter(
+                      (condition) =>
+                        condition.type === 'button' &&
+                        condition.data.button?.type === 'exactMatch',
+                    )
+                    .map((condition) => {
+                      return {
+                        text: condition.data.button?.text,
+                        id: condition.id,
+                      } as IButtonType
+                    }),
+                ],
+                hasCallback: [
+                  ...allConditions
+                    .filter(
+                      (condition) =>
+                        condition.type === 'button' &&
+                        condition.data.button?.type === 'hasCallback',
+                    )
+                    .map((condition) => {
+                      return {
+                        text: condition.data.button?.text,
+                        callback: condition.data.button?.callback,
+                        id: condition.id,
+                      } as IButtonType
+                    }),
+                ],
+              } as Record<string, IButtonType[]>
+
               const newData = {
                 ...node?.data,
-                buttons: [],
-                conditions: [
-                  ...(node?.data as DefaultNodeDataType).conditions,
-                  ...newConditions,
-                ],
-              }
+                conditions: allConditions,
+                response: {
+                  ...(node?.data as DefaultNodeDataType).response,
+                  buttons: responseButtom
+                }
+              } as unknown as DefaultNodeDataType
 
-              console.log(newData)
-              updateNodeData(data.id, newData as DefaultNodeDataType)
+              updateNodeData(data.id, newData)
               setButtons([])
               quietSaveFlows()
               onClose()

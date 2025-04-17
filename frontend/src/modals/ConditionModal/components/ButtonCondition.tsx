@@ -7,8 +7,9 @@ import DefSelect from '../../../UI/Input/DefSelect'
 
 interface ButtonState {
   text: string
-  colback: string
+  callback?: string
   type: string
+  id: string
 }
 
 interface IMapping {
@@ -19,7 +20,7 @@ interface IMapping {
 }
 
 const mapping: IMapping = {
-  reply: (state, setState) => {
+  exactMatch: (state, setState) => {
     return (
       <>
         <div className='flex flex-col gap-4'>
@@ -55,7 +56,7 @@ const mapping: IMapping = {
       </>
     )
   },
-  inline: (state, setState) => {
+  hasCallback: (state, setState) => {
     return (
       <>
         <div className='flex flex-col gap-4'>
@@ -84,8 +85,8 @@ const mapping: IMapping = {
             </div>
           </div>
           <InputText
-            value={state.colback}
-            onChange={(e) => setState({ ...state, colback: e.target.value })}
+            value={state.callback}
+            onChange={(e) => setState({ ...state, callback: e.target.value })}
           />
         </div>
       </>
@@ -100,11 +101,21 @@ const ButtonCondition = ({
   condition: conditionType
   setData: (state: conditionType) => void
 }) => {
-  const initialState = {
-    text: '',
-    colback: '',
-    type: 'reply',
-  }
+  const initialState =
+    condition.data.button?.type === 'exactMatch'
+      ? {
+          text: '',
+          type: 'exactMatch',
+          id: '0',
+        }
+      : {
+          text: '',
+          colback: '',
+          type: 'hasCallback',
+          id: '0',
+        }
+
+  console.log(condition)
 
   const [state, setState] = useState<ButtonState>(
     condition.data.button ?? initialState,
@@ -141,20 +152,20 @@ const ButtonCondition = ({
           <RadioGroup
             value={'type' in state ? state.type : 'reply'}
             onValueChange={(value) =>
-              setState({ ...state, type: value, text: '', colback: '' })
+              setState({ ...state, type: value, text: '', callback: '' })
             }
           >
             <div className='grid grid-cols-2 gap-4'>
               <div className='flex flex-col gap-4'>
-                <Radio value='reply'>Reply keyboard</Radio>
+                <Radio value='exactMatch'>Reply keyboard</Radio>
               </div>
               <div className='flex flex-col gap-4'>
-                <Radio value='inline'>Inline keyboard</Radio>
+                <Radio value='hasCallback'>Inline keyboard</Radio>
               </div>
             </div>
           </RadioGroup>
         </div>
-        {mapping[state.type](state, setState)}
+        {state.type && mapping[state.type](state, setState)}
       </div>
     </div>
   )

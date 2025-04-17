@@ -154,6 +154,11 @@ const ResponseModal = ({
     }
   }
 
+  const nodeData = node?.data as DefaultNodeDataType
+
+  const isRemoveButtons =
+    nodeData.buttonsData?.buttons && nodeData.buttonsData?.buttons.length > 0
+
   return (
     <Modal
       className='flex min-h-[584px] flex-col'
@@ -212,12 +217,12 @@ const ResponseModal = ({
         <div>{bodyItems[selected]}</div>
       </ModalBody>
       <ModalFooter>
-        {true && (
+        {isRemoveButtons && (
           <Button
             data-testid='remove-buttons-button'
             onClick={() => {
               updateNodeData(data.id, {
-                ...node?.data,
+                ...nodeData,
                 buttonsData: {
                   rows: 0,
                   columns: 0,
