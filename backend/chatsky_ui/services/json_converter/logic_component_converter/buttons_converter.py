@@ -1,11 +1,6 @@
 from typing import Optional
-from ....schemas.front_graph_components.info_holders.response import ButtonResponse
-from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.response import CustomResponse, TextResponse
 from ..base_converter import BaseConverter
-from ..consts import CUSTOM_FILE, RESPONSES_FILE
-from .service_replacer import store_custom_service
-from response_converter import BadResponseException
+from .response_converter import BadResponseException
 
 
 class ButtonsConverter(BaseConverter):
@@ -34,9 +29,9 @@ class ButtonsConverter(BaseConverter):
         
         Raises: `KeyError`, if `buttons_dict` is a dictionary of the wrong structure.
         """
-        if len(buttons_dict["exactMatch"]) > 0:
+        if buttons_dict["exactMatch"] != [[None]]:
             return "reply"
-        elif len(buttons_dict["hasCallback"]) > 0:
+        elif buttons_dict["hasCallback"] != [[None]]:
             return "inline"
         raise KeyError
 
@@ -74,9 +69,9 @@ class ButtonsConverter(BaseConverter):
         keyboard_class = {
             "inline": "external:telegram.InlineKeyboardMarkup",
             "reply": "external:telegram.ReplyKeyboardMarkup",
-        }[self.response.button_type]
+        }[self.button_type]
         return {
-            "external:chatsky_ui.clients.telegram_buttons.add_buttons": {
+            "external:chatsky_ui.clients.telegram_buttons.AddButtons": {
                 "reply_markup": {keyboard_class: self.create_keyboard()},
             }
         }

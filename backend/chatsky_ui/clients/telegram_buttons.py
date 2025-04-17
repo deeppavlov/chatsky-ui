@@ -14,6 +14,5 @@ class AddButtons(proc.ModifyResponse, arbitrary_types_allowed=True):
     ) -> MessageInitTypes:
         result = await original_response(ctx)
 
-        if result.reply_markup is None:
-            result.reply_markup = self.reply_markup
+        result.reply_markup = self.reply_markup
         return result

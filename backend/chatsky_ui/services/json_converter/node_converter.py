@@ -9,7 +9,6 @@ from .logic_component_converter.condition_converter import (
     SlotConditionConverter,
 )
 from .logic_component_converter.response_converter import (
-    ButtonResponseConverter,
     CustomResponseConverter,
     TextResponseConverter,
 )
@@ -104,7 +103,7 @@ class InfoNodeConverter(NodeConverter):
             },
             PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
         }
-        buttons = self.node.response.get(buttons, default=None)
+        buttons = self.node.response.get("buttons", None)
         if buttons is not None:
             result[PRE_RESPONSE].update({"add_buttons": ButtonsConverter(buttons)()})
         return result
