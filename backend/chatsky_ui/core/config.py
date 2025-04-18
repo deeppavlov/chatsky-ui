@@ -116,13 +116,32 @@ class Settings:
         dotenv_path = self.work_directory / ".env"
         if not dotenv_path.exists():
             raise FileNotFoundError(f"{dotenv_path} not found.")
-
         load_dotenv(dotenv_path)
+
         env_vars = {}
         for key, value in os.environ.items():
             if key.startswith(prefix):
                 env_vars[key] = value
         return env_vars
+
+    def remove_env_vars(self, keys_to_remove: list):
+        dotenv_path = self.work_directory / ".env"
+        if not dotenv_path.exists():
+            raise FileNotFoundError(f"{dotenv_path} not found.")
+        load_dotenv(dotenv_path)
+
+        with open(dotenv_path, "r") as f:
+            lines = f.readlines()
+
+        is_found = False
+        with open(dotenv_path, "w") as f:
+            for line in lines:
+                if not any(line.strip().startswith(f"{key}=") for key in keys_to_remove):
+                    f.write(line)
+                else:
+                    is_found = True
+        if not is_found:
+            raise ValueError(f"None of the keys {keys_to_remove} were found in {dotenv_path}.")
 
 
 class AppRunner:
