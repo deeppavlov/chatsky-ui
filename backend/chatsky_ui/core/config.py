@@ -34,6 +34,7 @@ class Settings:
         self.builds_path_lock = asyncio.Lock()
         self.runs_path_lock = asyncio.Lock()
         self.frontend_flows_path_lock = asyncio.Lock()
+        self.llms_path_lock = asyncio.Lock()
 
         self.set_config(
             host=os.getenv("HOST", "0.0.0.0"),
@@ -61,6 +62,7 @@ class Settings:
         self.builds_path = self.work_directory / "chatsky_ui/app_data/builds.yaml"
         self.runs_path = self.work_directory / "chatsky_ui/app_data/runs.yaml"
         self.frontend_flows_path = self.work_directory / "chatsky_ui/app_data/frontend_flows.yaml"
+        self.llms_conf_path = self.work_directory / "chatsky_ui/app_data/llms.yaml"
         self.dir_logs = self.work_directory / "chatsky_ui/logs"
         self.presets_path = self.work_directory / "chatsky_ui/presets"
         self.snippet2lint_path = self.work_directory / "chatsky_ui/.snippet2lint.py"
@@ -109,6 +111,18 @@ class Settings:
                 )
             os.environ[key] = value
             set_key(dotenv_path, key, value)
+
+    def get_env_vars(self, prefix: str) -> Dict[str, str]:
+        dotenv_path = self.work_directory / ".env"
+        if not dotenv_path.exists():
+            raise FileNotFoundError(f"{dotenv_path} not found.")
+
+        load_dotenv(dotenv_path)
+        env_vars = {}
+        for key, value in os.environ.items():
+            if key.startswith(prefix):
+                env_vars[key] = value
+        return env_vars
 
 
 class AppRunner:

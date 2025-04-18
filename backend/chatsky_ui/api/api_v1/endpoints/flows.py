@@ -110,21 +110,3 @@ async def get_tg_tokens() -> list:
         if key.startswith("TG_"):
             tg_token.append("_".join(key.split("_")[1:]))
     return tg_token
-
-
-@router.post("/llm_token")
-async def post_llm_token(provider: str, token: str):
-    return settings.add_env_vars({LLMModel.PROVIDERS[provider]["api_key"]: token})
-
-
-@router.get("/llm_models/{provider}")
-async def get_llm_models(provider: str) -> Dict[str, Union[list, str]]:
-    if provider not in LLMModel.PROVIDERS:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Provider '{provider}' not found. Available providers: {', '.join(LLMModel.PROVIDERS.keys())}",
-        )
-    return {
-        "status": "ok",
-        "data": LLMModel.PROVIDERS[provider]["models"],
-    }

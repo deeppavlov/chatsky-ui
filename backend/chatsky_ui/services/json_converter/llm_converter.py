@@ -8,11 +8,12 @@ class LLMModelsConverter(BaseConverter):
     def __init__(self, llm_models_config: List[dict]):
         self.models = [
             LLMModel(
-                name=config["name"],
-                llm=config["modelName"],
-                system_prompt=config.get("systemPrompt"),
+                name=config_name,
+                llm=config["model_name"],
+                token_name=config["token_name"],
+                system_prompt=config.get("system_prompt"),
             )
-            for config in llm_models_config
+            for config_name, config in llm_models_config.items()
         ]
 
     def _convert(self):
@@ -22,7 +23,7 @@ class LLMModelsConverter(BaseConverter):
                     "model": {
                         "external:langchain_openai.ChatOpenAI": {
                             "model": model.llm,
-                            "api_key": {"external:os.getenv": model.MODEL_TO_KEY[model.llm]},
+                            "api_key": {"external:os.getenv": model.token_name},
                             "base_url": {"external:os.getenv": "LLM_API_BASE_URL"},
                         }
                     },
