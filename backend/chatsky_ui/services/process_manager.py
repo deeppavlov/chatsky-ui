@@ -7,6 +7,7 @@ Process managers are used to manage :py:class:`~.process.RunProcess` and :py:cla
 They are responsible for starting, stopping, updating, and checking status of processes. Processes themselves
 are stored in the `processes` dictionary of a process manager.
 """
+
 import asyncio
 import os
 import socket
@@ -260,7 +261,14 @@ class RunManager(ProcessManager):
 
         self.bot_repo_manager.checkout_tag(build_id, "scripts/build.yaml")
         self.logger.info("Checked out build id '%s' to bot repo", build_id)
-        cmd_to_run = f"chatsky.ui run_bot " f"--preset {preset.end_status} " f"--project-dir {settings.work_directory}"
+        cmd_to_run = " ".join(
+            [
+                "chatsky.ui run_bot",
+                f"--preset {preset.end_status}",
+                f"--project-dir {settings.work_directory}",
+                f"--run-id {self.last_id}",
+            ]
+        )
 
         process = RunProcess(self.last_id, build_id, messenger, build_port, preset)
 

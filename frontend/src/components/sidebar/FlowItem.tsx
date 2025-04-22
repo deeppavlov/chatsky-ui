@@ -18,7 +18,7 @@ const FlowItem = ({
   return (
     <>
       {flow ? (
-        <div className='w-full'>
+        <div data-testid={`flowItem-${flow.name}`} className='w-full'>
           <div
             key={flow.name}
             onClick={() => {

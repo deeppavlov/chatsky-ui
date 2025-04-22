@@ -143,6 +143,7 @@ const BuildManagerPage = () => {
             disabled={loading}
             className='rounded-lg bg-foreground text-background'
             onClick={buildAndRunHandler}
+            data-testid='build-and-run-btn'
           >
             {/* АНИМАЦИЯ */}
             {loading && (
@@ -297,6 +298,9 @@ const BuildManagerPage = () => {
                         r.status === 'running' ||
                         r.id === startingRunId ||
                         stoppingRunIds.includes(r.id)
+                      }
+                      data-testid={
+                        r.status === 'alive' ? 'alive-run' : 'starting-run'
                       }
                       title={r.preset.name}
                       infoBlock={
