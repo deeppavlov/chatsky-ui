@@ -10,7 +10,7 @@ class ButtonsConverter(BaseConverter):
     which is just a 'PRE_RESPONSE' processing function from Chatsky.
     """
 
-    def __init__(self, buttons: dict):
+    def __init__(self, buttons: list):
         """Creates a `ButtonsConverter` object.
 
         Args:
@@ -21,26 +21,19 @@ class ButtonsConverter(BaseConverter):
         """
         try:
             self.button_type = self.determine_button_type(buttons)
-            self.buttons = self.get_buttons_list(buttons, self.button_type)
+            self.buttons = buttons
         except KeyError as e:
             raise BadResponseException("Missing key in buttons data") from e
 
-    def determine_button_type(self, buttons_dict: dict) -> Optional[str]:
+    def determine_button_type(self, buttons_list: dict) -> Optional[str]:
         """Finds out if this node sends `inline` or `reply` buttons to the user.
 
         Raises: `KeyError`, if `buttons_dict` is a dictionary of the wrong structure.
         """
-        if buttons_dict["exactMatch"] != [[None]]:
+        if buttons_list[0][0].get("callback_data", None) is None:
             return "reply"
-        elif buttons_dict["hasCallback"] != [[None]]:
+        else:
             return "inline"
-        raise KeyError
-
-    def get_buttons_list(self, button_dict: dict, button_type: Optional[str]) -> list:
-        """Extracts buttons from the button_dict depending on the button type."""
-        if button_type == "reply":
-            return button_dict["exactMatch"]
-        return button_dict["hasCallback"]
 
     def clean_buttons_list(self):
         """Cleans the unnecessary `id` key from every button (frontend uses it for it's own means,
