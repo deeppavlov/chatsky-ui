@@ -22,7 +22,7 @@ export type DefaultNodeDataType = {
   buttonsData?: {
     rows: number
     columns: number
-    buttons: IButtonType[]
+    buttons: conditionType[]
   }
 }
 

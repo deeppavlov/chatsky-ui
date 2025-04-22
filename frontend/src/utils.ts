@@ -58,12 +58,12 @@ export const parseSearchParams = (
 }
 export const generateNewConditionBase = (
   name: string,
-  type: conditionTypeType = 'python',
+  type: string = 'python',
 ): conditionType => {
   return {
     id: 'condition_' + v4(),
     name: name,
-    type: type,
+    type: type as conditionTypeType,
     data: {
       priority: 1,
       transition_type: 'manual',

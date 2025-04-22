@@ -15,11 +15,7 @@ import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
-import {
-  conditionType,
-  conditionTypeType,
-  IButtonType,
-} from '../../types/ConditionTypes'
+import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import {
@@ -75,10 +71,10 @@ type ConditionModalProps = CustomModalProps & {
 type ConditionModalTab =
   | 'Using LLM'
   | 'Slot filling'
-  | 'Button'
   | 'Python code'
   | 'Custom'
   | 'Basic'
+  | 'Button'
 
 type LintStatusType = {
   status: 'ok' | 'error'
@@ -253,14 +249,14 @@ const ConditionModal = ({
         icon: <SlotsConditionIcon className='size-5' />,
       },
       {
-        title: 'Button',
-        value: 'button',
-        icon: <ButtonConditionIcon className='size-5' />,
-      },
-      {
         title: 'Custom',
         value: 'custom',
         icon: <CustomConditionIcon className='size-5' />,
+      },
+      {
+        title: 'Button',
+        value: 'button',
+        icon: <ButtonConditionIcon className='size-5' />,
       },
     ],
     [],
@@ -285,12 +281,6 @@ const ConditionModal = ({
           }}
         />
       ),
-      button: (
-        <ButtonCondition
-          condition={currentCondition}
-          setData={setCurrentCondition}
-        />
-      ),
       python: (
         <PythonCondition
           condition={currentCondition}
@@ -298,6 +288,12 @@ const ConditionModal = ({
         />
       ),
       custom: <div>Custom</div>,
+      button: (
+        <ButtonCondition
+          condition={currentCondition}
+          setData={setCurrentCondition}
+        />
+      ),
       basic: (
         <BasicCondition
           condition={currentCondition}
@@ -388,33 +384,31 @@ const ConditionModal = ({
 
     const isValidCondition = validateCurrentCondition()
 
-    const newResponse = () => {
-      const type = currentCondition.data.button?.type as string
+    // const newResponse = () => {
+    //   const type = currentCondition.data.button?.type as string
 
-      const { callback, text } = currentCondition.data.button as IButtonType
+    //   const { callback, text } = currentCondition.data.button as IButtonType
 
-      const id = currentCondition.id
+    //   const id = currentCondition.id
 
-      if (currentCondition.type === 'button') {
-        return {
-          ...data.response,
-          buttons: {
-            ...data.response.buttons,
-            [type]: [
-              ...(
-                data.response.buttons as unknown as Record<
-                  string,
-                  IButtonType[]
-                >
-              )[type],
-              type === 'hasCallback' ? { callback, text, id } : { text, id },
-            ],
-          },
-        }
-      }
-    }
-
-    console.log(newResponse())
+    //   if (currentCondition.type === 'button') {
+    //     return {
+    //       ...data.response,
+    //       buttons: {
+    //         ...data.response.buttons,
+    //         [type]: [
+    //           ...(
+    //             data.response.buttons as unknown as Record<
+    //               string,
+    //               IButtonType[]
+    //             >
+    //           )[type],
+    //           type === 'hasCallback' ? { callback, text, id } : { text, id },
+    //         ],
+    //       },
+    //     }
+    //   }
+    // }
 
     if (!validateObject.isInvalid && isValidCondition) {
       updateNodeData(data.id, {
@@ -449,23 +443,34 @@ const ConditionModal = ({
     // const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
     // setNodes(() => new_nodes)
 
-    const newButtonsResponze = () => {
-      if (currentCondition.type === 'button') {
-        const type = currentCondition.data.button?.type as string
+    if (currentCondition.type === 'button') {
+      const newResponzeButtons = data.response.buttons.map((rawButton) => {
+        return rawButton.filter((button) => button.id !== currentCondition.id)
+      })
 
-        const arrNewButtonsType = (
-          data.response.buttons as unknown as Record<string, IButtonType[]>
-        )[type].filter((item: IButtonType) => item.id !== currentCondition.id)
+      const newDataButtons = data.buttonsData?.buttons.filter(
+        (button) => button.id !== currentCondition.id,
+      )
 
-        return {
+      const newDate = {
+        ...data,
+        conditions: data.conditions?.filter(
+          (condition) => condition.id !== currentCondition.id,
+        ),
+        buttonsData: {
+          ...data.buttonsData,
+          buttons: newDataButtons,
+        },
+        response: {
           ...data.response,
-          buttons: {
-            ...data.response.buttons,
-            [type]: arrNewButtonsType,
-          },
-        }
+          buttons: newResponzeButtons,
+        },
       }
-      return data.response
+
+      updateNodeData(data.id, newDate)
+      quietSaveFlows()
+      onCloseHandler()
+      return
     }
 
     updateNodeData(data.id, {
@@ -473,10 +478,8 @@ const ConditionModal = ({
       conditions: data.conditions?.filter(
         (condition) => condition.id !== currentCondition.id,
       ),
-      response: newButtonsResponze(),
     })
     quietSaveFlows()
-    // }
     onCloseHandler()
   }
 
@@ -512,36 +515,45 @@ const ConditionModal = ({
         </div>
       </ModalHeader>
       <ModalBody className='min-h-[480px]'>
-        <label>
-          <Tabs
-            disabledKeys={['llm', 'custom']}
-            selectedKey={selected}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onSelectionChange={setSelectedHandler}
-            items={tabItems}
-            classNames={{
-              tabList: 'w-full bg-table-background',
-              tab: '',
-              cursor: 'border border-contrast-border',
-            }}
-            className='w-full max-w-full bg-background'
-          >
-            {(item) => (
-              <Tab
-                key={item.value}
-                title={
-                  <div className='flex items-center gap-1 text-sm'>
-                    {item.icon} {item.title}
-                  </div>
-                }
-                onClick={() =>
-                  setCurrentCondition({ ...currentCondition, type: item.value })
-                }
-              ></Tab>
-            )}
-          </Tabs>
-        </label>
+        {is_create ? (
+          <label>
+            <Tabs
+              disabledKeys={['llm', 'custom']}
+              selectedKey={selected}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              onSelectionChange={setSelectedHandler}
+              items={
+                !is_create
+                  ? tabItems
+                  : tabItems.filter((item) => item.value !== 'button')
+              }
+              classNames={{
+                tabList: 'w-full bg-table-background',
+                tab: '',
+                cursor: 'border border-contrast-border',
+              }}
+              className='w-full max-w-full bg-background'
+            >
+              {(item) => (
+                <Tab
+                  key={item.value}
+                  title={
+                    <div className='flex items-center gap-1 text-sm'>
+                      {item.icon} {item.title}
+                    </div>
+                  }
+                  onClick={() =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      type: item.value,
+                    })
+                  }
+                ></Tab>
+              )}
+            </Tabs>
+          </label>
+        ) : null}
         <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
           <DefInput
             className='col-span-3'

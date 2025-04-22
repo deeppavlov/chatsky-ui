@@ -157,7 +157,12 @@ const ResponseModal = ({
   const nodeData = node?.data as DefaultNodeDataType
 
   const isRemoveButtons =
-    nodeData.buttonsData?.buttons && nodeData.buttonsData?.buttons.length > 0
+    (nodeData.buttonsData?.buttons &&
+      nodeData.buttonsData?.buttons.length > 0 &&
+      data.response.buttons === undefined) ||
+    data.response?.buttons?.length === 0
+
+  console.log(data, 'old data')
 
   return (
     <Modal
@@ -239,8 +244,15 @@ const ResponseModal = ({
           data-testid='add-button-button'
           onClick={() => setIsAddButtonOpen(true)}
         >
-          <PlusIcon />
-          Add buttons
+          {data.response.buttons === undefined ||
+          data.response.buttons.length === 0 ? (
+            <>
+              <PlusIcon />
+              Add buttons
+            </>
+          ) : (
+            <>Change buttons</>
+          )}
         </Button>
         <Button
           data-testid='save-response-button'

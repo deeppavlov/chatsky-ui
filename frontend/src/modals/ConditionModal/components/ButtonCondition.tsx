@@ -50,7 +50,12 @@ const mapping: IMapping = {
           </div>
           <InputText
             value={state.text}
-            onChange={(e) => setState({ ...state, text: e.target.value })}
+            onChange={(e) =>
+              setState({
+                ...state,
+                text: e.target.value,
+              })
+            }
           />
         </div>
       </>
@@ -86,7 +91,12 @@ const mapping: IMapping = {
           </div>
           <InputText
             value={state.callback}
-            onChange={(e) => setState({ ...state, callback: e.target.value })}
+            onChange={(e) =>
+              setState({
+                ...state,
+                callback: e.target.value,
+              })
+            }
           />
         </div>
       </>
@@ -94,13 +104,12 @@ const mapping: IMapping = {
   },
 }
 
-const ButtonCondition = ({
-  condition,
-  setData,
-}: {
+interface ButtonConditionProps {
   condition: conditionType
   setData: (state: conditionType) => void
-}) => {
+}
+
+const ButtonCondition = ({ condition, setData }: ButtonConditionProps) => {
   const initialState =
     condition.data.button?.type === 'exactMatch'
       ? {
@@ -115,12 +124,11 @@ const ButtonCondition = ({
           id: '0',
         }
 
-  console.log(condition)
-
   const [state, setState] = useState<ButtonState>(
     condition.data.button ?? initialState,
   )
 
+  console.log(state, 'state')
   useEffect(() => {
     const newCondition = {
       ...condition,
@@ -157,10 +165,14 @@ const ButtonCondition = ({
           >
             <div className='grid grid-cols-2 gap-4'>
               <div className='flex flex-col gap-4'>
-                <Radio value='exactMatch'>Reply keyboard</Radio>
+                <Radio isDisabled value='exactMatch'>
+                  Reply keyboard
+                </Radio>
               </div>
               <div className='flex flex-col gap-4'>
-                <Radio value='hasCallback'>Inline keyboard</Radio>
+                <Radio isDisabled value='hasCallback'>
+                  Inline keyboard
+                </Radio>
               </div>
             </div>
           </RadioGroup>

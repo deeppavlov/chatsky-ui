@@ -16,7 +16,6 @@ export type conditionDataType = {
     variables: string[]
   }
   structure?: string
-  buttons?: IButtonType[]
   button?: IButtonType
 }
 

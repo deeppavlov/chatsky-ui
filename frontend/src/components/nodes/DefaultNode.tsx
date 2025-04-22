@@ -132,8 +132,8 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             onClick={onResponseOpen}
           >
             <Response data={data} />
-            {data.buttonsData?.buttons?.length &&
-              data.buttonsData?.buttons?.length > 0 && (
+            {data.buttonsData?.buttons &&
+              data.buttonsData.buttons.length > 0 && (
                 <Button
                   onClick={() => setIsAddButtonOpen(true)}
                   className='h-unit-10 min-w-unit-10 bg-transparent'
