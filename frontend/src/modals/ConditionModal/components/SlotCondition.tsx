@@ -97,6 +97,7 @@ const SlotCondition = ({
           setSelected={setSelectedSlot}
           items={slots.map((slot) => slot.name)}
           placeholder='Search slot name'
+          data-testid='slot-search'
         />
         <p className='my-2.5 text-sm'>
           The following slot will be filled for future use:

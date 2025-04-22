@@ -180,3 +180,14 @@ async def test_start_run(
 
 #             assert get_response.status_code == 200
 #             assert get_response.json()
+
+
+@pytest.mark.asyncio
+async def test_get_chat_ids():
+    test_result = ["0_0"]
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+        get_response = await async_client.get("/api/v1/bot/chat/ids")
+
+        assert get_response.status_code == 200
+        assert test_result == get_response.json()

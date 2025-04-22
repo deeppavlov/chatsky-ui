@@ -9,7 +9,7 @@ import React, {
   useState,
 } from 'react'
 
-interface ComboboxProps {
+interface ComboboxProps extends React.HTMLAttributes<HTMLElement> {
   items: string[]
   placeholder?: string
   selected: string
@@ -25,6 +25,7 @@ const DefCombobox: React.FC<ComboboxProps> = ({
   placeholder = 'Select an option',
   endContent,
   startContent,
+  ...props
 }) => {
   const [inputValue, setInputValue] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -83,7 +84,7 @@ const DefCombobox: React.FC<ComboboxProps> = ({
   }, [isOpen, highlightedIndex, filteredItems, handleSelectItem])
 
   return (
-    <div className='combobox-container'>
+    <div className='combobox-container' {...props}>
       <div
         ref={containerRef}
         className='flex w-full items-center justify-between rounded-lg border border-input-border bg-background p-2 transition-colors hover:bg-bg-secondary'

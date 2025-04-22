@@ -1,0 +1,47 @@
+{
+  "flows": [
+    {
+      "id": "GLOBAL",
+      "name": "Global",
+      "description": "This is Global Flow. It will be able to use soon...",
+      "color": "#3300FF",
+      "data": {
+        "nodes": [
+          {
+            "id": "58e13b95-9f1d-4ea7-a41b-081b60acdffc",
+            "type": "default_node",
+            "data": {
+              "id": "GLOBAL_NODE",
+              "flags": [],
+              "conditions": [],
+              "global_conditions": [],
+              "local_conditions": [],
+              "name": "Global node",
+              "response": {
+                "id": "GLOBAL_NODE_RESPONSE",
+                "name": "global_response",
+                "type": "text",
+                "data": [
+                  {
+                    "text": "Global node response",
+                    "priority": 1
+                  }
+                ]
+              }
+            },
+            "position": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ],
+        "edges": [],
+        "viewport": {
+          "x": 0,
+          "y": 0,
+          "zoom": 1
+        }
+      }
+    }
+  ]
+}

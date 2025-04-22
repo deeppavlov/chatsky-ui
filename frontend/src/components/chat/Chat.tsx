@@ -1,9 +1,8 @@
 import { send_message } from '@/api/bot'
-import { Button, Textarea, Tooltip } from '@nextui-org/react'
+import { Button, Divider, Textarea, Tooltip } from '@nextui-org/react'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { a, useTransition } from '@react-spring/web'
 import axios from 'axios'
-import cn from 'classnames'
 import {
   ArrowUp,
   ChevronsLeft,
@@ -13,7 +12,7 @@ import {
   Smile,
 } from 'lucide-react'
 import { memo, useContext, useEffect, useRef, useState } from 'react'
-import { chatContext } from '../../contexts/chatContext'
+import { chatContext, messageType } from '../../contexts/chatContext'
 import { runContext } from '../../contexts/runContext'
 import { workspaceContext } from '../../contexts/workspaceContext'
 import ChatIcon from '../../icons/buildmenu/ChatIcon'
@@ -22,8 +21,7 @@ import EmojiPicker, { EmojiType } from './EmojiPicker'
 
 const Chat = memo(() => {
   const { runs } = useContext(runContext)
-  const { chatId, chatHistory, setChatHistory, setMessages } =
-    useContext(chatContext)
+  const { chatId, chatHistory, setChatHistory } = useContext(chatContext)
   const { setMouseOnPane } = useContext(workspaceContext)
 
   const [isEmoji, setIsEmoji] = useState(false)
@@ -36,7 +34,6 @@ const Chat = memo(() => {
   const chatWindowRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const messages = chatHistory[chatId] || []
   const selectedRun = runs.find((run) => run.id === chatId)
 
   const handleMessage = async () => {
@@ -45,8 +42,8 @@ const Chat = memo(() => {
     setMessageValue('')
     setIsEmoji(false)
 
-    setMessages([
-      ...messages,
+    setChatHistory((history) => [
+      ...history,
       {
         message: messageValue,
         type: 'user',
@@ -54,11 +51,9 @@ const Chat = memo(() => {
     ])
 
     const { response } = await send_message(chatId, messageValue) // user_id is not passed; it will need to be fixed later
+    const botMessage = { message: response.text, type: 'bot' } as messageType
     setTimeout(() => {
-      setChatHistory((history) => ({
-        ...history,
-        [chatId]: [...history[chatId], { message: response.text, type: 'bot' }],
-      }))
+      setChatHistory((history) => [...history, botMessage])
     }, 500)
   }
 
@@ -94,7 +89,7 @@ const Chat = memo(() => {
 
     return () => document.removeEventListener('keydown', enterDownEvent)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messageValue, messages])
+  }, [messageValue, chatHistory])
 
   useEffect(() => {
     setMessageValue('')
@@ -108,9 +103,9 @@ const Chat = memo(() => {
       top: 999999,
       behavior: 'smooth',
     })
-  }, [messages.length])
+  }, [chatHistory])
 
-  const messagesT = useTransition(messages, {
+  const messagesT = useTransition(chatHistory, {
     from: { opacity: 0, y: 50 },
     enter: { opacity: 1, y: 0 },
     leave: { opacity: 0 },
@@ -129,10 +124,11 @@ const Chat = memo(() => {
   })
 
   return (
-    <div className='flex h-full shrink-0 flex-col border-l border-border bg-background'>
+    <div className='flex h-full basis-0 flex-col border-l border-border bg-background'>
       <div className='flex items-center justify-between border-b border-border py-1.5 pl-3 pr-1.5'>
         <div className='flex flex-grow items-center gap-1'>
           <button
+            data-testid='chatList-toggle'
             className='mr-2 h-6 w-6 hover:scale-105 active:scale-95'
             onClick={() => setListIsOpen((isOpen) => !isOpen)}
           >
@@ -158,14 +154,8 @@ const Chat = memo(() => {
       </div>
 
       <div className='flex h-full w-full'>
-        <div
-          className={cn(
-            'h-full overflow-hidden transition-all duration-300',
-            listIsOpen ? 'w-[240px]' : 'w-0',
-          )}
-        >
-          <ChatList />
-        </div>
+        <ChatList isOpen={listIsOpen} />
+        {listIsOpen && <Divider orientation='vertical' />}
 
         <div className='flex min-w-[360px] flex-col'>
           <div
@@ -182,7 +172,7 @@ const Chat = memo(() => {
                 } `}
               >
                 <div
-                  className={`break-all bg-background p-2 shadow-md ${
+                  className={`max-w-[90%] break-words bg-background p-2 shadow-md ${
                     m.type === 'system' && 'bg-warning'
                   }`}
                   style={{
@@ -208,6 +198,7 @@ const Chat = memo(() => {
                   isIconOnly
                   variant='light'
                   onClick={() => setIsEmoji(!isEmoji)}
+                  data-testid='chat-emoji-button'
                 >
                   <Smile
                     className={`hover:bg-accent h-max w-max rounded-lg p-1.5 transition ${
@@ -218,7 +209,7 @@ const Chat = memo(() => {
                 <div className='absolute bottom-12 right-0 z-10 origin-top-right'>
                   {emoji_transition((style, flag) => (
                     <>
-                      {chatId && flag && (
+                      {typeof chatId === 'number' && flag && (
                         <a.div style={style} className={`origin-bottom-right`}>
                           <EmojiPicker
                             data={emojis}
@@ -271,8 +262,9 @@ const Chat = memo(() => {
                 variant='flat'
                 size='md'
                 onClick={() => {
-                  setMessages([])
+                  setChatHistory([])
                 }}
+                data-testid='chat-reset'
               >
                 <RefreshCcw strokeWidth={1.2} />
               </Button>

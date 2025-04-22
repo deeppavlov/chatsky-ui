@@ -1,37 +1,47 @@
-import { createContext, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import useLocalStorage from '../hooks/useLocalStorage'
+import { getChatHistory } from '@/api/bot'
+import { createContext, useEffect, useState } from 'react'
 
 export type messageType = {
   message: string
   type: 'user' | 'bot' | 'system'
 }
 
-interface IChatHistory {
-  [runId: number]: messageType[]
-}
-
 type chatContextType = {
   chatId: number
   setChatId: React.Dispatch<React.SetStateAction<number>>
-  chatHistory: IChatHistory
-  setChatHistory: React.Dispatch<React.SetStateAction<IChatHistory>>
-  setMessages: (messages: messageType[]) => void
+  chatHistory: messageType[]
+  setChatHistory: React.Dispatch<React.SetStateAction<messageType[]>>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const chatContext = createContext({} as chatContextType)
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchParams, setSearchParams] = useSearchParams()
   const [chatId, setChatId] = useState<number>(-1)
-  const [chatHistory, setChatHistory] = useLocalStorage<{
-    [runId: number]: messageType[]
-  }>('chat_messages', {})
-  const setMessages = (messages: messageType[]) => {
-    setChatHistory((history) => ({ ...history, [chatId]: messages }))
-  }
+
+  const [chatHistory, setChatHistory] = useState<Array<messageType>>([])
+
+  useEffect(() => {
+    if (chatId < 0) return
+    const getHistory = async () => {
+      try {
+        const history = (await getChatHistory(chatId)) || []
+        setChatHistory(
+          history.reduce((acc, [userMessage, botMessage]) => {
+            return [
+              ...acc,
+              { message: userMessage, type: 'user' },
+              { message: botMessage, type: 'bot' },
+            ]
+          }, [] as messageType[]),
+        )
+      } catch (e) {
+        console.log(e)
+        setChatHistory([])
+      }
+    }
+    getHistory()
+  }, [chatId])
 
   return (
     <chatContext.Provider
@@ -40,7 +50,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setChatId,
         chatHistory,
         setChatHistory,
-        setMessages,
       }}
     >
       {children}

@@ -122,7 +122,6 @@ const ResponseModal = ({
 
   const saveResponse = () => {
     const name = currentResponse.name
-
     const errors = validateResponseName(name, selected, flows, data)
 
     if (errors.isInvalid) {
@@ -130,6 +129,9 @@ const ResponseModal = ({
       return
     }
 
+
+    const nodes = getNodes()
+    const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
     if (node && currentFlow) {
       const new_node = {
@@ -170,6 +172,7 @@ const ResponseModal = ({
       size={size}
       isOpen={isOpen}
       onClose={onClose}
+      data-testid='response-modal'
     >
       <ModalHeader className='flex items-center gap-2'>
         Edit response
@@ -210,6 +213,7 @@ const ResponseModal = ({
             value={currentResponse.name}
             isRequired
             onChange={(e) => {
+              console.log(e.target.value, 's')
               setCurrentResponse({
                 ...currentResponse,
                 name: e.target.value.replaceAll(' ', '_'),

@@ -384,6 +384,7 @@ const ConditionModal = ({
 
     const isValidCondition = validateCurrentCondition()
 
+
     // const newResponse = () => {
     //   const type = currentCondition.data.button?.type as string
 
@@ -507,7 +508,13 @@ const ConditionModal = ({
   }
 
   return (
-    <Modal isOpen={true} onClose={onCloseHandler} size='3xl'>
+    <Modal
+      data-tesid='condition-modal'
+      isOpen={true}
+      onClose={onCloseHandler}
+      size='3xl'
+      data-testid='condition-modal'
+    >
       <ModalHeader>
         <div className='flex items-center gap-2'>
           {is_create ? <PlusCircleIcon /> : <EditPenIcon />}
@@ -515,6 +522,7 @@ const ConditionModal = ({
         </div>
       </ModalHeader>
       <ModalBody className='min-h-[480px]'>
+
         {is_create ? (
           <label>
             <Tabs
@@ -554,6 +562,38 @@ const ConditionModal = ({
             </Tabs>
           </label>
         ) : null}
+        <label>
+          <Tabs
+            disabledKeys={['llm', 'custom', 'button']}
+            selectedKey={selected}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onSelectionChange={setSelectedHandler}
+            items={tabItems}
+            classNames={{
+              tabList: 'w-full bg-table-background',
+              tab: '',
+              cursor: 'border border-contrast-border',
+            }}
+            className='w-full max-w-full bg-background'
+          >
+            {(item) => (
+              <Tab
+                data-testid={`tab-${item.value}`}
+                key={item.value}
+                title={
+                  <div className='flex items-center gap-1 text-sm'>
+                    {item.icon} {item.title}
+                  </div>
+                }
+                onClick={() =>
+                  setCurrentCondition({ ...currentCondition, type: item.value })
+                }
+              ></Tab>
+            )}
+          </Tabs>
+        </label>
+
         <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
           <DefInput
             className='col-span-3'
@@ -568,6 +608,10 @@ const ConditionModal = ({
                 name: e.target.value.replaceAll(' ', '_'),
               })
             }
+
+
+            data-testid='condition-name'
+
             isInvalid={errorObject.isInvalid}
             errorMessage={errorObject.errorMessage}
           />
@@ -588,6 +632,7 @@ const ConditionModal = ({
                 },
               })
             }
+            data-testid='condition-priority'
           />
         </div>
         <div>

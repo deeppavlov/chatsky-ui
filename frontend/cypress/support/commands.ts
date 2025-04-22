@@ -35,3 +35,37 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('saveFlow', () => {
+  cy.get('body').trigger('keydown', {
+    key: 's',
+    ctrlKey: true,
+    bubbles: true,
+  })
+  cy.wait(500)
+})
+
+Cypress.Commands.add(
+  'changeNodeResponse',
+  (nodeId: string, responseData: { title: string; response: string }) => {
+    const { title, response } = responseData
+    cy.get(`#${nodeId}`).find('button[data-testid=response-edit-btn]').click()
+    cy.get('[data-testid=response-modal]')
+      .should('exist')
+      .find('input')
+      .clear()
+      .type(title)
+    cy.get('[data-testid=response-modal]')
+      .should('exist')
+      .find('textarea')
+      .clear()
+      .type(response)
+    cy.get('[data-testid=response-modal]').contains('button', 'Save').click()
+  },
+)
+
+Cypress.Commands.add('resetFlow', () => {
+  cy.fixture('emptyFlow.json').then((flowData) => {
+    cy.request('POST', 'http://localhost:8000/api/v1/flows/', flowData)
+  })
+})
