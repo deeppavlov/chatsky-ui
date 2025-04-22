@@ -40,7 +40,7 @@ const ResponseModal = ({
   setIsAddButtonOpen,
   size = '3xl',
 }: ResponseModalProps) => {
-  const { getNode, setNodes, getNodes, updateNodeData } = useReactFlow()
+  const { getNode, setNodes, getNodes } = useReactFlow()
   const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
   const [selected, setSelected] = useState<responseTypeType>(
@@ -129,7 +129,6 @@ const ResponseModal = ({
       return
     }
 
-
     const nodes = getNodes()
     const node = getNode(data.id)
     const currentFlow = flows.find((flow) => flow.name === flowId)
@@ -155,16 +154,6 @@ const ResponseModal = ({
       onClose()
     }
   }
-
-  const nodeData = node?.data as DefaultNodeDataType
-
-  const isRemoveButtons =
-    (nodeData.buttonsData?.buttons &&
-      nodeData.buttonsData?.buttons.length > 0 &&
-      data.response.buttons === undefined) ||
-    data.response?.buttons?.length === 0
-
-  console.log(data, 'old data')
 
   return (
     <Modal
@@ -226,30 +215,11 @@ const ResponseModal = ({
         <div>{bodyItems[selected]}</div>
       </ModalBody>
       <ModalFooter>
-        {isRemoveButtons && (
-          <Button
-            data-testid='remove-buttons-button'
-            onClick={() => {
-              updateNodeData(data.id, {
-                ...nodeData,
-                buttonsData: {
-                  rows: 0,
-                  columns: 0,
-                  buttons: [],
-                },
-              })
-              quietSaveFlows()
-            }}
-          >
-            Remove buttons
-          </Button>
-        )}
         <Button
           data-testid='add-button-button'
           onClick={() => setIsAddButtonOpen(true)}
         >
-          {data.response.buttons === undefined ||
-          data.response.buttons.length === 0 ? (
+          {data.response.buttons?.length === 0 ? (
             <>
               <PlusIcon />
               Add buttons

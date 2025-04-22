@@ -128,7 +128,6 @@ const ButtonCondition = ({ condition, setData }: ButtonConditionProps) => {
     condition.data.button ?? initialState,
   )
 
-  console.log(state, 'state')
   useEffect(() => {
     const newCondition = {
       ...condition,

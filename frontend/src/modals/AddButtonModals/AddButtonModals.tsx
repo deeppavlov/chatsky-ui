@@ -1,7 +1,13 @@
 import ButtonConditionIcon from '@/icons/nodes/conditions/ButtonConditionIcon'
 import { Button, cn, Input, Radio, RadioGroup } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
-import { ArrowUp, Paperclip, Plus, Smile } from 'lucide-react'
+import {
+  ArrowUp,
+  Trash2 as DeleteIcon,
+  Paperclip,
+  Plus,
+  Smile,
+} from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
@@ -30,7 +36,6 @@ const genNewCondition = (
           .filter((node) => node.type === 'default_node')
           .map((node) =>
             (node.data as DefaultNodeDataType).conditions.map((condition) => {
-              console.log(condition, 'condition 123')
               return condition.name
             }),
           ),
@@ -62,16 +67,13 @@ const genNewCondition = (
 
       const newName = `${nameFlow}_button_${count}`
 
-      console.log(newName, 'new name')
-
       const isNotUnique = allNameCondidionFlows.includes(newName)
 
       if (isNotUnique || cache.includes(newName)) {
-        console.log(newName, 'is not unique')
         return iterGenName((count += 1))
       }
       cache.push(newName)
-      console.log(newName, 'cache')
+
       return newName
     }
 
@@ -79,16 +81,16 @@ const genNewCondition = (
 
     const condition = generateNewConditionBase(initConditionName, 'button')
 
-    return {
+    const r = {
       ...condition,
       data: {
         ...condition.data,
         button: { ...button, id: condition.id },
       },
     }
+    return r
   })
 
-  console.log(cache, 'cache')
   return newConditions
 }
 
@@ -438,6 +440,8 @@ const AddButtonModals = ({
 
   const [buttons, setButtons] = useState<conditionType[]>(initButtons)
 
+  console.log(buttons, 'buttons')
+
   const [error, setError] = useState<
     {
       invalid: boolean
@@ -447,7 +451,7 @@ const AddButtonModals = ({
 
   useEffect(() => {
     const newButtons = buttons.map((condition, index) => {
-      const data =
+      const dataButton =
         selected === 'exactMatch'
           ? {
               text: ``,
@@ -463,7 +467,7 @@ const AddButtonModals = ({
         ...condition,
         data: {
           ...condition.data,
-          button: { ...condition.data?.button, ...data },
+          button: { ...dataButton, id: condition.id },
         },
       }
     })
@@ -642,6 +646,36 @@ const AddButtonModals = ({
           <div className='flex gap-2'>
             <Button isIconOnly className='rounded-full text-[18px]'>
               ?
+            </Button>
+            <Button
+              isIconOnly
+              className='rounded-full text-[18px]'
+              onClick={() => {
+                const arrIdConditions = buttons.map((item) => item.id)
+
+                const newConditions = (
+                  node?.data as DefaultNodeDataType
+                ).conditions.filter(
+                  (condition: conditionType) =>
+                    !arrIdConditions.includes(condition.id),
+                )
+
+                updateNodeData(data.id, {
+                  ...node?.data,
+                  conditions: newConditions,
+                  buttonsData: { buttons: [], rows: 0, columns: 0 },
+
+                  response: {
+                    ...(node?.data as DefaultNodeDataType).response,
+                    buttons: [],
+                  },
+                })
+                setButtons([])
+                quietSaveFlows()
+                onClose()
+              }}
+            >
+              <DeleteIcon />
             </Button>
           </div>
           <Button

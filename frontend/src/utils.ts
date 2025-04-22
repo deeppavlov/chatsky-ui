@@ -1,15 +1,10 @@
-import { Import } from 'lucide-react'
 import { v4 } from 'uuid'
 import { CreateFlowType } from './modals/FlowModal/CreateFlowModal'
-
 import {
   conditionType,
   conditionTypeType,
   ICondition,
 } from './types/ConditionTypes'
-
-import { conditionType, ICondition } from './types/ConditionTypes'
-
 import { FlowType, SlotsGroupType, SlotType } from './types/FlowTypes'
 import {
   AppNode,
