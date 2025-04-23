@@ -429,45 +429,43 @@ const ConditionModal = ({
   }
 
   const deleteCondition = () => {
-    // const nodes = getNodes()
-    // const node = getNode(data.id)
-    // const currentFlow = flows.find((flow) => flow.name === flowId)
-    // if (node && node.type === "default_node" && currentFlow) {
-    // const new_node: DefaultNodeType = {
-    //   ...node,
-    //   data: {
-    //     ...node.data,
-    //     conditions: data.conditions?.filter((condition) => condition.id !== currentCondition.id),
-    //   },
-    // }
-    // const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-    // setNodes(() => new_nodes)
+    const newConditions = data.conditions?.filter(
+      (condition) => condition.id !== currentCondition.id,
+    )
+
+    const newButtonsData =
+      data.buttonsData?.buttons.map((button) => {
+        return button.map((button) => {
+          if (button.id === currentCondition.id) {
+            const date =
+              button.type === 'exactMatch'
+                ? { text: '' }
+                : { callback: '', text: '' }
+
+            return { ...button, ...date }
+          }
+          return button
+        })
+      }) ?? []
+
+    const responseButtons = data.response.buttons.map((button) => {
+      return button.filter((button) => button.id !== currentCondition.id)
+    })
 
     if (currentCondition.type === 'button') {
-      const newResponzeButtons = data.response.buttons.map((rawButton) => {
-        return rawButton.filter((button) => button.id !== currentCondition.id)
-      })
-
-      const newDataButtons = data.buttonsData?.buttons.filter(
-        (button) => button.id !== currentCondition.id,
-      )
-
-      const newDate = {
+      updateNodeData(data.id, {
         ...data,
-        conditions: data.conditions?.filter(
-          (condition) => condition.id !== currentCondition.id,
-        ),
+        conditions: newConditions,
         buttonsData: {
-          ...data.buttonsData,
-          buttons: newDataButtons,
+          buttons: newButtonsData,
+          rows: data.buttonsData?.rows ?? 0,
+          columns: data.buttonsData?.columns ?? 0,
         },
         response: {
           ...data.response,
-          buttons: newResponzeButtons,
+          buttons: responseButtons,
         },
-      }
-
-      updateNodeData(data.id, newDate)
+      })
       quietSaveFlows()
       onCloseHandler()
       return

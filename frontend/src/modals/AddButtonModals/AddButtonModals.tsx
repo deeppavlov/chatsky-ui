@@ -1,5 +1,5 @@
 import ButtonConditionIcon from '@/icons/nodes/conditions/ButtonConditionIcon'
-import { Button, cn, Input, Radio, RadioGroup } from '@nextui-org/react'
+import { Button, Input, Radio, RadioGroup } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import {
   ArrowUp,
@@ -8,25 +8,25 @@ import {
   Plus,
   Smile,
 } from 'lucide-react'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { v4 } from 'uuid'
 import { flowContext } from '../../contexts/flowContext'
 import AttentionIcon from '../../icons/AttentionIcon'
 import BackIcon from '../../icons/BackIcon'
-import { conditionType, IButtonType } from '../../types/ConditionTypes'
 import { FlowType } from '../../types/FlowTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import { generateNewConditionBase } from '../../utils'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 
-const genNewCondition = (
-  buttons: IButtonType[] | conditionType[] = [],
-  flows: FlowType[],
-  flowId: string,
-  rows: number,
-  columns: number,
-  selected: string,
-) => {
+export interface IButton {
+  text: string
+  id: string
+  callback?: string
+  type: string
+}
+
+const getAllNameConditions = (flows: FlowType[]) => {
   const allNameCondidionFlows = flows
     .filter((flow) => flow.name !== 'Global')
     .map((flow) => {
@@ -35,9 +35,13 @@ const genNewCondition = (
         collection: flow.data.nodes
           .filter((node) => node.type === 'default_node')
           .map((node) =>
-            (node.data as DefaultNodeDataType).conditions.map((condition) => {
-              return condition.name
-            }),
+            (node.data as DefaultNodeDataType).conditions
+              .filter((condition) => {
+                return condition.type !== 'button'
+              })
+              .map((condition) => {
+                return condition.name
+              }),
           ),
       }
     })
@@ -45,53 +49,7 @@ const genNewCondition = (
       return flow.collection
     })
     .flat()
-
-  const initButtons =
-    buttons.length === 0
-      ? Array.from({ length: rows * columns }, () => {
-          const data =
-            selected === 'exactMatch'
-              ? { text: '', type: 'exactMatch' }
-              : { text: '', callback: '', type: 'hasCallback' }
-
-          return data
-        })
-      : buttons
-
-  const cache: string[] = []
-
-  const newConditions = initButtons.map((button) => {
-    const iterGenName = (count: number = 1): string => {
-      const nameFlow =
-        (flowId?.length ?? 0 >= 15) ? flowId?.slice(0, 15) : flowId
-
-      const newName = `${nameFlow}_button_${count}`
-
-      const isNotUnique = allNameCondidionFlows.includes(newName)
-
-      if (isNotUnique || cache.includes(newName)) {
-        return iterGenName((count += 1))
-      }
-      cache.push(newName)
-
-      return newName
-    }
-
-    const initConditionName = iterGenName()
-
-    const condition = generateNewConditionBase(initConditionName, 'button')
-
-    const r = {
-      ...condition,
-      data: {
-        ...condition.data,
-        button: { ...button, id: condition.id },
-      },
-    }
-    return r
-  })
-
-  return newConditions
+  return allNameCondidionFlows
 }
 
 const chunk = <T,>(array: T[], size: number): T[][] => {
@@ -105,11 +63,9 @@ const chunk = <T,>(array: T[], size: number): T[][] => {
 const RenderPrivateButtons = ({
   buttons,
   selected,
-  columns,
 }: {
-  buttons: conditionType[]
+  buttons: IButton[][]
   selected: string
-  columns: number
 }) => {
   return (
     <>
@@ -122,7 +78,6 @@ const RenderPrivateButtons = ({
             buttons={buttons}
             type='hasCallback'
             selected={selected}
-            columns={columns}
           />
         )}
         <div className='ml-[12px] mr-[12px] mt-[50px] flex items-center justify-between rounded-lg border-1 border-b border-border bg-background p-1'>
@@ -144,7 +99,6 @@ const RenderPrivateButtons = ({
             buttons={buttons}
             type='exactMatch'
             selected={selected}
-            columns={columns}
           />
         )}
       </div>
@@ -152,66 +106,47 @@ const RenderPrivateButtons = ({
   )
 }
 
-const validateButtons = (buttons: conditionType[], selected: string) => {
-  if (selected === 'exactMatch') {
-    return buttons.some((button) => button.data.button?.text !== '')
-  }
-
-  if (selected === 'hasCallback') {
-    return buttons.some(
-      (button) =>
-        button.data.button?.callback !== '' && button.data.button?.text !== '',
-    )
-  }
+const validateButtons = (buttons: IButton[][], selected: string): string[] => {
+  const key = selected === 'exactMatch' ? 'text' : 'callback'
+  const validate = buttons.map((row) => {
+    return row.map((button) => {
+      if (button[key] === '') {
+        return button.id
+      }
+      return null
+    })
+  })
+  return validate.flat().filter((item) => item !== null)
 }
 
 const RenderButtons = ({
   buttons,
-  selected,
-  columns,
+  type,
 }: {
   type: 'exactMatch' | 'hasCallback'
-  buttons: conditionType[]
+  buttons: IButton[][]
   selected: string
-  columns: number
 }) => {
-  const newArr = chunk(buttons, columns)
-
-  return newArr.map((row, index) => {
-    const curentColumns = row
-      .map((condition) => {
-        if (selected === 'exactMatch') {
-          if (condition.data.button?.text === '') {
-            return 0
-          }
-          return 1
-        }
-
-        if (selected === 'hasCallback') {
-          if (condition.data.button?.text === '') {
-            return 0
-          }
-          return 1
-        }
-      })
-      .filter((item) => item === 1).length
+  return buttons.map((row, index) => {
+    const key = type === 'exactMatch' ? 'text' : 'callback'
+    const curentColumns = row.filter((iter) => iter[key] !== '').length
 
     return (
       <div
         className={`grid grid-cols-${curentColumns} gap-2 p-[2px] pl-[12px] pr-[12px]`}
         key={index}
       >
-        {row.map((condition, index) => {
-          if (condition.data.button?.text === '') {
+        {row.map((iter, buttonIndex) => {
+          if (iter[key] === '') {
             return null
           }
 
           return (
             <button
-              key={index}
+              key={buttonIndex}
               className={`flex h-[23px] items-center justify-center rounded-lg bg-background px-4 text-sm`}
             >
-              {condition.data.button?.text}
+              {iter.text}
             </button>
           )
         })}
@@ -221,7 +156,6 @@ const RenderButtons = ({
 }
 
 const RenderCell = ({
-  selected,
   buttons,
   setButtons,
   type,
@@ -229,82 +163,43 @@ const RenderCell = ({
   error,
   setError,
 }: {
-  buttons: conditionType[]
-  setButtons: (buttons: conditionType[]) => void
+  buttons: IButton[][]
+  setButtons: (buttons: IButton[][]) => void
   type: 'exactMatch' | 'hasCallback'
   columns: number
-  selected: string
-
-  error: {
-    invalid: boolean
-    id: string
-  }[]
-  setError: (error: { invalid: boolean; id: string }[]) => void
+  error: string[]
+  setError: (error: string[]) => void
 }) => {
   const key = type === 'hasCallback' ? 'callback' : 'text'
 
-  const getInputValue = (condition: conditionType) =>
-    condition.data?.button?.[key]
-
   return (
     <div className={`grid grid-cols-${columns > 5 ? 5 : columns} gap-2`}>
-      {buttons.map((value: conditionType, buttonIndex) => {
-        const errorData = error.filter((item) => item.id === value.id)[0]
-
-        const getError = () => {
-          if (selected === 'exactMatch' && type === 'exactMatch') {
-            return errorData?.invalid
-          }
-
-          if (selected === 'hasCallback' && type === 'hasCallback') {
-            return errorData?.invalid
-          }
-
-          if (selected === 'hasCallback' && type === 'exactMatch') {
-            return false
-          }
-        }
-
-        return (
-          <div key={buttonIndex}>
-            <Input
-              isInvalid={getError()}
-              variant='bordered'
-              placeholder={`Please fill in the field in button ${buttonIndex + 1}`}
-              value={getInputValue(value as conditionType)}
-              size='sm'
-              onChange={(e) => {
-                const newButtons = buttons.map(
-                  (button: conditionType, newButtonIndex) => {
-                    if (buttonIndex === newButtonIndex) {
-                      return {
-                        ...button,
-                        data: {
-                          ...button.data,
-                          button: {
-                            ...button.data?.button,
-                            [key]: e.target.value,
-                          },
-                        },
+      {buttons.map((row: IButton[], buttonIndex) => {
+        return row.map((value) => {
+          return (
+            <div key={buttonIndex}>
+              <Input
+                isInvalid={error.includes(value.id) && value[key] === ''}
+                variant='bordered'
+                placeholder={`Please fill in the field in button ${buttonIndex + 1}`}
+                value={value[key]}
+                size='sm'
+                onChange={(e) => {
+                  const newButtons = buttons.map((row) => {
+                    return row.map((item) => {
+                      if (item.id === value.id) {
+                        return { ...item, [key]: e.target.value }
                       }
-                    }
-                    return button
-                  },
-                )
-
-                const newError = error.map((item) => {
-                  if (item.id === value.id) {
-                    return { invalid: false, id: item.id }
-                  }
-                  return item
-                })
-
-                setButtons(newButtons as conditionType[])
-                setError(newError)
-              }}
-            />
-          </div>
-        )
+                      return item
+                    })
+                  })
+                  setButtons(newButtons)
+                  setError(error.filter((item) => item !== value.id))
+                }}
+              />
+            </div>
+          )
+        })
       })}
     </div>
   )
@@ -319,15 +214,12 @@ const RenderTypeButtons = ({
   setError,
   selected,
 }: {
-  buttons: conditionType[]
-  setButtons: (buttons: conditionType[]) => void
+  buttons: IButton[][]
+  setButtons: (buttons: IButton[][]) => void
   type: 'exactMatch' | 'hasCallback'
   columns: number
-  error: {
-    invalid: boolean
-    id: string
-  }[]
-  setError: (error: { invalid: boolean; id: string }[]) => void
+  error: string[]
+  setError: (error: string[]) => void
   selected: string
 }) => {
   if (type === 'exactMatch') {
@@ -341,7 +233,6 @@ const RenderTypeButtons = ({
           setButtons={setButtons}
           type={type}
           columns={columns}
-          selected={selected}
           error={error}
           setError={setError}
         />
@@ -362,7 +253,6 @@ const RenderTypeButtons = ({
           columns={columns}
           error={error}
           setError={setError}
-          selected={selected}
         />
       </div>
 
@@ -383,7 +273,6 @@ const RenderTypeButtons = ({
           setButtons={setButtons}
           type={'hasCallback'}
           columns={columns}
-          selected={selected}
           error={error}
           setError={setError}
         />
@@ -392,6 +281,81 @@ const RenderTypeButtons = ({
   )
 }
 
+const genInitButtons = (
+  columns: number = 2,
+  rows: number = 2,
+  buttons: IButton[] = [],
+  selected: string = 'exactMatch',
+) => {
+  const arr = Array.from({ length: columns * rows }, (_, index) =>
+    selected === 'exactMatch'
+      ? {
+          text: buttons[index]?.text ?? '',
+          id: 'condition_' + v4(),
+          type: selected,
+        }
+      : {
+          text: buttons[index]?.text ?? '',
+          callback: buttons[index]?.callback ?? '',
+          id: 'condition_' + v4(),
+          type: selected,
+        },
+  )
+
+  return chunk(arr, columns)
+}
+
+const mappingButtons = {
+  addColumns: (buttons: IButton[][], selected: string) => {
+    const newButtons = buttons.map((row) => {
+      const data =
+        selected === 'exactMatch'
+          ? { text: '', id: 'condition_' + v4(), type: selected }
+          : {
+              text: '',
+              callback: '',
+              id: 'condition_' + v4(),
+              type: selected,
+            }
+      const newRow = [...row, data]
+
+      return newRow
+    })
+    let idCount = 1
+    return newButtons.map((row) => {
+      return row.map((item) => {
+        const text = selected === 'exactMatch' ? item.text : `button ${idCount}`
+        idCount += 1
+        return { ...item, text }
+      })
+    })
+  },
+  removeColumns: (buttons: IButton[][], selected: string) => {
+    const newButtons = buttons.map((row) => {
+      return row.slice(0, -1)
+    })
+    return newButtons
+  },
+  addRows: (buttons: IButton[][], selected: string) => {
+    const newButtons = [
+      ...buttons,
+      ...genInitButtons(buttons[0].length, 1, [], selected),
+    ]
+    let idCount = 1
+    return newButtons.map((row) => {
+      return row.map((item) => {
+        const buttonName = item.text === '' ? `button ${idCount}` : item.text
+        const text = selected === 'exactMatch' ? item.text : buttonName
+        idCount += 1
+        return { ...item, text }
+      })
+    })
+  },
+  removeRows: (buttons: IButton[][], selected: string) => {
+    const newButtons = buttons.slice(0, -1)
+    return newButtons
+  },
+}
 const AddButtonModals = ({
   data,
   isOpen,
@@ -407,124 +371,30 @@ const AddButtonModals = ({
   const { updateNodeData, getNode } = useReactFlow<AppNode, Edge>()
   const node = getNode(data.id)
 
-  const dataButtons = (node?.data as DefaultNodeDataType)?.buttonsData ?? {
-    rows: 2,
-    columns: 2,
+  const dataButtons = (node?.data as DefaultNodeDataType).buttonsData ?? {
+    rows: 0,
+    columns: 0,
     buttons: [],
   }
 
-  const initRows = dataButtons.rows
-  const initColumns = dataButtons.columns
+  const initButtons =
+    dataButtons.buttons.length === 0 ? genInitButtons() : dataButtons.buttons
 
-  const [rows, setRows] = useState(initRows || 2)
-  const [columns, setColumns] = useState(initColumns || 2)
+  const dataButtonsInit = {
+    rows: initButtons[0].length,
+    columns: initButtons.length,
+    buttons: initButtons,
+  }
 
-  const initSelected: string =
-    dataButtons?.buttons.length === 0
-      ? 'exactMatch'
-      : (dataButtons?.buttons[0].data.button?.type ?? 'exactMatch')
+  const [buttons, setButtons] = useState<IButton[][]>(dataButtonsInit.buttons)
 
+  const initSelected: string = buttons[0][0].type ?? 'exactMatch'
   const [selected, setSelected] = useState<string>(initSelected)
 
-  const initButtons: conditionType[] =
-    dataButtons.buttons.length === 0
-      ? (genNewCondition(
-          [],
-          flows,
-          flowId ?? '',
-          rows,
-          columns,
-          selected,
-        ) as conditionType[])
-      : dataButtons.buttons
+  const [columns, setColumns] = useState<number>(dataButtonsInit.columns)
+  const [rows, setRows] = useState<number>(dataButtonsInit.rows)
 
-  const [buttons, setButtons] = useState<conditionType[]>(initButtons)
-
-  console.log(buttons, 'buttons')
-
-  const [error, setError] = useState<
-    {
-      invalid: boolean
-      id: string
-    }[]
-  >([])
-
-  useEffect(() => {
-    const newButtons = buttons.map((condition, index) => {
-      const dataButton =
-        selected === 'exactMatch'
-          ? {
-              text: ``,
-              type: selected,
-            }
-          : {
-              text: `button ${index + 1}`,
-              callback: '',
-              type: selected,
-            }
-
-      return {
-        ...condition,
-        data: {
-          ...condition.data,
-          button: { ...dataButton, id: condition.id },
-        },
-      }
-    })
-    setButtons(newButtons as conditionType[])
-  }, [selected])
-
-  useEffect(() => {
-    const data =
-      selected === 'hasCallback'
-        ? {
-            text: '',
-            callback: '',
-            type: selected,
-          }
-        : {
-            text: '',
-            type: selected,
-          }
-
-    const newButtons = Array.from({ length: rows * columns }, (_, index) => ({
-      ...data,
-      id: index.toString(),
-    }))
-
-    const newConditionsButtons = genNewCondition(
-      newButtons,
-      flows,
-      flowId ?? '',
-      rows,
-      columns,
-      selected,
-    ) as conditionType[]
-
-    const currentButtonsLength = buttons.length
-
-    if (newConditionsButtons.length > 25) {
-      setButtons(
-        newConditionsButtons.slice(0, 25).map((button) => ({ ...button })),
-      )
-      return
-    }
-
-    if (currentButtonsLength > rows * columns) {
-      setButtons(
-        buttons.slice(0, rows * columns).map((button) => ({ ...button })),
-      )
-      return
-    }
-
-    setButtons([
-      ...buttons,
-      ...newConditionsButtons.slice(currentButtonsLength).map((button) => ({
-        ...button,
-      })),
-    ])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, columns])
+  const [error, setError] = useState<string[]>([])
 
   return (
     <Modal
@@ -565,13 +435,22 @@ const AddButtonModals = ({
             <RadioGroup
               value={selected}
               onValueChange={(value) => {
-                if (value === 'hasCallback') {
-                  setButtons(buttons.map((button) => ({ ...button, text: '' })))
-                } else {
-                  setButtons(
-                    buttons.map((button) => ({ ...button, callback: '' })),
-                  )
-                }
+                let countId = 0
+                const newButtons = buttons.map((row) => {
+                  return row.map((item) => {
+                    const object =
+                      value === 'exactMatch'
+                        ? { type: value, text: '' }
+                        : {
+                            callback: '',
+                            type: value,
+                            text: `button ${(countId += 1)}`,
+                          }
+                    return { ...item, ...object }
+                  })
+                })
+
+                setButtons(newButtons)
                 setSelected(value)
               }}
             >
@@ -584,11 +463,7 @@ const AddButtonModals = ({
                 </div>
               </div>
             </RadioGroup>
-            <RenderPrivateButtons
-              buttons={buttons}
-              selected={selected}
-              columns={columns}
-            />
+            <RenderPrivateButtons buttons={buttons} selected={selected} />
           </div>
 
           <div>
@@ -604,7 +479,21 @@ const AddButtonModals = ({
                 className='w-16'
                 size='sm'
                 onChange={(e) => {
+                  if (Number(e.target.value) > 5) {
+                    setColumns(Number(e.target.value))
+                    return
+                  }
+                  if (Number(e.target.value) < 1) {
+                    setColumns(1)
+                    return
+                  }
                   setColumns(Number(e.target.value))
+                  const key =
+                    Number(e.target.value) > columns
+                      ? 'addColumns'
+                      : 'removeColumns'
+                  const newButtons = mappingButtons[key](buttons, selected)
+                  setButtons(newButtons)
                 }}
                 isInvalid={columns > 5}
               />
@@ -615,7 +504,19 @@ const AddButtonModals = ({
                 type='number'
                 value={String(rows)}
                 onChange={(e) => {
+                  if (Number(e.target.value) > 5) {
+                    setRows(Number(e.target.value))
+                    return
+                  }
+                  if (Number(e.target.value) < 1) {
+                    setRows(1)
+                    return
+                  }
                   setRows(Number(e.target.value))
+                  const key =
+                    Number(e.target.value) > rows ? 'addRows' : 'removeRows'
+                  const newButtons = mappingButtons[key](buttons, selected)
+                  setButtons(newButtons)
                 }}
                 className='w-16'
                 size='sm'
@@ -651,17 +552,13 @@ const AddButtonModals = ({
               isIconOnly
               className='rounded-full text-[18px]'
               onClick={() => {
-                const arrIdConditions = buttons.map((item) => item.id)
-
                 const newConditions = (
                   node?.data as DefaultNodeDataType
-                ).conditions.filter(
-                  (condition: conditionType) =>
-                    !arrIdConditions.includes(condition.id),
-                )
+                ).conditions.filter((condition) => {
+                  return condition.type !== 'button'
+                })
 
                 updateNodeData(data.id, {
-                  ...node?.data,
                   conditions: newConditions,
                   buttonsData: { buttons: [], rows: 0, columns: 0 },
 
@@ -684,93 +581,95 @@ const AddButtonModals = ({
             onClick={() => {
               const isValidate = validateButtons(buttons, selected)
 
-              if (!isValidate) {
-                const validate = buttons.flatMap((button) => {
-                  if (selected === 'exactMatch') {
-                    if (button.data.button?.text === '') {
-                      return {
-                        invalid: true,
-                        id: button.id,
-                      }
-                    }
-                  }
+              if (isValidate.length === buttons.flat().length) {
+                setError(isValidate)
+                return
+              }
 
-                  if (selected === 'hasCallback') {
-                    if (button.data.button?.callback === '') {
-                      return {
-                        invalid: true,
-                        id: button.id,
-                      }
-                    }
+              const filteredConditionsButtons = buttons.map((row) => {
+                return row.filter((item) => {
+                  if (selected === 'exactMatch') {
+                    return item.text !== ''
                   }
-                  return []
+                  return item.callback !== ''
+                })
+              })
+
+              const cache: string[] = []
+              const allNameCondidionFlows = getAllNameConditions(flows)
+
+              const newConditionsButtons = filteredConditionsButtons
+                .flat()
+                .map((button) => {
+                  const iterGenName = (count: number = 1): string => {
+                    const nameFlow =
+                      (flowId?.length ?? 0 >= 15)
+                        ? flowId?.slice(0, 15)
+                        : flowId
+                    const newName = `${nameFlow}_button_${count}`
+                    const isNotUnique = allNameCondidionFlows.includes(newName)
+                    if (isNotUnique || cache.includes(newName)) {
+                      return iterGenName((count += 1))
+                    }
+                    cache.push(newName)
+                    return newName
+                  }
+                  const initConditionName = iterGenName()
+                  const condition = generateNewConditionBase(
+                    initConditionName,
+                    'button',
+                  )
+
+                  return {
+                    ...condition,
+                    id: button.id,
+                    data: {
+                      ...condition.data,
+                      button: { ...button, id: button.id },
+                    },
+                  }
                 })
 
-                const isValidate = validate.map((button) => button?.invalid)
-
-                if (isValidate.includes(true)) {
-                  setError(validate)
-                  return
-                }
-              }
-
-              const newConditions = buttons.filter((condition) => {
-                const value =
-                  selected === 'exactMatch'
-                    ? condition.data.button?.text
-                    : condition.data.button?.callback
-
-                return value !== ''
-              })
-
-              const allConditions = [
+              const newConditions = [
                 ...(node?.data as DefaultNodeDataType).conditions.filter(
-                  (condition) => condition.type !== 'button',
+                  (el) => el.type !== 'button',
                 ),
-                ...newConditions,
+                ...newConditionsButtons,
               ]
 
-              const response = chunk(buttons, columns).map((row) => {
-                return row
-                  .filter((item) => {
-                    const value =
-                      selected === 'exactMatch'
-                        ? item.data.button?.text
-                        : item.data.button?.callback
-                    return value !== ''
-                  })
-                  .map((item) => {
-                    return selected === 'exactMatch'
-                      ? {
-                          text: item.data.button?.text ?? '',
-                          id: item.id,
-                        }
+              const responseButtons = filteredConditionsButtons.map((row) => {
+                return row.map((item) => {
+                  const data =
+                    selected === 'exactMatch'
+                      ? { text: item.text, id: item.id }
                       : {
-                          callback: item.data.button?.callback ?? '',
+                          text: item.text,
+                          callback: item.callback,
                           id: item.id,
-                          text: item.data.button?.text ?? '',
                         }
-                  })
+                  return data
+                })
               })
-
-              const newData = {
-                ...node?.data,
-                buttonsData: {
-                  buttons: buttons,
-                  rows,
-                  columns,
-                },
-                conditions: allConditions,
-                response: {
-                  ...(node?.data as DefaultNodeDataType).response,
-                  buttons: response,
-                },
+              const buttonsData = {
+                buttons: buttons,
+                rows: rows,
+                columns: columns,
               }
 
-              updateNodeData(data.id, newData)
-              setButtons([])
-              quietSaveFlows()
-              onClose()
+              console.log('newConditions')
+
+              // updateNodeData(data.id, {
+              //   ...node?.data,
+              //   conditions: newConditions,
+              //   buttonsData: buttonsData,
+              //   response: {
+              //     ...(node?.data as DefaultNodeDataType).response,
+              //     buttons: responseButtons,
+              //   },
+              // })
+              // setButtons([])
+              // quietSaveFlows()
+              // onClose()
             }}
           >
             <Plus />

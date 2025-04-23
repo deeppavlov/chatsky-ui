@@ -21,7 +21,7 @@ import Condition from './conditions/Condition'
 import Response from './responses/Response'
 
 const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
-  console.log('data', data)
+  // console.log('data', data)
   const { openPopUp } = useContext(PopUpContext)
   const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
   const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)
