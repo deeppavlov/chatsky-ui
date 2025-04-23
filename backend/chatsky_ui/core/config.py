@@ -104,6 +104,7 @@ class Settings:
         dotenv_path.touch(exist_ok=True)
 
         for key, value in env_vars.items():
+            key = key.strip().replace(" ", "_")
             if key in os.environ:
                 logging.warning(
                     f"Environment variable '{key}' already exists. "
@@ -115,7 +116,8 @@ class Settings:
     def get_env_vars(self, prefix: str) -> Dict[str, str]:
         dotenv_path = self.work_directory / ".env"
         if not dotenv_path.exists():
-            raise FileNotFoundError(f"{dotenv_path} not found.")
+            dotenv_path.touch()
+            return {}
         load_dotenv(dotenv_path)
 
         env_vars = {}
@@ -127,7 +129,8 @@ class Settings:
     def remove_env_vars(self, keys_to_remove: list):
         dotenv_path = self.work_directory / ".env"
         if not dotenv_path.exists():
-            raise FileNotFoundError(f"{dotenv_path} not found.")
+            dotenv_path.touch()
+            return {}
         load_dotenv(dotenv_path)
 
         with open(dotenv_path, "r") as f:
@@ -140,6 +143,9 @@ class Settings:
                     f.write(line)
                 else:
                     is_found = True
+                    key = line.split("=")[0].strip()
+                    if key in os.environ:
+                        del os.environ[key]
         if not is_found:
             raise ValueError(f"None of the keys {keys_to_remove} were found in {dotenv_path}.")
 

@@ -32,10 +32,13 @@ async def get_providers():
 @router.get("/llms/tokens")
 async def get_llm_tokens():
     env_vars = settings.get_env_vars("llm")
-    return [
-        (key.split("_")[1], "_".join(key.split("_")[2:]))
-        for key, _ in env_vars.items()
-    ]
+    tokens = []
+    for key, _ in env_vars.items():
+        provider = key.split("_")[-1]
+        key = "_".join(key.split("_")[1:-1])
+        tokens.append((key, provider))
+        
+    return tokens
 
 
 @router.post("/llms/token")
@@ -66,14 +69,7 @@ async def patch_llm_token(provider: str, old_token_name:str, new_token_name: Opt
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Provider '{provider}' not found. Available providers: {', '.join(LLMModel.PROVIDERS.keys())}",
         )
-    
-    env_vars = settings.get_env_vars(_form_token_name(old_token_name, provider))
-    if not env_vars:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Token '{old_token_name}' doesn't exist. Use POST to create it.",
-        )
-    
+
     if new_token_name is not None:
         env_vars = settings.get_env_vars(_form_token_name(new_token_name, provider))
         if env_vars:
@@ -85,7 +81,13 @@ async def patch_llm_token(provider: str, old_token_name:str, new_token_name: Opt
     new_token_name = new_token_name or old_token_name
     new_token_value = new_token_value or settings.get_env_vars(_form_token_name(old_token_name, provider)).get(_form_token_name(old_token_name, provider))
 
-    settings.remove_env_vars([_form_token_name(old_token_name, provider)])
+    try:
+        settings.remove_env_vars([_form_token_name(old_token_name, provider)])
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Token '{old_token_name}' for provider '{provider}' not found.",
+        )
     settings.add_env_vars({_form_token_name(new_token_name, provider): new_token_value})
 
     return {"status": "ok", "message": "Token updated successfully"}
@@ -95,13 +97,12 @@ async def patch_llm_token(provider: str, old_token_name:str, new_token_name: Opt
 async def delete_llm_token(provider: str, token_name: str):
     try:
         settings.remove_env_vars([_form_token_name(token_name, provider)])
-        return {"status": "ok", "message": "Token deleted successfully"}
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Token '{token_name}' for provider '{provider}' not found.",
         )
-
+    return {"status": "ok", "message": "Token deleted successfully"}
 
 @router.get("/llms")
 async def get_llm_models():
