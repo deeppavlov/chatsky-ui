@@ -1,18 +1,16 @@
-import { Button, Input, ModalProps, Switch, Tab, Tabs } from '@nextui-org/react';
-import { useReactFlow } from '@xyflow/react';
-import { PlusIcon } from 'lucide-react';
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { flowContext } from '../../contexts/flowContext';
-import { IButtonType } from '../../types/ConditionTypes';
-import { DefaultNodeDataType } from '../../types/NodeTypes';
-import { responseType, responseTypeType } from '../../types/ResponseTypes';
-import { validateResponseName } from '../../utils';
-import AddButtonModals from '../AddButtonModals/AddButtonModals';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents';
-import PythonResponse from './components/PythonResponse';
-import TextResponse from './components/TextResponse';
-
+import { Button, Input, ModalProps, Switch, Tab, Tabs } from '@nextui-org/react'
+import { useReactFlow } from '@xyflow/react'
+import { PlusIcon } from 'lucide-react'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { flowContext } from '../../contexts/flowContext'
+import { DefaultNodeDataType } from '../../types/NodeTypes'
+import { responseType, responseTypeType } from '../../types/ResponseTypes'
+import { validateResponseName } from '../../utils'
+import AddButtonModals from '../AddButtonModals/AddButtonModals'
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
+import PythonResponse from './components/PythonResponse'
+import TextResponse from './components/TextResponse'
 
 type ResponseModalTab =
   | 'Using LLM'
@@ -60,7 +58,9 @@ const ResponseModal = ({
     [response.type]: response,
   })
 
-  const [hideButtons, setHideButtons] = useState(data.response.hideButtons ?? false)
+  const [hideButtons, setHideButtons] = useState(
+    data.response.hideButtons ?? false,
+  )
 
   const node = getNode(data.id)
 
@@ -160,7 +160,9 @@ const ResponseModal = ({
     }
   }
 
-  const buttonsCondition = (node?.data as DefaultNodeDataType).conditions.filter((condition) => condition.type === 'button')
+  const buttonsCondition = (
+    node?.data as DefaultNodeDataType
+  ).conditions.filter((condition) => condition.type === 'button')
 
   return (
     <Modal

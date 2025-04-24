@@ -23,7 +23,7 @@ export type responseType = {
   name: string
   type: responseTypeType
   data: responseDataType[]
-  buttons: IButtonType[][]
+  buttons?: IButtonType[][]
   hideButtons?: boolean
 }
 

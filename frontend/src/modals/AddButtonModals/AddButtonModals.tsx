@@ -116,7 +116,7 @@ const validateButtons = (buttons: IButton[][], selected: string): string[] => {
       return null
     })
   })
-  return validate.flat().filter((item) => item !== null)
+  return validate.flat().filter((item): item is string => item !== null)
 }
 
 const RenderButtons = ({
@@ -212,7 +212,6 @@ const RenderTypeButtons = ({
   columns,
   error,
   setError,
-  selected,
 }: {
   buttons: IButton[][]
   setButtons: (buttons: IButton[][]) => void
@@ -220,7 +219,6 @@ const RenderTypeButtons = ({
   columns: number
   error: string[]
   setError: (error: string[]) => void
-  selected: string
 }) => {
   if (type === 'exactMatch') {
     return (
@@ -330,7 +328,7 @@ const mappingButtons = {
       })
     })
   },
-  removeColumns: (buttons: IButton[][], selected: string) => {
+  removeColumns: (buttons: IButton[][]) => {
     const newButtons = buttons.map((row) => {
       return row.slice(0, -1)
     })
@@ -351,7 +349,7 @@ const mappingButtons = {
       })
     })
   },
-  removeRows: (buttons: IButton[][], selected: string) => {
+  removeRows: (buttons: IButton[][]) => {
     const newButtons = buttons.slice(0, -1)
     return newButtons
   },
@@ -539,7 +537,6 @@ const AddButtonModals = ({
             columns={columns}
             error={error}
             setError={setError}
-            selected={selected}
           />
         </ModalBody>
 
@@ -656,20 +653,18 @@ const AddButtonModals = ({
                 columns: columns,
               }
 
-              console.log('newConditions')
-
-              // updateNodeData(data.id, {
-              //   ...node?.data,
-              //   conditions: newConditions,
-              //   buttonsData: buttonsData,
-              //   response: {
-              //     ...(node?.data as DefaultNodeDataType).response,
-              //     buttons: responseButtons,
-              //   },
-              // })
-              // setButtons([])
-              // quietSaveFlows()
-              // onClose()
+              updateNodeData(data.id, {
+                ...node?.data,
+                conditions: newConditions,
+                buttonsData: buttonsData,
+                response: {
+                  ...(node?.data as DefaultNodeDataType).response,
+                  buttons: responseButtons,
+                },
+              })
+              setButtons([])
+              quietSaveFlows()
+              onClose()
             }}
           >
             <Plus />
