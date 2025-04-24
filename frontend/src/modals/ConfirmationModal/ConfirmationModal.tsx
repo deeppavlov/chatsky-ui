@@ -11,7 +11,7 @@ import {
 
 interface ConfirmationModalProps extends CustomModalProps {
   title: string
-  bodyText: string
+  bodyText: string | React.ReactNode
   onAction: (e: React.MouseEvent) => void
 }
 

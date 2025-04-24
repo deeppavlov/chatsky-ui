@@ -18,7 +18,7 @@ const Settings = memo(() => {
 
   return (
     <>
-      <div className='absolute left-0 top-0 h-screen w-screen bg-background px-12 pb-14 pt-24 transition-all duration-300'>
+      <div className='absolute left-0 top-0 h-screen w-screen bg-background px-10 pb-14 pt-24 transition-all duration-300'>
         <h2 className='mb-4 text-2xl font-semibold'>Settings</h2>
         <div className='grid h-full grid-cols-6 grid-rows-1 gap-8 pb-14'>
           <div className='col-span-1 flex w-full gap-4'>
