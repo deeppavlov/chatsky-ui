@@ -1,18 +1,37 @@
-import { useDisclosure } from '@nextui-org/react'
+import { PopUpContext } from '@/contexts/popUpContext'
+import ConfirmationModal from '@/modals/ConfirmationModal/ConfirmationModal'
+import { LinkNodeDataType } from '@/types/NodeTypes'
 import classNames from 'classnames'
 import { Edit } from 'lucide-react'
 import React, { useCallback, useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import TrashIcon from '../../icons/TrashIcon'
-import СonfirmationModal from '../../modals/СonfirmationModal/СonfirmationModal'
 import { FlowType } from '../../types/FlowTypes'
+
+interface Link {
+  target_flow: string
+  target_node: string
+  id: string
+  name: string
+}
+
+const getContent = (arrLink: Link[]): string => {
+  if (arrLink.length >= 2) {
+    return 'This flow is linked to other flows.'
+  }
+  if (arrLink.length === 1) {
+    return `This flow is linked to ${arrLink[0].name}.`
+  }
+
+  return 'This flow contains part of <Project name> dialog.'
+}
 
 const FlowCard = ({ flow }: { flow: FlowType }) => {
   const [hover, setHover] = useState(false)
-  const { deleteFlow } = useContext(flowContext)
+  const { deleteFlow, flows } = useContext(flowContext)
   const navigate = useNavigate()
-  const { isOpen, onClose, onOpen } = useDisclosure()
+  const { openPopUp } = useContext(PopUpContext)
 
   const deleteFlowHandler = useCallback(
     (e: React.MouseEvent) => {
@@ -22,6 +41,42 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
     },
     [deleteFlow, flow],
   )
+
+  const myFlows = flows.filter((el) => el.name !== 'Global')
+
+  const arrLinks = myFlows.map((el: FlowType) => {
+    const name = el.name
+    const links = el.data.nodes
+      .filter((el) => el.type === 'link_node')
+      .map((link) => {
+        const { target_flow, target_node } = (link.data as LinkNodeDataType)
+          .transition
+        const id = el.id
+
+        return { target_flow, target_node, id, name }
+      })
+
+    return { links }
+  })
+
+  const result = arrLinks
+    .map((el) => {
+      const res = el.links.filter((link) => link.target_flow === flow.name)
+      return res
+    })
+    .flat()
+
+  const handleDeleteConfirmation = () =>
+    openPopUp(
+      <ConfirmationModal
+        id='delete-flow'
+        title={`Do you want to delete ${flow.name}?`}
+        bodyText={getContent(result)}
+        onAction={(e) => deleteFlowHandler(e)}
+      />,
+      'delete-flow',
+    )
+
   // flex w-full flex-col overflow-hidden whitespace-pre-wrap break-words
   return (
     <div
@@ -44,7 +99,7 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
           </div>
           <button
             data-testid={`${flow.name}-delete-btn`}
-            onClick={onOpen}
+            onClick={handleDeleteConfirmation}
             className={`flex h-8 w-8 items-center justify-center rounded-lg border border-transparent bg-transparent transition hover:border-border hover:bg-f-card-trash ${
               !hover && 'opacity-0'
             } absolute right-4 top-4 z-10`}
@@ -71,15 +126,6 @@ const FlowCard = ({ flow }: { flow: FlowType }) => {
           Edit flow
         </button>
       </div>
-      {isOpen && (
-        <СonfirmationModal
-          flow={flow}
-          size={'sm'}
-          isOpen={isOpen}
-          onClose={onClose}
-          onDelete={(e) => deleteFlowHandler(e)}
-        />
-      )}
     </div>
   )
 }
