@@ -448,9 +448,10 @@ const ConditionModal = ({
         })
       }) ?? []
 
-    const responseButtons = data.response?.buttons?.map((button) => {
-      return button.filter((button) => button.id !== currentCondition.id)
-    }) ?? []
+    const responseButtons =
+      data.response?.buttons?.map((button) => {
+        return button.filter((button) => button.id !== currentCondition.id)
+      }) ?? []
 
     if (currentCondition.type === 'button') {
       updateNodeData(data.id, {
