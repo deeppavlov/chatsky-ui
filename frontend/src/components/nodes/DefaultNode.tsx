@@ -49,6 +49,10 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
     [data.conditions?.length, data.response?.data.length],
   )
 
+  const isHasConditionsButtons =
+    data.conditions.filter((condition) => condition.type === 'button').length >
+    0
+
   return (
     <>
       <div id={data.id} data-testid={data.id} className='default_node'>
@@ -136,15 +140,14 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
           >
             <Response data={data} />
 
-            {data.buttonsData?.buttons &&
-              data.buttonsData.buttons.length > 0 && (
-                <Button
-                  onClick={() => setIsAddButtonOpen(true)}
-                  className='h-unit-10 min-w-unit-10 bg-transparent'
-                >
-                  <ButtonConditionIcon className='size-6' />
-                </Button>
-              )}
+            {isHasConditionsButtons && (
+              <Button
+                onClick={() => setIsAddButtonOpen(true)}
+                className='h-unit-10 min-w-unit-10 bg-transparent'
+              >
+                <ButtonConditionIcon className='size-6' />
+              </Button>
+            )}
           </button>
 
           <div className='flex w-full flex-col gap-2'>
@@ -170,8 +173,6 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
         setNodeDataState={setNodeDataState}
       />
       <ResponseModal
-        isAddButtonOpen={isAddButtonOpen}
-        setIsAddButtonOpen={setIsAddButtonOpen}
         data={nodeDataState}
         setData={setNodeDataState}
         isOpen={isResponseOpen}

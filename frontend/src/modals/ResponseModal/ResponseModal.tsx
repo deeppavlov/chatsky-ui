@@ -26,8 +26,6 @@ type ResponseModalProps = {
   size?: ModalProps['size']
   isOpen: boolean
   onClose: () => void
-  isAddButtonOpen: boolean
-  setIsAddButtonOpen: (isOpen: boolean) => void
 }
 
 const ResponseModal = ({
@@ -36,8 +34,6 @@ const ResponseModal = ({
   data,
   setData,
   response,
-  isAddButtonOpen,
-  setIsAddButtonOpen,
   size = '3xl',
 }: ResponseModalProps) => {
   const { getNode, setNodes, getNodes, updateNodeData } = useReactFlow()
@@ -48,6 +44,8 @@ const ResponseModal = ({
   )
   // const [nodeDataState, setNodeDataState] = useState(data)
   const [currentResponse, setCurrentResponse] = useState(response)
+
+  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
 
   const setSelectedHandler = (key: responseTypeType) => {
     setCurrentResponse({ ...currentResponse, type: key })
@@ -64,7 +62,6 @@ const ResponseModal = ({
 
   const node = getNode(data.id)
 
-  console.log(data.response, 'hideButtons')
   useEffect(() => {
     const key = currentResponse.type
     setResponseStor({ ...responseStor, [key]: currentResponse })

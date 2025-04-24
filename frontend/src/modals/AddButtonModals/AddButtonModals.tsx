@@ -436,11 +436,14 @@ const AddButtonModals = ({
                 let countId = 0
                 const newButtons = buttons.map((row) => {
                   return row.map((item) => {
+                    const curentValue =
+                      selected === 'exactMatch' ? item.text : item.callback
+
                     const object =
                       value === 'exactMatch'
-                        ? { type: value, text: '' }
+                        ? { type: value, text: curentValue ?? '' }
                         : {
-                            callback: '',
+                            callback: curentValue ?? '',
                             type: value,
                             text: `button ${(countId += 1)}`,
                           }
@@ -450,6 +453,7 @@ const AddButtonModals = ({
 
                 setButtons(newButtons)
                 setSelected(value)
+                setError([])
               }}
             >
               <div className='grid grid-cols-2 gap-4 pb-[8px]'>
