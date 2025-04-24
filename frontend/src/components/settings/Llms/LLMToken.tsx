@@ -26,7 +26,7 @@ const LLMToken = ({ token }: { token: IToken }) => {
     provider: token.provider,
     value: token?.value || '',
   }
-  const { llmProviders, setTokens, tokens } = useContext(LlmContext)
+  const { llmProviders, setTokens, tokens, llmConfigs } = useContext(LlmContext)
   const { openPopUp } = useContext(PopUpContext)
   const [hidePassword, setHidePassword] = useState(true)
   const [formData, setFormData] = useState<ITokenFormData>(initialFormData)
@@ -45,7 +45,8 @@ const LLMToken = ({ token }: { token: IToken }) => {
 
   const saveToken = async (
     field: keyof IToken,
-    input: HTMLInputElement | HTMLSelectElement,
+    value: string,
+    blurInput?: () => void,
   ) => {
     const otherFieldsFilled = Object.entries(formData).every(([key, value]) => {
       if (key === field) return true
@@ -54,31 +55,33 @@ const LLMToken = ({ token }: { token: IToken }) => {
       }
       return Boolean(value)
     })
-    if (!otherFieldsFilled || !input.value) {
-      console.log('all fields')
-
+    if (!otherFieldsFilled || !value) {
       setError('Please fill in all fields')
       return
     }
     setError(null)
 
-    if (tokenNames.includes(formData.name) && formData.name !== token.name) {
+    // если пользователь редактировал имя, но оно осталось прежним
+    if (field === 'name' && value === token.name) return
+
+    const tokenIsExist = field === 'name' && tokenNames.includes(value)
+    if (tokenIsExist) {
       setError('A token with this name already exists')
       return
     }
 
     if (!tokenIsListed) {
-      await createLLMToken({ ...formData, [field]: input.value })
-      setTokens((prev) => [...prev, { ...formData, [field]: input.value }])
+      await createLLMToken({ ...formData, [field]: value })
+      setTokens((prev) => [...prev, { ...formData, [field]: value }])
       setFormData(initialFormData)
-      ;['value', 'name'].includes(field) && input.blur()
+      blurInput?.()
     } else {
-      await updateLLMToken(token, { [field]: input.value })
+      await updateLLMToken(token, { [field]: value })
       showSaveIcon()
       setTokens((prev) =>
         prev.map((item) => {
           if (item.name === token?.name) {
-            return { ...item, [field]: input.value }
+            return { ...item, [field]: value }
           }
           return item
         }),
@@ -90,44 +93,59 @@ const LLMToken = ({ token }: { token: IToken }) => {
     if (!e.target.value) {
       return
     }
+    const provider = e.target.value
     setFormData((data) => ({
       ...data,
-      provider: e.target.value,
+      provider,
     }))
-    saveToken('provider', e.target)
+    saveToken('provider', provider)
   }
 
   const debouncedUpdateToken = useDebouncedCallback(saveToken, 500)
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null)
+    const name = e.target.value.replaceAll(' ', '_')
     setFormData((data) => ({
       ...data,
-      name: e.target.value,
+      name,
     }))
-    debouncedUpdateToken('name', e.target)
+    debouncedUpdateToken('name', name, () => e.target.blur())
   }
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null)
+    const value = e.target.value
     setFormData((data) => ({
       ...data,
-      value: e.target.value,
+      value,
     }))
-    debouncedUpdateToken('value', e.target)
+    debouncedUpdateToken('value', value, () => e.target.blur())
   }
 
   const handleDelete = () => {
+    const relatedConfigs = llmConfigs
+      .filter((config) => config.token_name === token.name)
+      .map((config) => config.name)
+
+    const bodyText = relatedConfigs.length ? (
+      <span className='text-sm leading-relaxed text-text-secondary'>
+        This token is used in the following configurations:
+        <b> {relatedConfigs.join(', ')}</b>. Are you sure you want to delete it?
+      </span>
+    ) : (
+      <span className='text-sm leading-relaxed text-text-secondary'>
+        Are you sure you want to delete this token?
+      </span>
+    )
     openPopUp(
       <ConfirmationModal
         id='delete-token'
         title={`Do you want to delete ${token.name}?`}
-        bodyText='' // уточнить текст модалки
+        bodyText={bodyText}
         onAction={async () => {
-          await deleteLLMToken(formData)
-          setTokens((prev) =>
-            prev.filter((item) => item.name !== formData.name),
-          )
+          await deleteLLMToken(token)
+          setTokens((prev) => prev.filter((item) => item.name !== token.name))
         }}
       />,
       'delete-token',
@@ -198,7 +216,7 @@ const LLMToken = ({ token }: { token: IToken }) => {
           {isSaved && <Check className='h-4 flex-shrink-0' />}
 
           <button
-            // disabled={!tokenIsListed}
+            disabled={!tokenIsListed}
             onClick={handleDelete}
             className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
           >
