@@ -96,7 +96,7 @@ export const createLlmConfig = async (config: ILlmConfig) => {
       ? `&system_prompt=${config.system_prompt}`
       : ''
     const { data } = await $v1.post(
-      `/config/llms?name=${config.name}&model_name=${config.model_name}&token_name=${config.token_name}${systemPromptString}`,
+      `/config/llms?config_name=${config.name}&model_name=${config.model_name}&llm_token_name=${config.token_name}${systemPromptString}`,
     )
     return data
   } catch (error) {

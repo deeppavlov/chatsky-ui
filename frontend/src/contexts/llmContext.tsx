@@ -6,18 +6,20 @@ type llmContextType = {
   llmProviders: LlmProviders
   tokens: IToken[]
   setTokens: React.Dispatch<React.SetStateAction<IToken[]>>
-  llms: string[]
   llmConfigs: ILlmConfig[]
   setLlmConfigs: React.Dispatch<React.SetStateAction<ILlmConfig[]>>
+  editingConfig: ILlmConfig | null
+  setEditingConfig: React.Dispatch<React.SetStateAction<ILlmConfig | null>>
 }
 
 export const LlmContext = createContext<llmContextType>({
   llmProviders: {},
   tokens: [],
   setTokens: () => {},
-  llms: [],
   llmConfigs: [],
   setLlmConfigs: () => {},
+  editingConfig: null,
+  setEditingConfig: () => {},
 })
 
 interface ProviderProps {
@@ -28,7 +30,7 @@ const LlmProvider = ({ children }: ProviderProps) => {
   const [llmProviders, setLlmProviders] = useState<LlmProviders>({})
   const [tokens, setTokens] = useState<IToken[]>([])
   const [llmConfigs, setLlmConfigs] = useState<ILlmConfig[]>([])
-  const llms = Object.values(llmProviders).flat()
+  const [editingConfig, setEditingConfig] = useState<ILlmConfig | null>(null)
 
   const fetchLlmProviders = async () => {
     const services = (await getLlmProviders()) as LlmProviders
@@ -43,7 +45,6 @@ const LlmProvider = ({ children }: ProviderProps) => {
     const configs = await getLlmConfigs()
     setLlmConfigs(configs)
   }
-  console.log('configs', llmConfigs)
 
   useEffect(() => {
     fetchLlmProviders()
@@ -57,9 +58,10 @@ const LlmProvider = ({ children }: ProviderProps) => {
         llmProviders,
         tokens,
         setTokens,
-        llms,
         llmConfigs,
         setLlmConfigs,
+        editingConfig,
+        setEditingConfig,
       }}
     >
       {children}
