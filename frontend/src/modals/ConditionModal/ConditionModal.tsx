@@ -542,6 +542,7 @@ const ConditionModal = ({
             >
               {(item) => (
                 <Tab
+                  data-testid={`condition-modal-tab-${item.value}`}
                   key={item.value}
                   title={
                     <div className='flex items-center gap-1 text-sm'>
