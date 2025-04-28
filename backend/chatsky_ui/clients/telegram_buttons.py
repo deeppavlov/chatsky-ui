@@ -2,13 +2,15 @@ from typing import Any
 
 from chatsky import BaseResponse, Context, MessageInitTypes
 from chatsky import processing as proc
-from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
+
 
 class AddButtons(proc.ModifyResponse, arbitrary_types_allowed=True):
     """Adds given Telegram buttons to a Chatsky message. Also handles button deletion in case
     ReplyKeyboardMarkup changes right into InlineKeyboardMarkup (it really does need special handling,
     there just isn't a pretty way to do this)
     """
+
     reply_markup: Any
 
     def __init__(self, reply_markup: Any):
@@ -40,10 +42,7 @@ class AddButtons(proc.ModifyResponse, arbitrary_types_allowed=True):
         messenger_interface = ctx.pipeline.messenger_interface
         bot = messenger_interface.application.bot
         await bot.send_message(
-            chat_id=ctx.id,
-            text="...",
-            reply_markup=ReplyKeyboardRemove(),
-            disable_notification=True
+            chat_id=ctx.id, text="...", reply_markup=ReplyKeyboardRemove(), disable_notification=True
         )
 
 
@@ -52,6 +51,7 @@ class RemoveButtons(proc.ModifyResponse, arbitrary_types_allowed=True):
     In case a ReplyKeyboard changes right into InlineKeyboard, `AddButtons` handles
     that special case right before adding InlineKeyboard.
     """
+
     async def modified_response(self, original_response: BaseResponse, ctx: Context) -> MessageInitTypes:
         result = await original_response(ctx)
 
