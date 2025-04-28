@@ -23,12 +23,12 @@ class AddButtons(proc.ModifyResponse, arbitrary_types_allowed=True):
         result.reply_markup = self.reply_markup
 
         if isinstance(self.reply_markup, ReplyKeyboardMarkup):
-            ctx.current_node.misc["telegram_reply_keyboard_state"] = "working"
+            ctx._storage.telegram_keyboard_states[ctx.id] = "working"
 
         elif isinstance(self.reply_markup, InlineKeyboardMarkup):
-            telegram_reply_keyboard_state = ctx.current_node.misc.get("telegram_reply_keyboard_state", None)
-            if telegram_reply_keyboard_state == "being removed":
-                self.loud_keyboard_removal(ctx)
+            keyboard_state = ctx._storage.telegram_keyboard_states.get(ctx.id, None)
+            if keyboard_state == "being removed":
+                await self.loud_keyboard_removal(ctx)
 
         return result
 
@@ -55,11 +55,12 @@ class RemoveButtons(proc.ModifyResponse, arbitrary_types_allowed=True):
     async def modified_response(self, original_response: BaseResponse, ctx: Context) -> MessageInitTypes:
         result = await original_response(ctx)
 
-        telegram_reply_keyboard_state = ctx.current_node.misc.get("telegram_reply_keyboard_state", None)
-        if telegram_reply_keyboard_state == "working":
-            ctx.current_node.misc["telegram_reply_keyboard_state"] = "being removed"
-        elif telegram_reply_keyboard_state == "being removed":
-            ctx.current_node.misc["telegram_reply_keyboard_state"] = None
+        keyboard_state = ctx._storage.telegram_keyboard_states.get(ctx.id, None)
+        if keyboard_state == "working":
+            ctx._storage.telegram_keyboard_states[ctx.id] = "being removed"
+        elif keyboard_state == "being removed":
+            ctx._storage.telegram_keyboard_states[ctx.id] = None
 
         result.reply_markup = ReplyKeyboardRemove()
+
         return result
