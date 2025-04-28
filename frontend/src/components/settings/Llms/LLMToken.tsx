@@ -35,6 +35,7 @@ const LLMToken = ({ token }: { token: IToken }) => {
 
   const tokenIsListed = tokens.some(
     (t) => t.name === token.name && t.name !== '',
+    // (t) => typeof t.id = 'number', // проверка существования t.id
   )
   const tokenNames = tokens.map((t) => t.name)
 
@@ -71,8 +72,11 @@ const LLMToken = ({ token }: { token: IToken }) => {
     }
 
     if (!tokenIsListed) {
-      await createLLMToken({ ...formData, [field]: value })
-      setTokens((prev) => [...prev, { ...formData, [field]: value }])
+      const tokenId = await createLLMToken({ ...formData, [field]: value })
+      setTokens((prev) => [
+        ...prev,
+        { ...formData, id: tokenId, [field]: value },
+      ])
       setFormData(initialFormData)
       blurInput?.()
     } else {
@@ -80,7 +84,7 @@ const LLMToken = ({ token }: { token: IToken }) => {
       showSaveIcon()
       setTokens((prev) =>
         prev.map((item) => {
-          if (item.name === token?.name) {
+          if (item.id === token?.id) {
             return { ...item, [field]: value }
           }
           return item
@@ -125,7 +129,7 @@ const LLMToken = ({ token }: { token: IToken }) => {
 
   const handleDelete = () => {
     const relatedConfigs = llmConfigs
-      .filter((config) => config.token_name === token.name)
+      .filter((config) => config.token_id === token.id)
       .map((config) => config.name)
 
     const bodyText = relatedConfigs.length ? (
@@ -144,7 +148,7 @@ const LLMToken = ({ token }: { token: IToken }) => {
         title={`Do you want to delete ${token.name}?`}
         bodyText={bodyText}
         onAction={async () => {
-          await deleteLLMToken(token)
+          await deleteLLMToken(token.id!)
           setTokens((prev) => prev.filter((item) => item.name !== token.name))
         }}
       />,

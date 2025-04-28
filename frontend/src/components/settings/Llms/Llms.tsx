@@ -30,7 +30,7 @@ const Llms = () => {
           </div>
 
           {tokens.map((t) => (
-            <LLMToken key={t.name} token={t} />
+            <LLMToken key={t.id} token={t} />
           ))}
           <LLMToken
             token={{
@@ -49,7 +49,6 @@ const Llms = () => {
             Arrange LLMs and your access tokens to use them for conditions,
             responses and slot filling.
           </p>
-
           <div className='grid h-10 w-full grid-cols-4 gap-7 border-b-1'>
             <div className='col-span-1 flex items-center ps-3 text-sm font-semibold text-text-secondary'>
               Configuration name
@@ -64,15 +63,14 @@ const Llms = () => {
               System prompt
             </div>
           </div>
-
           {llmConfigs.map((cfg) => (
-            <LLMConfig key={cfg.name} config={cfg} />
+            <LLMConfig key={cfg.id} config={cfg} />
           ))}
           <LLMConfig
             config={{
               name: '',
               model_name: '',
-              token_name: '',
+              token_id: undefined,
               system_prompt: '',
             }}
           />

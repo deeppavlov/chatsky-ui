@@ -38,12 +38,16 @@ const LlmProvider = ({ children }: ProviderProps) => {
   }
   const fetchTokens = async () => {
     const tokens = await getLLMTokens()
-    const formattedTokens = tokens.map((t) => ({ name: t[0], provider: t[1] }))
-    setTokens(formattedTokens)
+    setTokens(tokens)
   }
+
   const fetchLlmConfigs = async () => {
     const configs = await getLlmConfigs()
-    setLlmConfigs(configs)
+    const configsWithIds = configs.map((config: ILlmConfig, i) => ({
+      ...config,
+      id: i,
+    }))
+    setLlmConfigs(configsWithIds)
   }
 
   useEffect(() => {

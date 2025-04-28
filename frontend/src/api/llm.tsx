@@ -16,10 +16,14 @@ export const getLlmProviders = async (): Promise<LlmProviders> => {
   }
 }
 
-export const getLLMTokens = async (): Promise<[string, string]> => {
+export const getLLMTokens = async (): Promise<IToken[]> => {
   try {
     const { data } = await $v1.get('/config/llms/tokens')
     return data
+    // return [
+    //   { id: 1, name: 't1', provider: 'openai' },
+    //   { id: 2, name: 't2', provider: 'openai' },
+    // ]
   } catch (error) {
     console.log(error)
     throw error
@@ -45,7 +49,7 @@ export const updateLLMToken = async (
   try {
     const params = new URLSearchParams({
       provider: oldToken.provider,
-      old_token_name: oldToken.name,
+      token_id: String(oldToken.id),
     })
 
     if (newToken.name) params.append('new_token_name', newToken.name)
@@ -60,10 +64,10 @@ export const updateLLMToken = async (
   }
 }
 
-export const deleteLLMToken = async (token: IToken) => {
+export const deleteLLMToken = async (token_id: number) => {
   try {
     const { data } = await $v1.delete(
-      `/config/llms/token?provider=${token.provider}&token_name=${token.name}`,
+      `/config/llms/token?&token_id=${token_id}`,
     )
     return data
   } catch (error) {
@@ -84,6 +88,17 @@ export const getLlmConfigs = async () => {
       name: key,
       ...value,
     }))
+
+    // return Object.entries({
+    //   cfg1: {
+    //     model_name: 'gpt-3.5-turbo',
+    //     token_id: 1,
+    //     system_prompt: '',
+    //   },
+    // }).map(([key, value]) => ({
+    //   name: key,
+    //   ...value,
+    // }))
   } catch (error) {
     console.log(error)
     throw error
@@ -96,7 +111,7 @@ export const createLlmConfig = async (config: ILlmConfig) => {
       ? `&system_prompt=${config.system_prompt}`
       : ''
     const { data } = await $v1.post(
-      `/config/llms?config_name=${config.name}&model_name=${config.model_name}&llm_token_name=${config.token_name}${systemPromptString}`,
+      `/config/llms?config_name=${config.name}&model_name=${config.model_name}&llm_token_id=${config.token_id}${systemPromptString}`,
     )
     return data
   } catch (error) {
@@ -119,8 +134,8 @@ export const updateLlmConfig = async (
     if (newConfig.model_name) {
       params.append('model_name', newConfig.model_name)
     }
-    if (newConfig.token_name) {
-      params.append('llm_token_name', newConfig.token_name)
+    if (newConfig.token_id) {
+      params.append('llm_token_id', newConfig.token_id.toString())
     }
     if (newConfig.system_prompt) {
       params.append('system_prompt', newConfig.system_prompt)

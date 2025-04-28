@@ -25,7 +25,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
   const initialFormData: ILlmConfig = {
     name: config.name,
     model_name: config.model_name,
-    token_name: config.token_name,
+    token_id: config.token_id,
     system_prompt: config.system_prompt || '',
   }
 
@@ -77,7 +77,10 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
 
     if (!configIsListed) {
       await createLlmConfig({ ...formData, [field]: value })
-      setLlmConfigs((prev) => [...prev, { ...formData, [field]: value }])
+      setLlmConfigs((prev) => [
+        ...prev,
+        { ...formData, id: prev.length, [field]: value },
+      ])
       setFormData(initialFormData)
 
       blurInput && blurInput()
@@ -112,7 +115,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
     }
 
     // если меняем llm на ту, для которой выбранный токен не работает, сбрасываем значение токена
-    const token = tokens.find((t) => t.name === formData.token_name)
+    const token = tokens.find((t) => t.id === formData.token_id)
     const tokenProvider = token?.provider
     const changeToken =
       tokenProvider && llmProviders[tokenProvider].includes(e.target.value)
@@ -120,7 +123,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
     setFormData((data) => ({
       ...data,
       model_name: e.target.value,
-      token_name: changeToken ? data.token_name : '',
+      token_id: changeToken ? data.token_id : undefined,
     }))
     saveConfig('model_name', e.target.value)
   }
@@ -133,7 +136,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
       ...data,
       token_name: e.target.value,
     }))
-    saveConfig('token_name', e.target.value)
+    saveConfig('token_id', e.target.value)
   }
 
   const handleDelete = () => {
@@ -193,8 +196,10 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
               aria-label='LLM access token'
               labelPlacement='outside'
               placeholder='Select token'
-              selectedKeys={formData.token_name ? [formData.token_name] : []}
-              value={formData.token_name}
+              selectedKeys={
+                formData.token_id ? [String(formData.token_id)] : []
+              }
+              value={formData.token_id}
               onChange={handleTokenChange}
               radius='sm'
               size='sm'
@@ -204,7 +209,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
                   return llmProviders[t.provider]?.includes(formData.model_name)
                 })
                 .map((item) => (
-                  <SelectItem key={item.name}>{item.name}</SelectItem>
+                  <SelectItem key={String(item.id)}>{item.name}</SelectItem>
                 ))}
             </Select>
           </div>
