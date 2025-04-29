@@ -10,7 +10,7 @@ class ButtonsConverter(BaseConverter):
     which is just a 'PRE_RESPONSE' processing function from Chatsky.
     """
 
-    def __init__(self, buttons: list):
+    def __init__(self, buttons_data: list):
         """Creates a `ButtonsConverter` object.
 
         Args:
@@ -20,17 +20,17 @@ class ButtonsConverter(BaseConverter):
             BadResponseException: if the provided buttons don't have required fields.
         """
         try:
-            self.button_type = self.determine_button_type(buttons)
-            self.buttons = buttons
+            self.buttons = buttons_data.get("buttons", None)
+            self.button_type = self.determine_button_type(self.buttons)
         except KeyError as e:
             raise BadResponseException("Missing key in buttons data") from e
 
-    def determine_button_type(self, buttons_list: dict) -> Optional[str]:
+    def determine_button_type(self, buttons_list: list) -> Optional[str]:
         """Finds out if this node sends `inline` or `reply` buttons to the user.
 
         Raises: `KeyError`, if `buttons_dict` is a dictionary of the wrong structure.
         """
-        if buttons_list[0][0].get("callback_data", None) is None:
+        if buttons_list[0][0].get("type", None) is "exactMatch":
             return "reply"
         else:
             return "inline"
@@ -42,6 +42,9 @@ class ButtonsConverter(BaseConverter):
         for row in self.buttons:
             for button in row:
                 button.pop("id", None)
+                button.pop("type", None)
+                if self.button_type is "reply":
+                    button.pop("callback", None)
 
     def create_keyboard(self) -> dict:
         """Creates a keyboard (list of lists of `Buttons`) for use in either a
