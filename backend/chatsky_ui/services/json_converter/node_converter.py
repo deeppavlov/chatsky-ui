@@ -104,7 +104,11 @@ class InfoNodeConverter(NodeConverter):
         remove_buttons = self.node.response.get("remove_buttons", None)
         if remove_buttons is True:
             result[PRE_RESPONSE].update(
-                {"1_remove_telegram_reply_keyboard": {"external:chatsky_ui.clients.telegram_buttons.RemoveButtons": None}}
+                {
+                    "1_remove_telegram_reply_keyboard": {
+                        "external:chatsky_ui.clients.telegram_buttons.RemoveButtons": None
+                    }
+                }
             )
         buttons = self.node.response.get("buttons", None)
         if buttons is not None:
