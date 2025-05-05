@@ -45,6 +45,8 @@ class ButtonsConverter(BaseConverter):
                 button.pop("type", None)
                 if self.button_type is "reply":
                     button.pop("callback", None)
+                else:
+                    button["callback_data"] = button.pop("callback", None)
 
     def create_keyboard(self) -> dict:
         """Creates a keyboard (list of lists of `Buttons`) for use in either a
