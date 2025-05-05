@@ -119,19 +119,19 @@ class ButtonConditionConverter(ConditionConverter):
         """
         self.condition = None
         try:
-            self.button_type = condition["data"]["type"]
+            self.button_type = condition["data"]["button"]["type"]
             if self.button_type == "exactMatch":
-                self.condition = ReplyButtonCondition(text=condition["data"]["text"], name=condition["name"])
+                self.condition = ReplyButtonCondition(text=condition["data"]["button"]["text"], name=condition["name"])
             else:
                 self.condition = InlineButtonCondition(
-                    callback_data=condition["data"]["callback"], name=condition["name"]
+                    callback_data=condition["data"]["button"]["callback"], name=condition["name"]
                 )
         except KeyError as missing_key:
             raise BadConditionException("Missing key in button condition data") from missing_key
 
     def _convert(self):
         """Converts the received `ButtonCondition` into a Chatsky `Condition` and returns it."""
-        if self.button_type == "reply":
+        if self.button_type == "exactMatch":
             return {"chatsky.conditions.ExactMatch": self.condition.text}
         else:
             return {"chatsky.conditions.HasCallbackQuery": self.condition.callback_data}

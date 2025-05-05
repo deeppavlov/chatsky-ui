@@ -56,6 +56,8 @@ class InfoNodeConverter(NodeConverter):
             name=node["data"]["name"],
             response=node["data"]["response"],
             conditions=node["data"]["conditions"],
+            buttonsData=node["data"].get("buttonsData", None),
+            removeButtons=node["data"].get("removeButtons", None),
         )
 
     def __call__(self, *args, **kwargs):
@@ -101,7 +103,7 @@ class InfoNodeConverter(NodeConverter):
             PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
         }
 
-        remove_buttons = self.node.response.get("remove_buttons", None)
+        remove_buttons = self.node.removeButtons
         if remove_buttons is True:
             result[PRE_RESPONSE].update(
                 {
@@ -110,7 +112,7 @@ class InfoNodeConverter(NodeConverter):
                     }
                 }
             )
-        buttons = self.node.response.get("buttons", None)
+        buttons = self.node.buttonsData
         if buttons is not None:
             result[PRE_RESPONSE].update({"2_add_buttons": ButtonsConverter(buttons)()})
 

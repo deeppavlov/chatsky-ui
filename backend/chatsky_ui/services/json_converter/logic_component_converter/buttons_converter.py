@@ -10,7 +10,7 @@ class ButtonsConverter(BaseConverter):
     which is just a 'PRE_RESPONSE' processing function from Chatsky.
     """
 
-    def __init__(self, buttons_data: list):
+    def __init__(self, buttons_data: dict):
         """Creates a `ButtonsConverter` object.
 
         Args:
