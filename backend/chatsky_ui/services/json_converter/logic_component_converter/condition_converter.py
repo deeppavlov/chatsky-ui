@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.condition import ReplyButtonCondition, InlineButtonCondition, CustomCondition, SlotCondition
+from ....schemas.front_graph_components.info_holders.condition import (
+    CustomCondition,
+    InlineButtonCondition,
+    ReplyButtonCondition,
+    SlotCondition,
+)
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
@@ -100,7 +105,7 @@ class SlotConditionConverter(ConditionConverter):
 
 class ButtonConditionConverter(ConditionConverter):
     """Converts a frontend's Telegram button condition into a Chatsky condition.
-    Either a `cnd.HasCallbackQuery` or a regular `cnd.ExactMatch` depending on the button type. 
+    Either a `cnd.HasCallbackQuery` or a regular `cnd.ExactMatch` depending on the button type.
     """
 
     def __init__(self, condition: dict):
@@ -118,7 +123,9 @@ class ButtonConditionConverter(ConditionConverter):
             if self.button_type == "exactMatch":
                 self.condition = ReplyButtonCondition(text=condition["data"]["text"], name=condition["name"])
             else:
-                self.condition = InlineButtonCondition(callback_data=condition["data"]["callback"], name=condition["name"])
+                self.condition = InlineButtonCondition(
+                    callback_data=condition["data"]["callback"], name=condition["name"]
+                )
         except KeyError as missing_key:
             raise BadConditionException("Missing key in button condition data") from missing_key
 

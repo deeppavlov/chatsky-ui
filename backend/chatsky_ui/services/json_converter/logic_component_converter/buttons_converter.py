@@ -45,7 +45,7 @@ class ButtonsConverter(BaseConverter):
             for button in row:
                 button.pop("type", None)
                 button.pop("id", None)
-                if self.button_type is "reply":
+                if self.button_type == "reply":
                     if button["text"] != "":
                         button.pop("callback", None)
                         new_row.append(button)
