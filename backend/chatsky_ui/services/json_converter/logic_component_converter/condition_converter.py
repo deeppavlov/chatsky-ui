@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ....core.config import settings
-from ....schemas.front_graph_components.info_holders.condition import ButtonCondition, CustomCondition, SlotCondition
+from ....schemas.front_graph_components.info_holders.condition import ReplyButtonCondition, InlineButtonCondition, CustomCondition, SlotCondition
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
@@ -99,7 +99,9 @@ class SlotConditionConverter(ConditionConverter):
 
 
 class ButtonConditionConverter(ConditionConverter):
-    """Converts a frontend's `inline` button condition into a Chatsky `HasCallbackQuery` condition."""
+    """Converts a frontend's Telegram button condition into a Chatsky condition.
+    Either a `cnd.HasCallbackQuery` or a regular `cnd.ExactMatch` depending on the button type. 
+    """
 
     def __init__(self, condition: dict):
         """Creates a `ButtonConditionConverter` object.
@@ -112,13 +114,20 @@ class ButtonConditionConverter(ConditionConverter):
         """
         self.condition = None
         try:
-            self.condition = ButtonCondition(callback_data=condition["data"]["callback_data"], name=condition["name"])
+            self.button_type = condition["data"]["type"]
+            if self.button_type == "exactMatch":
+                self.condition = ReplyButtonCondition(text=condition["data"]["text"], name=condition["name"])
+            else:
+                self.condition = InlineButtonCondition(callback_data=condition["data"]["callback"], name=condition["name"])
         except KeyError as missing_key:
             raise BadConditionException("Missing key in button condition data") from missing_key
 
     def _convert(self):
         """Converts the received `ButtonCondition` into a Chatsky `Condition` and returns it."""
-        return {"chatsky.conditions.HasCallbackQuery": self.condition.callback_data}
+        if self.button_type == "reply":
+            return {"chatsky.conditions.ExactMatch": self.condition.text}
+        else:
+            return {"chatsky.conditions.HasCallbackQuery": self.condition.callback_data}
 
     def get_pre_transitions(self):
         """Returns an empty dictionary, because it's a button condition.

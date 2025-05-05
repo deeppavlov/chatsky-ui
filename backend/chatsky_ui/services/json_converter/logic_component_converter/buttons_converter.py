@@ -39,14 +39,23 @@ class ButtonsConverter(BaseConverter):
         """Cleans the unnecessary `id` key from every button (frontend uses it for it's own means,
         but we keep it clean to initialize `KeyboardButton`s)
         """
+        new_buttons = []
         for row in self.buttons:
+            new_row = []
             for button in row:
-                button.pop("id", None)
                 button.pop("type", None)
-                if self.button_type == "reply":
-                    button.pop("callback", None)
+                button.pop("id", None)
+                if self.button_type is "reply":
+                    if button["text"] != "":
+                        button.pop("callback", None)
+                        new_row.append(button)
                 else:
-                    button["callback_data"] = button.pop("callback", None)
+                    if button["callback"] != "":
+                        button["callback_data"] = button.pop("callback", None)
+                        new_row.append(button)
+            if len(new_row) != 0:
+                new_buttons.append(new_row)
+        self.buttons = new_buttons
 
     def create_keyboard(self) -> dict:
         """Creates a keyboard (list of lists of `Buttons`) for use in either a

@@ -6,7 +6,7 @@ These models define the structure of conditions and ensure the data is
 validated correctly.
 """
 
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from chatsky.conditions import ExactMatch, HasText, Not, Regexp
 from pydantic import Field, model_validator
@@ -32,10 +32,15 @@ class SlotCondition(Condition):
     slot_id: str  # not the condition id
 
 
-class ButtonCondition(Condition):
-    """An inline button pressed condition."""
+class InlineButtonCondition(Condition):
+    """An 'inline' Telegram button pressed condition."""
 
-    callback_data: str  # callback_data of the button pressed
+    callback_data: str  # callback_data of the inline button pressed
+
+class ReplyButtonCondition(Condition):
+    """A 'reply' Telegram button pressed condition."""
+
+    text: str  # text of the reply button pressed
 
 
 # --------------------------------------------------------------
