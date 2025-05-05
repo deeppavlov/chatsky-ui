@@ -30,7 +30,7 @@ class ButtonsConverter(BaseConverter):
 
         Raises: `KeyError`, if `buttons_dict` is a dictionary of the wrong structure.
         """
-        if buttons_list[0][0].get("type", None) is "exactMatch":
+        if buttons_list[0][0].get("type", None) == "exactMatch":
             return "reply"
         else:
             return "inline"
@@ -43,7 +43,7 @@ class ButtonsConverter(BaseConverter):
             for button in row:
                 button.pop("id", None)
                 button.pop("type", None)
-                if self.button_type is "reply":
+                if self.button_type == "reply":
                     button.pop("callback", None)
                 else:
                     button["callback_data"] = button.pop("callback", None)
