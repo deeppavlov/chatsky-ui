@@ -1,9 +1,9 @@
 import asyncio
 from pathlib import Path
 from typing import Optional
-from omegaconf import OmegaConf
 
 import yaml
+from omegaconf import OmegaConf
 
 try:
     from yaml import CDumper as Dumper
@@ -11,8 +11,8 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-from ...db.base import read_conf
 from ...core.config import settings
+from ...db.base import read_conf
 from ...schemas.front_graph_components.pipeline import Pipeline
 from .base_converter import BaseConverter
 from .consts import UNIQUE_BUILD_TOKEN
@@ -42,11 +42,8 @@ class PipelineConverter(BaseConverter):
         self.from_yaml(file_path=input_file)
 
         loop = asyncio.get_event_loop()
-        llm_configurations_omega = loop.run_until_complete(
-            read_conf(settings.llms_conf_path, settings.llms_path_lock)
-        )
+        llm_configurations_omega = loop.run_until_complete(read_conf(settings.llms_conf_path, settings.llms_path_lock))
         llm_configurations = OmegaConf.to_container(llm_configurations_omega, resolve=True)
-
 
         self.pipeline = Pipeline(
             messenger={
@@ -94,7 +91,9 @@ class PipelineConverter(BaseConverter):
 
         return {
             "script": script_converter(slots_conf=slots_conf),
-            "models": LLMModelsConverter(self.pipeline.llm_configurations)() if self.pipeline.llm_configurations else {},
+            "models": LLMModelsConverter(self.pipeline.llm_configurations)()
+            if self.pipeline.llm_configurations
+            else {},
             "messenger_interface": MessengerConverter(self.pipeline.messenger)(),
             "slots": slots_converter(),
             "start_label": start_label,
