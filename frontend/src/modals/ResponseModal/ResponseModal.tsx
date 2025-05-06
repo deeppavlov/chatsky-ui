@@ -222,6 +222,7 @@ const ResponseModal = ({
       </ModalBody>
       <ModalFooter>
         <Switch
+          isDisabled={buttonsCondition.length !== 0}
           className='mr-auto h-[20px]'
           isSelected={hideButtons}
           onValueChange={(value) => {
@@ -236,10 +237,11 @@ const ResponseModal = ({
             setHideButtons(value)
           }}
         >
-          <p className='text-[12px]'>Hide previous buttons</p>
+          <p className='text-[12px]'>Show previous buttons</p>
         </Switch>
 
         <Button
+          isDisabled={hideButtons}
           data-testid='add-button-button'
           onClick={() => setIsAddButtonOpen(true)}
         >

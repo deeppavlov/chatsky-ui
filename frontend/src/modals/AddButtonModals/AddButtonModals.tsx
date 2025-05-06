@@ -127,14 +127,14 @@ const RenderButtons = ({
   buttons: IButton[][]
   selected: string
 }) => {
-  return buttons.map((row, index) => {
+  return buttons.map((row, rowIndex) => {
     const key = type === 'exactMatch' ? 'text' : 'callback'
     const curentColumns = row.filter((iter) => iter[key] !== '').length
 
     return (
       <div
         className={`grid grid-cols-${curentColumns} gap-2 p-[2px] pl-[12px] pr-[12px]`}
-        key={index}
+        key={rowIndex}
       >
         {row.map((iter, buttonIndex) => {
           if (iter[key] === '') {
@@ -143,6 +143,7 @@ const RenderButtons = ({
 
           return (
             <button
+              data-testid={`button-preview-${rowIndex}-${buttonIndex}`}
               key={buttonIndex}
               className={`flex h-[23px] items-center justify-center rounded-lg bg-background px-4 text-sm`}
             >
@@ -174,11 +175,12 @@ const RenderCell = ({
 
   return (
     <div className={`grid grid-cols-${columns > 5 ? 5 : columns} gap-2`}>
-      {buttons.map((row: IButton[], buttonIndex) => {
-        return row.map((value) => {
+      {buttons.map((row: IButton[], rowIndex) => {
+        return row.map((value, buttonIndex) => {
           return (
             <div key={buttonIndex}>
               <Input
+                data-testid={`button-${type}-row-${rowIndex}-${buttonIndex}`}
                 isInvalid={error.includes(value.id) && value[key] === ''}
                 variant='bordered'
                 placeholder={`Please fill in the field in button ${buttonIndex + 1}`}
@@ -386,7 +388,7 @@ const AddButtonModals = ({
 
   const [buttons, setButtons] = useState<IButton[][]>(dataButtonsInit.buttons)
 
-  const initSelected: string = buttons[0][0].type ?? 'exactMatch'
+  const initSelected: string = buttons?.[0]?.[0]?.type ?? 'exactMatch'
   const [selected, setSelected] = useState<string>(initSelected)
 
   const [columns, setColumns] = useState<number>(dataButtonsInit.columns)
@@ -458,10 +460,14 @@ const AddButtonModals = ({
             >
               <div className='grid grid-cols-2 gap-4 pb-[8px]'>
                 <div className='flex flex-col gap-4'>
-                  <Radio value='exactMatch'>Reply keyboard</Radio>
+                  <Radio data-testid='exactMatch' value='exactMatch'>
+                    Reply keyboard
+                  </Radio>
                 </div>
                 <div className='flex flex-col gap-4'>
-                  <Radio value='hasCallback'>Inline keyboard</Radio>
+                  <Radio data-testid='hasCallback' value='hasCallback'>
+                    Inline keyboard
+                  </Radio>
                 </div>
               </div>
             </RadioGroup>
@@ -474,6 +480,7 @@ const AddButtonModals = ({
             </h3>
             <div className='flex items-center gap-2'>
               <Input
+                data-testid='columns'
                 variant='bordered'
                 min={1}
                 type='number'
@@ -501,6 +508,7 @@ const AddButtonModals = ({
               />
               <span>x</span>
               <Input
+                data-testid='rows'
                 variant='bordered'
                 min={1}
                 type='number'
@@ -577,6 +585,7 @@ const AddButtonModals = ({
             </Button>
           </div>
           <Button
+            data-testid='addConditions'
             isDisabled={rows > 5 || columns > 5 || buttons.length === 0}
             className='ml-auto'
             onClick={() => {
