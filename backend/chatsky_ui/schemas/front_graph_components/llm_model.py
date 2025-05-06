@@ -2,7 +2,7 @@ import os
 from typing import ClassVar, Optional
 
 from dotenv import load_dotenv
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from chatsky_ui.core.config import settings
 
@@ -12,9 +12,7 @@ load_dotenv(os.path.join(settings.work_directory, ".env"), override=True)
 
 
 class LLMModel(BaseComponent):
-    PROVIDERS: ClassVar[dict] = {
-        "openai": ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]
-    }
+    PROVIDERS: ClassVar[dict] = {"openai": ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]}
     MODELS: ClassVar[list] = [llm for _, llms in PROVIDERS.items() for llm in llms]
 
     name: str
