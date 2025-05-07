@@ -7,8 +7,9 @@ import TrashIcon from '@/icons/TrashIcon'
 import ConfirmationModal from '@/modals/ConfirmationModal/ConfirmationModal'
 import { ILlmConfig } from '@/types/llmTypes'
 import { Input, Select, SelectItem } from '@nextui-org/react'
-import { Check } from 'lucide-react'
-import React, { useContext, useState } from 'react'
+import { isEqual } from 'lodash'
+import { Check, X } from 'lucide-react'
+import React, { useContext, useEffect, useState } from 'react'
 
 const inputClassNames = {
   inputWrapper: [
@@ -21,9 +22,13 @@ const inputClassNames = {
   input: ['w-full', 'truncate', 'placeholder:text-input-border'],
 }
 
-const LLMConfig = ({ config }: { config: ILlmConfig }) => {
+interface ILlmConfigWithId extends ILlmConfig {
+  id: string
+}
+
+const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
   const initialFormData: ILlmConfig = {
-    name: config.name,
+    config_name: config.config_name,
     model_name: config.model_name,
     token_id: config.token_id,
     system_prompt: config.system_prompt || '',
@@ -42,19 +47,13 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
     setTimeout(() => setIsSaved(false), 2000)
   }
 
-  const configIsListed = llmConfigs.some(
-    (cfg) => cfg.name === config.name && cfg.name !== '',
-  )
+  const configIsListed = Object.hasOwn(llmConfigs, config.id)
 
-  const configNames = llmConfigs.map((cfg) => cfg.name)
+  const configNames = Object.values(llmConfigs).map((cfg) => cfg.config_name)
 
-  const saveConfig = async (
-    field: keyof ILlmConfig,
-    value: string,
-    blurInput?: () => void,
-  ) => {
+  const validateFields = (currentField: keyof ILlmConfig, value: string) => {
     const otherFieldsFilled = Object.entries(formData).every(([key, value]) => {
-      if (key === field) return true
+      if (key === currentField) return true
       if (key === 'system_prompt') {
         return true
       }
@@ -62,68 +61,86 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
     })
     if (!otherFieldsFilled || !value) {
       setError('Please fill in all fields')
-      return
+      return false
     }
     setError(null)
 
     // если пользователь редактировал имя, но оно осталось прежним
-    if (field === 'name' && value === config.name) return
+    if (currentField === 'config_name' && value === config.config_name) return
 
-    const configIsExist = field === 'name' && configNames.includes(value)
+    const configIsExist =
+      currentField === 'config_name'
+        ? configNames.includes(value)
+        : !configIsListed && configNames.includes(formData.config_name)
     if (configIsExist) {
       setError('A configuration with this name already exists')
+      return false
+    }
+
+    const selectedToken =
+      currentField === 'token_id' ? tokens[value] : tokens[formData.token_id]
+    const selectedTokenProvider = selectedToken?.provider
+    const tokenMismatch =
+      selectedTokenProvider &&
+      !llmProviders[selectedTokenProvider].includes(
+        currentField === 'model_name' ? value : formData.model_name,
+      )
+
+    if (tokenMismatch) {
+      setError('Token does not match the selected LLM')
+      return false
+    }
+
+    return true
+  }
+
+  const saveConfig = async (
+    field: keyof ILlmConfig,
+    value: string,
+    blurInput?: () => void,
+  ) => {
+    if (!validateFields(field, value)) {
       return
     }
 
     if (!configIsListed) {
-      await createLlmConfig({ ...formData, [field]: value })
-      setLlmConfigs((prev) => [
-        ...prev,
-        { ...formData, id: prev.length, [field]: value },
-      ])
-      setFormData(initialFormData)
+      const configId = await createLlmConfig({ ...formData, [field]: value })
 
+      setLlmConfigs((prev) => ({
+        ...prev,
+        [configId]: { ...formData, [field]: value },
+      }))
+      setFormData(initialFormData)
       blurInput && blurInput()
     } else {
-      await updateLlmConfig(config.name, { [field]: value })
+      await updateLlmConfig(config.id, { [field]: value })
       showSaveIcon()
-      setLlmConfigs((prev) =>
-        prev.map((item) => {
-          if (item.name === config?.name) {
-            return { ...item, [field]: value }
-          }
-          return item
-        }),
-      )
+
+      setLlmConfigs((prev) => ({
+        ...prev,
+        [config.id]: { ...prev[config.id], [field]: value },
+      }))
     }
   }
 
   const debouncedSaveName = useDebouncedCallback(saveConfig, 500)
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value.replaceAll(' ', '_')
+    const config_name = e.target.value.replaceAll(' ', '_')
     setFormData((data) => ({
       ...data,
-      name,
+      config_name,
     }))
-    debouncedSaveName('name', name, () => e.target.blur())
+    debouncedSaveName('config_name', config_name, () => e.target.blur())
   }
 
   const handleLlmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (!e.target.value) {
       return
     }
-
-    // если меняем llm на ту, для которой выбранный токен не работает, сбрасываем значение токена
-    const token = tokens.find((t) => t.id === formData.token_id)
-    const tokenProvider = token?.provider
-    const changeToken =
-      tokenProvider && llmProviders[tokenProvider].includes(e.target.value)
-
     setFormData((data) => ({
       ...data,
       model_name: e.target.value,
-      token_id: changeToken ? data.token_id : undefined,
     }))
     saveConfig('model_name', e.target.value)
   }
@@ -134,7 +151,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
     }
     setFormData((data) => ({
       ...data,
-      token_name: e.target.value,
+      token_id: e.target.value,
     }))
     saveConfig('token_id', e.target.value)
   }
@@ -143,18 +160,37 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
     openPopUp(
       <ConfirmationModal
         id='delete-token'
-        title={`Do you want to delete ${config.name}?`}
+        title={`Do you want to delete ${config.config_name}?`}
         bodyText='Are you sure you want to delete this configuration?'
         onAction={async () => {
-          await deleteLlmConfig(config.name)
-          setLlmConfigs((prev) =>
-            prev.filter((item) => item.name !== config.name),
-          )
+          await deleteLlmConfig(config.id)
+          setLlmConfigs((prev) => {
+            const { [config.id]: _, ...rest } = prev
+            return rest
+          })
         }}
       />,
       'delete-token',
     )
   }
+
+  useEffect(() => {
+    const usedToken = tokens[formData.token_id]
+    const provider = usedToken?.provider
+    setError(null)
+    if (!usedToken) {
+      if (!configIsListed) {
+        return
+      }
+      setError('The selected token was deleted. Please choose another token.')
+    } else if (
+      formData.model_name &&
+      !llmProviders[provider]?.includes(formData.model_name)
+    ) {
+      setError('Token does not match the selected LLM')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens])
 
   return (
     <div>
@@ -164,7 +200,7 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
         <div className='col-span-1 flex items-center'>
           <Input
             placeholder='Enter name...'
-            value={formData.name}
+            value={formData.config_name}
             onChange={handleNameChange}
             disableAnimation
             size='sm'
@@ -179,7 +215,6 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
             labelPlacement='outside'
             placeholder='Select LLM'
             selectedKeys={formData.model_name ? [formData.model_name] : []}
-            value={formData.model_name}
             onChange={handleLlmChange}
             radius='sm'
             size='sm'
@@ -197,20 +232,29 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
               labelPlacement='outside'
               placeholder='Select token'
               selectedKeys={
-                formData.token_id ? [String(formData.token_id)] : []
+                Object.hasOwn(tokens, formData.token_id)
+                  ? [formData.token_id]
+                  : []
               }
-              value={formData.token_id}
               onChange={handleTokenChange}
               radius='sm'
               size='sm'
+              disabledKeys={
+                formData.model_name
+                  ? [
+                      ...Object.keys(tokens).filter(
+                        (key) =>
+                          !llmProviders[tokens[key].provider]?.includes(
+                            formData.model_name,
+                          ),
+                      ),
+                    ]
+                  : []
+              }
             >
-              {tokens
-                .filter((t) => {
-                  return llmProviders[t.provider]?.includes(formData.model_name)
-                })
-                .map((item) => (
-                  <SelectItem key={String(item.id)}>{item.name}</SelectItem>
-                ))}
+              {Object.entries(tokens).map(([id, item]) => (
+                <SelectItem key={String(id)}>{item.name}</SelectItem>
+              ))}
             </Select>
           </div>
         </div>
@@ -236,13 +280,28 @@ const LLMConfig = ({ config }: { config: ILlmConfig }) => {
           </div>
           {isSaved && <Check className='h-4 flex-shrink-0' />}
 
-          <button
-            disabled={!configIsListed}
-            onClick={handleDelete}
-            className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
-          >
-            <TrashIcon className='group-disabled:stroke-input-border' />
-          </button>
+          {configIsListed ? (
+            <button
+              onClick={handleDelete}
+              className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
+            >
+              <TrashIcon className='group-disabled:stroke-input-border' />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setFormData(initialFormData)
+                setError(null)
+              }}
+              disabled={isEqual(formData, initialFormData)}
+              className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
+            >
+              <X
+                className='stroke-foreground group-disabled:stroke-input-border'
+                size={21}
+              />
+            </button>
+          )}
         </div>
       </div>
       {error && (

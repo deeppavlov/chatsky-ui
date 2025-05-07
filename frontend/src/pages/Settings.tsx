@@ -14,7 +14,7 @@ const tabsMap: Record<Tab, ReactNode> = {
 type Tab = 'General' | 'Pipeline' | 'Llms' | 'Build' | 'Advanced'
 
 const Settings = memo(() => {
-  const [tab, setTab] = useState<Tab>('Llms')
+  const [tab, setTab] = useState<Tab>('General')
 
   return (
     <>

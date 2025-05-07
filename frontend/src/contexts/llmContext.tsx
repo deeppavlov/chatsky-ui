@@ -1,22 +1,29 @@
 import { getLlmConfigs, getLlmProviders, getLLMTokens } from '@/api/llm'
-import { ILlmConfig, IToken, LlmProviders } from '@/types/llmTypes'
+import {
+  ILlmConfig,
+  ILlmConfigs,
+  ITokens,
+  LlmProviders,
+} from '@/types/llmTypes'
 import React, { createContext, useEffect, useState } from 'react'
 
 type llmContextType = {
   llmProviders: LlmProviders
-  tokens: IToken[]
-  setTokens: React.Dispatch<React.SetStateAction<IToken[]>>
-  llmConfigs: ILlmConfig[]
-  setLlmConfigs: React.Dispatch<React.SetStateAction<ILlmConfig[]>>
-  editingConfig: ILlmConfig | null
-  setEditingConfig: React.Dispatch<React.SetStateAction<ILlmConfig | null>>
+  tokens: ITokens
+  setTokens: React.Dispatch<React.SetStateAction<ITokens>>
+  llmConfigs: ILlmConfigs
+  setLlmConfigs: React.Dispatch<React.SetStateAction<ILlmConfigs>>
+  editingConfig: (ILlmConfig & { id: string }) | null
+  setEditingConfig: React.Dispatch<
+    React.SetStateAction<(ILlmConfig & { id: string }) | null>
+  >
 }
 
 export const LlmContext = createContext<llmContextType>({
   llmProviders: {},
-  tokens: [],
+  tokens: {},
   setTokens: () => {},
-  llmConfigs: [],
+  llmConfigs: {},
   setLlmConfigs: () => {},
   editingConfig: null,
   setEditingConfig: () => {},
@@ -28,9 +35,11 @@ interface ProviderProps {
 
 const LlmProvider = ({ children }: ProviderProps) => {
   const [llmProviders, setLlmProviders] = useState<LlmProviders>({})
-  const [tokens, setTokens] = useState<IToken[]>([])
-  const [llmConfigs, setLlmConfigs] = useState<ILlmConfig[]>([])
-  const [editingConfig, setEditingConfig] = useState<ILlmConfig | null>(null)
+  const [tokens, setTokens] = useState<ITokens>({})
+  const [llmConfigs, setLlmConfigs] = useState<ILlmConfigs>({})
+  const [editingConfig, setEditingConfig] = useState<
+    (ILlmConfig & { id: string }) | null
+  >(null)
 
   const fetchLlmProviders = async () => {
     const services = (await getLlmProviders()) as LlmProviders
@@ -43,11 +52,7 @@ const LlmProvider = ({ children }: ProviderProps) => {
 
   const fetchLlmConfigs = async () => {
     const configs = await getLlmConfigs()
-    const configsWithIds = configs.map((config: ILlmConfig, i) => ({
-      ...config,
-      id: i,
-    }))
-    setLlmConfigs(configsWithIds)
+    setLlmConfigs(configs)
   }
 
   useEffect(() => {

@@ -1,10 +1,13 @@
 export type LlmProviders = Record<string, string[]>
 
 export interface IToken {
-  id?: number
   name: string
   provider: string
   value?: string
+}
+
+export interface ITokens {
+  [id: string]: IToken
 }
 
 export interface ITokenFormData extends IToken {
@@ -12,9 +15,12 @@ export interface ITokenFormData extends IToken {
 }
 
 export interface ILlmConfig {
-  id?: number
-  name: string
+  config_name: string
   model_name: string
-  token_id?: number
-  system_prompt?: string
+  token_id: string
+  system_prompt: string
+}
+
+export interface ILlmConfigs {
+  [id: string]: ILlmConfig
 }

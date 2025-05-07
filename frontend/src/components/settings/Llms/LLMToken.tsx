@@ -6,7 +6,8 @@ import TrashIcon from '@/icons/TrashIcon'
 import ConfirmationModal from '@/modals/ConfirmationModal/ConfirmationModal'
 import { IToken, ITokenFormData } from '@/types/llmTypes'
 import { Input, Select, SelectItem } from '@nextui-org/react'
-import { Check, Eye, EyeOff } from 'lucide-react'
+import { isEqual } from 'lodash'
+import { Check, Eye, EyeOff, X } from 'lucide-react'
 import React, { useContext, useState } from 'react'
 
 const inputClassNames = {
@@ -20,7 +21,11 @@ const inputClassNames = {
   input: ['w-full', 'truncate', 'placeholder:text-input-border'],
 }
 
-const LLMToken = ({ token }: { token: IToken }) => {
+interface ITokenWithId extends IToken {
+  id: string
+}
+
+const LLMToken = ({ token }: { token: ITokenWithId }) => {
   const initialFormData: ITokenFormData = {
     name: token.name,
     provider: token.provider,
@@ -33,15 +38,49 @@ const LLMToken = ({ token }: { token: IToken }) => {
   const [error, setError] = useState<string | null>(null)
   const [isSaved, setIsSaved] = useState(false)
 
-  const tokenIsListed = tokens.some(
-    (t) => t.name === token.name && t.name !== '',
-    // (t) => typeof t.id = 'number', // проверка существования t.id
-  )
-  const tokenNames = tokens.map((t) => t.name)
+  const tokenIsListed = Object.hasOwn(tokens, token.id)
+  const tokenNames = Object.values(tokens).map((t) => t.name)
 
   const showSaveIcon = () => {
     setIsSaved(true)
     setTimeout(() => setIsSaved(false), 2000)
+  }
+
+  const validateFields = (currentField: keyof IToken, value: string) => {
+    const otherFieldsFilled = Object.entries(formData).every(([key, value]) => {
+      if (key === currentField) return true
+      if (key === 'value') {
+        return tokenIsListed ? true : Boolean(value)
+      }
+      return Boolean(value)
+    })
+
+    if (!otherFieldsFilled || !value) {
+      setError('Please fill in all fields')
+      return
+    }
+    setError(null)
+
+    if (currentField === 'name') {
+      // если пользователь редактировал имя, но оно осталось прежним
+      if (value === token.name) return
+
+      if (/^_|_$/.test(value)) {
+        // стоит ли запрещать?
+        setError('Name cannot start or end with an underscore')
+        return
+      }
+    }
+
+    const tokenIsExist =
+      currentField === 'name'
+        ? tokenNames.includes(value)
+        : !tokenIsListed && tokenNames.includes(formData.name)
+    if (tokenIsExist) {
+      setError('A token with this name already exists')
+      return
+    }
+    return true
   }
 
   const saveToken = async (
@@ -49,47 +88,25 @@ const LLMToken = ({ token }: { token: IToken }) => {
     value: string,
     blurInput?: () => void,
   ) => {
-    const otherFieldsFilled = Object.entries(formData).every(([key, value]) => {
-      if (key === field) return true
-      if (key === 'value') {
-        return tokenIsListed ? true : Boolean(value)
-      }
-      return Boolean(value)
-    })
-    if (!otherFieldsFilled || !value) {
-      setError('Please fill in all fields')
-      return
-    }
-    setError(null)
-
-    // если пользователь редактировал имя, но оно осталось прежним
-    if (field === 'name' && value === token.name) return
-
-    const tokenIsExist = field === 'name' && tokenNames.includes(value)
-    if (tokenIsExist) {
-      setError('A token with this name already exists')
+    if (!validateFields(field, value)) {
       return
     }
 
     if (!tokenIsListed) {
       const tokenId = await createLLMToken({ ...formData, [field]: value })
-      setTokens((prev) => [
+      setTokens((prev) => ({
         ...prev,
-        { ...formData, id: tokenId, [field]: value },
-      ])
+        [tokenId]: { ...formData, [field]: value },
+      }))
       setFormData(initialFormData)
       blurInput?.()
     } else {
-      await updateLLMToken(token, { [field]: value })
+      await updateLLMToken(token.id, { [field]: value })
       showSaveIcon()
-      setTokens((prev) =>
-        prev.map((item) => {
-          if (item.id === token?.id) {
-            return { ...item, [field]: value }
-          }
-          return item
-        }),
-      )
+      setTokens((prev) => ({
+        ...prev,
+        [token.id]: { ...prev[token.id], [field]: value },
+      }))
     }
   }
 
@@ -128,28 +145,34 @@ const LLMToken = ({ token }: { token: IToken }) => {
   }
 
   const handleDelete = () => {
-    const relatedConfigs = llmConfigs
+    const relatedConfigNames = Object.values(llmConfigs)
       .filter((config) => config.token_id === token.id)
-      .map((config) => config.name)
+      .map((cfg) => cfg.config_name)
 
-    const bodyText = relatedConfigs.length ? (
+    const bodyText = relatedConfigNames.length ? (
       <span className='text-sm leading-relaxed text-text-secondary'>
         This token is used in the following configurations:
-        <b> {relatedConfigs.join(', ')}</b>. Are you sure you want to delete it?
+        <b> {relatedConfigNames.join(', ')}</b>. Are you sure you want to delete
+        it?
       </span>
     ) : (
       <span className='text-sm leading-relaxed text-text-secondary'>
         Are you sure you want to delete this token?
       </span>
     )
+
     openPopUp(
       <ConfirmationModal
         id='delete-token'
         title={`Do you want to delete ${token.name}?`}
         bodyText={bodyText}
         onAction={async () => {
-          await deleteLLMToken(token.id!)
-          setTokens((prev) => prev.filter((item) => item.name !== token.name))
+          await deleteLLMToken(token.id)
+          setTokens((prev) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { [token.id]: _, ...rest } = prev
+            return rest
+          })
         }}
       />,
       'delete-token',
@@ -167,7 +190,6 @@ const LLMToken = ({ token }: { token: IToken }) => {
             labelPlacement='outside'
             placeholder='Select LLM service'
             selectedKeys={formData.provider ? [formData.provider] : []}
-            value={formData.provider}
             onChange={handleServiceChange}
             radius='sm'
             size='sm'
@@ -219,13 +241,28 @@ const LLMToken = ({ token }: { token: IToken }) => {
           )}
           {isSaved && <Check className='h-4 flex-shrink-0' />}
 
-          <button
-            disabled={!tokenIsListed}
-            onClick={handleDelete}
-            className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
-          >
-            <TrashIcon className='group-disabled:stroke-input-border' />
-          </button>
+          {tokenIsListed ? (
+            <button
+              onClick={handleDelete}
+              className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
+            >
+              <TrashIcon className='group-disabled:stroke-input-border' />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setFormData(initialFormData)
+                setError(null)
+              }}
+              disabled={isEqual(formData, initialFormData)}
+              className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
+            >
+              <X
+                className='stroke-foreground group-disabled:stroke-input-border'
+                size={21}
+              />
+            </button>
+          )}
         </div>
       </div>
       {error && (

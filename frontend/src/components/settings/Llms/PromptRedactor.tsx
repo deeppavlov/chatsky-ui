@@ -23,15 +23,14 @@ const PromptRedactor = () => {
         system_prompt: prompt,
       })
 
-      updateLlmConfig(editingConfig.name, { system_prompt: prompt })
-      setLlmConfigs((prev) =>
-        prev.map((item) => {
-          if (item.name === editingConfig?.name) {
-            return { ...item, system_prompt: prompt }
-          }
-          return item
-        }),
-      )
+      updateLlmConfig(editingConfig.id, { system_prompt: prompt })
+      setLlmConfigs((prev) => ({
+        ...prev,
+        [editingConfig.id]: {
+          ...prev[editingConfig.id],
+          system_prompt: prompt,
+        },
+      }))
     }
     setEditingConfig(null)
   }
@@ -76,7 +75,9 @@ const PromptRedactor = () => {
                 <EditPenIcon className='stroke-text-secondary' />
                 <h3 className='text-md font-semibold'>
                   System prompt{' '}
-                  <span className='font-normal'>— {editingConfig.name}</span>
+                  <span className='font-normal'>
+                    — {editingConfig.config_name}
+                  </span>
                 </h3>
               </div>
               <p className='text-sm text-text-addition'>
@@ -110,55 +111,6 @@ const PromptRedactor = () => {
         )}
       </AnimatePresence>
     </div>
-
-    // <div className='h-full basis-5/12'>
-    //   {!editingConfig ? (
-    //     <div className='flex h-full w-full items-center justify-center gap-2'>
-    //       <EditNodeIcon />
-    //       <span className='text-base text-text-secondary'>
-    //         Select an item to configure.
-    //       </span>
-    //     </div>
-    //   ) : (
-    //     <div className='flex h-full w-full flex-col gap-6'>
-    //       <section>
-    //         <div className='mb-1 flex items-center justify-start gap-2'>
-    //           <EditPenIcon className='stroke-text-secondary' />
-    //           <h3 className='text-md font-semibold'>
-    //             System prompt{' '}
-    //             <span className='font-normal'>— {editingConfig.name}</span>
-    //           </h3>
-    //         </div>
-    //         <p className='text-sm text-text-addition'>
-    //           Create your prompt. Prompts can help guide the behavior of a
-    //           Language Model.
-    //         </p>
-    //       </section>
-
-    //       <div className='flex-grow'>
-    //         <textarea
-    //           ref={inputRef}
-    //           onChange={(e) => setPrompt(e.target.value)}
-    //           value={prompt}
-    //           className='h-full w-full resize-none rounded-[10px] border-1 border-input-border bg-background p-3 text-sm scrollbar-hide placeholder:text-text-addition focus:border-contrast-border focus:outline-none'
-    //           placeholder='Enter your prompt...'
-    //         />
-    //       </div>
-
-    //       <div className='flex w-full justify-end gap-3'>
-    //         <Button className='h-[40px] rounded-lg px-4' onClick={onCancel}>
-    //           Cancel
-    //         </Button>
-    //         <Button
-    //           className='h-[40px] rounded-lg bg-black px-4 text-white'
-    //           onClick={onSave}
-    //         >
-    //           Save prompt
-    //         </Button>
-    //       </div>
-    //     </div>
-    //   )}
-    // </div>
   )
 }
 

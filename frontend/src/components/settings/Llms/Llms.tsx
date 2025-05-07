@@ -29,14 +29,15 @@ const Llms = () => {
             </div>
           </div>
 
-          {tokens.map((t) => (
-            <LLMToken key={t.id} token={t} />
+          {Object.entries(tokens).map(([id, t]) => (
+            <LLMToken key={id} token={{ ...t, id }} />
           ))}
           <LLMToken
             token={{
+              id: '',
               name: '',
-              provider: '',
               value: '',
+              provider: '',
             }}
           />
         </section>
@@ -63,14 +64,15 @@ const Llms = () => {
               System prompt
             </div>
           </div>
-          {llmConfigs.map((cfg) => (
-            <LLMConfig key={cfg.id} config={cfg} />
+          {Object.entries(llmConfigs).map(([id, cfg]) => (
+            <LLMConfig key={id} config={{ ...cfg, id }} />
           ))}
           <LLMConfig
             config={{
-              name: '',
+              id: '',
+              config_name: '',
               model_name: '',
-              token_id: undefined,
+              token_id: '',
               system_prompt: '',
             }}
           />
@@ -97,8 +99,8 @@ const Llms = () => {
                 radius='sm'
                 size='sm'
               >
-                {llmConfigs.map((item) => (
-                  <SelectItem key={item.name}>{item.name}</SelectItem>
+                {Object.entries(llmConfigs).map(([id, item]) => (
+                  <SelectItem key={id}>{item.config_name}</SelectItem>
                 ))}
               </Select>
             </div>
@@ -115,8 +117,8 @@ const Llms = () => {
                 radius='sm'
                 size='sm'
               >
-                {llmConfigs.map((item) => (
-                  <SelectItem key={item.name}>{item.name}</SelectItem>
+                {Object.entries(llmConfigs).map(([id, item]) => (
+                  <SelectItem key={id}>{item.config_name}</SelectItem>
                 ))}
               </Select>
             </div>

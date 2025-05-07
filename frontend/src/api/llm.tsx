@@ -1,7 +1,9 @@
 import {
   ILlmConfig,
+  ILlmConfigs,
   IToken,
   ITokenFormData,
+  ITokens,
   LlmProviders,
 } from '@/types/llmTypes'
 import { $v1 } from '.'
@@ -16,26 +18,29 @@ export const getLlmProviders = async (): Promise<LlmProviders> => {
   }
 }
 
-export const getLLMTokens = async (): Promise<IToken[]> => {
+export const getLLMTokens = async (): Promise<ITokens> => {
   try {
-    const { data } = await $v1.get('/config/llms/tokens')
+    const {
+      data: { data },
+    } = await $v1.get('/config/llms/tokens')
+
     return data
-    // return [
-    //   { id: 1, name: 't1', provider: 'openai' },
-    //   { id: 2, name: 't2', provider: 'openai' },
-    // ]
   } catch (error) {
     console.log(error)
     throw error
   }
 }
 
-export const createLLMToken = async (token: ITokenFormData) => {
+export const createLLMToken = async (
+  token: ITokenFormData,
+): Promise<string> => {
   try {
-    const { data } = await $v1.post(
+    const {
+      data: { token_id },
+    } = await $v1.post(
       `/config/llms/token?provider=${token.provider}&token_name=${token.name}&token_value=${token.value}`,
     )
-    return data
+    return token_id
   } catch (error) {
     console.log(error)
     throw error
@@ -43,17 +48,15 @@ export const createLLMToken = async (token: ITokenFormData) => {
 }
 
 export const updateLLMToken = async (
-  oldToken: IToken,
+  token_id: string,
   newToken: Partial<IToken>,
 ) => {
   try {
-    const params = new URLSearchParams({
-      provider: oldToken.provider,
-      token_id: String(oldToken.id),
-    })
+    const params = new URLSearchParams({ token_id })
 
     if (newToken.name) params.append('new_token_name', newToken.name)
     if (newToken.value) params.append('new_token_value', newToken.value)
+    if (newToken.provider) params.append('new_provider', newToken.provider)
 
     const { data } = await $v1.patch(`/config/llms/token?${params.toString()}`)
 
@@ -64,11 +67,9 @@ export const updateLLMToken = async (
   }
 }
 
-export const deleteLLMToken = async (token_id: number) => {
+export const deleteLLMToken = async (token_id: string) => {
   try {
-    const { data } = await $v1.delete(
-      `/config/llms/token?&token_id=${token_id}`,
-    )
+    const { data } = await $v1.delete(`/config/llms/token?&id=${token_id}`)
     return data
   } catch (error) {
     console.log(error)
@@ -76,44 +77,29 @@ export const deleteLLMToken = async (token_id: number) => {
   }
 }
 
-export const getLlmConfigs = async () => {
+export const getLlmConfigs = async (): Promise<ILlmConfigs> => {
   try {
     const {
       data: { data },
-    } = (await $v1.get('/config/llms')) as {
-      data: { data: Record<string, Omit<ILlmConfig, 'name'>> }
-    }
-
-    return Object.entries(data).map(([key, value]) => ({
-      name: key,
-      ...value,
-    }))
-
-    // return Object.entries({
-    //   cfg1: {
-    //     model_name: 'gpt-3.5-turbo',
-    //     token_id: 1,
-    //     system_prompt: '',
-    //   },
-    // }).map(([key, value]) => ({
-    //   name: key,
-    //   ...value,
-    // }))
+    } = await $v1.get('/config/llms')
+    return data
   } catch (error) {
     console.log(error)
     throw error
   }
 }
 
-export const createLlmConfig = async (config: ILlmConfig) => {
+export const createLlmConfig = async (config: Omit<ILlmConfig, 'id'>) => {
   try {
     const systemPromptString = config?.system_prompt
       ? `&system_prompt=${config.system_prompt}`
       : ''
-    const { data } = await $v1.post(
-      `/config/llms?config_name=${config.name}&model_name=${config.model_name}&llm_token_id=${config.token_id}${systemPromptString}`,
+    const {
+      data: { config_id },
+    } = await $v1.post(
+      `/config/llms?config_name=${config.config_name}&model_name=${config.model_name}&llm_token_id=${config.token_id}${systemPromptString}`,
     )
-    return data
+    return config_id
   } catch (error) {
     console.log(error)
     throw error
@@ -121,15 +107,13 @@ export const createLlmConfig = async (config: ILlmConfig) => {
 }
 
 export const updateLlmConfig = async (
-  oldConfigName: string,
+  config_id: string,
   newConfig: Partial<ILlmConfig>,
 ) => {
   try {
-    const params = new URLSearchParams({
-      old_config_name: oldConfigName,
-    })
-    if (newConfig.name) {
-      params.append('new_config_name', newConfig.name)
+    const params = new URLSearchParams({ config_id })
+    if (newConfig.config_name) {
+      params.append('new_config_name', newConfig.config_name)
     }
     if (newConfig.model_name) {
       params.append('model_name', newConfig.model_name)
@@ -149,9 +133,9 @@ export const updateLlmConfig = async (
   }
 }
 
-export const deleteLlmConfig = async (configName: string) => {
+export const deleteLlmConfig = async (config_id: string) => {
   try {
-    const { data } = await $v1.delete(`config/llms?config_name=${configName}`)
+    const { data } = await $v1.delete(`config/llms?config_id=${config_id}`)
     return data
   } catch (error) {
     console.log(error)
