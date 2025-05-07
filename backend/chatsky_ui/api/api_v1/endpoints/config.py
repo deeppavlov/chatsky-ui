@@ -295,3 +295,20 @@ async def delete_llm_model(config_id: str):
     del llms_conf["config_models"][config_id]
     await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
     return {"status": "ok", "message": "LLM model deleted successfully"}
+
+
+@router.post("/llms/default/")
+async def post_default_llm_model(config_id: str):
+    """Sets the default LLM model configuration."""
+    omega_llms_conf = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
+    llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
+
+    if config_id not in llms_conf["config_models"]:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"LLM model '{config_id}' not found.",
+        )
+
+    llms_conf["default_model"] = config_id
+    await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
+    return {"status": "ok", "message": "Default LLM model set successfully"}
