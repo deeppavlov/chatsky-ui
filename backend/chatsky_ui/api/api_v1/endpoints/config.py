@@ -91,6 +91,7 @@ async def post_llm_token(provider: str, token_name: str, token_value: str):
         }
     )
 
+    llms_conf["tokens"] = tokens
     await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
     settings.add_env_vars({token_name: token_value})
 
@@ -156,6 +157,7 @@ async def patch_llm_token(
         )
     settings.add_env_vars({token_name: token_value})
 
+    llms_conf["tokens"] = tokens
     await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
 
     return {"status": "ok", "message": "Token updated successfully"}
