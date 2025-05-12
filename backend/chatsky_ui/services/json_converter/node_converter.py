@@ -103,9 +103,8 @@ class InfoNodeConverter(NodeConverter):
             PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
         }
 
-        buttons = self.node.buttonsData
-        show_buttons = buttons.get("showButtons", False)
-        if show_buttons is False:
+        remove_buttons = self.node.removeButtons
+        if remove_buttons is True:
             result[PRE_RESPONSE].update(
                 {
                     "1_remove_telegram_reply_keyboard": {
@@ -113,7 +112,7 @@ class InfoNodeConverter(NodeConverter):
                     }
                 }
             )
-
+        buttons = self.node.buttonsData
         if buttons is not None:
             result[PRE_RESPONSE].update({"2_add_buttons": ButtonsConverter(buttons)()})
 
