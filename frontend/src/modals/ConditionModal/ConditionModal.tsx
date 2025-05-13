@@ -384,34 +384,8 @@ const ConditionModal = ({
 
     const isValidCondition = validateCurrentCondition()
 
-    // const newResponse = () => {
-    //   const type = currentCondition.data.button?.type as string
-
-    //   const { callback, text } = currentCondition.data.button as IButtonType
-
-    //   const id = currentCondition.id
-
-    //   if (currentCondition.type === 'button') {
-    //     return {
-    //       ...data.response,
-    //       buttons: {
-    //         ...data.response.buttons,
-    //         [type]: [
-    //           ...(
-    //             data.response.buttons as unknown as Record<
-    //               string,
-    //               IButtonType[]
-    //             >
-    //           )[type],
-    //           type === 'hasCallback' ? { callback, text, id } : { text, id },
-    //         ],
-    //       },
-    //     }
-    //   }
-    // }
-
     if (!validateObject.isInvalid && isValidCondition) {
-      updateNodeData(data.id, {
+      const newNode = {
         ...data,
         conditions: is_create
           ? [...data.conditions, currentCondition]
@@ -420,7 +394,36 @@ const ConditionModal = ({
                 ? currentCondition
                 : condition,
             ),
-      })
+        buttonsData: {
+          buttons: data.buttonsData?.buttons ?? [],
+          rows: data.buttonsData?.rows ?? 2,
+          columns: data.buttonsData?.columns ?? 2,
+        },
+      }
+
+      if (currentCondition.type === 'button') {
+        const buttonsData = data.buttonsData?.buttons ?? []
+        const newButtons = buttonsData.map((row) => {
+          return row.map((item) => {
+            if (item.id === currentCondition.id) {
+              const newItem =
+                item.type === 'exactMatch'
+                  ? { ...item, text: currentCondition.data.button?.text ?? '' }
+                  : {
+                      ...item,
+                      callback: currentCondition.data.button?.callback ?? '',
+                      text: currentCondition.data.button?.text ?? '',
+                    }
+              return newItem
+            }
+            return item
+          })
+        })
+
+        newNode.buttonsData.buttons = newButtons
+      }
+
+      updateNodeData(data.id, newNode)
       quietSaveFlows()
       onCloseHandler()
     }
@@ -483,11 +486,10 @@ const ConditionModal = ({
   }
 
   const handleConfirmDeleteOpen = () => {
-    // Открываем модал для подтверждения удаления слота
     openPopUp(
       <AlertModal
         id='delete-condition'
-        onAction={() => deleteCondition()} // Подтверждение удаления
+        onAction={() => deleteCondition()}
         title='Delete condition'
         description={
           <>

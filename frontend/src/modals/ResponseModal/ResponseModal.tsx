@@ -229,7 +229,7 @@ const ResponseModal = ({
             updateNodeData(data.id, {
               ...data,
               buttonsData: {
-                ...(node?.data as DefaultNodeDataType).buttonsData,
+                ...(data as DefaultNodeDataType).buttonsData,
                 hideButtons: value,
               },
             })

@@ -396,6 +396,8 @@ const AddButtonModals = ({
 
   const [error, setError] = useState<string[]>([])
 
+  // console.log(data)
+
   return (
     <Modal
       className='flex min-h-[584px] flex-col'
@@ -407,7 +409,10 @@ const AddButtonModals = ({
         <ModalHeader className='flex items-center gap-4 pb-[0px]'>
           <div className='flex items-center gap-2'>
             <div className='rounded-lg bg-background p-1'>
-              <Button className='h-unit-10 min-w-unit-0 bg-transparent pl-[0px] pr-[0px]'>
+              <Button
+                onClick={onClose}
+                className='h-unit-10 min-w-unit-0 bg-transparent pl-[0px] pr-[0px]'
+              >
                 <BackIcon
                   className='cursor-pointer rounded-lg border-border bg-bg-secondary bg-foreground'
                   stroke='var(--background)'
@@ -572,7 +577,7 @@ const AddButtonModals = ({
                   buttonsData: { buttons: [], rows: 0, columns: 0 },
 
                   response: {
-                    ...(node?.data as DefaultNodeDataType).response,
+                    ...(data as DefaultNodeDataType).response,
                     buttons: [],
                   },
                 })
