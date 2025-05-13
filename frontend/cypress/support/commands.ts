@@ -53,6 +53,7 @@ Cypress.Commands.add(
     cy.get('[data-testid=response-modal]')
       .should('exist')
       .find('input')
+      .first()
       .clear()
       .type(title)
     cy.get('[data-testid=response-modal]')

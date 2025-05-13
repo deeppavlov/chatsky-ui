@@ -1,12 +1,13 @@
-import { Button, Input, ModalProps, Tab, Tabs } from '@nextui-org/react'
-// import ModalComponent from "../../components/ModalComponent";
+import { Button, Input, ModalProps, Switch, Tab, Tabs } from '@nextui-org/react'
 import { useReactFlow } from '@xyflow/react'
+import { PlusIcon } from 'lucide-react'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
 import { responseType, responseTypeType } from '../../types/ResponseTypes'
 import { validateResponseName } from '../../utils'
+import AddButtonModals from '../AddButtonModals/AddButtonModals'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
 import PythonResponse from './components/PythonResponse'
 import TextResponse from './components/TextResponse'
@@ -35,7 +36,7 @@ const ResponseModal = ({
   response,
   size = '3xl',
 }: ResponseModalProps) => {
-  const { getNode, setNodes, getNodes } = useReactFlow()
+  const { getNode, setNodes, getNodes, updateNodeData } = useReactFlow()
   const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
   const [selected, setSelected] = useState<responseTypeType>(
@@ -43,6 +44,9 @@ const ResponseModal = ({
   )
   // const [nodeDataState, setNodeDataState] = useState(data)
   const [currentResponse, setCurrentResponse] = useState(response)
+
+  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
+
   const setSelectedHandler = (key: responseTypeType) => {
     setCurrentResponse({ ...currentResponse, type: key })
     setSelected(key)
@@ -51,6 +55,12 @@ const ResponseModal = ({
   const [responseStor, setResponseStor] = useState({
     [response.type]: response,
   })
+
+  const [hideButtons, setHideButtons] = useState(
+    data.buttonsData?.hideButtons ?? false,
+  )
+
+  const node = getNode(data.id)
 
   useEffect(() => {
     const key = currentResponse.type
@@ -114,7 +124,6 @@ const ResponseModal = ({
 
   const saveResponse = () => {
     const name = currentResponse.name
-    console.log(name, 's')
     const errors = validateResponseName(name, selected, flows, data)
 
     if (errors.isInvalid) {
@@ -147,6 +156,10 @@ const ResponseModal = ({
       onClose()
     }
   }
+
+  const buttonsCondition = (
+    node?.data as DefaultNodeDataType
+  ).conditions.filter((condition) => condition.type === 'button')
 
   return (
     <Modal
@@ -208,12 +221,53 @@ const ResponseModal = ({
         <div>{bodyItems[selected]}</div>
       </ModalBody>
       <ModalFooter>
+        <Switch
+          isDisabled={buttonsCondition.length !== 0}
+          className='mr-auto h-[20px]'
+          isSelected={hideButtons}
+          onValueChange={(value) => {
+            updateNodeData(data.id, {
+              ...data,
+              buttonsData: {
+                ...(node?.data as DefaultNodeDataType).buttonsData,
+                hideButtons: value,
+              },
+            })
+            quietSaveFlows()
+            setHideButtons(value)
+          }}
+        >
+          <p className='text-[12px]'>Show previous buttons</p>
+        </Switch>
+
         <Button
+          isDisabled={hideButtons}
+          data-testid='add-button-button'
+          onClick={() => setIsAddButtonOpen(true)}
+        >
+          {buttonsCondition.length === 0 ? (
+            <>
+              <PlusIcon />
+              Add buttons
+            </>
+          ) : (
+            <>Edit buttons</>
+          )}
+        </Button>
+        <Button
+          data-testid='save-response-button'
           onClick={saveResponse}
           className='bg-foreground text-background'
         >
           Save response
         </Button>
+        {isAddButtonOpen && (
+          <AddButtonModals
+            data={data}
+            isOpen={isAddButtonOpen}
+            onClose={() => setIsAddButtonOpen(false)}
+          />
+        )}
       </ModalFooter>
     </Modal>
   )

@@ -10,15 +10,20 @@ export type conditionDataType = {
     action: string
   }
   slot?: string
-  button?: {
-    button_name: string
-  }
   custom?: {
     keywords: string[]
     action: string
     variables: string[]
   }
   structure?: string
+  button?: IButtonType
+}
+
+export interface IButtonType {
+  text: string
+  callback?: string
+  type: string
+  id: string
 }
 
 export type conditionTypeType =
