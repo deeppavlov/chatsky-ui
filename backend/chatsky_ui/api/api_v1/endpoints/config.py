@@ -14,46 +14,22 @@ router = APIRouter()
 
 
 async def _save_token_data(
-    token_id: str, token_name: Optional[str] = None, provider: Optional[str] = None, add_if_not_exists: bool = True
+    token_id: str, token_name: Optional[str] = None, provider: Optional[str] = None
 ):
     """Saves the token data to llms yaml file."""
-    logger = get_logger(__name__)
-
     omega_llms_conf = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
     llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
 
-    if "tokens" not in llms_conf:
-        llms_conf["tokens"] = {}
+    tokens = llms_conf.get("tokens", {})
 
-    for id, token_conf in llms_conf["tokens"].items():
-        if id == token_id:
-            old_token_name = token_conf["name"]
-            if token_name is not None:
-                token_conf["name"] = token_name
-            if provider is not None:
-                token_conf["provider"] = provider
-            try:
-                settings.remove_env_vars([old_token_name])
-            except ValueError:
-                logger.warning(
-                    f"Unexpexted behavior: Token '{old_token_name}' for provider '{token_conf['provider']}' not found "
-                    f"in `.env`. Please check your environment variables."
-                )
-            break
-    else:
-        if not add_if_not_exists:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Token ID '{token_id}' not found. Use POST to create it.",
-            )
-        llms_conf["tokens"].update(
-            {
-                token_id: {
-                    "name": token_name,
-                    "provider": provider,
-                }
+    tokens.update(
+        {
+            token_id: {
+                "name": token_name,
+                "provider": provider,
             }
-        )
+        }
+    )
 
     await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
 
@@ -100,8 +76,25 @@ async def post_llm_token(provider: str, token_name: str, token_value: str):
         )
 
     token_id = str(uuid.uuid4())[:8]
-    await _save_token_data(token_id, token_name, provider)
+
+    omega_llms_conf = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
+    llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
+
+    tokens = llms_conf.get("tokens", {})
+
+    tokens.update(
+        {
+            token_id: {
+                "name": token_name,
+                "provider": provider,
+            }
+        }
+    )
+
+    llms_conf["tokens"] = tokens
+    await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
     settings.add_env_vars({token_name: token_value})
+
     return {"status": "ok", "token_id": token_id, "message": "Token saved successfully"}
 
 
@@ -113,6 +106,8 @@ async def patch_llm_token(
     new_token_value: Optional[str] = None,
 ):
     """Updates an existing token for an LLM provider."""
+    logger = get_logger(__name__)
+
     if not any([new_provider, new_token_value, new_token_name]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -126,17 +121,44 @@ async def patch_llm_token(
         )
 
     if new_token_name is not None:
-        env_vars = settings.get_env_vars(new_token_name)
-        if env_vars:
+        is_token_in_env = settings.get_env_vars(new_token_name)
+        if is_token_in_env:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Token '{new_token_name}' already exists. Choose another name.",
             )
 
-    conf = await _save_token_data(token_id, new_token_name, new_provider, add_if_not_exists=False)
-    if new_token_value is not None:
-        new_token_name = new_token_name or conf["tokens"][token_id]["name"]
-        settings.add_env_vars({new_token_name: new_token_value})
+    omega_llms_conf = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
+    llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
+
+    tokens = llms_conf.get("tokens", {})
+    
+    if token_id not in tokens:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Token ID '{token_id}' not found. Use POST to create it.",
+        )
+    
+    old_token_name, old_provider = tokens[token_id]["name"], tokens[token_id]["provider"]
+
+    token_name = new_token_name or old_token_name 
+    token_name = token_name.strip().replace(" ", "_")
+    token_provider = new_provider or old_provider
+    token_value = new_token_value or settings.get_env_vars(old_token_name).get(old_token_name)
+
+    tokens[token_id]["name"] = token_name
+    tokens[token_id]["provider"] = token_provider
+    try:
+        settings.remove_env_vars([old_token_name])
+    except ValueError:
+        logger.warning(
+            f"Unexpexted behavior: Token '{old_token_name}' not found "
+            f"in `.env`. Please check your environment variables."
+        )
+    settings.add_env_vars({token_name: token_value})
+
+    llms_conf["tokens"] = tokens
+    await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
 
     return {"status": "ok", "message": "Token updated successfully"}
 
@@ -187,7 +209,7 @@ async def post_llm_model(config_name: str, model_name: str, llm_token_id: str, s
     if "config_models" not in llms_conf:
         llms_conf["config_models"] = {}
 
-    if config_name in llms_conf["config_models"]:
+    if config_name in [model["config_name"] for model in llms_conf["config_models"].values()]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"LLM model '{config_name}' already exists. Use PATCH to update it.",
@@ -312,3 +334,19 @@ async def post_default_llm_model(config_id: str):
     llms_conf["default_model"] = config_id
     await write_conf(llms_conf, settings.llms_conf_path, settings.llms_path_lock)
     return {"status": "ok", "message": "Default LLM model set successfully"}
+
+
+@router.get("/llms/default/")
+async def get_default_llm_model():
+    """Returns the default LLM model configuration."""
+    omega_llms_conf = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
+    llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
+
+    default_model = llms_conf.get("default_model")
+    if not default_model:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Default LLM model not found.",
+        )
+
+    return {"status": "ok", "data": default_model}
