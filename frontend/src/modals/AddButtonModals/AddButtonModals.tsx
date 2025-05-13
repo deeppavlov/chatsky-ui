@@ -667,11 +667,11 @@ const AddButtonModals = ({
               }
 
               updateNodeData(data.id, {
-                ...node?.data,
+                ...(data as DefaultNodeDataType),
                 conditions: newConditions,
                 buttonsData: buttonsData,
                 response: {
-                  ...(node?.data as DefaultNodeDataType).response,
+                  ...(data as DefaultNodeDataType).response,
                   buttons: responseButtons,
                 },
               })

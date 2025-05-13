@@ -23,6 +23,7 @@ export type DefaultNodeDataType = {
     rows: number
     columns: number
     buttons: IButtonType[][]
+    hideButtons?: boolean
   }
 }
 

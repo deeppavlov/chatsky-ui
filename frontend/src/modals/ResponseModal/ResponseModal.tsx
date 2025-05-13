@@ -57,7 +57,7 @@ const ResponseModal = ({
   })
 
   const [hideButtons, setHideButtons] = useState(
-    data.response.hideButtons ?? false,
+    data.buttonsData?.hideButtons ?? false,
   )
 
   const node = getNode(data.id)
@@ -227,7 +227,7 @@ const ResponseModal = ({
           isSelected={hideButtons}
           onValueChange={(value) => {
             updateNodeData(data.id, {
-              ...node?.data,
+              ...data,
               buttonsData: {
                 ...(node?.data as DefaultNodeDataType).buttonsData,
                 hideButtons: value,
