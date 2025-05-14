@@ -372,13 +372,19 @@ const AddButtonModals = ({
   const node = getNode(data.id)
 
   const dataButtons = (node?.data as DefaultNodeDataType).buttonsData ?? {
-    rows: 0,
-    columns: 0,
-    buttons: [],
+    rows: 2,
+    columns: 2,
+    buttons: [[]],
   }
 
-  const initButtons =
-    dataButtons.buttons.length === 0 ? genInitButtons() : dataButtons.buttons
+  const initButtons = Object.prototype.hasOwnProperty.call(
+    dataButtons,
+    'buttons',
+  )
+    ? dataButtons.buttons.length === 0
+      ? genInitButtons()
+      : dataButtons.buttons
+    : genInitButtons()
 
   const dataButtonsInit = {
     rows: initButtons[0].length,

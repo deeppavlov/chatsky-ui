@@ -227,10 +227,10 @@ const ResponseModal = ({
           isSelected={hideButtons}
           onValueChange={(value) => {
             updateNodeData(data.id, {
-              ...data,
+              ...node?.data,
               buttonsData: {
-                ...(data as DefaultNodeDataType).buttonsData,
                 hideButtons: value,
+                ...(node?.data as DefaultNodeDataType).buttonsData,
               },
             })
             quietSaveFlows()
