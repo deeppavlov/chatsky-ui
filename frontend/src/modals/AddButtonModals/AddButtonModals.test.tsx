@@ -307,7 +307,5 @@ describe('test 3', () => {
     await act(async () => {
       fireEvent.click(addConditionsButton)
     })
-
-    console.log(node, 'node123321')
   })
 })
