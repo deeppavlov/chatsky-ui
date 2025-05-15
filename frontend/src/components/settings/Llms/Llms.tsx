@@ -1,3 +1,4 @@
+import { setDefaultConfigId } from '@/api/llm'
 import { LlmContext } from '@/contexts/llmContext'
 import ScrolledContainer from '@/UI/ScrolledContainer/ScrolledContainer'
 import { Divider, Select, SelectItem } from '@nextui-org/react'
@@ -7,7 +8,16 @@ import LLMToken from './LLMToken'
 import PromptRedactor from './PromptRedactor'
 
 const Llms = () => {
-  const { tokens, llmConfigs } = useContext(LlmContext)
+  const { tokens, llmConfigs, defaultLlmConfig, setDefaultLlmConfig } =
+    useContext(LlmContext)
+
+  const handleDefaultConfigChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const id = e.target.value
+    await setDefaultConfigId(id)
+    setDefaultLlmConfig({ ...llmConfigs[id], id })
+  }
 
   return (
     <div className='flex h-full w-full items-start justify-start gap-9'>
@@ -84,36 +94,21 @@ const Llms = () => {
           </h3>
           <p className='mb-3 text-sm text-text-addition'>
             The chosen LLM configurations will be the default for prompt
-            responses and conditions, and slot filling.
+            responses and conditions.
           </p>
           <div className='flex gap-4'>
-            <div className='w-full'>
-              <h3 className='text-md mb-3 font-semibold'>Prompting</h3>
+            <div className='w-1/2'>
               <Select
                 aria-label='Llm service'
                 labelPlacement='outside'
                 placeholder='Select LLM service'
-                // selectedKeys={formData.provider ? [formData.provider] : []}
-                // value={formData.provider}
-                // onChange={handleServiceChange}
-                radius='sm'
-                size='sm'
-              >
-                {Object.entries(llmConfigs).map(([id, item]) => (
-                  <SelectItem key={id}>{item.config_name}</SelectItem>
-                ))}
-              </Select>
-            </div>
-
-            <div className='w-full'>
-              <h3 className='text-md mb-3 font-semibold'>Slot filling</h3>
-              <Select
-                aria-label='Llm service'
-                labelPlacement='outside'
-                placeholder='Select LLM service'
-                // selectedKeys={formData.provider ? [formData.provider] : []}
-                // value={formData.provider}
-                // onChange={handleServiceChange}
+                selectedKeys={
+                  defaultLlmConfig?.id &&
+                  Object.hasOwn(llmConfigs, defaultLlmConfig.id)
+                    ? [defaultLlmConfig.id]
+                    : []
+                }
+                onChange={handleDefaultConfigChange}
                 radius='sm'
                 size='sm'
               >
