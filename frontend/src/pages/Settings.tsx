@@ -1,20 +1,25 @@
 import General from '@/components/settings/General'
 import Llms from '@/components/settings/Llms/Llms'
 import { Button, Divider } from '@nextui-org/react'
+import { capitalize } from 'lodash'
 import { memo, ReactNode, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 const tabsMap: Record<Tab, ReactNode> = {
-  General: <General />,
-  Pipeline: null,
-  Llms: <Llms />,
-  Build: null,
-  Advanced: null,
+  general: <General />,
+  pipeline: null,
+  llms: <Llms />,
+  build: null,
+  advanced: null,
 }
 
-type Tab = 'General' | 'Pipeline' | 'Llms' | 'Build' | 'Advanced'
+type Tab = 'general' | 'pipeline' | 'llms' | 'build' | 'advanced'
 
 const Settings = memo(() => {
-  const [tab, setTab] = useState<Tab>('General')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = (searchParams.get('tab')?.toLowerCase() ?? 'general') as Tab
+
+  const [currentTab, setCurrentTab] = useState<Tab>(tab)
 
   return (
     <>
@@ -26,20 +31,21 @@ const Settings = memo(() => {
               {Object.keys(tabsMap).map((key) => (
                 <Button
                   key={key}
-                  isDisabled={['Pipeline', 'Build', 'Advanced'].includes(key)}
+                  isDisabled={['pipeline', 'build', 'advanced'].includes(key)}
                   className='flex w-full items-center justify-start font-semibold text-text-secondary'
                   variant={tab === key ? 'flat' : 'light'}
                   onClick={() => {
-                    setTab(key as Tab)
+                    setCurrentTab(key as Tab)
+                    setSearchParams({ page: 'settings', tab: key })
                   }}
                 >
-                  {key}
+                  {capitalize(key)}
                 </Button>
               ))}
             </div>
             <Divider orientation='vertical' className='h-full' />
           </div>
-          <div className='col-span-5'>{tabsMap[tab]}</div>
+          <div className='col-span-5'>{tabsMap[currentTab]}</div>
         </div>
       </div>
     </>
