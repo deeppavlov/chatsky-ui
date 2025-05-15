@@ -165,6 +165,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
         onAction={async () => {
           await deleteLlmConfig(config.id)
           setLlmConfigs((prev) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { [config.id]: _, ...rest } = prev
             return rest
           })
