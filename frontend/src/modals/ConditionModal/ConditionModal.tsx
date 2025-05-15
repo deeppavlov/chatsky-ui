@@ -4,6 +4,7 @@ import CodeConditionIcon from '@/icons/nodes/conditions/CodeConditionIcon'
 import CustomConditionIcon from '@/icons/nodes/conditions/CustomConditionIcon'
 import LLMConditionIcon from '@/icons/nodes/conditions/LLMConditionIcon'
 import SlotsConditionIcon from '@/icons/nodes/conditions/SlotsConditionIcon'
+import { IInputError } from '@/types/ResponseTypes'
 import { Button, Tab, Tabs } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
@@ -15,7 +16,11 @@ import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
-import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
+import {
+  conditionType,
+  conditionTypeType,
+  ILLMConditionHandle,
+} from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import DefInput from '../../UI/Input/DefInput'
 import {
@@ -76,6 +81,43 @@ type ConditionModalTab =
   | 'Basic'
   | 'Button'
 
+const tabItems: {
+  title: ConditionModalTab
+  value: conditionTypeType
+  icon: JSX.Element
+}[] = [
+  {
+    title: 'Python code',
+    value: 'python',
+    icon: <CodeConditionIcon className='size-5' />,
+  },
+  {
+    title: 'Basic',
+    value: 'basic',
+    icon: <BasicConditionIcon className='size-5' />,
+  },
+  {
+    title: 'Using LLM',
+    value: 'llm',
+    icon: <LLMConditionIcon className='size-5' />,
+  },
+  {
+    title: 'Slot filling',
+    value: 'slot',
+    icon: <SlotsConditionIcon className='size-5' />,
+  },
+  {
+    title: 'Custom',
+    value: 'custom',
+    icon: <CustomConditionIcon className='size-5' />,
+  },
+  {
+    title: 'Button',
+    value: 'button',
+    icon: <ButtonConditionIcon className='size-5' />,
+  },
+]
+
 type LintStatusType = {
   status: 'ok' | 'error'
   message: string
@@ -92,15 +134,14 @@ const ConditionModal = ({
   is_create = false,
   id = 'condition-modal',
 }: ConditionModalProps) => {
-  const { closePopUp, openPopUp } = useContext(PopUpContext)
+  const { flowId } = useParams()
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
+  const { closePopUp, openPopUp } = useContext(PopUpContext)
   const { quietSaveFlows, flows } = useContext(flowContext)
 
   const [selected, setSelected] = useState<conditionTypeType>(
     condition?.type ?? 'python',
   )
-
-  const { flowId } = useParams()
   const [lintStatus, setLintStatus] = useState<LintStatusType | null>(null)
   const [testConditionPending, setTestConditionPending] = useState(false)
 
@@ -124,7 +165,7 @@ const ConditionModal = ({
       }
     })
 
-  const allNameCondidionFlows = arr
+  const allNameConditionFlows = arr
     .flatMap((flow) => {
       return flow.collection
     })
@@ -135,7 +176,7 @@ const ConditionModal = ({
 
     const newName = `${nameFlow}_NewCnd_${count}`
 
-    const isNotUnique = allNameCondidionFlows.includes(newName)
+    const isNotUnique = allNameConditionFlows.includes(newName)
 
     if (isNotUnique) {
       return iterGenName((count += 1))
@@ -151,11 +192,7 @@ const ConditionModal = ({
       : condition,
   )
 
-  const [errorObject, setError] = useState<{
-    name?: { isInvalid: boolean; errorMessage: string }
-    isInvalid?: boolean
-    errorMessage?: string
-  }>({
+  const [errorObject, setError] = useState<IInputError>({
     isInvalid: false,
     errorMessage: '',
   })
@@ -169,6 +206,8 @@ const ConditionModal = ({
     state: conditionType
     setState: (data: { group: boolean; slot: boolean }) => void
   }>()
+
+  const llmSectionRef = useRef<ILLMConditionHandle>(null)
 
   const validateConditionAction = () => {
     const reasons: string[] = []
@@ -222,52 +261,15 @@ const ConditionModal = ({
     }
   }
 
-  const tabItems: {
-    title: ConditionModalTab
-    value: conditionTypeType
-    icon: JSX.Element
-  }[] = useMemo(
-    () => [
-      {
-        title: 'Python code',
-        value: 'python',
-        icon: <CodeConditionIcon className='size-5' />,
-      },
-      {
-        title: 'Basic',
-        value: 'basic',
-        icon: <BasicConditionIcon className='size-5' />,
-      },
-      {
-        title: 'Using LLM',
-        value: 'llm',
-        icon: <LLMConditionIcon className='size-5' />,
-      },
-      {
-        title: 'Slot filling',
-        value: 'slot',
-        icon: <SlotsConditionIcon className='size-5' />,
-      },
-      {
-        title: 'Custom',
-        value: 'custom',
-        icon: <CustomConditionIcon className='size-5' />,
-      },
-      {
-        title: 'Button',
-        value: 'button',
-        icon: <ButtonConditionIcon className='size-5' />,
-      },
-    ],
-    [],
-  )
-
   const bodyItems = useMemo(
     () => ({
       llm: (
         <UsingLLMConditionSection
+          ref={llmSectionRef}
           condition={currentCondition}
           setData={setCurrentCondition}
+          nameError={errorObject}
+          setNameError={setError}
         />
       ),
       slot: (
@@ -304,7 +306,7 @@ const ConditionModal = ({
         />
       ),
     }),
-    [currentCondition],
+    [currentCondition, errorObject],
   )
 
   const lintCondition = async () => {
@@ -376,6 +378,10 @@ const ConditionModal = ({
         return false
       }
     }
+    if (currentCondition.type === 'llm') {
+      const isValid = llmSectionRef.current?.validate()
+      if (!isValid) return
+    }
     return true
   }
 
@@ -434,7 +440,7 @@ const ConditionModal = ({
     )
 
     const newButtonsData =
-      data.buttonsData?.buttons.map((button) => {
+      data.buttonsData?.buttons?.map((button) => {
         return button.map((button) => {
           if (button.id === currentCondition.id) {
             const date =
@@ -519,11 +525,11 @@ const ConditionModal = ({
           {is_create ? 'Create condition' : 'Edit condition'}
         </div>
       </ModalHeader>
-      <ModalBody className='min-h-[480px]'>
+      <ModalBody className='flex min-h-[480px] flex-col'>
         {is_create ? (
           <label>
             <Tabs
-              disabledKeys={['llm', 'custom']}
+              disabledKeys={['custom']}
               selectedKey={selected}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
@@ -561,79 +567,80 @@ const ConditionModal = ({
           </label>
         ) : null}
 
-        <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
-          <DefInput
-            className='col-span-3'
-            label='Name'
-            variant='bordered'
-            labelPlacement='outside'
-            placeholder="Enter condition's name here"
-            value={currentCondition.name}
-            onChange={(e) =>
-              setCurrentCondition({
-                ...currentCondition,
-                name: e.target.value.replaceAll(' ', '_'),
-              })
-            }
-            data-testid='condition-name'
-            isInvalid={errorObject.isInvalid}
-            errorMessage={errorObject.errorMessage}
-          />
-          <DefInput
-            label='Priority'
-            variant='bordered'
-            labelPlacement='outside'
-            placeholder="Enter condition's priority here"
-            type='number'
-            min={0}
-            value={currentCondition.data.priority.toString()}
-            onChange={(e) =>
-              setCurrentCondition({
-                ...currentCondition,
-                data: {
-                  ...currentCondition.data,
-                  priority: parseInt(e.target.value),
-                },
-              })
-            }
-            data-testid='condition-priority'
-          />
-        </div>
-        <div>
-          <AnimatePresence mode='wait'>
-            <motion.div
-              key={selected}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {bodyItems[selected]}
-            </motion.div>
-          </AnimatePresence>
-          {selected === 'python' && (
-            <div
-              className='grid overflow-hidden transition-all duration-150'
-              style={{
-                gridTemplateRows: lintStatus ? '1fr' : '0fr',
-              }}
-            >
-              <div className='min-h-0 transition-all duration-150'>
-                <p
-                  className={classNames(
-                    'mt-2 rounded-lg p-2 font-mono text-xs',
-                    lintStatus?.status == 'error'
-                      ? 'bg-[var(--condition-test-error)]'
-                      : 'bg-[var(--condition-test-success)]',
-                  )}
-                >
-                  {lintStatus?.status == 'ok'
-                    ? 'Condition test passed!'
-                    : lintStatus?.message}
-                </p>
+        <AnimatePresence mode='wait'>
+          <motion.div
+            className={'flex flex-1 flex-grow flex-col gap-3 py-2'}
+            key={selected}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {selected !== 'llm' && (
+              <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
+                <DefInput
+                  className='col-span-3'
+                  label='Title'
+                  variant='bordered'
+                  labelPlacement='outside'
+                  placeholder="Enter condition's name here"
+                  value={currentCondition.name}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      name: e.target.value.replaceAll(' ', '_'),
+                    })
+                  }
+                  data-testid='condition-name'
+                  isInvalid={errorObject.isInvalid}
+                  errorMessage={errorObject.errorMessage}
+                />
+                <DefInput
+                  label='Priority'
+                  variant='bordered'
+                  labelPlacement='outside'
+                  placeholder="Enter condition's priority here"
+                  type='number'
+                  min={0}
+                  value={currentCondition.data.priority.toString()}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      data: {
+                        ...currentCondition.data,
+                        priority: parseInt(e.target.value),
+                      },
+                    })
+                  }
+                  data-testid='condition-priority'
+                />
               </div>
+            )}
+            {bodyItems[selected]}
+          </motion.div>
+        </AnimatePresence>
+        {selected === 'python' && (
+          <div
+            className='grid overflow-hidden transition-all duration-150'
+            style={{
+              gridTemplateRows: lintStatus ? '1fr' : '0fr',
+            }}
+          >
+            <div className='min-h-0 transition-all duration-150'>
+              <p
+                className={classNames(
+                  'mt-2 rounded-lg p-2 font-mono text-xs',
+                  lintStatus?.status == 'error'
+                    ? 'bg-[var(--condition-test-error)]'
+                    : 'bg-[var(--condition-test-success)]',
+                )}
+              >
+                {lintStatus?.status == 'ok'
+                  ? 'Condition test passed!'
+                  : lintStatus?.message}
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </ModalBody>
       <ModalFooter className='flex items-center justify-between'>
         <div className='flex items-center justify-start gap-2'>
