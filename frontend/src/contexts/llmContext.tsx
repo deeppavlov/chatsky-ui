@@ -1,4 +1,9 @@
-import { getLlmConfigs, getLlmProviders, getLLMTokens } from '@/api/llm'
+import {
+  getDefaultConfigId,
+  getLlmConfigs,
+  getLlmProviders,
+  getLLMTokens,
+} from '@/api/llm'
 import {
   ILlmConfig,
   ILlmConfigs,
@@ -17,6 +22,10 @@ type llmContextType = {
   setEditingConfig: React.Dispatch<
     React.SetStateAction<(ILlmConfig & { id: string }) | null>
   >
+  defaultLlmConfig: (ILlmConfig & { id: string }) | null
+  setDefaultLlmConfig: React.Dispatch<
+    React.SetStateAction<(ILlmConfig & { id: string }) | null>
+  >
 }
 
 export const LlmContext = createContext<llmContextType>({
@@ -27,6 +36,8 @@ export const LlmContext = createContext<llmContextType>({
   setLlmConfigs: () => {},
   editingConfig: null,
   setEditingConfig: () => {},
+  defaultLlmConfig: null,
+  setDefaultLlmConfig: () => {},
 })
 
 interface ProviderProps {
@@ -38,6 +49,9 @@ const LlmProvider = ({ children }: ProviderProps) => {
   const [tokens, setTokens] = useState<ITokens>({})
   const [llmConfigs, setLlmConfigs] = useState<ILlmConfigs>({})
   const [editingConfig, setEditingConfig] = useState<
+    (ILlmConfig & { id: string }) | null
+  >(null)
+  const [defaultLlmConfig, setDefaultLlmConfig] = useState<
     (ILlmConfig & { id: string }) | null
   >(null)
 
@@ -55,10 +69,19 @@ const LlmProvider = ({ children }: ProviderProps) => {
     setLlmConfigs(configs)
   }
 
+  const fetchDefaultLlmConfigId = async () => {
+    const configId = await getDefaultConfigId()
+    const defaultConfig = { ...llmConfigs[configId], id: configId }
+
+    setDefaultLlmConfig(defaultConfig)
+  }
+
   useEffect(() => {
     fetchLlmProviders()
     fetchTokens()
     fetchLlmConfigs()
+    fetchDefaultLlmConfigId()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -71,6 +94,8 @@ const LlmProvider = ({ children }: ProviderProps) => {
         setLlmConfigs,
         editingConfig,
         setEditingConfig,
+        defaultLlmConfig,
+        setDefaultLlmConfig,
       }}
     >
       {children}
