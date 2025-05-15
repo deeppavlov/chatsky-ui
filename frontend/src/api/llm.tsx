@@ -142,3 +142,25 @@ export const deleteLlmConfig = async (config_id: string) => {
     throw error
   }
 }
+
+export const getDefaultConfigId = async (): Promise<string> => {
+  try {
+    const {
+      data: { data },
+    } = await $v1.get(`config/llms/default`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
+
+export const setDefaultConfigId = async (id: string) => {
+  try {
+    const { data } = await $v1.post(`config/llms/default/?config_id=${id}`)
+    return data
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+}
