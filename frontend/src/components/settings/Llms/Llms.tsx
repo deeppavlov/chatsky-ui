@@ -14,6 +14,7 @@ const Llms = () => {
   const handleDefaultConfigChange = async (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
+    if (!e.target.value) return
     const id = e.target.value
     await setDefaultConfigId(id)
     setDefaultLlmConfig({ ...llmConfigs[id], id })

@@ -70,10 +70,14 @@ const LlmProvider = ({ children }: ProviderProps) => {
   }
 
   const fetchDefaultLlmConfigId = async () => {
-    const configId = await getDefaultConfigId()
-    const defaultConfig = { ...llmConfigs[configId], id: configId }
+    try {
+      const configId = await getDefaultConfigId()
+      const defaultConfig = { ...llmConfigs[configId], id: configId }
 
-    setDefaultLlmConfig(defaultConfig)
+      setDefaultLlmConfig(defaultConfig)
+    } catch (error) {
+      console.error('Error fetching default LLM config ID:', error)
+    }
   }
 
   useEffect(() => {
