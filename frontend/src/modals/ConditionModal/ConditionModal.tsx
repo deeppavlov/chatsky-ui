@@ -39,9 +39,9 @@ import {
 } from '../ModalComponents'
 import BasicCondition from './components/BasicCondition'
 import ButtonCondition from './components/ButtonCondition'
+import LLMConditionSection from './components/LLMConditionSection'
 import PythonCondition from './components/PythonCondition'
 import SlotCondition from './components/SlotCondition'
-import UsingLLMConditionSection from './components/UsingLLMCondition'
 
 export type ConditionModalContentType = {
   condition: conditionType
@@ -264,7 +264,7 @@ const ConditionModal = ({
   const bodyItems = useMemo(
     () => ({
       llm: (
-        <UsingLLMConditionSection
+        <LLMConditionSection
           ref={llmSectionRef}
           condition={currentCondition}
           setData={setCurrentCondition}

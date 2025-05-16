@@ -100,9 +100,10 @@ const Llms = () => {
           <div className='flex gap-4'>
             <div className='w-1/2'>
               <Select
-                aria-label='Llm service'
+                data-testid='default-llm-select'
+                aria-label='Default llm config'
                 labelPlacement='outside'
-                placeholder='Select LLM service'
+                placeholder='Select LLM configuration'
                 selectedKeys={
                   defaultLlmConfig?.id &&
                   Object.hasOwn(llmConfigs, defaultLlmConfig.id)

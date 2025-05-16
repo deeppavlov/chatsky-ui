@@ -39,6 +39,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
   const [isSaved, setIsSaved] = useState(false)
 
   const tokenIsListed = Object.hasOwn(tokens, token.id)
+
   const tokenNames = Object.values(tokens).map((t) => t.name)
 
   const showSaveIcon = () => {
@@ -103,6 +104,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
     } else {
       await updateLLMToken(token.id, { [field]: value })
       showSaveIcon()
+
       setTokens((prev) => ({
         ...prev,
         [token.id]: { ...prev[token.id], [field]: value },
@@ -131,6 +133,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
       ...data,
       name,
     }))
+
     debouncedUpdateToken('name', name, () => e.target.blur())
   }
 
@@ -180,12 +183,13 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
   }
 
   return (
-    <div>
+    <div data-testid={`llm-token-${token.id}`}>
       <div
         className={`grid h-10 w-full grid-cols-7 gap-7 ${tokenIsListed && 'shadow-[0_1px_0_0_#e5e7eb]'} ${error && 'shadow-[0_1px_0_0_#ff3333]'}`}
       >
         <div className='col-span-2 flex items-center'>
           <Select
+            data-testid='llmToken_provider-select'
             aria-label='Llm service'
             labelPlacement='outside'
             placeholder='Select LLM service'
@@ -202,6 +206,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
 
         <div className='col-span-2 flex items-center'>
           <Input
+            data-testid='llmToken_name-input'
             placeholder='Enter name...'
             value={formData.name}
             onChange={handleNameChange}
@@ -218,6 +223,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
           ) : (
             <div className='flex h-full flex-grow items-center gap-1'>
               <Input
+                data-testid='llmToken_value-input'
                 type={hidePassword ? 'password' : 'text'}
                 placeholder='Enter value...'
                 value={formData.value}
@@ -243,6 +249,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
 
           {tokenIsListed ? (
             <button
+              data-testid='llmToken_delete-btn'
               onClick={handleDelete}
               className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
             >
@@ -250,6 +257,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
             </button>
           ) : (
             <button
+              data-testid='llmToken_reset-btn'
               onClick={() => {
                 setFormData(initialFormData)
                 setError(null)

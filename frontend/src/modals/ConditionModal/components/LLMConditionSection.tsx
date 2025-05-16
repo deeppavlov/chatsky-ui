@@ -15,7 +15,7 @@ import React, {
 import { useSearchParams } from 'react-router-dom'
 import { ConditionModalContentType } from '../ConditionModal'
 
-const UsingLLMConditionSection = forwardRef<
+const LLMConditionSection = forwardRef<
   ILLMConditionHandle,
   ConditionModalContentType & {
     nameError: IInputError
@@ -116,7 +116,7 @@ const UsingLLMConditionSection = forwardRef<
               label='Title'
               variant='bordered'
               labelPlacement='outside'
-              placeholder="Enter response's name here"
+              placeholder='Enter condition name'
               value={condition.name}
               {...nameError}
               onChange={handleTitleChange}
@@ -127,6 +127,7 @@ const UsingLLMConditionSection = forwardRef<
                 base: 'mt-[20px] relative',
                 helperWrapper: 'absolute top-8 left-0',
               }}
+              data-testid='llmCondition-name'
             />
           </div>
           <div className='col-span-1 flex items-end justify-start gap-2'>
@@ -152,6 +153,7 @@ const UsingLLMConditionSection = forwardRef<
               {...llmConfigError}
               radius='sm'
               size='sm'
+              data-testid='llmCondition-config'
             >
               {Object.entries(llmConfigs).map(([id, item]) => (
                 <SelectItem key={id}>{item.config_name}</SelectItem>
@@ -172,7 +174,7 @@ const UsingLLMConditionSection = forwardRef<
           <Textarea
             name='prompt'
             onChange={changeConditionValue}
-            // value={response.data[0].llm?.prompt}
+            value={condition.data.llm?.prompt}
             label={
               <>
                 <span className='text-xs font-semibold'>Prompt</span>
@@ -199,6 +201,7 @@ const UsingLLMConditionSection = forwardRef<
                 'ps-[14px] pe-1 py-[10px] flex-grow bg-background border-1 border-input-border w-full',
               input: 'pe-[6px]',
             }}
+            data-testid='llmCondition-prompt'
           />
         </div>
       </div>
@@ -251,4 +254,4 @@ const UsingLLMConditionSection = forwardRef<
   )
 })
 
-export default UsingLLMConditionSection
+export default LLMConditionSection

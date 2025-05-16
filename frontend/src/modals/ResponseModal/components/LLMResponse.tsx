@@ -41,7 +41,7 @@ const LLMResponse = forwardRef<ILLMResponseHandle, IProps>(
     useEffect(() => {
       if (!response.data[0].llm) {
         Object.prototype.hasOwnProperty.call(responseStor, 'llm')
-          ? setData({ ...responseStor['llm'], name: response.name })
+          ? setData(() => ({ ...responseStor['llm'], name: response.name }))
           : setData((prev) => ({
               ...prev,
               type: 'llm',
@@ -132,10 +132,11 @@ const LLMResponse = forwardRef<ILLMResponseHandle, IProps>(
         <div className='grid w-full grid-cols-2 gap-4'>
           <div className='col-span-1'>
             <Input
+              data-testid='llmResponse-name'
               label='Title'
               variant='bordered'
               labelPlacement='outside'
-              placeholder="Enter response's name here"
+              placeholder='Enter response name'
               value={response.name}
               {...nameError}
               onChange={handleTitleChange}
@@ -150,6 +151,7 @@ const LLMResponse = forwardRef<ILLMResponseHandle, IProps>(
           </div>
           <div className='col-span-1 flex items-end justify-start gap-2'>
             <Select
+              data-testid='llmResponse-config'
               name='llm_config_id'
               popoverProps={{
                 portalContainer: portalContainer || undefined,
@@ -215,6 +217,7 @@ const LLMResponse = forwardRef<ILLMResponseHandle, IProps>(
                 'ps-[14px] pe-1 py-[10px] flex-grow bg-background border-1 border-input-border w-full',
               input: 'pe-[6px]',
             }}
+            data-testid='llmResponse-prompt'
           />
         </div>
         <div className='w-full'>

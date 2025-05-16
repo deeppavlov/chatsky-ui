@@ -45,7 +45,7 @@ const PromptRedactor = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   return (
-    <div className='relative h-full basis-5/12'>
+    <div data-testid='prompt-redactor' className='relative h-full basis-5/12'>
       <AnimatePresence mode='wait'>
         {!editingConfig ? (
           <motion.div

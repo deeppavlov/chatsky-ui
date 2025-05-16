@@ -194,12 +194,13 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
   }, [tokens])
 
   return (
-    <div>
+    <div data-testid={`llm-config-${config.id}`}>
       <div
         className={`grid h-10 w-full grid-cols-4 gap-7 ${configIsListed && 'shadow-[0_1px_0_0_#e5e7eb]'} ${error && 'shadow-[0_1px_0_0_#ff3333]'}`}
       >
         <div className='col-span-1 flex items-center'>
           <Input
+            data-testid='llmConfig_name-input'
             placeholder='Enter name...'
             value={formData.config_name}
             onChange={handleNameChange}
@@ -212,6 +213,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
 
         <div className='col-span-1 flex items-center'>
           <Select
+            data-testid='llmConfig_model-select'
             aria-label='Llm'
             labelPlacement='outside'
             placeholder='Select LLM'
@@ -229,6 +231,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
         <div className='col-span-1 flex items-center gap-2'>
           <div className='flex h-full flex-grow items-center gap-1'>
             <Select
+              data-testid='llmConfig_token-select'
               aria-label='LLM access token'
               labelPlacement='outside'
               placeholder='Select token'
@@ -272,6 +275,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
               </span>
             )}
             <button
+              data-testid='llmConfig_prompt-edit-button'
               disabled={!configIsListed}
               onClick={() => setEditingConfig(config)}
               className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
@@ -283,6 +287,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
 
           {configIsListed ? (
             <button
+              data-testid='llmConfig_delete-button'
               onClick={handleDelete}
               className='group flex h-8 w-8 flex-shrink-0 items-center justify-center hover:scale-105 active:scale-95 disabled:hover:scale-100'
             >
@@ -290,6 +295,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
             </button>
           ) : (
             <button
+              data-testid='llmConfig_reset-button'
               onClick={() => {
                 setFormData(initialFormData)
                 setError(null)
