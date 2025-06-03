@@ -17,6 +17,7 @@ import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
 import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
+import { Button2 } from '../../UI/button'
 import DefInput from '../../UI/Input/DefInput'
 import {
   generateNewConditionBase,
@@ -566,29 +567,51 @@ const ConditionModal = ({
       </ModalBody>
       <ModalFooter className='flex items-center justify-between'>
         <div className='flex items-center justify-start gap-2'>
-          <Button isIconOnly className='rounded-full'>
+          {/* <Button isIconOnly className='rounded-full'>
             <HelpCircle />
-          </Button>
+          </Button> */}
+          <Button2 isIconOnly className='rounded-full'>
+            <HelpCircle />
+          </Button2>
           {!is_create && (
-            <Button
-              onClick={handleConfirmDeleteOpen}
-              className='hover:bg-red-500'
-              isIconOnly
-            >
-              <TrashIcon />
-            </Button>
+            <div className='flex gap-2'>
+              <Button2
+                onClick={handleConfirmDeleteOpen}
+                className='rounded-medium hover:bg-red-500'
+                isIconOnly
+              >
+                <TrashIcon />
+              </Button2>
+              {/* <Button
+                onClick={handleConfirmDeleteOpen}
+                className='hover:bg-red-500'
+                isIconOnly
+              >
+                <TrashIcon />
+              </Button> */}
+            </div>
           )}
         </div>
         <div className='flex items-end gap-2'>
           {currentCondition.type === 'python' && (
-            <Button
-              data-testid='test-condition-button'
-              onClick={testCondition}
-              isLoading={testConditionPending}
-              className=''
-            >
-              Test condition
-            </Button>
+            <div className='flex gap-2'>
+              <Button
+                data-testid='test-condition-button'
+                onClick={testCondition}
+                isLoading={testConditionPending}
+              >
+                Test condition
+              </Button>
+              <Button2
+                data-testid='test-condition-button'
+                onClick={testCondition}
+                isLoading={testConditionPending}
+                variant='default'
+                className='rounded-medium bg-default'
+              >
+                Test condition2
+              </Button2>
+            </div>
           )}
           <Button
             data-testid='save-condition-button'
@@ -597,6 +620,14 @@ const ConditionModal = ({
           >
             Save condition
           </Button>
+          <Button2
+            data-testid='save-condition-button'
+            onClick={saveCondition}
+            variant='secondary'
+            className='rounded-medium bg-foreground text-background'
+          >
+            Save condition2
+          </Button2>
         </div>
       </ModalFooter>
     </Modal>
