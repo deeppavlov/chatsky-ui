@@ -595,13 +595,13 @@ const ConditionModal = ({
         <div className='flex items-end gap-2'>
           {currentCondition.type === 'python' && (
             <div className='flex gap-2'>
-              <Button
+              {/* <Button
                 data-testid='test-condition-button'
                 onClick={testCondition}
                 isLoading={testConditionPending}
               >
                 Test condition
-              </Button>
+              </Button> */}
               <Button2
                 data-testid='test-condition-button'
                 onClick={testCondition}
@@ -613,13 +613,13 @@ const ConditionModal = ({
               </Button2>
             </div>
           )}
-          <Button
+          {/* <Button
             data-testid='save-condition-button'
             onClick={saveCondition}
             className='bg-foreground text-background'
           >
             Save condition
-          </Button>
+          </Button> */}
           <Button2
             data-testid='save-condition-button'
             onClick={saveCondition}

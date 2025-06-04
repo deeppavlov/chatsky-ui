@@ -1,6 +1,7 @@
 import { Textarea } from '@nextui-org/react'
 import { useEffect } from 'react'
 import { responseType } from '../../../types/ResponseTypes'
+import { Textarea2 } from '../../../UI/textarea'
 
 const TextResponse = ({
   response,
@@ -44,7 +45,7 @@ const TextResponse = ({
 
   return (
     <div>
-      <Textarea
+      {/* <Textarea
         label='Value'
         labelPlacement='outside'
         placeholder='Enter text response'
@@ -53,6 +54,17 @@ const TextResponse = ({
         onChange={(e) => changeResponseValue(e.target.value)}
         minRows={8}
         maxRows={14}
+      /> */}
+      <Textarea2
+        className='bg-transparent'
+        label=''
+        placeholder='Enter text response'
+        value={response.data[0].text}
+        onChange={(e) => changeResponseValue(e.target.value)}
+
+        // minRows={8}
+        // maxRows={14}
+        // variant='bordered'
       />
     </div>
   )
