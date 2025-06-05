@@ -3,10 +3,13 @@ import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import * as React from 'react'
 
+//w-full font-normal bg-transparent !outline-none placeholder:text-foreground-500 focus-visible:outline-none data-\
+// [has-start-content=true]:ps-1.5 data-[has-end-content=true]:pe-1.5 text-small h-full is-filled
+
 const defaultClassName =
-  'flex w-full min-h-[160px] rounded-xl border-2 border-neutral-600 hover:border-neutral-400 bg-transparent px-[14px] py-[10px] text-base \
-  ring-offset-white placeholder:text-foreground-400 disabled:cursor-not-allowed disabled:opacity-70 md:text-sm resize-none \
-  focus:outline-none focus:ring-2 focus:ring-neutral-400/20 focus:border-neutral-800'
+  'flex w-full min-h-[160px] rounded-xl border-2 border-foreground-200 hover:border-neutral-400 bg-transparent px-[14px] py-[10px] text-base \
+   placeholder:text-foreground-400 disabled:cursor-not-allowed disabled:opacity-70 md:text-sm resize-none \
+  focus:outline-none focus:ring-foreground-400 focus:border-foreground-600'
 
 interface TextareaProps extends React.ComponentProps<'textarea'> {
   label?: string

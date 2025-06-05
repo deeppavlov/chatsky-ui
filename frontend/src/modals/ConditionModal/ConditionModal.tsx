@@ -567,9 +567,9 @@ const ConditionModal = ({
       </ModalBody>
       <ModalFooter className='flex items-center justify-between'>
         <div className='flex items-center justify-start gap-2'>
-          {/* <Button isIconOnly className='rounded-full'>
+          <Button isIconOnly className='rounded-full'>
             <HelpCircle />
-          </Button> */}
+          </Button>
           <Button2 isIconOnly className='rounded-full'>
             <HelpCircle />
           </Button2>
@@ -582,48 +582,47 @@ const ConditionModal = ({
               >
                 <TrashIcon />
               </Button2>
-              {/* <Button
+              <Button
                 onClick={handleConfirmDeleteOpen}
                 className='hover:bg-red-500'
                 isIconOnly
               >
                 <TrashIcon />
-              </Button> */}
+              </Button>
             </div>
           )}
         </div>
         <div className='flex items-end gap-2'>
           {currentCondition.type === 'python' && (
             <div className='flex gap-2'>
-              {/* <Button
+              <Button
                 data-testid='test-condition-button'
                 onClick={testCondition}
                 isLoading={testConditionPending}
               >
                 Test condition
-              </Button> */}
+              </Button>
               <Button2
                 data-testid='test-condition-button'
                 onClick={testCondition}
                 isLoading={testConditionPending}
-                variant='default'
+                variant='primary'
                 className='rounded-medium bg-default'
               >
                 Test condition2
               </Button2>
             </div>
           )}
-          {/* <Button
+          <Button
             data-testid='save-condition-button'
             onClick={saveCondition}
             className='bg-foreground text-background'
           >
             Save condition
-          </Button> */}
+          </Button>
           <Button2
             data-testid='save-condition-button'
             onClick={saveCondition}
-            variant='secondary'
             className='rounded-medium bg-foreground text-background'
           >
             Save condition2

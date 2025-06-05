@@ -1,43 +1,52 @@
-import { cn } from '@/lib/utils';
-import { Spinner } from '@nextui-org/react';
-import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import { cn } from '@/lib/utils'
+import { Spinner } from '@nextui-org/react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+import * as React from 'react'
 
+const defaultClassName =
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap \
+text-sm font-normal ring-offset-white \
+transition-colors transition-transform \
+focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground-800 focus-visible:ring-offset-2 \
+disabled:pointer-events-none disabled:opacity-50 \
+[&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0 \
+dark:ring-offset-foreground-800 dark:focus-visible:ring-foreground-300 \
+active:scale-[0.97] \
+relative overflow-hidden text-foreground'
 
-const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-normal ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 transition-transform active:scale-[0.97] relative overflow-hidden ',
-  {
-    variants: {
-      variant: {
-        default:
-          'bg-neutral-900 text-neutral-50 hover:bg-foreground-200/80 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-foreground-50/90 text-color-foreground',
-        // destructive:
-        //   'bg-red-500 text-neutral-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90',
-        // outline:
-        //   'border border-neutral-200 bg-white hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
-        secondary:
-          'bg-neutral-100 text-neutral-900 hover:bg-foreground-500 dark:bg-foreground-800 dark:text-neutral-50 dark:hover:bg-foreground-600 text-sm font-normal',
-        // ghost:
-        //   'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
-        // link: 'text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50',
-        primary:
-          'bg-foreground text-background text-sm hover:bg-foreground/80 bg-foreground text-background',
-      },
+const buttonVariants = cva(defaultClassName, {
+  variants: {
+    variant: {
+      default:
+        'bg-foreground-600 text-foreground-50 hover:bg-foreground-800/80 bg-foreground-50 dark:text-foreground-900 \
+          dark:hover:bg-foreground-50/90 text-color-foreground',
+      primary: 'hover:bg-foreground-200/80',
+      // secondary:
+      //   'bg-foreground-100 text-foreground-900 hover:bg-foreground-500 dark:bg-foreground-800 dark:text-foreground-50 \
+      //   dark:hover:bg-foreground-600 text-sm font-normal',
+      // destructive:
+      //   'bg-red-500 text-ёё-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90',
+      // outline:
+      //   'border border-neutral-200 bg-white hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
 
-      size: {
-        default: 'h-10 px-4',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
-        icon: 'h-10 w-10 p-0 flex items-center justify-center [&_svg]:size-6 bg-foreground-200/80 rounded-full',
-      },
+      // ghost:
+      //   'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
+      // link: 'text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50',
     },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
+
+    size: {
+      default: 'h-10 px-4',
+      sm: 'h-9 rounded-md px-3',
+      lg: 'h-11 rounded-md px-8',
+      icon: 'h-10 w-10 p-0 flex items-center justify-center [&_svg]:size-6 bg-foreground-300/90 hover:bg-foreground-200/90 rounded-full',
     },
   },
-)
+  defaultVariants: {
+    variant: 'default',
+    size: 'default',
+  },
+})
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -81,9 +90,7 @@ const Button2 = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           {...props}
         >
-          {isLoading && (
-            <Spinner size='sm' className='mr-2' color='current' />
-          )}
+          {isLoading && <Spinner size='sm' className='mr-2' color='current' />}
           {props.children}
         </Comp>
       </div>
