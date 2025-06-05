@@ -4,6 +4,8 @@ import CodeConditionIcon from '@/icons/nodes/conditions/CodeConditionIcon'
 import CustomConditionIcon from '@/icons/nodes/conditions/CustomConditionIcon'
 import LLMConditionIcon from '@/icons/nodes/conditions/LLMConditionIcon'
 import SlotsConditionIcon from '@/icons/nodes/conditions/SlotsConditionIcon'
+import { Input } from '@/UI/Input'
+import Select from '@/UI/Select'
 import { Button, Tab, Tabs } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
@@ -490,6 +492,38 @@ const ConditionModal = ({
             )}
           </Tabs>
         </label>
+        <div className='py-1'>
+          <Input
+            label='Имя агента'
+            placeholder='Введите имя агента'
+            error={errorObject.errorMessage}
+            value={currentCondition.name}
+            onChange={(e) =>
+              setCurrentCondition({
+                ...currentCondition,
+                name: e.target.value.replaceAll(' ', '_'),
+              })
+            }
+            data-testid='condition-name'
+          />
+          <div className='mb-2'></div>
+          <Select
+            placeholder='placeholder'
+            label='Condition type'
+            className='mt-2'
+            items={[
+              { key: 'basic', value: 'Basic' },
+              { key: 'python', value: 'Python', disabled: true },
+              { key: 'slot', value: 'Slot filling' },
+            ]}
+            onValueChange={(value: string) => {
+              console.log('value', value)
+            }}
+            // disabled
+            // defaultValue='Python'
+            // error='Ошибка'
+          />
+        </div>
         <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
           <DefInput
             className='col-span-3'
