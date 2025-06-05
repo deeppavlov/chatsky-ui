@@ -49,6 +49,9 @@ export default {
         'input-border-focus': 'var(--input-border-focus)',
         'input-border-error': 'var(--input-border-error)',
         'table-background': 'var(--table-background)',
+        'select-button': 'var(--select-button)',
+        'select-item-hover': 'var(--select-item-hover)',
+        'error-body': 'var(--error-body)',
       },
       borderRadius: {
         node: '16px',
@@ -89,14 +92,6 @@ export default {
     import('tailwindcss-children'),
     nextui({
       layout: {
-        boxShadow: {
-          small:
-            '0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)',
-          medium:
-            '0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)',
-          large:
-            '0px 0px 5px 0px rgb(0 0 0 / 0.01), 0px 2px 5px 0px rgb(0 0 0 / 0.06)',
-        },
         color: 'red',
       },
       themes: {

@@ -32,6 +32,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
+    --danger: #ff3333;
+    --error-body: '#ff3333';
+
     --background: #fff;
     --foreground: #191919;
     --bg-secondary: #f9fafc;
@@ -57,8 +60,11 @@
     --input-background-disabled: #f9fafc;
     --input-foreground: #191919;
     --input-border: #8d96b5;
-    --input-border-focus: #8d96b5;
+    --input-border-focus: #000;
     --input-border-error: #ff3333;
+
+    --select-button: #f0f0f3;
+    --select-item-hover: #e4e4e7; /* or (#d4d4d8) */
 
     --table-background: #f9fafc;
 
@@ -116,6 +122,9 @@
     .dark {
       color: #ebebeb;
 
+      --danger: #ff3333;
+      --error-body: '#ff3333';
+
       --background: #212121;
       --foreground: #ebebeb;
       --bg-secondary: #121212;
@@ -140,8 +149,11 @@
       --input-background-disabled: #121212;
       --input-foreground: #ebebeb;
       --input-border: #909090;
-      --input-border-focus: #a1a0a0;
+      --input-border-focus: #fff;
       --input-border-error: #ff3333;
+
+      --select-button: #27272a;
+      --select-item-hover: #3f3f46;
 
       --table-background: #353434;
 
