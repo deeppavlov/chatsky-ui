@@ -1,8 +1,9 @@
-import { cn } from '@/lib/utils'
-import { Spinner } from '@nextui-org/react'
-import { Slot } from '@radix-ui/react-slot'
-import { cva, type VariantProps } from 'class-variance-authority'
-import * as React from 'react'
+import { cn } from '@/lib/utils';
+import { Slot } from '@radix-ui/react-slot';
+import { Spinner } from '@radix-ui/themes';
+import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from 'react';
+
 
 const defaultClassName =
   'inline-flex items-center justify-center gap-2 whitespace-nowrap \
@@ -90,7 +91,7 @@ const Button2 = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           {...props}
         >
-          {isLoading && <Spinner size='sm' className='mr-2' color='current' />}
+          {isLoading && <Spinner size='3' />}
           {props.children}
         </Comp>
       </div>
