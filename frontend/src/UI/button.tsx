@@ -1,9 +1,8 @@
-import { cn } from '@/lib/utils';
-import { Slot } from '@radix-ui/react-slot';
-import { Spinner } from '@radix-ui/themes';
-import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
-
+import { Slot } from '@radix-ui/react-slot'
+import { Spinner } from '@radix-ui/themes'
+import { cva, type VariantProps } from 'class-variance-authority'
+import cn from 'classnames'
+import * as React from 'react'
 
 const defaultClassName =
   'inline-flex items-center justify-center gap-2 whitespace-nowrap \

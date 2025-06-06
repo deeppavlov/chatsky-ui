@@ -11,6 +11,7 @@ import GlobalNodeIcon from '../../icons/nodes/GlobalNodeIcon'
 import LocalNodeIcon from '../../icons/nodes/LocalNodeIcon'
 import StartNodeIcon from '../../icons/nodes/StartNodeIcon'
 import '../../index.css'
+import { Input } from '@/UI/Input'
 import ConditionModal from '../../modals/ConditionModal/ConditionModal'
 import NodeModal from '../../modals/NodeModal/NodeModal'
 import ResponseModal from '../../modals/ResponseModal/ResponseModal'
@@ -91,7 +92,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             </Button>
           </div>
         </div>
-        <div className='flex gap-2 px-3 py-2'>
+        <div className='flex w-full gap-2 px-3 py-2'>
           <div className='flex w-full flex-col gap-2'>
             <div className='flex h-[28px] items-center justify-between gap-2'>
               <div className='w-[82px] text-left'>
@@ -100,7 +101,8 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
 
               <div className='flex w-[166px] items-center'>
                 <Select
-                  className='h-[28px] items-end text-xs'
+                  textSize='text-xs'
+                  className='h-[28px] items-end'
                   defaultValue='GPT-4.1 mini'
                   items={[
                     { key: '1', value: 'GPT-4.1 mini' },
@@ -121,7 +123,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
               </div>
               <div className='flex items-center'>
                 <div
-                  className='font-inter w-[166px] h-[46px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 px-2 py-1 text-left text-xs'
+                  className='font-inter h-[46px] w-[166px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 px-2 py-1 text-left text-xs'
                   style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
@@ -148,13 +150,10 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
                 </p>
               </div>
               <div className='flex items-center'>
-                <input
-                  className='h-[28px] w-[166px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 px-2 py-1 text-left'
-                  type='number'
-                />
+                <Input className='!h-7 text-xs' type='number' />
               </div>
             </div>
-            <div className='flex w-auto items-center justify-between gap-2'>
+            <div className='flex max-w-full items-center justify-between gap-2'>
               <div className='w-[82px] text-left'>
                 <p className='text-top overflow-hidden text-ellipsis whitespace-nowrap text-xs'>
                   Тип политики выбора инструментов
@@ -162,7 +161,8 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
               </div>
               <div className='flex items-center'>
                 <Select
-                  className='h-[28px] w-[165px] items-end text-xs'
+                  className='h-[28px] w-[165px] items-end'
+                  textSize='text-xs'
                   defaultValue='Оптимизированный'
                   items={[
                     { key: '1', value: 'Оптимизированный' },

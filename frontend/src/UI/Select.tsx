@@ -1,12 +1,18 @@
-import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons';
-import * as RadixSelect from '@radix-ui/react-select';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
-import classNames from 'classnames';
-import cn from 'classnames';
-import { motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
-
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ExclamationTriangleIcon,
+} from '@radix-ui/react-icons'
+import * as RadixSelect from '@radix-ui/react-select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipTrigger,
+} from '@radix-ui/react-tooltip'
+import cn from 'classnames'
+import { motion } from 'framer-motion'
+import { useEffect, useId, useState } from 'react'
 
 type ItemSelectType = {
   key: string
@@ -35,7 +41,7 @@ const Select = ({
   placeholder,
   error,
   label,
-  textSize = 'text-xs',
+  textSize = 'text-sm',
   ...props
 }: DefSelectProps) => {
   const [selectedValue, setSelectedValue] = useState(defaultValue || '')
@@ -54,7 +60,7 @@ const Select = ({
   const id = useId()
 
   return (
-    <div className='flex w-full flex-col'>
+    <div className='flex w-full flex-col gap-1'>
       <div className={'flex items-center justify-between'}>
         <label
           className={cn('text-[12px] font-semibold', label ? 'h-6' : 'h-0')}
@@ -64,44 +70,41 @@ const Select = ({
         </label>
 
         {error && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className='flex h-6 w-6 items-center justify-center'>
-                <AlertTriangle size='12' color='var(--danger)' />
-              </TooltipTrigger>
-              <TooltipPortal>
-                <TooltipContent
-                  className='z-[9999] h-6 rounded-lg border border-[#E6E8F0] bg-bg-secondary px-2 py-1 text-xs'
-                  side='bottom'
-                  sideOffset={0}
-                  align='end'
-                  alignOffset={0}
-                >
-                  {error}
-                </TooltipContent>
-              </TooltipPortal>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className='flex h-6 w-6 items-center justify-center'>
+              <ExclamationTriangleIcon
+                className='h-3.5'
+                color='var(--danger)'
+              />
+            </TooltipTrigger>
+            <TooltipPortal>
+              <TooltipContent
+                className='z-[9999] h-6 rounded-lg border border-[#E6E8F0] bg-bg-secondary px-2 py-1 text-xs'
+                side='bottom'
+                sideOffset={0}
+                align='end'
+                alignOffset={0}
+              >
+                {error}
+              </TooltipContent>
+            </TooltipPortal>
+          </Tooltip>
         )}
       </div>
       <RadixSelect.Root value={selectedValue} onValueChange={handleChange}>
         <RadixSelect.Trigger
           {...props}
           disabled={disabled}
-          className={classNames(
-            'disabled:hover:input-background-disabled group relative inline-flex h-8 w-full items-center justify-between gap-2 rounded-[8px] bg-btn-accent px-2 text-[12px] *:text-sm hover:bg-select-item-hover focus-visible:bg-select-item-hover focus-visible:outline-none disabled:bg-input-background-disabled data-[state=open]:border-input-border-focus',
+          className={cn(
+            'disabled:hover:input-background-disabled group inline-flex h-8 items-center justify-between gap-2 rounded-[8px] bg-btn-accent px-2 *:overflow-hidden *:text-ellipsis *:whitespace-nowrap hover:bg-select-item-hover focus-visible:bg-select-item-hover focus-visible:outline-none disabled:bg-input-background-disabled *:data-[placeholder]:text-input-border',
             error && 'bg-danger/10',
             className,
+            textSize,
           )}
           aria-label='Select'
         >
-          <div className={`flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left *:${textSize} *:group-data-[placeholder]:text-input-border`}>
-            <RadixSelect.Value placeholder={placeholder}>
-              {selectedValue}
-            </RadixSelect.Value>
-          </div>
-
-          <RadixSelect.Icon className='transition-transform duration-200 ease-in-out group-data-[state=open]:rotate-180'>
+          <RadixSelect.Value placeholder={placeholder} />
+          <RadixSelect.Icon className='flex-shrink-0 transition-transform duration-200 ease-in-out group-data-[state=open]:rotate-180'>
             <ChevronDownIcon />
           </RadixSelect.Icon>
         </RadixSelect.Trigger>
@@ -118,21 +121,25 @@ const Select = ({
                 transition: { duration: 0.2 },
               }}
             >
-              <RadixSelect.Viewport className='grid w-full gap-1 p-2 '>
+              <RadixSelect.Viewport className='w-ful grid gap-1 p-2'>
                 {items.map((item) => (
                   <RadixSelect.Item
                     key={item.key}
                     value={item.value}
                     disabled={item.disabled}
-                    className={classNames(
-                      'flex cursor-pointer items-center justify-between overflow-hidden truncate whitespace-nowrap rounded-[8px] p-1.5 outline-none *:text-sm data-[highlighted]:bg-select-item-hover',
+                    className={cn(
+                      'flex cursor-pointer items-center justify-between overflow-hidden truncate whitespace-nowrap rounded-[8px] p-1.5 outline-none data-[highlighted]:bg-select-item-hover',
                       item.disabled && 'cursor-not-allowed opacity-50',
-                      textSize,
                     )}
                     data-testid={`selectItem-${item.value.toLowerCase().replace(' ', '-')}`}
                   >
                     <RadixSelect.ItemText asChild>
-                      <div className='overflow-hidden text-ellipsis whitespace-nowrap'>
+                      <div
+                        className={cn(
+                          'overflow-hidden text-ellipsis whitespace-nowrap',
+                          textSize,
+                        )}
+                      >
                         {item.value}
                       </div>
                     </RadixSelect.ItemText>

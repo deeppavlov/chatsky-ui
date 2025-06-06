@@ -1,3 +1,4 @@
+import { TooltipProvider } from '@radix-ui/react-tooltip'
 import { BuildProvider } from './buildContext'
 import { ChatProvider } from './chatContext'
 import { FlowProvider } from './flowContext'
@@ -22,7 +23,9 @@ export default function ContextWrapper({
               <RunProvider>
                 <FlowProvider>
                   <WorkspaceProvider>
-                    <IdeProvider>{children}</IdeProvider>
+                    <TooltipProvider>
+                      <IdeProvider>{children}</IdeProvider>
+                    </TooltipProvider>
                   </WorkspaceProvider>
                 </FlowProvider>
               </RunProvider>

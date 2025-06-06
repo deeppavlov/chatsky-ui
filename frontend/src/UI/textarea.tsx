@@ -1,8 +1,7 @@
-import { cn } from '@/lib/utils';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import * as Tooltip from '@radix-ui/react-tooltip';
-import * as React from 'react';
-
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import * as Tooltip from '@radix-ui/react-tooltip'
+import cn from 'classnames'
+import * as React from 'react'
 
 const defaultClassName =
   'flex w-full min-h-[160px] rounded-xl border-2 border-foreground-200 hover:border-foreground-400 bg-transparent px-[14px] py-[10px] text-base \
