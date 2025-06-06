@@ -58,7 +58,7 @@ export interface ButtonProps
   isDisabled?: boolean
 }
 
-const Button2 = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,
@@ -98,6 +98,6 @@ const Button2 = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   },
 )
-Button2.displayName = 'Button2'
+Button.displayName = 'Button'
 
-export { Button2, buttonVariants }
+export { Button, buttonVariants }

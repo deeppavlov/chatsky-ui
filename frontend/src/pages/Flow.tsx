@@ -19,6 +19,7 @@ import '@xyflow/react/dist/style.css'
 import { useParams } from 'react-router-dom'
 import { v4 } from 'uuid'
 import CustomEdge from '../components/edges/ButtonEdge/ButtonEdge'
+import AgentNode from '../components/nodes/AgentNode'
 import DefaultNode from '../components/nodes/DefaultNode'
 import LinkNode from '../components/nodes/LinkNode'
 import SlotsNode from '../components/nodes/SlotsNode'
@@ -44,6 +45,7 @@ const nodeTypes = {
   default_node: DefaultNode,
   link_node: LinkNode,
   slots_node: SlotsNode,
+  agent_node: AgentNode,
 }
 
 const edgeTypes = {
@@ -329,6 +331,26 @@ export default function Flow() {
             response: {
               ...NODES[type].response,
               name: iterGenNameResponse(),
+            } as responseType,
+          },
+        }
+      }
+      if (type === 'agent_node') {
+            newNode = {
+          id: newId,
+          type,
+          position,
+          dragHandle: NODES[type].dragHandle,
+          data: {
+            id: newId,
+            name: 'Agent node',
+            flags: START_FALLBACK_FLAGS,
+            conditions: NODES[type].conditions,
+            global_conditions: [],
+            local_conditions: [],
+            response: {
+              ...NODES[type].response,
+              name: 'Agent node response',
             } as responseType,
           },
         }

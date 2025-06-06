@@ -1,7 +1,8 @@
-import { cn } from '@/lib/utils'
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import * as Tooltip from '@radix-ui/react-tooltip'
-import * as React from 'react'
+import { cn } from '@/lib/utils';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import * as Tooltip from '@radix-ui/react-tooltip';
+import * as React from 'react';
+
 
 const defaultClassName =
   'flex w-full min-h-[160px] rounded-xl border-2 border-foreground-200 hover:border-foreground-400 bg-transparent px-[14px] py-[10px] text-base \
@@ -17,6 +18,7 @@ interface TextareaProps extends React.ComponentProps<'textarea'> {
   minRows?: number
   maxRows?: number
   variant?: 'bordered' | 'unbordered'
+  resize?: 'none' | 'auto' | 'vertical' | 'horizontal'
 }
 
 const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -28,6 +30,7 @@ const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       isError = false,
       errorMessage,
       errorTooltip = false,
+      resize = 'none',
       ...props
     },
     ref,
@@ -40,6 +43,7 @@ const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     )
 
     const adjustHeight = React.useCallback(() => {
+      if (resize === 'none') return
       const textarea = textareaRef.current
       if (!textarea) return
 

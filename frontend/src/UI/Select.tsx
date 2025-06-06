@@ -1,17 +1,12 @@
-import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons'
-import * as RadixSelect from '@radix-ui/react-select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipPortal,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@radix-ui/react-tooltip'
-import classNames from 'classnames'
-import cn from 'classnames'
-import { motion } from 'framer-motion'
-import { AlertTriangle } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons';
+import * as RadixSelect from '@radix-ui/react-select';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
+import classNames from 'classnames';
+import cn from 'classnames';
+import { motion } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
+
 
 type ItemSelectType = {
   key: string
@@ -28,6 +23,7 @@ interface DefSelectProps extends React.HTMLAttributes<HTMLElement> {
   onValueChange?: (value: string) => void
   error?: string
   label?: string
+  textSize?: string
 }
 
 const Select = ({
@@ -39,6 +35,7 @@ const Select = ({
   placeholder,
   error,
   label,
+  textSize = 'text-xs',
   ...props
 }: DefSelectProps) => {
   const [selectedValue, setSelectedValue] = useState(defaultValue || '')
@@ -98,7 +95,7 @@ const Select = ({
           )}
           aria-label='Select'
         >
-          <div className='flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left *:text-sm *:group-data-[placeholder]:text-input-border'>
+          <div className={`flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left *:${textSize} *:group-data-[placeholder]:text-input-border`}>
             <RadixSelect.Value placeholder={placeholder}>
               {selectedValue}
             </RadixSelect.Value>
@@ -112,7 +109,7 @@ const Select = ({
         <RadixSelect.Portal>
           <RadixSelect.Content sideOffset={8} position='popper' asChild>
             <motion.div
-              className='select-content hover::outline-none shadow-medium z-[9999] rounded-xl bg-input-background text-lg focus-visible:outline-none'
+              className='select-content hover::outline-none z-[9999] rounded-xl bg-input-background text-lg shadow-medium focus-visible:outline-none'
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{
@@ -121,7 +118,7 @@ const Select = ({
                 transition: { duration: 0.2 },
               }}
             >
-              <RadixSelect.Viewport className='grid w-full gap-1 p-2'>
+              <RadixSelect.Viewport className='grid w-full gap-1 p-2 '>
                 {items.map((item) => (
                   <RadixSelect.Item
                     key={item.key}
@@ -130,6 +127,7 @@ const Select = ({
                     className={classNames(
                       'flex cursor-pointer items-center justify-between overflow-hidden truncate whitespace-nowrap rounded-[8px] p-1.5 outline-none *:text-sm data-[highlighted]:bg-select-item-hover',
                       item.disabled && 'cursor-not-allowed opacity-50',
+                      textSize,
                     )}
                     data-testid={`selectItem-${item.value.toLowerCase().replace(' ', '-')}`}
                   >

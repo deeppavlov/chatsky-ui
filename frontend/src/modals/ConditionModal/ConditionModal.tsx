@@ -6,7 +6,7 @@ import LLMConditionIcon from '@/icons/nodes/conditions/LLMConditionIcon'
 import SlotsConditionIcon from '@/icons/nodes/conditions/SlotsConditionIcon'
 import { Input } from '@/UI/Input'
 import Select from '@/UI/Select'
-import { Button, Tab, Tabs } from '@nextui-org/react'
+import { Tab, Tabs } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -19,7 +19,7 @@ import { PopUpContext } from '../../contexts/popUpContext'
 import EditPenIcon from '../../icons/EditPenIcon'
 import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
-import { Button2 } from '../../UI/button'
+import { Button } from '../../UI/button'
 import DefInput from '../../UI/Input/DefInput'
 import {
   generateNewConditionBase,
@@ -493,7 +493,7 @@ const ConditionModal = ({
             )}
           </Tabs>
         </label>
-        <div className='py-1'>
+        {/* <div className='py-1'>
           <Input
             label='Имя агента'
             placeholder='Введите имя агента'
@@ -524,7 +524,7 @@ const ConditionModal = ({
             // defaultValue='Python'
             // error='Ошибка'
           />
-        </div>
+        </div> */}
         <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
           <DefInput
             className='col-span-3'
@@ -601,21 +601,21 @@ const ConditionModal = ({
       </ModalBody>
       <ModalFooter className='flex items-center justify-between'>
         <div className='flex items-center justify-start gap-2'>
+          {/* <Button isIconOnly className='rounded-full'>
+            <HelpCircle />
+          </Button> */}
           <Button isIconOnly className='rounded-full'>
             <HelpCircle />
           </Button>
-          <Button2 isIconOnly className='rounded-full'>
-            <HelpCircle />
-          </Button2>
           {!is_create && (
             <div className='flex gap-2'>
-              <Button2
+              <Button
                 onClick={handleConfirmDeleteOpen}
                 className='rounded-medium hover:bg-red-500'
                 isIconOnly
               >
                 <TrashIcon />
-              </Button2>
+              </Button>
               <Button
                 onClick={handleConfirmDeleteOpen}
                 className='hover:bg-red-500'
@@ -629,14 +629,14 @@ const ConditionModal = ({
         <div className='flex items-end gap-2'>
           {currentCondition.type === 'python' && (
             <div className='flex gap-2'>
-              <Button
+              {/* <Button
                 data-testid='test-condition-button'
                 onClick={testCondition}
                 isLoading={testConditionPending}
               >
                 Test condition
-              </Button>
-              <Button2
+              </Button> */}
+              <Button
                 data-testid='test-condition-button'
                 onClick={testCondition}
                 isLoading={testConditionPending}
@@ -644,23 +644,23 @@ const ConditionModal = ({
                 className='rounded-medium bg-default'
               >
                 Test condition2
-              </Button2>
+              </Button>
             </div>
           )}
-          <Button
+          {/* <Button
             data-testid='save-condition-button'
             onClick={saveCondition}
             className='bg-foreground text-background'
           >
             Save condition
-          </Button>
-          <Button2
+          </Button> */}
+          <Button
             data-testid='save-condition-button'
             onClick={saveCondition}
             className='rounded-medium bg-foreground text-background'
           >
             Save condition2
-          </Button2>
+          </Button>
         </div>
       </ModalFooter>
     </Modal>

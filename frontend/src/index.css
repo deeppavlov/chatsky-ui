@@ -269,6 +269,14 @@ table thead tr:nth-child(2) {
   @apply flex flex-col items-start justify-center rounded-node border border-border bg-node;
 }
 
+.agent_node {
+  width: 280px;
+  /* height: 326px; */
+  font-size: 12px;
+  text-align: center;
+  @apply flex flex-col items-start justify-center rounded-node border border-border bg-node;
+}
+
 .selected .default_node {
   @apply border-node-selected;
 }

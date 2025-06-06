@@ -143,6 +143,7 @@ const SideBar = memo(() => {
                 </div>
               </AccordionItem>
             </Accordion>
+
           </div>
         </div>
         <div className='flex flex-col items-center justify-start gap-1'></div>

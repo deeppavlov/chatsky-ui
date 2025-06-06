@@ -1,16 +1,18 @@
-import { Code2, Text } from 'lucide-react'
-import BasicConditionIcon from './icons/nodes/conditions/BasicConditionIcon'
-import ButtonConditionIcon from './icons/nodes/conditions/ButtonConditionIcon'
-import CodeConditionIcon from './icons/nodes/conditions/CodeConditionIcon'
-import CustomConditionIcon from './icons/nodes/conditions/CustomConditionIcon'
-import LLMConditionIcon from './icons/nodes/conditions/LLMConditionIcon'
-import SlotsConditionIcon from './icons/nodes/conditions/SlotsConditionIcon'
-import { conditionLabelType } from './types/ConditionTypes'
+import { Code2, Text } from 'lucide-react';
+import BasicConditionIcon from './icons/nodes/conditions/BasicConditionIcon';
+import ButtonConditionIcon from './icons/nodes/conditions/ButtonConditionIcon';
+import CodeConditionIcon from './icons/nodes/conditions/CodeConditionIcon';
+import CustomConditionIcon from './icons/nodes/conditions/CustomConditionIcon';
+import LLMConditionIcon from './icons/nodes/conditions/LLMConditionIcon';
+import SlotsConditionIcon from './icons/nodes/conditions/SlotsConditionIcon';
+import { conditionLabelType } from './types/ConditionTypes';
+
 
 export const NODE_TYPES = {
   default_node: 'default_node',
   link_node: 'link_node',
   slots_node: 'slots_node',
+  agent_node: 'agent_node',
 }
 
 export const NODE_NAMES = [
@@ -120,6 +122,19 @@ export const NODES = {
   default_node: {
     name: 'Default Node',
     type: 'default_node',
+    dragHandle: '.custom-drag-handle',
+    conditions: [],
+    global_conditions: [],
+    local_conditions: [],
+    response: {
+      name: 'DefResponse',
+      type: 'text',
+      data: [{ text: 'I am a bot and here is my quote ', priority: 1 }],
+    },
+  },
+  agent_node: {
+    name: 'Agent Node',
+    type: 'agent_node',
     dragHandle: '.custom-drag-handle',
     conditions: [],
     global_conditions: [],
