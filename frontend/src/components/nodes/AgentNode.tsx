@@ -121,7 +121,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
               </div>
               <div className='flex items-center'>
                 <div
-                  className='font-inter w-[166px] h-[46px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 px-2 py-1 text-left text-xs'
+                  className='font-inter h-[46px] w-[166px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 px-2 py-1 text-left text-xs'
                   style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
@@ -149,7 +149,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
               </div>
               <div className='flex items-center'>
                 <input
-                  className='h-[28px] w-[166px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 px-2 py-1 text-left'
+                  className='h-[28px] w-[166px] overflow-hidden text-ellipsis rounded-xl border border-gray-300 bg-foreground px-2 py-1 text-left'
                   type='number'
                 />
               </div>
@@ -162,7 +162,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
               </div>
               <div className='flex items-center'>
                 <Select
-                  className='h-[28px] w-[165px] items-end text-xs'
+                  className='h-[28px] w-[165px] items-end text-xs mr-3'
                   defaultValue='Оптимизированный'
                   items={[
                     { key: '1', value: 'Оптимизированный' },

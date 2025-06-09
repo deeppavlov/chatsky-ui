@@ -1,12 +1,17 @@
-import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons';
-import * as RadixSelect from '@radix-ui/react-select';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip';
-import classNames from 'classnames';
-import cn from 'classnames';
-import { motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
-
+import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons'
+import * as RadixSelect from '@radix-ui/react-select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@radix-ui/react-tooltip'
+import classNames from 'classnames'
+import cn from 'classnames'
+import { motion } from 'framer-motion'
+import { AlertTriangle } from 'lucide-react'
+import { useEffect, useId, useState } from 'react'
 
 type ItemSelectType = {
   key: string
@@ -71,7 +76,7 @@ const Select = ({
               </TooltipTrigger>
               <TooltipPortal>
                 <TooltipContent
-                  className='z-[9999] h-6 rounded-lg border border-[#E6E8F0] bg-bg-secondary px-2 py-1 text-xs'
+                  className='z-[9999] h-6 rounded-lg border border-[#E6E8F0] bg-bg-secondary px-2 py-1'
                   side='bottom'
                   sideOffset={0}
                   align='end'
@@ -89,13 +94,15 @@ const Select = ({
           {...props}
           disabled={disabled}
           className={classNames(
-            'disabled:hover:input-background-disabled group relative inline-flex h-8 w-full items-center justify-between gap-2 rounded-[8px] bg-btn-accent px-2 text-[12px] *:text-sm hover:bg-select-item-hover focus-visible:bg-select-item-hover focus-visible:outline-none disabled:bg-input-background-disabled data-[state=open]:border-input-border-focus',
+            `disabled:hover:input-background-disabled group relative inline-flex h-8 w-full items-center justify-between gap-2 rounded-[8px] bg-btn-accent px-2 *:${textSize} hover:bg-select-item-hover focus-visible:bg-select-item-hover focus-visible:outline-none disabled:bg-input-background-disabled data-[state=open]:border-input-border-focus`,
             error && 'bg-danger/10',
             className,
           )}
           aria-label='Select'
         >
-          <div className={`flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left *:${textSize} *:group-data-[placeholder]:text-input-border`}>
+          <div
+            className={`flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left *:${textSize} *:group-data-[placeholder]:text-input-border`}
+          >
             <RadixSelect.Value placeholder={placeholder}>
               {selectedValue}
             </RadixSelect.Value>
@@ -118,7 +125,7 @@ const Select = ({
                 transition: { duration: 0.2 },
               }}
             >
-              <RadixSelect.Viewport className='grid w-full gap-1 p-2 '>
+              <RadixSelect.Viewport className='grid w-full gap-1 p-2'>
                 {items.map((item) => (
                   <RadixSelect.Item
                     key={item.key}
