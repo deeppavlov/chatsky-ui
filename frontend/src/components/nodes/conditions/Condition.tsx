@@ -1,11 +1,12 @@
-import * as ContextMenu from '@radix-ui/react-context-menu'
-import { Handle, Position, useReactFlow } from '@xyflow/react'
-import { useContext, useEffect, useState } from 'react'
-import { conditionTypeIcons } from '../../../consts'
-import { PopUpContext } from '../../../contexts/popUpContext'
-import ConditionModal from '../../../modals/ConditionModal/ConditionModal'
-import { conditionLabelType } from '../../../types/ConditionTypes'
-import { NodeComponentConditionType } from '../../../types/NodeTypes'
+import * as ContextMenu from '@radix-ui/react-context-menu';
+import { Handle, Position, useReactFlow } from '@xyflow/react';
+import { useContext, useEffect, useState } from 'react';
+import { conditionTypeIcons } from '../../../consts';
+import { PopUpContext } from '../../../contexts/popUpContext';
+import ConditionModal from '../../../modals/ConditionModal/ConditionModal';
+import { conditionLabelType } from '../../../types/ConditionTypes';
+import { NodeComponentConditionType } from '../../../types/NodeTypes';
+
 
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const { openPopUp } = useContext(PopUpContext)
@@ -32,6 +33,8 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
     )
   }
 
+
+
   return (
     <ContextMenu.Root>
       <div className='relative flex w-full items-center justify-start text-start'>
@@ -50,10 +53,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
             <Handle
               data-testid={`${condition.id}-output-handle`}
               isConnectableStart
-              isConnectable={
-                edges.filter((edge) => edge.sourceHandle === condition.id)
-                  .length === 0
-              }
+              isConnectable={edges.filter((edge) => edge.sourceHandle === condition.id).length === 0}
               position={Position.Right}
               type='source'
               id={`${condition.id}`}
@@ -65,6 +65,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
                 width: '0.7rem',
                 height: '0.7rem',
                 right: '-0.7rem',
+                bottom: '2px',
                 zIndex: 10,
               }}
             />

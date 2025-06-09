@@ -1,16 +1,26 @@
-import { Node } from '@xyflow/react';
-import { conditionType } from './ConditionTypes';
-import { SlotsGroupType } from './FlowTypes';
-import { responseType } from './ResponseTypes';
+import { Node } from '@xyflow/react'
+import { conditionType } from './ConditionTypes'
+import { SlotsGroupType } from './FlowTypes'
+import { responseType } from './ResponseTypes'
 
-
-export type NodesTypes = 'default_node' | 'link_node' | 'slots_node' | 'agent_node'
+export type NodesTypes =
+  | 'default_node'
+  | 'link_node'
+  | 'slots_node'
+  | 'agent_node'
+  | 'tool_node'
 
 export type DefaultNodeType = Node<DefaultNodeDataType, 'default_node'>
-export type AgentNodeType = Node<DefaultNodeDataType, 'agent_node'>
+export type AgentNodeType = Node<DefaultAgentDataType, 'agent_node'>
+export type ToolNodeType = Node<DefaultToolDataType, 'tool_node'>
 export type LinkNodeType = Node<LinkNodeDataType, 'link_node'>
 export type SlotsNodeType = Node<SlotsNodeDataType, 'slots_node'>
-export type AppNode = DefaultNodeType | LinkNodeType | SlotsNodeType | AgentNodeType
+export type AppNode =
+  | DefaultNodeType
+  | LinkNodeType
+  | SlotsNodeType
+  | AgentNodeType
+  | ToolNodeType
 export type AllowAppNode = DefaultNodeType & LinkNodeType & AgentNodeType
 
 export type DefaultNodeDataType = {
@@ -21,6 +31,18 @@ export type DefaultNodeDataType = {
   global_conditions?: string[]
   local_conditions?: string[]
   flags: string[]
+}
+
+export type DefaultAgentDataType = {
+  id: string
+  name: string
+  tool: {
+    id: string
+  }
+}
+export type DefaultToolDataType = {
+  id: string
+  name: string
 }
 
 export type LinkNodeDataType = {

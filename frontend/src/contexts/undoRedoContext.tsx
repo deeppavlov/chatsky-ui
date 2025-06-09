@@ -320,7 +320,7 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
     _selectionInstance.nodes.forEach((n: AppNode) => {
       let newConditions
       let newResponse
-      if (n.type === 'default_node' || n.type === 'agent_node') {
+      if (n.type === 'default_node') {
         newConditions = n.data.conditions.map((c) => {
           const newCondId = 'condition_' + v4()
           sourceHandlesMap[c.id] = newCondId

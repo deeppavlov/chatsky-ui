@@ -23,6 +23,7 @@ import AgentNode from '../components/nodes/AgentNode'
 import DefaultNode from '../components/nodes/DefaultNode'
 import LinkNode from '../components/nodes/LinkNode'
 import SlotsNode from '../components/nodes/SlotsNode'
+import ToolNode from '../components/nodes/ToolNode'
 import ReactFlowCustom from '../components/ReactFlowCustom'
 import { NODES } from '../consts'
 import {
@@ -35,7 +36,12 @@ import { undoRedoContext } from '../contexts/undoRedoContext'
 import { workspaceContext } from '../contexts/workspaceContext'
 import '../index.css'
 import { FlowType } from '../types/FlowTypes'
-import { AppNode, DefaultNodeDataType, NodesTypes } from '../types/NodeTypes'
+import {
+  AppNode,
+  DefaultAgentDataType,
+  DefaultNodeDataType,
+  NodesTypes,
+} from '../types/NodeTypes'
 import { responseType } from '../types/ResponseTypes'
 import { Preloader } from '../UI/Preloader/Preloader'
 import Fallback from './Fallback'
@@ -46,6 +52,7 @@ const nodeTypes = {
   link_node: LinkNode,
   slots_node: SlotsNode,
   agent_node: AgentNode,
+  tool_node: ToolNode,
 }
 
 const edgeTypes = {
@@ -336,7 +343,7 @@ export default function Flow() {
         }
       }
       if (type === 'agent_node') {
-            newNode = {
+        newNode = {
           id: newId,
           type,
           position,
@@ -344,14 +351,22 @@ export default function Flow() {
           data: {
             id: newId,
             name: 'Agent node',
-            flags: START_FALLBACK_FLAGS,
-            conditions: NODES[type].conditions,
-            global_conditions: [],
-            local_conditions: [],
-            response: {
-              ...NODES[type].response,
-              name: 'Agent node response',
-            } as responseType,
+            tool: {
+              ...NODES[type].tool,
+              id: `tool_${v4()}`,
+            },
+          },
+        }
+      }
+      if (type === 'tool_node') {
+        newNode = {
+          id: newId,
+          type,
+          position,
+          dragHandle: NODES[type].dragHandle,
+          data: {
+            id: newId,
+            name: 'Tool node',
           },
         }
       }

@@ -1,9 +1,16 @@
-import { v4 } from 'uuid';
-import { CreateFlowType } from './modals/FlowModal/CreateFlowModal';
-import { conditionType, ICondition } from './types/ConditionTypes';
-import { FlowType, SlotsGroupType, SlotType } from './types/FlowTypes';
-import { AppNode, DefaultNodeDataType, DefaultNodeType, LinkNodeDataType, LinkNodeType, NodesTypes, SlotsNodeDataType } from './types/NodeTypes';
-
+import { v4 } from 'uuid'
+import { CreateFlowType } from './modals/FlowModal/CreateFlowModal'
+import { conditionType, ICondition } from './types/ConditionTypes'
+import { FlowType, SlotsGroupType, SlotType } from './types/FlowTypes'
+import {
+  AppNode,
+  DefaultNodeDataType,
+  DefaultNodeType,
+  LinkNodeDataType,
+  LinkNodeType,
+  NodesTypes,
+  SlotsNodeDataType,
+} from './types/NodeTypes'
 
 export const generateNewFlow = (flow: CreateFlowType) => {
   const newFlow: FlowType = {
@@ -81,6 +88,7 @@ export const generateNewNode = (
   >,
 ) => {
   const id = type + '_' + v4()
+
   switch (type) {
     case 'default_node':
       return {
@@ -110,18 +118,26 @@ export const generateNewNode = (
         data: {
           id,
           name: template?.data?.name ?? 'Agent node',
-          response: template?.data?.response ?? {
-            id: 'response_' + v4(),
-            name: 'response',
-            type: 'text',
-            data: [{ text: 'New node response', priority: 1 }],
+          tool: {
+            id: 'tool' + '_' + v4(),
           },
-          flags: template?.data?.flags ?? [],
-          conditions: template?.data?.conditions ?? [],
-          global_conditions: template?.data?.global_conditions ?? [],
-          local_conditions: template?.data?.local_conditions ?? [],
         },
       }
+
+    case 'tool_node':
+      return {
+        id,
+        type,
+        position: template?.position ?? { x: 0, y: 0 },
+        data: {
+          id,
+          name: template?.data?.name ?? 'Toll node',
+          tool: {
+            id: 'tool' + '_' + v4(),
+          },
+        },
+      }
+
     case 'link_node':
       return {
         id,

@@ -27,6 +27,13 @@ export const DragList = () => {
           type: 'agent_node',
         }}
       />
+      <DragListItem
+        item={{
+          color: '#1a8bf6',
+          name: 'Tool node',
+          type: 'tool_node',
+        }}
+      />
     </div>
   )
 }

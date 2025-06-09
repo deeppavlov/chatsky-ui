@@ -15,17 +15,20 @@ import { Input } from '@/UI/Input'
 import ConditionModal from '../../modals/ConditionModal/ConditionModal'
 import NodeModal from '../../modals/NodeModal/NodeModal'
 import ResponseModal from '../../modals/ResponseModal/ResponseModal'
-import { DefaultNodeDataType } from '../../types/NodeTypes'
+import {
+  DefaultAgentDataType,
+  DefaultNodeDataType,
+} from '../../types/NodeTypes'
 import Select from '../../UI/Select'
 import { Textarea2 } from '../../UI/textarea'
 // import { Button } from '../../UI/button'
 import Condition from './conditions/Condition'
 import Response from './responses/Response'
 
-const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
+const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
   const { openPopUp } = useContext(PopUpContext)
 
-  const [nodeDataState, setNodeDataState] = useState<DefaultNodeDataType>(data)
+  const [nodeDataState, setNodeDataState] = useState<DefaultAgentDataType>(data)
 
   const {
     onOpen: onNodeOpen,
@@ -38,24 +41,24 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
     isOpen: isResponseOpen,
   } = useDisclosure()
 
-  const onConditionModalOpen = () => {
-    openPopUp(
-      <ConditionModal id='condition-modal' data={data} is_create />,
-      'condition-modal',
-    )
-  }
+  // const onConditionModalOpen = () => {
+  //   openPopUp(
+  //     <ConditionModal id='condition-modal' data={data} is_create />,
+  //     'condition-modal',
+  //   )
+  // }
 
-  const validate_node = useMemo(
-    () => data.response?.data.length && data.conditions?.length,
-    [data.conditions?.length, data.response?.data.length],
-  )
+  // const validate_node = useMemo(
+  //   () => data.response?.data.length && data.conditions?.length,
+  //   [data.conditions?.length, data.response?.data.length],
+  // )
 
   return (
     <>
       <div id={data.id} data-testid={data.id} className='agent_node'>
         <div className='custom-drag-handle flex h-auto w-full items-center justify-between gap-[8px] rounded-t-node border-b border-border bg-node-header p-3'>
           <div className='flex items-center'>
-            <Handle
+            {/* <Handle
               data-testid={`${data.id}-input-handle`}
               isConnectableEnd
               position={Position.Left}
@@ -71,7 +74,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
                 left: '0rem',
                 zIndex: 10,
               }}
-            />
+            /> */}
 
             <p
               className='flex w-[218px] items-center gap-1 truncate text-[14px] font-medium'
@@ -94,7 +97,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
         </div>
         <div className='flex w-full gap-2 px-3 py-2'>
           <div className='flex w-full flex-col gap-2'>
-            <div className='flex h-[28px] items-center justify-between gap-2'>
+            <div className='flex h-[28px] h-full items-center justify-between gap-2'>
               <div className='w-[82px] text-left'>
                 <p className='whitespace-nowrap text-xs'>Модель</p>
               </div>
@@ -177,8 +180,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
         <div className='flex w-full flex-col gap-2 border-t border-border px-3 py-2 text-left'>
           <Handle
             data-testid={`${data.id}-input-handle`}
-            isConnectableEnd
-            position={Position.Right}
+            position={Position.Left}
             type='target'
             style={{
               background: 'var(--background)',
@@ -187,8 +189,8 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
               borderStyle: 'solid',
               width: '0.7rem',
               height: '0.7rem',
-              top: '15.6rem',
-              left: '-0.6rem',
+              top: '16rem',
+
               zIndex: 10,
             }}
           />
@@ -198,7 +200,8 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
           </div>
         </div>
       </div>
-      <NodeModal
+
+      {/* <NodeModal
         data={data}
         isOpen={isNodeOpen}
         onClose={onNodeClose}
@@ -212,7 +215,7 @@ const AgentNode = memo(({ data }: { data: DefaultNodeDataType }) => {
         isOpen={isResponseOpen}
         onClose={onResponseClose}
         response={nodeDataState.response!}
-      />
+      /> */}
     </>
   )
 })
