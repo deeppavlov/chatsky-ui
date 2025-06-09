@@ -32,7 +32,7 @@ interface DefSelectProps extends React.HTMLAttributes<HTMLElement> {
   textSize?: string
 }
 
-const Select = ({
+export const Select = ({
   disabled = false,
   className,
   items,
@@ -156,5 +156,3 @@ const Select = ({
     </div>
   )
 }
-
-export default Select

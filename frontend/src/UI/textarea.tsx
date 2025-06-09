@@ -69,10 +69,10 @@ const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     }, [adjustHeight])
 
     return (
-      <>
+      <div className='flex h-full w-full flex-col'>
         {labelPlacement === 'outside' && (
           <div className='flex items-center justify-between gap-2'>
-            <p className='px-2 py-2 text-small'>{label}</p>
+            <p className='py-2 text-[12px] font-semibold'>{label}</p>
             {errorTooltip && (
               <Tooltip.Provider>
                 <Tooltip.Root>
@@ -98,11 +98,11 @@ const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             )}
           </div>
         )}
-        <div className='flex items-center gap-2'>
+        <div className='flex flex-grow items-center gap-2'>
           {labelPlacement === 'outside-left' && (
             <p className='text-xs'>{label}</p>
           )}
-          <div className='relative flex w-full'>
+          <div className='relative flex h-full w-full'>
             <textarea
               ref={textareaRef}
               className={cn(
@@ -125,7 +125,7 @@ const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {isError && !errorTooltip && (
           <p className='pl-2 pt-1 text-xs text-red-500'>{errorMessage}</p>
         )}
-      </>
+      </div>
     )
   },
 )

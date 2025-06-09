@@ -19,8 +19,7 @@ const buttonVariants = cva(defaultClassName, {
   variants: {
     variant: {
       default:
-        'bg-foreground-600 text-foreground-50 hover:bg-foreground-800/80 bg-foreground-50 dark:text-foreground-900 \
-          dark:hover:bg-foreground-50/90 text-color-foreground',
+        'bg-foreground text-foreground-50 hover:bg-foreground-800/80 text-color-foreground',
       primary: 'hover:bg-foreground-200/80',
       // secondary:
       //   'bg-foreground-100 text-foreground-900 hover:bg-foreground-500 dark:bg-foreground-800 dark:text-foreground-50 \

@@ -1,57 +1,27 @@
-import { Button, Tooltip, useDisclosure } from '@nextui-org/react'
+import { Button } from '@nextui-org/react'
 import { Handle, Position } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import classNames from 'classnames'
-import { PlusIcon, SquareArrowOutUpRight } from 'lucide-react'
-import { memo, useContext, useMemo, useState } from 'react'
+import { SquareArrowOutUpRight } from 'lucide-react'
+import { memo, useContext, useState } from 'react'
 import { PopUpContext } from '../../contexts/popUpContext'
 import EditNodeIcon from '../../icons/nodes/EditNodeIcon'
-import FallbackNodeIcon from '../../icons/nodes/FallbackNodeIcon'
-import GlobalNodeIcon from '../../icons/nodes/GlobalNodeIcon'
-import LocalNodeIcon from '../../icons/nodes/LocalNodeIcon'
-import StartNodeIcon from '../../icons/nodes/StartNodeIcon'
 import '../../index.css'
+import AgentModal from '@/modals/AgentModal/AgentModal'
 import { Input } from '@/UI/Input'
-import ConditionModal from '../../modals/ConditionModal/ConditionModal'
-import NodeModal from '../../modals/NodeModal/NodeModal'
-import ResponseModal from '../../modals/ResponseModal/ResponseModal'
-import {
-  DefaultAgentDataType,
-  DefaultNodeDataType,
-} from '../../types/NodeTypes'
-import Select from '../../UI/Select'
-import { Textarea2 } from '../../UI/textarea'
-// import { Button } from '../../UI/button'
-import Condition from './conditions/Condition'
-import Response from './responses/Response'
+import { Select } from '@/UI/Select'
+import { DefaultAgentDataType } from '../../types/NodeTypes'
 
 const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
   const { openPopUp } = useContext(PopUpContext)
 
   const [nodeDataState, setNodeDataState] = useState<DefaultAgentDataType>(data)
 
-  const {
-    onOpen: onNodeOpen,
-    onClose: onNodeClose,
-    isOpen: isNodeOpen,
-  } = useDisclosure()
-  const {
-    onOpen: onResponseOpen,
-    onClose: onResponseClose,
-    isOpen: isResponseOpen,
-  } = useDisclosure()
-
-  // const onConditionModalOpen = () => {
-  //   openPopUp(
-  //     <ConditionModal id='condition-modal' data={data} is_create />,
-  //     'condition-modal',
-  //   )
-  // }
-
-  // const validate_node = useMemo(
-  //   () => data.response?.data.length && data.conditions?.length,
-  //   [data.conditions?.length, data.response?.data.length],
-  // )
+  const onAgentModalOpen = () => {
+    openPopUp(
+      <AgentModal id='condition-modal' data={data} />,
+      'condition-modal',
+    )
+  }
 
   return (
     <>
@@ -88,7 +58,7 @@ const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
               className='h-4 min-h-0 w-4 min-w-0 p-0'
               variant='light'
               isIconOnly
-              onClick={onNodeOpen}
+              onClick={onAgentModalOpen}
               size='sm'
             >
               <EditNodeIcon />
@@ -208,7 +178,8 @@ const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
         onResponseModalOpen={onResponseOpen}
         nodeDataState={nodeDataState}
         setNodeDataState={setNodeDataState}
-      />
+      /> 
+
       <ResponseModal
         data={nodeDataState}
         setData={setNodeDataState}
