@@ -41,7 +41,7 @@ const mockProviderValues = {
   setEditingConfig: jest.fn(),
   defaultLlmConfig: {
     id: 'config1',
-    config_name: 'Config 1',
+    name: 'Config 1',
     model_name: 'gpt-3.5-turbo',
     token_id: 'token1',
     system_prompt: 'Default prompt',

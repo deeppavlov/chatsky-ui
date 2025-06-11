@@ -97,7 +97,7 @@ export const createLlmConfig = async (config: Omit<ILlmConfig, 'id'>) => {
     const {
       data: { config_id },
     } = await $v1.post(
-      `/config/llms?config_name=${config.config_name}&model_name=${config.model_name}&llm_token_id=${config.token_id}${systemPromptString}`,
+      `/config/llms?config_name=${config.name}&model_name=${config.model_name}&llm_token_id=${config.token_id}${systemPromptString}`,
     )
     return config_id
   } catch (error) {
@@ -112,8 +112,8 @@ export const updateLlmConfig = async (
 ) => {
   try {
     const params = new URLSearchParams({ config_id })
-    if (newConfig.config_name) {
-      params.append('new_config_name', newConfig.config_name)
+    if (newConfig.name) {
+      params.append('new_config_name', newConfig.name)
     }
     if (newConfig.model_name) {
       params.append('model_name', newConfig.model_name)

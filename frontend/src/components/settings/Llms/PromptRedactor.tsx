@@ -75,9 +75,7 @@ const PromptRedactor = () => {
                 <EditPenIcon className='stroke-text-secondary' />
                 <h3 className='text-md font-semibold'>
                   System prompt{' '}
-                  <span className='font-normal'>
-                    — {editingConfig.config_name}
-                  </span>
+                  <span className='font-normal'>— {editingConfig.name}</span>
                 </h3>
               </div>
               <p className='text-sm text-text-addition'>

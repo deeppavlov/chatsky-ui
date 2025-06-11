@@ -150,7 +150,7 @@ const LLMToken = ({ token }: { token: ITokenWithId }) => {
   const handleDelete = () => {
     const relatedConfigNames = Object.values(llmConfigs)
       .filter((config) => config.token_id === token.id)
-      .map((cfg) => cfg.config_name)
+      .map((cfg) => cfg.name)
 
     const bodyText = relatedConfigNames.length ? (
       <span className='text-sm leading-relaxed text-text-secondary'>

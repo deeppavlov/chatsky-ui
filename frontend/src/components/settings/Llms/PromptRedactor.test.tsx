@@ -16,7 +16,7 @@ jest.mock('@/api/llm', () => ({
 
 const mockConfig = {
   id: 'config1',
-  config_name: 'Config_1',
+  name: 'Config_1',
   model_name: 'gpt-3.5-turbo',
   token_id: 'token1',
   system_prompt: 'Default prompt',
@@ -24,7 +24,7 @@ const mockConfig = {
 const mockConfigs = {
   config1: mockConfig,
   config2: {
-    config_name: 'Config_2',
+    name: 'Config_2',
     model_name: 'claude-2',
     token_id: 'token2',
     system_prompt: '',
@@ -47,7 +47,7 @@ const mockProviderValues = {
   setEditingConfig: jest.fn(),
   defaultLlmConfig: {
     id: 'config1',
-    config_name: 'Config 1',
+    name: 'Config 1',
     model_name: 'gpt-3.5-turbo',
     token_id: 'token1',
     system_prompt: 'Default prompt',

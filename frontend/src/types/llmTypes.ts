@@ -15,7 +15,7 @@ export interface ITokenFormData extends IToken {
 }
 
 export interface ILlmConfig {
-  config_name: string
+  name: string
   model_name: string
   token_id: string
   system_prompt: string

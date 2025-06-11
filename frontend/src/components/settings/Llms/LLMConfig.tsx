@@ -28,7 +28,7 @@ interface ILlmConfigWithId extends ILlmConfig {
 
 const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
   const initialFormData: ILlmConfig = {
-    config_name: config.config_name,
+    name: config.name,
     model_name: config.model_name,
     token_id: config.token_id,
     system_prompt: config.system_prompt || '',
@@ -49,7 +49,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
 
   const configIsListed = Object.hasOwn(llmConfigs, config.id)
 
-  const configNames = Object.values(llmConfigs).map((cfg) => cfg.config_name)
+  const configNames = Object.values(llmConfigs).map((cfg) => cfg.name)
 
   const validateFields = (currentField: keyof ILlmConfig, value: string) => {
     const otherFieldsFilled = Object.entries(formData).every(([key, value]) => {
@@ -66,12 +66,12 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
     setError(null)
 
     // если пользователь редактировал имя, но оно осталось прежним
-    if (currentField === 'config_name' && value === config.config_name) return
+    if (currentField === 'name' && value === config.name) return
 
     const configIsExist =
-      currentField === 'config_name'
+      currentField === 'name'
         ? configNames.includes(value)
-        : !configIsListed && configNames.includes(formData.config_name)
+        : !configIsListed && configNames.includes(formData.name)
     if (configIsExist) {
       setError('A configuration with this name already exists')
       return false
@@ -126,12 +126,12 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
   const debouncedSaveName = useDebouncedCallback(saveConfig, 500)
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const config_name = e.target.value.replaceAll(' ', '_')
+    const name = e.target.value.replaceAll(' ', '_')
     setFormData((data) => ({
       ...data,
-      config_name,
+      name,
     }))
-    debouncedSaveName('config_name', config_name, () => e.target.blur())
+    debouncedSaveName('name', name, () => e.target.blur())
   }
 
   const handleLlmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -160,7 +160,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
     openPopUp(
       <ConfirmationModal
         id='delete-token'
-        title={`Do you want to delete ${config.config_name}?`}
+        title={`Do you want to delete ${config.name}?`}
         bodyText='Are you sure you want to delete this configuration?'
         onAction={async () => {
           await deleteLlmConfig(config.id)
@@ -202,7 +202,7 @@ const LLMConfig = ({ config }: { config: ILlmConfigWithId }) => {
           <Input
             data-testid='llmConfig_name-input'
             placeholder='Enter name...'
-            value={formData.config_name}
+            value={formData.name}
             onChange={handleNameChange}
             disableAnimation
             size='sm'

@@ -175,7 +175,7 @@ const LLMResponse = forwardRef<ILLMResponseHandle, IProps>(
               size='sm'
             >
               {Object.entries(llmConfigs).map(([id, item]) => (
-                <SelectItem key={id}>{item.config_name}</SelectItem>
+                <SelectItem key={id}>{item.name}</SelectItem>
               ))}
             </Select>
             <button

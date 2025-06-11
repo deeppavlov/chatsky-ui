@@ -81,7 +81,7 @@ const Llms = () => {
           <LLMConfig
             config={{
               id: '',
-              config_name: '',
+              name: '',
               model_name: '',
               token_id: '',
               system_prompt: '',
@@ -114,8 +114,8 @@ const Llms = () => {
                 radius='sm'
                 size='sm'
               >
-                {Object.entries(llmConfigs).map(([id, item]) => (
-                  <SelectItem key={id}>{item.config_name}</SelectItem>
+                {Object.entries(llmConfigs).map(([id, cfg]) => (
+                  <SelectItem key={id}>{cfg.name}</SelectItem>
                 ))}
               </Select>
             </div>

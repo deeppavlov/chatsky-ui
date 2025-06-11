@@ -18,7 +18,7 @@ jest.mock('@/api/llm', () => ({
 
 const mockConfig = {
   id: 'config1',
-  config_name: 'Config_1',
+  name: 'Config_1',
   model_name: 'gpt-3.5-turbo',
   token_id: 'token1',
   system_prompt: 'Default prompt',
@@ -26,7 +26,7 @@ const mockConfig = {
 const mockConfigs = {
   config1: mockConfig,
   config2: {
-    config_name: 'Config_2',
+    name: 'Config_2',
     model_name: 'claude-2',
     token_id: 'token2',
     system_prompt: '',
@@ -49,7 +49,7 @@ const mockProviderValues = {
   setEditingConfig: jest.fn(),
   defaultLlmConfig: {
     id: 'config1',
-    config_name: 'Config 1',
+    name: 'Config 1',
     model_name: 'gpt-3.5-turbo',
     token_id: 'token1',
     system_prompt: 'Default prompt',
@@ -107,7 +107,7 @@ describe('LLMConfig Component', () => {
         <LLMConfig
           config={{
             id: '',
-            config_name: '',
+            name: '',
             model_name: '',
             token_id: '',
             system_prompt: '',
@@ -174,7 +174,7 @@ describe('LLMConfig Component', () => {
         ...mockConfigs,
         [mockConfig.id]: {
           ...mockConfig,
-          config_name: 'New_Config',
+          name: 'New_Config',
         },
       })
     })
@@ -186,7 +186,7 @@ describe('LLMConfig Component', () => {
         <LLMConfig
           config={{
             id: '',
-            config_name: '',
+            name: '',
             model_name: 'claude-2',
             token_id: 'token2',
             system_prompt: '',
@@ -210,7 +210,7 @@ describe('LLMConfig Component', () => {
       expect(createLlmConfig).toHaveBeenCalled()
       const firstCall = (createLlmConfig as jest.Mock).mock.calls[0]
       expect(firstCall[0]).toEqual({
-        config_name: 'New_Config',
+        name: 'New_Config',
         model_name: 'claude-2',
         token_id: 'token2',
         system_prompt: '',
@@ -225,7 +225,7 @@ describe('LLMConfig Component', () => {
       expect(setConfigsCallResult).toEqual({
         ...mockConfigs,
         newConfigId: {
-          config_name: 'New_Config',
+          name: 'New_Config',
           model_name: 'claude-2',
           token_id: 'token2',
           system_prompt: '',
@@ -271,7 +271,7 @@ describe('LLMConfig Component', () => {
         <LLMConfig
           config={{
             id: '',
-            config_name: 'Config_1',
+            name: 'Config_1',
             model_name: 'claude-2',
             token_id: 'token1',
             system_prompt: '',

@@ -156,7 +156,7 @@ const LLMConditionSection = forwardRef<
               data-testid='llmCondition-config'
             >
               {Object.entries(llmConfigs).map(([id, item]) => (
-                <SelectItem key={id}>{item.config_name}</SelectItem>
+                <SelectItem key={id}>{item.name}</SelectItem>
               ))}
             </Select>
             <button
