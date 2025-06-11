@@ -113,10 +113,10 @@ class LLMConditionConverter(ConditionConverter):
     def __init__(self, condition: dict):
         super().__init__()
         try:
-            model_name = self._get_model_config(condition)["model_name"]
+            config_model_name = self._get_model_config(condition)["name"]
             self.condition = LLMCondition(
                 name=condition["name"],
-                model_name=model_name,
+                model_name=config_model_name,
                 prompt=condition["data"]["llm"]["prompt"],
             )
         except KeyError as missing_key:
@@ -140,7 +140,7 @@ class LLMConditionConverter(ConditionConverter):
             {
                 "method": {
                     "chatsky.llm.methods.Contains": {
-                        "pattern": '"TRUE"',
+                        "pattern": "TRUE",
                     }
                 }
             }

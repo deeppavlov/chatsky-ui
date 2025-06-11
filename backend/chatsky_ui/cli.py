@@ -21,6 +21,7 @@ import string
 import sys
 from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
 
 import nest_asyncio
 import typer
@@ -208,6 +209,8 @@ def run_scenario(
     settings.set_config(work_directory=project_dir)
 
     command_to_run = f"{project_dir}/app.py --working-dir {project_dir} --run-id {run_id}"
+
+    load_dotenv(settings.work_directory / ".env", override=True)
     try:
         asyncio.run(_execute_command("python " + command_to_run))
     except FileNotFoundError:
