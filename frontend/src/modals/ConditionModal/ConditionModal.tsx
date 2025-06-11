@@ -526,46 +526,44 @@ const ConditionModal = ({
         </div>
       </ModalHeader>
       <ModalBody className='flex min-h-[480px] flex-col'>
-        {is_create ? (
-          <label>
-            <Tabs
-              disabledKeys={['custom']}
-              selectedKey={selected}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              onSelectionChange={setSelectedHandler}
-              items={
-                !is_create
-                  ? tabItems
-                  : tabItems.filter((item) => item.value !== 'button')
-              }
-              classNames={{
-                tabList: 'w-full bg-table-background',
-                tab: '',
-                cursor: 'border border-contrast-border',
-              }}
-              className='w-full max-w-full bg-background'
-            >
-              {(item) => (
-                <Tab
-                  data-testid={`tab-${item.value}`}
-                  key={item.value}
-                  title={
-                    <div className='flex items-center gap-1 text-sm'>
-                      {item.icon} {item.title}
-                    </div>
-                  }
-                  onClick={() =>
-                    setCurrentCondition({
-                      ...currentCondition,
-                      type: item.value,
-                    })
-                  }
-                ></Tab>
-              )}
-            </Tabs>
-          </label>
-        ) : null}
+        <label>
+          <Tabs
+            disabledKeys={['custom']}
+            selectedKey={selected}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            onSelectionChange={setSelectedHandler}
+            items={
+              !is_create
+                ? tabItems
+                : tabItems.filter((item) => item.value !== 'button')
+            }
+            classNames={{
+              tabList: 'w-full bg-table-background',
+              tab: '',
+              cursor: 'border border-contrast-border',
+            }}
+            className='w-full max-w-full bg-background'
+          >
+            {(item) => (
+              <Tab
+                data-testid={`tab-${item.value}`}
+                key={item.value}
+                title={
+                  <div className='flex items-center gap-1 text-sm'>
+                    {item.icon} {item.title}
+                  </div>
+                }
+                onClick={() =>
+                  setCurrentCondition({
+                    ...currentCondition,
+                    type: item.value,
+                  })
+                }
+              ></Tab>
+            )}
+          </Tabs>
+        </label>
 
         <AnimatePresence mode='wait'>
           <motion.div
