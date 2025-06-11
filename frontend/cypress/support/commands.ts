@@ -38,7 +38,7 @@
 
 Cypress.Commands.add('saveFlow', () => {
   cy.get('body').trigger('keydown', {
-    key: 's',
+    code: 'KeyS',
     ctrlKey: true,
     bubbles: true,
   })
