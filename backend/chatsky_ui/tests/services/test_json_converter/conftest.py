@@ -150,13 +150,22 @@ def chatsky_telegram_messenger(telegram_messenger):
 
 @pytest.fixture
 def llm_models_config():
-    return [
-        {
-            "name": "test_model",
-            "modelName": "gpt-4o-mini",
-            "systemPrompt": "test_system_prompt",
-        }
-    ]
+    return {
+        "tokens": {
+            "tokentestid": {
+                "name": "OPENAI_API_KEY",
+                "provider": "openai"
+            }
+        },
+        "config_models": {
+            "configtestid": {
+                "name": "test_model",
+                "model_name": "gpt-4o-mini",
+                "token_id": "tokentestid",
+                "system_prompt": "test_system_prompt"
+            }
+        },
+    }
 
 
 @pytest.fixture

@@ -89,6 +89,7 @@ class TestMessengerConverter:
 class TestPipelineConverter:
     def test_pipeline_converter(
         self,
+        mocker,
         dummy_build_id,
         flow,
         chatsky_telegram_messenger,
@@ -105,7 +106,9 @@ class TestPipelineConverter:
         # os.environ[UNIQUE_BUILD_TOKEN.format(build_id=dummy_build_id)] = "some_token"
         os.environ["OPENAI_API_KEY"] = "some_token"
 
-        PipelineConverter()(dummy_build_id, pipeline_path, Path(__file__).parent, "telegram", None)
+        pipeline_converter = PipelineConverter()
+        mocker.patch.object(pipeline_converter, "read_llm_configurations", return_value=llm_models_config)
+        pipeline_converter(dummy_build_id, pipeline_path, Path(__file__).parent, "telegram", None)
 
         output_file = Path(__file__).parent / "build.yaml"
         with open(output_file) as file:
