@@ -291,7 +291,7 @@ async def patch_llm_model(
     llms_conf["config_models"].update(
         {
             config_id: {
-                "name": new_config_name if new_config_name else config_models[config_id]["config_name"],
+                "name": new_config_name if new_config_name else config_models[config_id]["name"],
                 "model_name": model_name if model_name else config_models[config_id]["model_name"],
                 "token_id": llm_token_id if llm_token_id else config_models[config_id]["token_id"],
                 "system_prompt": system_prompt if system_prompt else config_models[config_id]["system_prompt"],
