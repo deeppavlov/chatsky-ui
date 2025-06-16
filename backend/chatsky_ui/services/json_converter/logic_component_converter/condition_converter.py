@@ -1,3 +1,4 @@
+import asyncio
 from abc import ABC, abstractmethod
 
 from ....core.config import settings
@@ -5,6 +6,7 @@ from ....schemas.front_graph_components.info_holders.condition import CustomCond
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
+from chatsky_ui.utils.llm_config_helper import get_llm_model_config
 
 
 class BadConditionException(Exception):
@@ -24,7 +26,7 @@ class ConditionConverter(BaseConverter, ABC):
             raise BadConditionException("Condition is not initialized")
 
     @abstractmethod
-    def get_pre_transitions():
+    def get_pre_transitions(self):
         raise NotImplementedError
 
 
@@ -111,13 +113,24 @@ class LLMConditionConverter(ConditionConverter):
     def __init__(self, condition: dict):
         super().__init__()
         try:
+            config_model_name = self._get_model_config(condition)["name"]
             self.condition = LLMCondition(
-                name=condition["data"]["name"],
-                model_name=condition["data"]["model_name"],
-                prompt=condition["data"]["prompt"],
+                name=condition["name"],
+                model_name=config_model_name,
+                prompt=condition["data"]["llm"]["prompt"],
             )
         except KeyError as missing_key:
             raise BadConditionException("Missing key in LLM condition data") from missing_key
+
+    def _get_model_config(self, condition: dict):
+        """Fetches the model configuration for the LLM condition.
+        Args:
+            condition (dict): The LLM condition to be converted.
+        Returns:
+            dict: The model configuration for the LLM condition.
+        """
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(get_llm_model_config(condition["data"]["llm"]["llm_config_id"]))
 
     def _convert(self):
         super()._convert()
@@ -127,9 +140,12 @@ class LLMConditionConverter(ConditionConverter):
             {
                 "method": {
                     "chatsky.llm.methods.Contains": {
-                        "pattern": '"TRUE"',
+                        "pattern": "TRUE",
                     }
                 }
             }
         )
         return {"chatsky.conditions.llm.LLMCondition": condition_data}
+
+    def get_pre_transitions(self):
+        return {}

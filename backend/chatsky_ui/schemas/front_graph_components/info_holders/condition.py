@@ -17,7 +17,7 @@ from ..base_component import BaseComponent
 class Condition(BaseComponent):
     """Base condition model."""
 
-    name: str
+    name: str #TODO: this's needed only in custom conditions, so remove it from here?
 
 
 class CustomCondition(Condition):

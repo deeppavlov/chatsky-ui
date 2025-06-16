@@ -209,7 +209,7 @@ async def post_llm_model(config_name: str, model_name: str, llm_token_id: str, s
     if "config_models" not in llms_conf:
         llms_conf["config_models"] = {}
 
-    if config_name in [model["config_name"] for model in llms_conf["config_models"].values()]:
+    if config_name in [model["name"] for model in llms_conf["config_models"].values()]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"LLM model '{config_name}' already exists. Use PATCH to update it.",
@@ -231,7 +231,7 @@ async def post_llm_model(config_name: str, model_name: str, llm_token_id: str, s
     llms_conf["config_models"].update(
         {
             config_model_id: {
-                "config_name": config_name,
+                "name": config_name,
                 "model_name": model_name,
                 "token_id": llm_token_id,
                 "system_prompt": system_prompt,
@@ -291,7 +291,7 @@ async def patch_llm_model(
     llms_conf["config_models"].update(
         {
             config_id: {
-                "config_name": new_config_name if new_config_name else config_models[config_id]["config_name"],
+                "name": new_config_name if new_config_name else config_models[config_id]["config_name"],
                 "model_name": model_name if model_name else config_models[config_id]["model_name"],
                 "token_id": llm_token_id if llm_token_id else config_models[config_id]["token_id"],
                 "system_prompt": system_prompt if system_prompt else config_models[config_id]["system_prompt"],

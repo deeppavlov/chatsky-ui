@@ -18,4 +18,4 @@ class CustomResponse(Response):
 class LLMResponse(Response):
     model_name: str
     prompt: Optional[str] = None
-    history: Optional[int] = None
+    context_memory_index: Optional[int] = None

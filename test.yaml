@@ -1,0 +1,20 @@
+response:
+  data:
+    - priority: 1
+      llm:
+        prompt: string
+        llm_config_id: string
+        context_memory_index: number
+  name: string
+  type: llm | text | python | basic
+
+conditions:
+  - id: string
+    name: string
+    type: python | basic | llm...
+    data:
+      priority: 1
+      transition_type: manual
+      llm:
+        llm_config_id: string
+        prompt: string

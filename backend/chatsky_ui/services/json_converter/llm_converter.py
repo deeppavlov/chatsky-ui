@@ -1,19 +1,21 @@
-from typing import List
+from typing import Dict
 
 from ...schemas.front_graph_components.llm_model import LLMModel
 from .base_converter import BaseConverter
 
 
 class LLMModelsConverter(BaseConverter):
-    def __init__(self, llm_models_config: List[dict]):
+    def __init__(self, llm_models_config: Dict[str, dict]):
+        tokens = llm_models_config.get("tokens", {})
+        config_models = llm_models_config.get("config_models", {})
         self.models = [
             LLMModel(
-                name=config_name,
+                name=config["name"],
                 llm=config["model_name"],
-                token_name=config["token_name"],
+                token_name=tokens[config["token_id"]]["name"],
                 system_prompt=config.get("system_prompt"),
             )
-            for config_name, config in llm_models_config.items()
+            for _, config in config_models.items()
         ]
 
     def _convert(self):
