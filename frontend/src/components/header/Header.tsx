@@ -1,12 +1,12 @@
 import { NotificationsContext } from '@/contexts/notificationsContext'
 import { undoRedoContext } from '@/contexts/undoRedoContext'
 import Dropdown, { DropdownGroupType } from '@/UI/Dropdown/Dropdown'
+import { Tooltip } from '@/UI/Tooltip'
 import {
   Button,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Tooltip,
 } from '@nextui-org/react'
 import classNames from 'classnames'
 import {
@@ -128,8 +128,10 @@ const Header = memo(() => {
           {currentTab === 'edit' && (
             <div className='flex items-center gap-1.5'>
               <Tooltip
-                radius='sm'
                 content={`Grab mode ${managerMode ? 'on' : 'off'}`}
+                classNames={{ content: '!text-sm' }}
+                side='bottom'
+                sideOffset={4}
               >
                 <Button
                   isIconOnly
@@ -143,7 +145,9 @@ const Header = memo(() => {
                 </Button>
               </Tooltip>
               <Tooltip
-                radius='sm'
+                classNames={{ content: '!text-sm' }}
+                side='bottom'
+                sideOffset={4}
                 content={`Free grid mode ${workspaceMode ? 'on' : 'off'}`}
               >
                 <Button
@@ -158,7 +162,9 @@ const Header = memo(() => {
                 </Button>
               </Tooltip>
               <Tooltip
-                radius='sm'
+                classNames={{ content: '!text-sm' }}
+                side='bottom'
+                sideOffset={4}
                 content={`List mode ${nodesLayoutMode ? 'on' : 'off'}`}
               >
                 <Button

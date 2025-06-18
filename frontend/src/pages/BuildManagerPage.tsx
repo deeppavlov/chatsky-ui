@@ -12,8 +12,9 @@ import Tools from '@/icons/Tools'
 import RebuildModal from '@/modals/RebuildModal/RebuildModal'
 import RestoreBuildModal from '@/modals/RestoreBuildModal/RestoreBuildModal'
 import ScrolledContainer from '@/UI/ScrolledContainer/ScrolledContainer'
+import { Tooltip } from '@/UI/Tooltip'
 import { formatRelativeTime, formatTimestamp } from '@/utils'
-import { Button, Divider, Tooltip } from '@nextui-org/react'
+import { Button, Divider } from '@nextui-org/react'
 import { RefreshCw, SquareArrowOutUpRight, SquareIcon, X } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -219,14 +220,9 @@ const BuildManagerPage = () => {
                           )}
                           {b.status === 'running' && (
                             <Tooltip
-                              classNames={{
-                                content: [
-                                  'h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]',
-                                ],
-                              }}
+                              side='bottom'
+                              sideOffset={4}
                               content='Stop building'
-                              placement='bottom'
-                              offset={4}
                             >
                               <button
                                 onClick={(e: React.MouseEvent) => {
@@ -305,14 +301,9 @@ const BuildManagerPage = () => {
                       title={r.preset.name}
                       infoBlock={
                         <Tooltip
-                          classNames={{
-                            content: [
-                              'h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]',
-                            ],
-                          }}
                           content='Stop running'
-                          placement='bottom'
-                          offset={4}
+                          side='bottom'
+                          sideOffset={4}
                         >
                           <button
                             onClick={(e: React.MouseEvent) => {

@@ -17,7 +17,6 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip,
   useDisclosure,
 } from '@nextui-org/react'
 import { Edge, Handle, Position, useReactFlow } from '@xyflow/react'
@@ -29,6 +28,7 @@ import { flowContext } from '../../contexts/flowContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import TrashIcon from '../../icons/TrashIcon'
 import '../../index.css'
+import { Tooltip } from '@/UI/Tooltip'
 import { FlowType } from '../../types/FlowTypes'
 import { AppNode, LinkNodeDataType } from '../../types/NodeTypes'
 
@@ -179,8 +179,9 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
           </Popover>
           {(!toFlow || !toNode) && isConfigured && (
             <Tooltip
+              isPortal
+              sideOffset={4}
               content='It looks like this node/flow is not defined. Please, re-create it!'
-              radius='sm'
             >
               <Button
                 size='sm'
@@ -233,10 +234,10 @@ const LinkNode = memo(({ data }: { data: LinkNodeDataType }) => {
               <div className='flex items-start justify-start'>
                 <h1>{data.name} settings</h1>
                 <Tooltip
-                  className='text-white'
-                  color='warning'
-                  radius='sm'
                   content='Link options is required for creating a link'
+                  classNames={{
+                    content: 'text-white !text-sm font-normal bg-warning',
+                  }}
                 >
                   <AlertTriangle
                     className='ml-1 cursor-pointer fill-amber-400'

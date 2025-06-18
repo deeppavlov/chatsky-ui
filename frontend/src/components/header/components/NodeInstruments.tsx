@@ -1,4 +1,5 @@
-import { Button, Tooltip } from '@nextui-org/react'
+import { Tooltip } from '@/UI/Tooltip'
+import { Button } from '@nextui-org/react'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { useContext } from 'react'
@@ -28,9 +29,10 @@ const NodeInstruments = ({ flow }: { flow: FlowType }) => {
   return (
     <div className='flex items-center gap-1'>
       <Tooltip
-        key={'header-button-set-start'}
         content='Select node as Start'
-        radius='sm'
+        classNames={{ content: '!text-sm' }}
+        side='bottom'
+        sideOffset={4}
       >
         <Button
           onClick={(e) => handleNodeFlags(e, setNodes)}
@@ -46,9 +48,10 @@ const NodeInstruments = ({ flow }: { flow: FlowType }) => {
         </Button>
       </Tooltip>
       <Tooltip
-        key={'header-button-set-fallback'}
         content='Select node as Fallback'
-        radius='sm'
+        classNames={{ content: '!text-sm' }}
+        side='bottom'
+        sideOffset={4}
       >
         <Button
           onClick={(e) => handleNodeFlags(e, setNodes)}

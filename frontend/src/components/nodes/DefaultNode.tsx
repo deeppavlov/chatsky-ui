@@ -1,4 +1,4 @@
-import { Button, Tooltip, useDisclosure } from '@nextui-org/react'
+import { Button, useDisclosure } from '@nextui-org/react'
 import { Handle, Position } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import classNames from 'classnames'
@@ -11,6 +11,7 @@ import GlobalNodeIcon from '../../icons/nodes/GlobalNodeIcon'
 import LocalNodeIcon from '../../icons/nodes/LocalNodeIcon'
 import StartNodeIcon from '../../icons/nodes/StartNodeIcon'
 import '../../index.css'
+import { Tooltip } from '@/UI/Tooltip'
 import ConditionModal from '../../modals/ConditionModal/ConditionModal'
 import NodeModal from '../../modals/NodeModal/NodeModal'
 import ResponseModal from '../../modals/ResponseModal/ResponseModal'
@@ -52,12 +53,7 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
         <div className='custom-drag-handle flex w-full items-center justify-between gap-[8px] rounded-t-node border-b border-border bg-node-header py-2 pl-[23px] pr-[18px]'>
           <div className='flex'>
             {data.flags?.includes('start') && (
-              <Tooltip
-                placement='bottom'
-                radius='sm'
-                content='Start node'
-                className='px-[12px] py-[8px]'
-              >
+              <Tooltip isPortal content='Start node' sideOffset={4}>
                 <div className='border-none bg-transparent'>
                   <StartNodeIcon />
                 </div>
@@ -65,12 +61,7 @@ const DefaultNode = memo(({ data }: { data: DefaultNodeDataType }) => {
             )}
 
             {data.flags?.includes('fallback') && (
-              <Tooltip
-                placement='bottom'
-                radius='sm'
-                content='Fallback node'
-                className='px-[12px] py-[8px]'
-              >
+              <Tooltip isPortal content='Fallback node' sideOffset={4}>
                 <div className='border-none bg-transparent'>
                   <FallbackNodeIcon />
                 </div>

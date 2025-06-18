@@ -1,5 +1,5 @@
+import { Tooltip } from '@/UI/Tooltip'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import * as Tooltip from '@radix-ui/react-tooltip'
 import cn from 'classnames'
 import * as React from 'react'
 
@@ -74,27 +74,19 @@ const Textarea2 = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           <div className='flex items-center justify-between gap-2'>
             <p className='py-2 text-[12px] font-semibold'>{label}</p>
             {errorTooltip && (
-              <Tooltip.Provider>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <ExclamationTriangleIcon
-                      color='red'
-                      className='my-[8px] mr-[10px] h-[16px] w-[16px]'
-                    />
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className='TooltipContent z-[9999] rounded-md bg-foreground px-[8px] py-[4px] text-sm text-background'
-                      sideOffset={5}
-                      side='bottom'
-                      align='end'
-                      data-state='open'
-                    >
-                      {errorMessage}
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </Tooltip.Provider>
+              <Tooltip
+                side='bottom'
+                align='end'
+                content={errorMessage}
+                classNames={{
+                  trigger: 'h-6 w-6',
+                }}
+              >
+                <ExclamationTriangleIcon
+                  className='h-4 w-4'
+                  color='var(--danger)'
+                />
+              </Tooltip>
             )}
           </div>
         )}

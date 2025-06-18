@@ -1,15 +1,10 @@
+import { Tooltip } from '@/UI/Tooltip'
 import {
   CheckIcon,
   ChevronDownIcon,
   ExclamationTriangleIcon,
 } from '@radix-ui/react-icons'
 import * as RadixSelect from '@radix-ui/react-select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipPortal,
-  TooltipTrigger,
-} from '@radix-ui/react-tooltip'
 import cn from 'classnames'
 import { motion } from 'framer-motion'
 import { useEffect, useId, useState } from 'react'
@@ -70,24 +65,18 @@ export const Select = ({
         </label>
 
         {error && (
-          <Tooltip>
-            <TooltipTrigger className='flex h-6 w-6 items-center justify-center'>
-              <ExclamationTriangleIcon
-                className='h-3.5'
-                color='var(--danger)'
-              />
-            </TooltipTrigger>
-            <TooltipPortal>
-              <TooltipContent
-                className='z-[9999] h-6 rounded-lg border border-[#E6E8F0] bg-bg-secondary px-2 py-1 text-xs'
-                side='bottom'
-                sideOffset={0}
-                align='end'
-                alignOffset={0}
-              >
-                {error}
-              </TooltipContent>
-            </TooltipPortal>
+          <Tooltip
+            side='bottom'
+            align='end'
+            content={error}
+            classNames={{
+              trigger: 'h-6 w-6',
+            }}
+          >
+            <ExclamationTriangleIcon
+              className='h-4 w-4'
+              color='var(--danger)'
+            />
           </Tooltip>
         )}
       </div>

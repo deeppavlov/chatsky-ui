@@ -1,10 +1,10 @@
+import { Tooltip } from '@/UI/Tooltip'
 import {
   Button,
   PopoverContent,
   Select,
   SelectItem,
   SelectSection,
-  Tooltip,
 } from '@nextui-org/react'
 import * as Switch from '@radix-ui/react-switch'
 import cn from 'classnames'
@@ -96,14 +96,13 @@ export const NotificationsWindow = ({
       <div className='mb-2 flex w-full items-center justify-between'>
         <div className='flex items-center justify-start gap-3'>
           <Tooltip
-            classNames={{
-              content: [
-                'h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]',
-              ],
-            }}
+            sideOffset={8}
+            // classNames={{
+            //   content:
+            //     'h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]',
+
+            // }}
             content={popupsDisabled ? 'Enable pop-ups' : 'Disable pop-ups'}
-            placement='bottom'
-            offset={4}
           >
             <Switch.Root
               onCheckedChange={() => {
@@ -190,7 +189,12 @@ export const NotificationsWindow = ({
               </SelectItem>
             </SelectSection>
           </Select>
-          <Tooltip content='Clear notifications' radius='sm'>
+          <Tooltip
+            align='end'
+            alignOffset={-16}
+            sideOffset={8}
+            content='Clear notifications'
+          >
             <Button
               onClick={clearNotificationsHandler}
               variant='light'

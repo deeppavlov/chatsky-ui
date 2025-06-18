@@ -1,5 +1,6 @@
 import { send_message } from '@/api/bot'
-import { Button, Divider, Textarea, Tooltip } from '@nextui-org/react'
+import { Tooltip } from '@/UI/Tooltip'
+import { Button, Divider, Textarea } from '@nextui-org/react'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
 import { a, useTransition } from '@react-spring/web'
 import axios from 'axios'
@@ -255,7 +256,7 @@ const Chat = memo(() => {
             size='lg'
           />
           <div className='flex w-full justify-end p-3 pt-0'>
-            <Tooltip placement='bottom' radius='sm' content='Reset chat'>
+            <Tooltip align='end' sideOffset={4} content='Reset chat'>
               <Button
                 isDisabled={selectedRun?.status !== 'alive'}
                 isIconOnly

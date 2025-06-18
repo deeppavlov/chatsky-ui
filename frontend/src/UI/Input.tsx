@@ -1,5 +1,5 @@
+import { Tooltip } from '@/UI/Tooltip'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import * as Tooltip from '@radix-ui/react-tooltip'
 import cn from 'classnames'
 import { ComponentProps, forwardRef, useId } from 'react'
 
@@ -22,25 +22,19 @@ const Input = forwardRef<HTMLInputElement, IProps>(
           </label>
 
           {error && (
-            <Tooltip.Root>
-              <Tooltip.Trigger className='flex h-6 w-6 items-center justify-center'>
-                <ExclamationTriangleIcon
-                  className='h-3.5'
-                  color='var(--danger)'
-                />
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  className='z-[9999] h-6 rounded-lg border border-[#E6E8F0] bg-bg-secondary px-2 py-1 text-xs'
-                  side='bottom'
-                  sideOffset={0}
-                  align='end'
-                  alignOffset={0}
-                >
-                  {error}
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
+            <Tooltip
+              side='bottom'
+              align='end'
+              content={error}
+              classNames={{
+                trigger: 'h-6 w-6',
+              }}
+            >
+              <ExclamationTriangleIcon
+                className='h-4 w-4'
+                color='var(--danger)'
+              />
+            </Tooltip>
           )}
         </div>
         <input
