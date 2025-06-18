@@ -4,12 +4,12 @@ import CodeConditionIcon from '@/icons/nodes/conditions/CodeConditionIcon'
 import CustomConditionIcon from '@/icons/nodes/conditions/CustomConditionIcon'
 import LLMConditionIcon from '@/icons/nodes/conditions/LLMConditionIcon'
 import SlotsConditionIcon from '@/icons/nodes/conditions/SlotsConditionIcon'
-import { Tab, Tabs } from '@nextui-org/react'
+import { Tabs, TabsList, TabsTrigger } from '@/UI/Tabs'
 import { Edge, useReactFlow } from '@xyflow/react'
 import classNames from 'classnames'
 import { AnimatePresence, motion } from 'framer-motion'
 import { HelpCircle, PlusCircleIcon, TrashIcon } from 'lucide-react'
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { Key, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { lint_service } from '../../api/services'
 import { flowContext } from '../../contexts/flowContext'
@@ -104,9 +104,10 @@ const ConditionModal = ({
   const [lintStatus, setLintStatus] = useState<LintStatusType | null>(null)
   const [testConditionPending, setTestConditionPending] = useState(false)
 
-  const setSelectedHandler = (key: conditionTypeType) => {
-    setCurrentCondition({ ...currentCondition, type: key })
-    setSelected(key)
+  const setSelectedHandler = (key: Key) => {
+    const type = key as conditionTypeType
+    setCurrentCondition({ ...currentCondition, type })
+    setSelected(type)
   }
 
   const arr = flows
@@ -261,6 +262,7 @@ const ConditionModal = ({
     ],
     [],
   )
+  const disabledItemValues = ['llm', 'custom', 'button']
 
   const bodyItems = useMemo(
     () => ({
@@ -462,33 +464,24 @@ const ConditionModal = ({
       <ModalBody className='min-h-[480px]'>
         <label>
           <Tabs
-            disabledKeys={['llm', 'custom', 'button']}
-            selectedKey={selected}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onSelectionChange={setSelectedHandler}
-            items={tabItems}
-            classNames={{
-              tabList: 'w-full bg-table-background',
-              tab: '',
-              cursor: 'border border-contrast-border',
-            }}
-            className='w-full max-w-full bg-background'
+            value={selected}
+            onValueChange={setSelectedHandler}
+            className='w-full rounded-xl bg-bg-secondary p-1'
           >
-            {(item) => (
-              <Tab
-                data-testid={`tab-${item.value}`}
-                key={item.value}
-                title={
+            <TabsList className='!h-8 w-full'>
+              {tabItems.map((item) => (
+                <TabsTrigger
+                  value={item.value}
+                  className='h-8'
+                  disabled={disabledItemValues.includes(item.value)}
+                  data-testid={`tab-${item.value}`}
+                >
                   <div className='flex items-center gap-1 text-sm'>
                     {item.icon} {item.title}
                   </div>
-                }
-                onClick={() =>
-                  setCurrentCondition({ ...currentCondition, type: item.value })
-                }
-              ></Tab>
-            )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
           </Tabs>
         </label>
         <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>

@@ -1,7 +1,7 @@
-import { Button, Input, ModalProps, Tab, Tabs } from '@nextui-org/react'
-// import ModalComponent from "../../components/ModalComponent";
+import { Tabs, TabsList, TabsTrigger } from '@/UI/Tabs'
+import { Button, Input, ModalProps } from '@nextui-org/react'
 import { useReactFlow } from '@xyflow/react'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { Key, useContext, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
@@ -43,9 +43,10 @@ const ResponseModal = ({
   )
   // const [nodeDataState, setNodeDataState] = useState(data)
   const [currentResponse, setCurrentResponse] = useState(response)
-  const setSelectedHandler = (key: responseTypeType) => {
-    setCurrentResponse({ ...currentResponse, type: key })
-    setSelected(key)
+  const setSelectedHandler = (key: Key) => {
+    const type = key as responseTypeType
+    setCurrentResponse({ ...currentResponse, type })
+    setSelected(type)
   }
 
   const [responseStor, setResponseStor] = useState({
@@ -87,6 +88,7 @@ const ResponseModal = ({
     ],
     [],
   )
+  const disabledItemValues = ['llm', 'basic']
 
   const bodyItems = useMemo(
     () => ({
@@ -162,28 +164,24 @@ const ResponseModal = ({
       <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
         <label htmlFor=''>
           <Tabs
-            disabledKeys={['llm', 'basic']}
-            selectedKey={selected}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onSelectionChange={setSelectedHandler}
-            items={tabItems}
-            classNames={{
-              tabList: 'w-full',
-              tab: '',
-              cursor: 'border border-contrast-border',
-            }}
-            className='w-full max-w-full bg-background'
+            className='w-full rounded-xl bg-bg-secondary p-1'
+            value={selected}
+            onValueChange={setSelectedHandler}
           >
-            {(item) => (
-              <Tab
-                key={item.value}
-                title={item.title}
-                onClick={() =>
-                  setCurrentResponse({ ...currentResponse, type: item.value })
-                }
-              ></Tab>
-            )}
+            <TabsList className='!h-8 w-full'>
+              {tabItems.map((item) => (
+                <TabsTrigger
+                  value={item.value}
+                  className='h-8'
+                  disabled={disabledItemValues.includes(item.value)}
+                  data-testid={`tab-${item.value}`}
+                >
+                  <div className='flex items-center gap-1 text-sm'>
+                    {item.title}
+                  </div>
+                </TabsTrigger>
+              ))}
+            </TabsList>
           </Tabs>
         </label>
         <div>

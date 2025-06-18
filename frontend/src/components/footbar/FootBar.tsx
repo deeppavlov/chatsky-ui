@@ -1,9 +1,8 @@
+import { Tabs, TabsList, TabsTrigger } from '@/UI/Tabs'
 import {
   Button,
   Popover,
   PopoverTrigger,
-  Tab,
-  Tabs,
   useDisclosure,
 } from '@nextui-org/react'
 import classNames from 'classnames'
@@ -55,53 +54,27 @@ const FootBar = memo(() => {
     >
       <div className='absolute flex w-full items-center justify-center'>
         <Tabs
-          selectedKey={searchParams.get('page') || 'edit'}
-          onSelectionChange={onSelectionChange}
-          variant='light'
-          className=''
-          classNames={{
-            cursor: 'border border-foreground bg-background',
-            tab: 'w-32 h-9',
-            panel: 'p-0 m-0 w-0 h-0',
-          }}
+          value={searchParams.get('page') || 'edit'}
+          onValueChange={onSelectionChange}
         >
-          <Tab
-            key={'edit'}
-            title={
-              <span className='flex items-center gap-2'>
-                <EditIcon />
-                Edit
-              </span>
-            }
-          ></Tab>
-          <Tab
-            key={'deliver'}
-            // isDisabled
-            title={
-              <span className='flex items-center gap-2'>
-                <Rocket />
-                Deliver
-              </span>
-            }
-          ></Tab>
-          <Tab
-            key={'inspect'}
-            title={
-              <span className='flex items-center gap-2'>
-                <MonitorIcon />
-                Inspect
-              </span>
-            }
-          ></Tab>
-          <Tab
-            key={'settings'}
-            title={
-              <span className='flex items-center gap-2'>
-                <Settings />
-                Settings
-              </span>
-            }
-          ></Tab>
+          <TabsList className='relative'>
+            <TabsTrigger className='h-9 w-32 px-3' value='edit'>
+              <EditIcon />
+              Edit
+            </TabsTrigger>
+            <TabsTrigger className='h-9 w-32 px-3' value='deliver'>
+              <Rocket />
+              Deliver
+            </TabsTrigger>
+            <TabsTrigger className='h-9 w-32 px-3' value='inspect'>
+              <MonitorIcon />
+              Inspect
+            </TabsTrigger>
+            <TabsTrigger className='h-9 w-32 px-3' value='settings'>
+              <Settings />
+              Settings
+            </TabsTrigger>
+          </TabsList>
         </Tabs>
       </div>
       <Link
