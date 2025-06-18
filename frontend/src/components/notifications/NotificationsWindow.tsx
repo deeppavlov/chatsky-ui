@@ -1,3 +1,4 @@
+import Switch from '@/UI/Switch'
 import { Tooltip } from '@/UI/Tooltip'
 import {
   Button,
@@ -6,8 +7,6 @@ import {
   SelectItem,
   SelectSection,
 } from '@nextui-org/react'
-import * as Switch from '@radix-ui/react-switch'
-import cn from 'classnames'
 import {
   AlertOctagon,
   AlertTriangle,
@@ -97,25 +96,14 @@ export const NotificationsWindow = ({
         <div className='flex items-center justify-start gap-3'>
           <Tooltip
             sideOffset={8}
-            // classNames={{
-            //   content:
-            //     'h-8 px-3 shadow-lg rounded-[6px] bg-background border border-border text-[10px]',
-
-            // }}
             content={popupsDisabled ? 'Enable pop-ups' : 'Disable pop-ups'}
           >
-            <Switch.Root
-              onCheckedChange={() => {
+            <Switch
+              onChange={() => {
                 setPopupsDisabled((prev) => !prev)
               }}
               checked={!popupsDisabled}
-              className={cn(
-                'h-6 w-11 rounded-2xl p-[2px]',
-                popupsDisabled ? 'bg-text-addition' : 'bg-text-secondary',
-              )}
-            >
-              <Switch.Thumb className='block h-5 w-6 rounded-full bg-background transition-all duration-150 data-[state="checked"]:translate-x-4' />
-            </Switch.Root>
+            />
           </Tooltip>
           <h1 className='text-medium font-medium'>Notifications</h1>
         </div>

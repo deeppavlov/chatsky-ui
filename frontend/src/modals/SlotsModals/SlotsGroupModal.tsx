@@ -1,6 +1,7 @@
 import SlotsGroupsTable from '@/components/nodes/slots/SlotsGroupsTable'
 import { flowContext } from '@/contexts/flowContext'
-import { Button, Switch } from '@nextui-org/react' // Можно заменить на свой UI-компонент
+import Switch from '@/UI/Switch'
+import { Button } from '@nextui-org/react' // Можно заменить на свой UI-компонент
 import { useReactFlow } from '@xyflow/react'
 import { Plus } from 'lucide-react'
 import React, { useContext, useEffect, useState } from 'react'
@@ -225,9 +226,9 @@ const SlotsGroupModal = ({
               <div className='flex items-center gap-1'>
                 <p className='text-xs'>Standalone</p>
                 <Switch
-                  size='sm'
-                  isSelected={isSubGroup}
-                  onValueChange={setIsSubGroup}
+                  checked={isSubGroup}
+                  className='data-[state=checked]:bg-blue-500'
+                  onChange={setIsSubGroup}
                 />
                 <p className='text-xs'>Subgroup</p>
               </div>
@@ -254,7 +255,7 @@ const SlotsGroupModal = ({
                     }
                   }}
                   placeholder='Select parent group'
-                  className='h-8 min-h-8 w-1/3 w-full'
+                  className='h-8 min-h-8 w-full'
                   items={nodeData.groups
                     .filter((g) => g.id !== currentGroup.id)
                     .map((g) => ({ key: g.name, value: g.name }))}

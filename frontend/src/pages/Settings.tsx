@@ -1,4 +1,5 @@
-import { Button, Divider, Select, SelectItem, Switch } from '@nextui-org/react'
+import Switch from '@/UI/Switch'
+import { Button, Divider, Select, SelectItem } from '@nextui-org/react'
 import { MoonIcon, SunIcon } from 'lucide-react'
 import { memo, useContext } from 'react'
 import { themeContext } from '../contexts/themeContext'
@@ -50,15 +51,15 @@ const Settings = memo(() => {
                 Avoid eye fatigue by setting appropriate theme.
               </p>
               <div className='flex items-center gap-2'>
-                {/* <span>Light</span> */}
                 <Switch
-                  defaultSelected={theme === 'light'}
+                  checked={theme === 'light'}
                   onChange={toggleTheme}
-                  color='primary'
-                  startContent={<SunIcon />}
-                  endContent={<MoonIcon />}
-                ></Switch>
-                {/* <span>Dark</span> */}
+                  className='data-[state=checked]:bg-blue-500'
+                  startContent={
+                    <SunIcon color='#000' className='h-3.5 w-3.5' />
+                  }
+                  endContent={<MoonIcon color='#000' className='h-3.5 w-3.5' />}
+                />
               </div>
             </section>
             <section className='mb-8'>
