@@ -1,12 +1,9 @@
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Divider,
-  useDisclosure,
-} from '@nextui-org/react'
+import { Button, Divider, useDisclosure } from '@nextui-org/react'
+import * as Accordion from '@radix-ui/react-accordion'
+import { ChevronLeftIcon } from '@radix-ui/react-icons'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
-import { memo, useContext, useMemo } from 'react'
+import { memo, useContext, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import EditNodeIcon from '../../icons/nodes/EditNodeIcon'
@@ -39,14 +36,16 @@ const SideBar = memo(() => {
     [flows],
   )
 
+  const [openItems, setOpenItems] = useState<string[]>([])
+
   return (
     <div
       data-testid='sidebar'
       className='flex h-full w-52 flex-col items-start'
     >
       <Header />
-      <div className='flex h-full w-full flex-col justify-between border-r border-border bg-background px-2 pb-14'>
-        <div className='flex flex-col gap-3'>
+      <div className='flex h-full w-full flex-col justify-between overflow-hidden border-r border-border bg-background px-2 pb-14'>
+        <div className='flex h-full flex-col gap-3'>
           <div>
             <div
               data-testid='flows-list'
@@ -86,64 +85,74 @@ const SideBar = memo(() => {
             </div>
             <Divider />
           </div>
-          <div>
-            <p className='mb-4 font-semibold'>Available components</p>
-            <Accordion
+          <p className='font-semibold'>Available components</p>
+          <div className='overflow-y-auto scrollbar-hide'>
+            <Accordion.Root
+              value={openItems}
+              onValueChange={setOpenItems}
+              type='multiple'
               className='flex flex-col gap-2 px-0'
-              showDivider={false}
-              itemClasses={{
-                base: 'bg-transparent',
-                content: 'bg-background mt-1',
-                trigger: 'bg-transparent p-2',
-                heading: 'bg-bg-secondary rounded-lg border border-border',
-                indicator: 'bg-transparent',
-                startContent: 'bg-transparent',
-                subtitle: 'bg-transparent',
-                title: 'bg-transparent rounded-lg',
-                titleWrapper: 'bg-transparent',
-              }}
-              isCompact
-              selectionMode='multiple'
             >
-              <AccordionItem
-                name='nodes'
-                textValue='some'
-                title={
+              <Accordion.Item value='nodes'>
+                <Accordion.Trigger className='group w-full rounded-lg border border-border bg-bg-secondary p-2'>
                   <div
                     data-testid='nodes-collapse-btn'
                     className='flex items-center justify-start gap-2'
                   >
                     <NodesIcon />
                     Nodes
+                    <ChevronLeftIcon className='ms-auto h-4 w-4 transition-transform duration-200 ease-in-out group-data-[state=open]:rotate-[-90deg]' />
                   </div>
-                }
-              >
-                <DragList />
-              </AccordionItem>
-              <AccordionItem
-                textValue='some'
-                title={
+                </Accordion.Trigger>
+
+                <AnimatePresence>
+                  {openItems.includes('nodes') && (
+                    <motion.div
+                      className='mt-2 overflow-hidden'
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <DragList />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Accordion.Item>
+
+              <Accordion.Item value='links'>
+                <Accordion.Trigger className='group w-full rounded-lg border border-border bg-bg-secondary p-2'>
                   <div
                     data-testid='links-collapse-btn'
                     className='flex items-center justify-start gap-2'
                   >
                     <LinksIcon />
                     Links
+                    <ChevronLeftIcon className='ms-auto h-4 w-4 transition-transform duration-200 ease-in-out group-data-[state=open]:rotate-[-90deg]' />
                   </div>
-                }
-              >
-                <div className='flex w-full flex-col items-start justify-start gap-2'>
-                  <DragListItem
-                    item={{
-                      color: '#f5b75a',
-                      name: 'Link',
-                      type: 'link_node',
-                    }}
-                  />
-                </div>
-              </AccordionItem>
-            </Accordion>
+                </Accordion.Trigger>
 
+                <AnimatePresence>
+                  {openItems.includes('links') && (
+                    <motion.div
+                      className='mt-2 flex w-full flex-col items-start justify-start gap-2 overflow-hidden'
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <DragListItem
+                        item={{
+                          color: '#f5b75a',
+                          name: 'Link',
+                          type: 'link_node',
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Accordion.Item>
+            </Accordion.Root>
           </div>
         </div>
         <div className='flex flex-col items-center justify-start gap-1'></div>
