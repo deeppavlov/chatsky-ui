@@ -1,4 +1,5 @@
-import { CompletionContext, Completion } from '@codemirror/autocomplete'
+import { Completion, CompletionContext } from '@codemirror/autocomplete'
+import { StateField, Transaction } from '@codemirror/state'
 import {
   Decoration,
   EditorView,
@@ -31,6 +32,25 @@ import {
 //     },
 //   }
 // })
+
+// Виджет, который будет отображаться как превью
+class PreviewWidget extends WidgetType {
+  constructor(readonly text: string) {
+    super()
+  }
+
+  toDOM() {
+    const span = document.createElement('span')
+    span.textContent = this.text
+    span.className = 'cm-preview-widget' // Класс для стилизации
+    return span
+  }
+}
+
+interface PreviewInfo {
+  pos: number
+  text: string
+}
 
 class PlaceholderWidget extends WidgetType {
   label: string
@@ -99,7 +119,12 @@ export const myAutocomplete =
         label: keyword,
         type: 'keyword',
         // Здесь вы можете добавить любое действие после вставки:
-        apply: (view: EditorView, completion: Completion, from: number, to: number) => {
+        apply: (
+          view: EditorView,
+          completion: Completion,
+          from: number,
+          to: number,
+        ) => {
           const newFrom = from - 1
           const newTo = to
           view.dispatch({

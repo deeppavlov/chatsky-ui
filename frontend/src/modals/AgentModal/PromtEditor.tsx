@@ -8,7 +8,6 @@ import { createInputDecoration, myAutocomplete } from './editorPlugins'
 interface IProps {
   placeholder?: string
   onChange?: (value: string) => void
-  // onBlur?: () => void
   value: string
   codeEditorRef?: React.RefObject<ReactCodeMirrorRef>
   autocompletionWords?: string[]
@@ -17,7 +16,6 @@ interface IProps {
 
 export const TextEditor = ({
   onChange,
-  // onBlur,
   placeholder,
   value,
   codeEditorRef,
@@ -25,6 +23,9 @@ export const TextEditor = ({
   symbolAutocompletion = '@',
 }: IProps) => {
   const { theme } = useContext(themeContext)
+
+  const backgroundColorTheme =
+    theme === 'light' ? 'bg-[#f2f1f8]' : 'bg-[#24262e]'
 
   const myTheme = EditorView.theme({
     '.cm-content': {
@@ -56,59 +57,108 @@ export const TextEditor = ({
     '.cm-cursor': {
       borderLeft: '2px solid var(--input-border-focus)',
     },
+
+    // Стили для окна автозамены
     '.cm-tooltip-autocomplete': {
       maxHeight: '250px !important',
       overflowY: 'auto !important',
       color: 'red !important',
-      backgroundColor: theme === 'light' ? '#f2f1f8' : '#24262e',
+      backgroundColor: backgroundColorTheme,
+      border: '1px solid var(--border-color, #e0e0e0)',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      zIndex: '1000',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '14px',
+      lineHeight: '1.4',
     },
-  })
 
-  const baseTheme = EditorView.baseTheme({
+    '.cm-tooltip-autocomplete > ul': {
+      margin: '0',
+      padding: '8px 0',
+      listStyle: 'none',
+    },
+
+    '.cm-tooltip-autocomplete > ul > li ': {
+      padding: '8px 16px',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s ease',
+    },
+
+    '.cm-tooltip-autocomplete > ul > li:hover': {
+      backgroundColor: 'var(--hover-bg, rgba(102, 164, 195, 0.1))',
+    },
+
+    '.cm-tooltip-autocomplete > ul > li > span': {
+      color: 'var(--selected-text, #333)',
+    },
+
+    '.cm-tooltip-autocomplete > ul > li[aria-selected]': {
+      backgroundColor: 'var(--selected-bg, rgba(51, 153, 204, 0.2))',
+      color: 'var(--selected-text, #333)',
+      fontWeight: '500',
+    },
+
+    '.cm-tooltip-autocomplete::-webkit-scrollbar': {
+      width: '6px',
+    },
+
+    '.cm-tooltip-autocomplete::-webkit-scrollbar-track': {
+      background: 'transparent',
+    },
+
+    '.cm-tooltip-autocomplete::-webkit-scrollbar-thumb': {
+      background: 'var(--scrollbar-color, #c0c0c0)',
+      borderRadius: '3px',
+    },
+
+    '.cm-tooltip-autocomplete::-webkit-scrollbar-thumb:hover': {
+      background: 'var(--scrollbar-hover-color, #a0a0a0)',
+    },
     '.widget-input': {
-      color: 'blue',
+      background:
+        theme === 'light' ? 'rgba(51, 153, 204, 0.10)' : 'rgb(63, 63, 70)',
+      padding: '2px 4px 2px 4px',
     },
   })
 
   return (
-    <>
-      <div
-        className={`mt-2 flex w-full flex-col items-start justify-start gap-4 p-4 ${theme === 'light' ? 'bg-[#f2f1f8]' : 'bg-[#24262e]'} rounded-lg font-mono`}
-      >
-        <ReactCodeMirror
-          ref={codeEditorRef}
-          basicSetup={{
-            lineNumbers: false,
-            foldGutter: false,
-            highlightSelectionMatches: false,
-            highlightActiveLine: false,
-          }}
-          data-testid='prompt-editor'
-          style={{
-            fontFamily:
-              'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
-          }}
-          extensions={[
-            EditorView.lineWrapping,
-            autocompletion({
-              override: [
-                myAutocomplete(
-                  autocompletionWords || [],
-                  symbolAutocompletion || '@',
-                ),
-              ],
-            }),
-            createInputDecoration(autocompletionWords || []),
-
-            baseTheme,
-          ]}
-          value={value}
-          onChange={onChange}
-          className='w-full border-none font-mono outline-none focus-within:outline-none focus:outline-none'
-          theme={myTheme}
-          height='240px'
-        />
-      </div>
-    </>
+    <div
+      className={`mt-2 flex w-full flex-col items-start justify-start gap-4 p-4 ${backgroundColorTheme} rounded-lg font-mono`}
+    >
+      <ReactCodeMirror
+        key={theme}
+        placeholder={placeholder}
+        ref={codeEditorRef}
+        basicSetup={{
+          lineNumbers: false,
+          foldGutter: false,
+          highlightSelectionMatches: false,
+          highlightActiveLine: false,
+        }}
+        data-testid='prompt-editor'
+        style={{
+          fontFamily:
+            'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+        }}
+        extensions={[
+          EditorView.lineWrapping,
+          autocompletion({
+            override: [
+              myAutocomplete(
+                autocompletionWords || [],
+                symbolAutocompletion || '@',
+              ),
+            ],
+          }),
+          createInputDecoration(autocompletionWords || []),
+        ]}
+        value={value}
+        onChange={onChange}
+        className='w-full border-none font-mono outline-none focus-within:outline-none focus:outline-none'
+        theme={myTheme}
+        height='240px'
+      />
+    </div>
   )
 }

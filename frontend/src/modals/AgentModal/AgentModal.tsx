@@ -77,6 +77,7 @@ const AgentModal = ({
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
   const { quietSaveFlows, flows } = useContext(flowContext)
   const [isSlideMenuOpen, setIsSlideMenuOpen] = useState(false)
+  const [wordToInsert, setWordToInsert] = useState('')
 
   const codeEditorRef = useRef<ReactCodeMirrorRef>(null)
 
@@ -118,7 +119,8 @@ const AgentModal = ({
   }
 
   const handleDragStart = (e: React.DragEvent, variable: string) => {
-    e.dataTransfer.setData('text/plain', variable)
+    setWordToInsert(variable)
+    // e.dataTransfer.setData('text/plain', variable)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -126,21 +128,37 @@ const AgentModal = ({
     const view = codeEditorRef.current?.view
     if (!view) return
 
-    const text = e.dataTransfer.getData('text/plain')
+    console.log(wordToInsert)
     const selection = view.state.selection.main
     view.dispatch({
       changes: {
         from: selection.from,
         to: selection.to,
-        insert: text,
+        insert: wordToInsert,
       },
-      selection: { anchor: selection.from + text.length },
+      selection: { anchor: selection.from + wordToInsert.length },
     })
     view.focus()
+    setWordToInsert('')
   }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
+    //  const view = codeEditorRef.current?.view
+    //  if (!view) return
+
+    //  const text = wordToInsert
+    //  const selection = view.state.selection.main
+    //  view.dispatch({
+    //    changes: {
+    //      from: selection.from,
+    //      to: selection.to,
+    //      insert: text,
+    //    },
+    //    selection: { anchor: selection.from + text.length },
+    //  })
+    //  view.focus()
+    //  setWordToInsert('')
   }
 
   return (
@@ -172,7 +190,11 @@ const AgentModal = ({
                     <div className='space-y-4'>
                       <div className='flex items-center justify-between'>
                         <h4 className='font-medium'>Входные переменные</h4>
-                        <Button variant='primary' className='rounded-small'>
+                        <Button
+                          variant='primary'
+                          className='rounded-small'
+                          onClick={() => setIsSlideMenuOpen(!isSlideMenuOpen)}
+                        >
                           <X />
                         </Button>
                       </div>
