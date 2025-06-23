@@ -77,7 +77,6 @@ const AgentModal = ({
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
   const { quietSaveFlows, flows } = useContext(flowContext)
   const [isSlideMenuOpen, setIsSlideMenuOpen] = useState(false)
-  const [wordToInsert, setWordToInsert] = useState('')
 
   const codeEditorRef = useRef<ReactCodeMirrorRef>(null)
 
@@ -119,8 +118,7 @@ const AgentModal = ({
   }
 
   const handleDragStart = (e: React.DragEvent, variable: string) => {
-    setWordToInsert(variable)
-    // e.dataTransfer.setData('text/plain', variable)
+    e.dataTransfer.setData('text/plain', variable)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -128,37 +126,21 @@ const AgentModal = ({
     const view = codeEditorRef.current?.view
     if (!view) return
 
-    console.log(wordToInsert)
+    const text = e.dataTransfer.getData('text/plain')
     const selection = view.state.selection.main
     view.dispatch({
       changes: {
         from: selection.from,
         to: selection.to,
-        insert: wordToInsert,
+        insert: text,
       },
-      selection: { anchor: selection.from + wordToInsert.length },
+      selection: { anchor: selection.from + text.length },
     })
     view.focus()
-    setWordToInsert('')
   }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    //  const view = codeEditorRef.current?.view
-    //  if (!view) return
-
-    //  const text = wordToInsert
-    //  const selection = view.state.selection.main
-    //  view.dispatch({
-    //    changes: {
-    //      from: selection.from,
-    //      to: selection.to,
-    //      insert: text,
-    //    },
-    //    selection: { anchor: selection.from + text.length },
-    //  })
-    //  view.focus()
-    //  setWordToInsert('')
   }
 
   return (
