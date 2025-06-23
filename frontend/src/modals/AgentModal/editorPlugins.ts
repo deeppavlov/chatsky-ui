@@ -1,5 +1,5 @@
 import { Completion, CompletionContext } from '@codemirror/autocomplete'
-import { StateField, Transaction } from '@codemirror/state'
+import { StateEffect, StateField } from '@codemirror/state'
 import {
   Decoration,
   EditorView,
@@ -33,24 +33,47 @@ import {
 //   }
 // })
 
-// Виджет, который будет отображаться как превью
-class PreviewWidget extends WidgetType {
-  constructor(readonly text: string) {
-    super()
-  }
-
-  toDOM() {
-    const span = document.createElement('span')
-    span.textContent = this.text
-    span.className = 'cm-preview-widget' // Класс для стилизации
-    return span
-  }
-}
-
 interface PreviewInfo {
   pos: number
   text: string
 }
+
+export const setPreview = StateEffect.define<PreviewInfo | null>()
+
+class PreviewWidget extends WidgetType {
+  constructor(readonly text: string) {
+    super()
+  }
+  toDOM() {
+    const span = document.createElement('span')
+    span.textContent = this.text
+    span.className = 'cm-preview-widget'
+    return span
+  }
+}
+
+export const previewState = StateField.define<PreviewInfo | null>({
+  create: () => null,
+  update(value, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setPreview)) return effect.value
+    }
+    if (value && tr.docChanged) {
+      return { ...value, pos: tr.changes.mapPos(value.pos) }
+    }
+    return value
+  },
+  provide: (f) =>
+    EditorView.decorations.from(f, (value) => {
+      if (!value) return Decoration.none
+      const widget = new PreviewWidget(value.text)
+      return Decoration.set([
+        Decoration.widget({ widget, side: 1 }).range(value.pos),
+      ])
+    }),
+})
+
+// Виджет, который будет отображаться как превью
 
 class PlaceholderWidget extends WidgetType {
   label: string

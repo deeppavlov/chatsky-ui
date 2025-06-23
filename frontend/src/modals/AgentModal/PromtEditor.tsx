@@ -4,6 +4,7 @@ import ReactCodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { useContext } from 'react'
 import { themeContext } from '../../contexts/themeContext'
 import { createInputDecoration, myAutocomplete } from './editorPlugins'
+import { previewState } from './editorPlugins'
 
 interface IProps {
   placeholder?: string
@@ -120,6 +121,15 @@ export const TextEditor = ({
         theme === 'light' ? 'rgba(51, 153, 204, 0.10)' : 'rgb(63, 63, 70)',
       padding: '2px 4px 2px 4px',
     },
+    '.cm-preview-widget': {
+      color: 'grey',
+      opacity: '0.6',
+      pointerEvents: 'none',
+      fontStyle: 'italic',
+      backgroundColor: 'rgba(128, 128, 128, 0.1)',
+      borderRadius: '3px',
+      padding: '0 2px',
+    },
   })
 
   return (
@@ -152,6 +162,7 @@ export const TextEditor = ({
             ],
           }),
           createInputDecoration(autocompletionWords || []),
+          previewState,
         ]}
         value={value}
         onChange={onChange}

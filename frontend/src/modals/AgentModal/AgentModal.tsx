@@ -1,17 +1,16 @@
 import { Input } from '@/UI/Input'
 import { Select } from '@/UI/Select'
-import { Textarea2 } from '@/UI/textarea'
 import { CodeIcon } from '@radix-ui/react-icons'
-import ReactCodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
+import { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { Edge, useReactFlow } from '@xyflow/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronRight, Info, Settings, TrashIcon, X } from 'lucide-react'
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import { flowContext } from '../../contexts/flowContext'
 import { PopUpContext } from '../../contexts/popUpContext'
 import AttentionIcon from '../../icons/AttentionIcon'
 import EditPenIcon from '../../icons/EditPenIcon'
-import { conditionType, conditionTypeType } from '../../types/ConditionTypes'
+import { conditionType } from '../../types/ConditionTypes'
 import { AppNode, DefaultNodeDataType } from '../../types/NodeTypes'
 import { Button } from '../../UI/button'
 import {
@@ -21,6 +20,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '../ModalComponents'
+import { setPreview } from './editorPlugins'
 import { TextEditor } from './PromtEditor'
 
 export type ConditionModalContentType = {
@@ -77,7 +77,7 @@ const AgentModal = ({
   const { getNodes, updateNodeData } = useReactFlow<AppNode, Edge>()
   const { quietSaveFlows, flows } = useContext(flowContext)
   const [isSlideMenuOpen, setIsSlideMenuOpen] = useState(false)
-
+  const [wordToInsert, setWordToInsert] = useState('')
   const codeEditorRef = useRef<ReactCodeMirrorRef>(null)
 
   const onCloseHandler = () => {
@@ -117,31 +117,84 @@ const AgentModal = ({
     view.focus()
   }
 
-  const handleDragStart = (e: React.DragEvent, variable: string) => {
-    e.dataTransfer.setData('text/plain', variable)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
     const view = codeEditorRef.current?.view
     if (!view) return
 
-    const text = e.dataTransfer.getData('text/plain')
-    const selection = view.state.selection.main
+    const pos = view.posAtCoords({ x: e.clientX, y: e.clientY })
+    if (pos === null) return
+
     view.dispatch({
-      changes: {
-        from: selection.from,
-        to: selection.to,
-        insert: text,
-      },
-      selection: { anchor: selection.from + text.length },
+      effects: setPreview.of({ pos, text: wordToInsert }),
     })
-    view.focus()
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault()
+    const view = codeEditorRef.current?.view
+    if (!view) return
+
+    view.dispatch({
+      effects: setPreview.of(null),
+    })
   }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (e.dataTransfer) {
+      e.dataTransfer.clearData()
+    }
+
+    const view = codeEditorRef.current?.view
+    if (!view) return
+
+    e
+    view.dispatch({
+      effects: setPreview.of(null),
+    })
+
+    const pos = view.posAtCoords({ x: e.clientX, y: e.clientY })
+    if (pos === null) return
+
+    view.dispatch({
+      changes: { from: pos, to: pos, insert: wordToInsert },
+      selection: { anchor: pos + wordToInsert.length },
+    })
+    view.focus()
+    setWordToInsert('')
+  }
+
+  const handleDragStart = (e: React.DragEvent, variable: string) => {
+    setWordToInsert(variable);
+
+    // Создаём кастомный элемент для drag image
+    const dragIcon = document.createElement('div');
+    dragIcon.style.position = 'absolute';
+    dragIcon.style.top = '-1000px'; // чтобы не видно на странице
+    dragIcon.style.left = '-1000px';
+    dragIcon.style.padding = '4px 10px';
+    dragIcon.style.background = '#fff';
+    dragIcon.style.border = '1px solid #ccc';
+    dragIcon.style.borderRadius = '6px';
+    dragIcon.style.fontSize = '15px';
+    dragIcon.style.color = '#333';
+    dragIcon.style.fontWeight = 'bold';
+    dragIcon.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+    dragIcon.innerHTML = `🔑 ${variable}`; // Любой текст/иконка
+
+    document.body.appendChild(dragIcon);
+
+    // Устанавливаем кастомный drag image
+    e.dataTransfer.setDragImage(dragIcon, 10, 10);
+
+    // Удаляем элемент после небольшой задержки
+    setTimeout(() => {
+      document.body.removeChild(dragIcon);
+    }, 0);
+  };
 
   return (
     <Modal
@@ -271,7 +324,10 @@ const AgentModal = ({
               <div className='flex w-full flex-grow flex-col items-end gap-3'>
                 <div
                   onDrop={handleDrop}
-                  onDragOver={handleDragOver}
+                  onDragOver={(e) => {
+                    handleDragOver(e)
+                  }}
+                  onDragLeave={handleDragLeave}
                   className='w-full'
                 >
                   <TextEditor
