@@ -1,12 +1,15 @@
 import asyncio
+
+from chatsky_ui.utils.llm_config_helper import get_llm_model_config
+
 from ....core.config import settings
 from ....schemas.front_graph_components.info_holders.response import CustomResponse, LLMResponse, TextResponse
 from ..base_converter import BaseConverter
 from ..consts import CUSTOM_FILE, RESPONSES_FILE
 from .service_replacer import store_custom_service
-from chatsky_ui.utils.llm_config_helper import get_llm_model_config
 
-#TODO: in FRONT change the structure of responses data to be like in conditions (a dict instead of list)
+# TODO: in FRONT change the structure of responses data to be like in conditions (a dict instead of list)
+
 
 class BadResponseException(Exception):
     """An exception raised when a converter receives a response which doesn't have required fields."""

@@ -1,12 +1,13 @@
 import asyncio
 from abc import ABC, abstractmethod
 
+from chatsky_ui.utils.llm_config_helper import get_llm_model_config
+
 from ....core.config import settings
 from ....schemas.front_graph_components.info_holders.condition import CustomCondition, LLMCondition, SlotCondition
 from ..base_converter import BaseConverter
 from ..consts import CONDITIONS_FILE, CUSTOM_FILE
 from .service_replacer import store_custom_service
-from chatsky_ui.utils.llm_config_helper import get_llm_model_config
 
 
 class BadConditionException(Exception):

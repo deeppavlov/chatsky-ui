@@ -13,9 +13,7 @@ from chatsky_ui.schemas.front_graph_components.llm_model import LLMModel
 router = APIRouter()
 
 
-async def _save_token_data(
-    token_id: str, token_name: Optional[str] = None, provider: Optional[str] = None
-):
+async def _save_token_data(token_id: str, token_name: Optional[str] = None, provider: Optional[str] = None):
     """Saves the token data to llms yaml file."""
     omega_llms_conf = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
     llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
@@ -132,16 +130,16 @@ async def patch_llm_token(
     llms_conf = OmegaConf.to_container(omega_llms_conf, resolve=True)
 
     tokens = llms_conf.get("tokens", {})
-    
+
     if token_id not in tokens:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Token ID '{token_id}' not found. Use POST to create it.",
         )
-    
+
     old_token_name, old_provider = tokens[token_id]["name"], tokens[token_id]["provider"]
 
-    token_name = new_token_name or old_token_name 
+    token_name = new_token_name or old_token_name
     token_name = token_name.strip().replace(" ", "_")
     token_provider = new_provider or old_provider
     token_value = new_token_value or settings.get_env_vars(old_token_name).get(old_token_name)
