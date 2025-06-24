@@ -42,8 +42,7 @@ class PipelineConverter(BaseConverter):
         self.from_yaml(file_path=input_file)
 
         loop = asyncio.get_event_loop()
-        llm_configurations_omega = loop.run_until_complete(read_conf(settings.llms_conf_path, settings.llms_path_lock))
-        llm_configurations = OmegaConf.to_container(llm_configurations_omega, resolve=True)
+        llm_configurations = loop.run_until_complete(self.read_llm_configurations())
 
         self.pipeline = Pipeline(
             messenger={
@@ -77,6 +76,11 @@ class PipelineConverter(BaseConverter):
         """
         with open(f"{dir_path}/build.yaml", "w", encoding="UTF-8") as file:
             yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False, allow_unicode=True)
+
+    async def read_llm_configurations(self):
+        llm_configurations_omega = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
+        llm_configurations = OmegaConf.to_container(llm_configurations_omega, resolve=True)
+        return llm_configurations if llm_configurations else None
 
     def _convert(self):
         """Converts the inputs into a Chatsky `Pipeline` and returns it. It really returns a dictionary, but since

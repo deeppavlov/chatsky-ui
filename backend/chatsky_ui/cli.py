@@ -21,11 +21,11 @@ import string
 import sys
 from pathlib import Path
 from typing import Optional
-from dotenv import load_dotenv
 
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
+from dotenv import load_dotenv
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
