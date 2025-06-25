@@ -7,9 +7,14 @@ from .logic_component_converter.chatsky_condition_converter import ChatskyCondit
 from .logic_component_converter.condition_converter import (
     ButtonConditionConverter,
     CustomConditionConverter,
+    LLMConditionConverter,
     SlotConditionConverter,
 )
-from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter
+from .logic_component_converter.response_converter import (
+    CustomResponseConverter,
+    LLMResponseConverter,
+    TextResponseConverter,
+)
 
 
 class NodeConverter(BaseConverter):
@@ -21,10 +26,12 @@ class NodeConverter(BaseConverter):
     RESPONSE_CONVERTER = {
         "text": TextResponseConverter,
         "python": CustomResponseConverter,
+        "llm": LLMResponseConverter,
     }
     CONDITION_CONVERTER = {
         "python": CustomConditionConverter,
         "slot": SlotConditionConverter,
+        "llm": LLMConditionConverter,
         "basic": ChatskyConditionConverter,
         "button": ButtonConditionConverter,
     }

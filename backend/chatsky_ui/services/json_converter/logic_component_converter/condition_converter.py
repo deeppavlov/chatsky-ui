@@ -1,10 +1,14 @@
+import asyncio
 from abc import ABC, abstractmethod
+
+from chatsky_ui.utils.llm_config_helper import get_llm_model_config
 
 from ....core.config import settings
 from ....schemas.front_graph_components.info_holders.condition import (
     CustomCondition,
     InlineButtonCondition,
     ReplyButtonCondition,
+    LLMCondition,
     SlotCondition,
 )
 from ..base_converter import BaseConverter
@@ -21,8 +25,15 @@ class BadConditionException(Exception):
 class ConditionConverter(BaseConverter, ABC):
     """A base class which converts frontend's `Conditions` into respective Chatsky `BaseCondition` derivatives."""
 
+    def __init__(self):
+        self.condition = None
+
+    def _convert(self):
+        if self.condition is None:
+            raise BadConditionException("Condition is not initialized")
+
     @abstractmethod
-    def get_pre_transitions():
+    def get_pre_transitions(self):
         raise NotImplementedError
 
 
@@ -38,7 +49,7 @@ class CustomConditionConverter(ConditionConverter):
         Raises:
             BadConditionException: if the provided condition doesn't have required fields.
         """
-        self.condition = None
+        super().__init__()
         try:
             self.condition = CustomCondition(
                 name=condition["name"],
@@ -52,6 +63,7 @@ class CustomConditionConverter(ConditionConverter):
         Saves the condition into the "settings.conditions_path" file. (appends it to the file)
         Then, returns an address of that condition within the file.
         """
+        super()._convert()
         store_custom_service(settings.conditions_path, [self.condition.code])
         custom_cnd = {f"{CUSTOM_FILE}.{CONDITIONS_FILE}.{self.condition.name}": None}
         return custom_cnd
@@ -76,7 +88,7 @@ class SlotConditionConverter(ConditionConverter):
         Raises:
             BadConditionException: if the provided condition doesn't have required fields.
         """
-        self.condition = None
+        super().__init__()
         try:
             self.condition = SlotCondition(slot_id=condition["data"]["slot"], name=condition["name"])
         except KeyError as missing_key:
@@ -93,6 +105,7 @@ class SlotConditionConverter(ConditionConverter):
 
     def _convert(self):
         """Converts the received `SlotCondition` into a Chatsky `Condition` and returns it."""
+        super()._convert()
         return {"chatsky.conditions.slots.SlotsExtracted": self.slots_conf[self.condition.slot_id]}
 
     def get_pre_transitions(self):
@@ -101,6 +114,48 @@ class SlotConditionConverter(ConditionConverter):
         """
         slot_path = self.slots_conf[self.condition.slot_id]  # type: ignore
         return {slot_path: {"chatsky.processing.slots.Extract": slot_path}}
+
+
+class LLMConditionConverter(ConditionConverter):
+    def __init__(self, condition: dict):
+        super().__init__()
+        try:
+            config_model_name = self._get_model_config(condition)["name"]
+            self.condition = LLMCondition(
+                name=condition["name"],
+                model_name=config_model_name,
+                prompt=condition["data"]["llm"]["prompt"],
+            )
+        except KeyError as missing_key:
+            raise BadConditionException("Missing key in LLM condition data") from missing_key
+
+    def _get_model_config(self, condition: dict):
+        """Fetches the model configuration for the LLM condition.
+        Args:
+            condition (dict): The LLM condition to be converted.
+        Returns:
+            dict: The model configuration for the LLM condition.
+        """
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(get_llm_model_config(condition["data"]["llm"]["llm_config_id"]))
+
+    def _convert(self):
+        super()._convert()
+
+        condition_data = self.condition.model_dump()
+        condition_data.update(
+            {
+                "method": {
+                    "chatsky.llm.methods.Contains": {
+                        "pattern": "TRUE",
+                    }
+                }
+            }
+        )
+        return {"chatsky.conditions.llm.LLMCondition": condition_data}
+
+    def get_pre_transitions(self):
+        return {}
 
 
 class ButtonConditionConverter(ConditionConverter):

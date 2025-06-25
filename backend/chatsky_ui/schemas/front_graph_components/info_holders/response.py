@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from ..base_component import BaseComponent
 
@@ -13,6 +13,12 @@ class TextResponse(Response):
 
 class CustomResponse(Response):
     code: str
+
+
+class LLMResponse(Response):
+    model_name: str
+    prompt: Optional[str] = None
+    context_memory_index: Optional[int] = None
 
 
 class Button(BaseComponent):
