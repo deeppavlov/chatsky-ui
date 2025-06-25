@@ -17,7 +17,6 @@ import MonitorIcon from '../../icons/buildmenu/MonitorIcon'
 import LocalStorageIcon from '../../icons/footbar/LocalStorageIcon'
 import { Logo } from '../../icons/Logo'
 import LocalStorage from '../../modals/LocalStorage/LocalStorage'
-import { parseSearchParams } from '../../utils'
 import { NotificationsWindow } from '../notifications/NotificationsWindow'
 
 const FootBar = memo(() => {
@@ -41,11 +40,10 @@ const FootBar = memo(() => {
     (key: Key) => {
       const pageKey = key as PageType
       setSearchParams({
-        ...parseSearchParams(searchParams),
         page: pageKey,
       })
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   )
 
   return (

@@ -374,19 +374,24 @@ export default function Flow() {
    */
   useEffect(() => {
     const kbdHandler = (e: KeyboardEvent) => {
-      // if ((e.ctrlKey || e.metaKey) && e.key === "c" && !disableCopyPaste) {
-      //   e.preventDefault()
-      //   if (selection) {
-      //     copy(selection)
-      //   }
-      // }
-      // if ((e.ctrlKey || e.metaKey) && e.key === "v" && !disableCopyPaste) {
-      //   e.preventDefault()
-      //   if (reactFlowInstance && flow && flow.name === flowId && copiedSelection) {
-      //     paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
-      //   }
-      // }
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyC' && !disableCopyPaste) {
+        e.preventDefault()
+        if (selection) {
+          copy(selection)
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyV' && !disableCopyPaste) {
+        e.preventDefault()
+        if (
+          reactFlowInstance &&
+          flow &&
+          flow.name === flowId &&
+          copiedSelection
+        ) {
+          paste(copiedSelection, { x: mousePos.x, y: mousePos.y })
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyS') {
         e.preventDefault()
         if (reactFlowInstance && flow && flow.name === flowId) {
           saveFlows(flows)
@@ -394,7 +399,7 @@ export default function Flow() {
         }
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyH') {
         e.preventDefault()
         toggleWorkspaceMode()
       }

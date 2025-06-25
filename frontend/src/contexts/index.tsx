@@ -2,6 +2,7 @@ import { BuildProvider } from './buildContext'
 import { ChatProvider } from './chatContext'
 import { FlowProvider } from './flowContext'
 import IdeProvider from './ideContext'
+import LlmProvider from './llmContext'
 import MetaProvider from './metaContext'
 import NotificationsProvider from './notificationsContext'
 import { RunProvider } from './runContext'
@@ -21,9 +22,11 @@ export default function ContextWrapper({
             <BuildProvider>
               <RunProvider>
                 <FlowProvider>
-                  <WorkspaceProvider>
-                    <IdeProvider>{children}</IdeProvider>
-                  </WorkspaceProvider>
+                  <LlmProvider>
+                    <WorkspaceProvider>
+                      <IdeProvider>{children}</IdeProvider>
+                    </WorkspaceProvider>
+                  </LlmProvider>
                 </FlowProvider>
               </RunProvider>
             </BuildProvider>

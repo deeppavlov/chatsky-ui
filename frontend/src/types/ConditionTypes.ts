@@ -3,8 +3,7 @@ export type conditionDataType = {
   transition_type: conditionLabelType
   llm?: {
     prompt: string
-    api_key: string
-    model_name: string
+    llm_config_id: string
   }
   python?: {
     action: string
@@ -58,4 +57,8 @@ export interface ICondition {
   structure?: string
   error?: boolean
   data?: ICondition
+}
+
+export interface ILLMConditionHandle {
+  validate: () => boolean
 }

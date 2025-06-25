@@ -55,7 +55,7 @@ const Logs = ({ item }: IProps) => {
   }, [logs])
 
   return (
-    <div className='flex w-full flex-col pe-6 ps-9'>
+    <div className='flex w-full flex-col px-9'>
       {item.type === 'build' ? (
         <div>
           <h4 className='my-4 flex items-center gap-1 text-xl font-semibold'>
@@ -164,8 +164,12 @@ const Logs = ({ item }: IProps) => {
           </div>
         </div>
       )}
-      <ScrolledContainer ref={containerRef} className='h-0 flex-grow pt-2'>
-        <div className='px-4'>
+      <ScrolledContainer
+        scrollbarOffset={20}
+        ref={containerRef}
+        className='h-0 flex-grow pt-2'
+      >
+        <div className='ps-4'>
           {logs?.map((string, i) => (
             <p key={i} className='text-sm font-medium text-text-secondary'>
               {string}

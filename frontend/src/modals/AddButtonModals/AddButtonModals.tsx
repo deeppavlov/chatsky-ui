@@ -402,8 +402,6 @@ const AddButtonModals = ({
 
   const [error, setError] = useState<string[]>([])
 
-  // console.log(data)
-
   return (
     <Modal
       className='flex min-h-[584px] flex-col'

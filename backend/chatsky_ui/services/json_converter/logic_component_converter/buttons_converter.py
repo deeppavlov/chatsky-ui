@@ -30,7 +30,7 @@ class ButtonsConverter(BaseConverter):
 
         Raises: `KeyError`, if `buttons_dict` is a dictionary of the wrong structure.
         """
-        if buttons_list[0][0].get("type", None) == "exactMatch":
+        if buttons_list and buttons_list[0][0].get("type", None) == "exactMatch":
             return "reply"
         else:
             return "inline"

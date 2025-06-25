@@ -6,11 +6,13 @@ export type responseDataType = {
   python?: {
     action: string
   }
+
   llm?: {
     prompt: string
-    api_key: string
-    model_name: string
+    llm_config_id: string
+    context_memory_index: number
   }
+
   custom?: {
     keywords: string[]
     action: string
@@ -32,4 +34,13 @@ export interface IButtonType {
   callback?: string
   type?: string
   id: string
+}
+
+export interface IInputError {
+  isInvalid: boolean
+  errorMessage?: string
+}
+
+export interface ILLMResponseHandle {
+  validate: () => boolean
 }

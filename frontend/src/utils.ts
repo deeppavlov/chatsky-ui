@@ -313,7 +313,7 @@ export function getTimeDifference(date1: string, date2: string): string {
 const maxLengthName = 25
 
 const mapErrorMessage = {
-  empty: 'Please fill every field.',
+  empty: 'Please fill every field',
   maxLength: 'Name must be less than 25 characters.',
   unique: 'Name must be unique.',
   color: 'Please choose flow color.',
@@ -479,7 +479,7 @@ export const validateResponseName = (
   name: string,
   selected: string,
   flows: FlowType[],
-  data: DefaultNodeDataType,
+  parentNodeId: string,
 ) => {
   const {
     name: { isInvalid, errorMessage },
@@ -507,7 +507,7 @@ export const validateResponseName = (
         (node) =>
           node.type === 'default_node' &&
           node.data.response.name === name &&
-          node.id !== data.id,
+          node.id !== parentNodeId,
       ),
     )
   ) {
