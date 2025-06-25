@@ -372,13 +372,19 @@ const AddButtonModals = ({
   const node = getNode(data.id)
 
   const dataButtons = (node?.data as DefaultNodeDataType).buttonsData ?? {
-    rows: 0,
-    columns: 0,
-    buttons: [],
+    rows: 2,
+    columns: 2,
+    buttons: [[]],
   }
 
-  const initButtons =
-    dataButtons.buttons.length === 0 ? genInitButtons() : dataButtons.buttons
+  const initButtons = Object.prototype.hasOwnProperty.call(
+    dataButtons,
+    'buttons',
+  )
+    ? dataButtons.buttons.length === 0
+      ? genInitButtons()
+      : dataButtons.buttons
+    : genInitButtons()
 
   const dataButtonsInit = {
     rows: initButtons[0].length,
@@ -407,7 +413,10 @@ const AddButtonModals = ({
         <ModalHeader className='flex items-center gap-4 pb-[0px]'>
           <div className='flex items-center gap-2'>
             <div className='rounded-lg bg-background p-1'>
-              <Button className='h-unit-10 min-w-unit-0 bg-transparent pl-[0px] pr-[0px]'>
+              <Button
+                onClick={onClose}
+                className='h-unit-10 min-w-unit-0 bg-transparent pl-[0px] pr-[0px]'
+              >
                 <BackIcon
                   className='cursor-pointer rounded-lg border-border bg-bg-secondary bg-foreground'
                   stroke='var(--background)'
@@ -572,7 +581,7 @@ const AddButtonModals = ({
                   buttonsData: { buttons: [], rows: 0, columns: 0 },
 
                   response: {
-                    ...(node?.data as DefaultNodeDataType).response,
+                    ...(data as DefaultNodeDataType).response,
                     buttons: [],
                   },
                 })
