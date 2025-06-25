@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import model_validator
 
@@ -13,6 +13,8 @@ class InfoNode(Node):
     name: str
     response: dict
     conditions: List[dict]
+    buttonsData: Optional[dict] = None
+    removeButtons: Optional[bool] = None
 
 
 class LinkNode(Node):
