@@ -32,6 +32,18 @@ class SlotCondition(Condition):
     slot_id: str  # not the condition id
 
 
+class InlineButtonCondition(Condition):
+    """An 'inline' Telegram button pressed condition."""
+
+    callback_data: str  # callback_data of the inline button pressed
+
+
+class ReplyButtonCondition(Condition):
+    """A 'reply' Telegram button pressed condition."""
+
+    text: str  # text of the reply button pressed
+
+
 # --------------------------------------------------------------
 # The following classes are used to define the structure of conditions in ChatskyCondition
 # --------------------------------------------------------------
