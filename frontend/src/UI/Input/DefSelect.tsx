@@ -49,7 +49,11 @@ const DefSelect = ({
 
   return (
     <div className='flex flex-col gap-1'>
-      <RadixSelect.Root value={selectedValue} onValueChange={handleChange}>
+      <RadixSelect.Root
+        value={selectedValue}
+        defaultValue={defaultValue}
+        onValueChange={handleChange}
+      >
         <RadixSelect.Trigger
           {...props}
           disabled={disabled}

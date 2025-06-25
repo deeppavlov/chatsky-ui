@@ -33,6 +33,7 @@ import {
   ModalHeader,
 } from '../ModalComponents'
 import BasicCondition from './components/BasicCondition'
+import ButtonCondition from './components/ButtonCondition'
 import PythonCondition from './components/PythonCondition'
 import SlotCondition from './components/SlotCondition'
 import UsingLLMConditionSection from './components/UsingLLMCondition'
@@ -70,10 +71,10 @@ type ConditionModalProps = CustomModalProps & {
 type ConditionModalTab =
   | 'Using LLM'
   | 'Slot filling'
-  | 'Button'
   | 'Python code'
   | 'Custom'
   | 'Basic'
+  | 'Button'
 
 type LintStatusType = {
   status: 'ok' | 'error'
@@ -248,14 +249,14 @@ const ConditionModal = ({
         icon: <SlotsConditionIcon className='size-5' />,
       },
       {
-        title: 'Button',
-        value: 'button',
-        icon: <ButtonConditionIcon className='size-5' />,
-      },
-      {
         title: 'Custom',
         value: 'custom',
         icon: <CustomConditionIcon className='size-5' />,
+      },
+      {
+        title: 'Button',
+        value: 'button',
+        icon: <ButtonConditionIcon className='size-5' />,
       },
     ],
     [],
@@ -280,7 +281,6 @@ const ConditionModal = ({
           }}
         />
       ),
-      button: <div>Button</div>,
       python: (
         <PythonCondition
           condition={currentCondition}
@@ -288,6 +288,12 @@ const ConditionModal = ({
         />
       ),
       custom: <div>Custom</div>,
+      button: (
+        <ButtonCondition
+          condition={currentCondition}
+          setData={setCurrentCondition}
+        />
+      ),
       basic: (
         <BasicCondition
           condition={currentCondition}
@@ -379,7 +385,7 @@ const ConditionModal = ({
     const isValidCondition = validateCurrentCondition()
 
     if (!validateObject.isInvalid && isValidCondition) {
-      updateNodeData(data.id, {
+      const newNode = {
         ...data,
         conditions: is_create
           ? [...data.conditions, currentCondition]
@@ -388,7 +394,36 @@ const ConditionModal = ({
                 ? currentCondition
                 : condition,
             ),
-      })
+        buttonsData: {
+          buttons: data.buttonsData?.buttons ?? [],
+          rows: data.buttonsData?.rows ?? 2,
+          columns: data.buttonsData?.columns ?? 2,
+        },
+      }
+
+      if (currentCondition.type === 'button') {
+        const buttonsData = data.buttonsData?.buttons ?? []
+        const newButtons = buttonsData.map((row) => {
+          return row.map((item) => {
+            if (item.id === currentCondition.id) {
+              const newItem =
+                item.type === 'exactMatch'
+                  ? { ...item, text: currentCondition.data.button?.text ?? '' }
+                  : {
+                      ...item,
+                      callback: currentCondition.data.button?.callback ?? '',
+                      text: currentCondition.data.button?.text ?? '',
+                    }
+              return newItem
+            }
+            return item
+          })
+        })
+
+        newNode.buttonsData.buttons = newButtons
+      }
+
+      updateNodeData(data.id, newNode)
       quietSaveFlows()
       onCloseHandler()
     }
@@ -397,19 +432,49 @@ const ConditionModal = ({
   }
 
   const deleteCondition = () => {
-    // const nodes = getNodes()
-    // const node = getNode(data.id)
-    // const currentFlow = flows.find((flow) => flow.name === flowId)
-    // if (node && node.type === "default_node" && currentFlow) {
-    // const new_node: DefaultNodeType = {
-    //   ...node,
-    //   data: {
-    //     ...node.data,
-    //     conditions: data.conditions?.filter((condition) => condition.id !== currentCondition.id),
-    //   },
-    // }
-    // const new_nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-    // setNodes(() => new_nodes)
+    const newConditions = data.conditions?.filter(
+      (condition) => condition.id !== currentCondition.id,
+    )
+
+    const newButtonsData =
+      data.buttonsData?.buttons.map((button) => {
+        return button.map((button) => {
+          if (button.id === currentCondition.id) {
+            const date =
+              button.type === 'exactMatch'
+                ? { text: '' }
+                : { callback: '', text: '' }
+
+            return { ...button, ...date }
+          }
+          return button
+        })
+      }) ?? []
+
+    const responseButtons =
+      data.response?.buttons?.map((button) => {
+        return button.filter((button) => button.id !== currentCondition.id)
+      }) ?? []
+
+    if (currentCondition.type === 'button') {
+      updateNodeData(data.id, {
+        ...data,
+        conditions: newConditions,
+        buttonsData: {
+          buttons: newButtonsData,
+          rows: data.buttonsData?.rows ?? 0,
+          columns: data.buttonsData?.columns ?? 0,
+        },
+        response: {
+          ...data.response,
+          buttons: responseButtons,
+        },
+      })
+      quietSaveFlows()
+      onCloseHandler()
+      return
+    }
+
     updateNodeData(data.id, {
       ...data,
       conditions: data.conditions?.filter(
@@ -417,16 +482,14 @@ const ConditionModal = ({
       ),
     })
     quietSaveFlows()
-    // }
     onCloseHandler()
   }
 
   const handleConfirmDeleteOpen = () => {
-    // Открываем модал для подтверждения удаления слота
     openPopUp(
       <AlertModal
         id='delete-condition'
-        onAction={() => deleteCondition()} // Подтверждение удаления
+        onAction={() => deleteCondition()}
         title='Delete condition'
         description={
           <>
@@ -459,37 +522,47 @@ const ConditionModal = ({
         </div>
       </ModalHeader>
       <ModalBody className='min-h-[480px]'>
-        <label>
-          <Tabs
-            disabledKeys={['llm', 'custom', 'button']}
-            selectedKey={selected}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            onSelectionChange={setSelectedHandler}
-            items={tabItems}
-            classNames={{
-              tabList: 'w-full bg-table-background',
-              tab: '',
-              cursor: 'border border-contrast-border',
-            }}
-            className='w-full max-w-full bg-background'
-          >
-            {(item) => (
-              <Tab
-                data-testid={`tab-${item.value}`}
-                key={item.value}
-                title={
-                  <div className='flex items-center gap-1 text-sm'>
-                    {item.icon} {item.title}
-                  </div>
-                }
-                onClick={() =>
-                  setCurrentCondition({ ...currentCondition, type: item.value })
-                }
-              ></Tab>
-            )}
-          </Tabs>
-        </label>
+        {is_create ? (
+          <label>
+            <Tabs
+              disabledKeys={['llm', 'custom']}
+              selectedKey={selected}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              onSelectionChange={setSelectedHandler}
+              items={
+                !is_create
+                  ? tabItems
+                  : tabItems.filter((item) => item.value !== 'button')
+              }
+              classNames={{
+                tabList: 'w-full bg-table-background',
+                tab: '',
+                cursor: 'border border-contrast-border',
+              }}
+              className='w-full max-w-full bg-background'
+            >
+              {(item) => (
+                <Tab
+                  data-testid={`tab-${item.value}`}
+                  key={item.value}
+                  title={
+                    <div className='flex items-center gap-1 text-sm'>
+                      {item.icon} {item.title}
+                    </div>
+                  }
+                  onClick={() =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      type: item.value,
+                    })
+                  }
+                ></Tab>
+              )}
+            </Tabs>
+          </label>
+        ) : null}
+
         <div className='mb-2 mt-4 grid grid-cols-4 gap-4'>
           <DefInput
             className='col-span-3'
