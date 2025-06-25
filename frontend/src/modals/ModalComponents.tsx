@@ -29,11 +29,22 @@ export type ModalProps = React.HTMLAttributes<HTMLElement> & {
     | '7xl'
     | 'full'
   className?: string
+  isPadding?: boolean
 }
 
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(
   (
-    { id, isOpen, onClose, children, size = '3xl', className, ...props },
+    {
+      id,
+      isOpen,
+      onClose,
+      children,
+      size = '3xl',
+      className,
+      isPadding = true,
+
+      ...props
+    },
     ref,
   ) => {
     return (
@@ -52,7 +63,9 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
               key={id}
               ref={ref}
               className={classNames(
-                `fixed z-50 w-full max-w-${size} rounded-2xl bg-background p-6 shadow-lg`,
+                `fixed z-50 w-full max-w-${size} rounded-2xl bg-background ${
+                  isPadding ? 'p-6' : ''
+                } shadow-lg`,
                 className,
               )}
               initial={{ opacity: 0, scale: 0.95 }}
