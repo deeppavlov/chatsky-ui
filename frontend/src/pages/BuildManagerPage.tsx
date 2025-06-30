@@ -228,16 +228,6 @@ const BuildManagerPage = () => {
                     <StringItem
                       content={['Дата: ', formatTimestamp(b.timestamp)]}
                     />
-                    <Link
-                      to={{
-                        pathname: location.pathname,
-                        search: `?page=inspect&build_id=${b.id}&type=build`,
-                      }}
-                    >
-                      <span className='cursor-pointer text-sm font-semibold text-condition-default'>
-                        See logs for this build &rarr;
-                      </span>
-                    </Link>
                   </Accordion>
                 )
               })}
@@ -323,16 +313,6 @@ const BuildManagerPage = () => {
                       <StringItem
                         content={['Дата: ', formatTimestamp(r.timestamp)]}
                       />
-                      <Link
-                        to={{
-                          pathname: location.pathname,
-                          search: `?page=inspect&run_id=${r.id}&type=run`,
-                        }}
-                      >
-                        <span className='cursor-pointer text-sm font-semibold text-condition-default'>
-                          See logs for this run &rarr;
-                        </span>
-                      </Link>
                     </Accordion>
                   )
                 })}
@@ -401,16 +381,6 @@ const BuildManagerPage = () => {
                     <StringItem
                       content={['Дата: ', formatTimestamp(r.timestamp)]}
                     />
-                    <Link
-                      to={{
-                        pathname: location.pathname,
-                        search: `?page=inspect&run_id=${r.id}&type=run`,
-                      }}
-                    >
-                      <span className='cursor-pointer text-sm font-semibold text-condition-default'>
-                        See logs for this run &rarr;
-                      </span>
-                    </Link>
                   </Accordion>
                 )
               })}
