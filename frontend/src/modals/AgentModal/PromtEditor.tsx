@@ -3,8 +3,11 @@ import { EditorView } from '@codemirror/view'
 import ReactCodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import { useContext } from 'react'
 import { themeContext } from '../../contexts/themeContext'
-import { createInputDecoration, myAutocomplete } from './editorPlugins'
-import { previewState } from './editorPlugins'
+import {
+  createInputDecoration,
+  myAutocomplete,
+  previewState,
+} from './editorPlugins'
 
 interface IProps {
   placeholder?: string
@@ -24,9 +27,6 @@ export const TextEditor = ({
   symbolAutocompletion = '@',
 }: IProps) => {
   const { theme } = useContext(themeContext)
-
-  const backgroundColorTheme =
-    theme === 'light' ? 'bg-[#f2f1f8]' : 'bg-[#24262e]'
 
   const myTheme = EditorView.theme({
     '.cm-content': {
@@ -64,7 +64,7 @@ export const TextEditor = ({
       maxHeight: '250px !important',
       overflowY: 'auto !important',
       color: 'red !important',
-      backgroundColor: backgroundColorTheme,
+      // backgroundColor: backgroundColorTheme,
       border: '1px solid var(--border-color, #e0e0e0)',
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
@@ -134,7 +134,7 @@ export const TextEditor = ({
 
   return (
     <div
-      className={`mt-2 flex w-full flex-col items-start justify-start gap-4 p-4 ${backgroundColorTheme} rounded-lg font-mono`}
+      className={`flex h-full w-full flex-col items-start justify-start gap-4 rounded-lg border border-input-border p-4 font-mono`}
     >
       <ReactCodeMirror
         key={theme}
