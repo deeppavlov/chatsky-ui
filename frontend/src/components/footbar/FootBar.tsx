@@ -58,21 +58,33 @@ const FootBar = memo(() => {
           onValueChange={onSelectionChange}
         >
           <TabsList className='relative'>
-            <TabsTrigger className='h-9 w-32 px-3' value='edit'>
+            <TabsTrigger
+              className='h-9 w-32 px-3 text-sm font-semibold'
+              value='edit'
+            >
               <EditIcon />
-              Edit
+              Редактор
             </TabsTrigger>
-            <TabsTrigger className='h-9 w-32 px-3' value='deliver'>
+            <TabsTrigger
+              className='h-9 w-32 px-3 text-sm font-semibold'
+              value='deliver'
+            >
               <Rocket />
-              Deliver
+              Запуск
             </TabsTrigger>
-            <TabsTrigger className='h-9 w-32 px-3' value='inspect'>
+            <TabsTrigger
+              className='h-9 w-32 px-3 text-sm font-semibold'
+              value='inspect'
+            >
               <MonitorIcon />
-              Inspect
+              Просмотр
             </TabsTrigger>
-            <TabsTrigger className='h-9 w-32 px-3' value='settings'>
+            <TabsTrigger
+              className='h-9 w-32 px-3 text-sm font-semibold'
+              value='settings'
+            >
               <Settings />
-              Settings
+              Настройки
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -84,10 +96,10 @@ const FootBar = memo(() => {
       >
         <Logo />
         <div className='flex items-end justify-start gap-1'>
-          <span className='flex text-lg font-bold'>Chatsky UI</span>
-          <span className='flex text-sm font-semibold text-neutral-400'>
+          <span className='flex text-lg font-bold'>AdminUI</span>
+          {/* <span className='flex text-sm font-semibold text-neutral-400'>
             v {version}
-          </span>
+          </span> */}
         </div>
       </Link>
       <div className='flex items-end gap-0.5'>
@@ -95,12 +107,12 @@ const FootBar = memo(() => {
           isDisabled
           onClick={onLocalStorageOpen}
           className={classNames(
-            'local-storage-button flex h-9 cursor-pointer items-center justify-center gap-2 rounded-small border border-transparent bg-transparent px-2 hover:border-foreground hover:bg-background hover:text-foreground',
+            'local-storage-button flex h-9 cursor-pointer items-center justify-center gap-2 rounded-small border border-transparent bg-transparent px-2 text-sm font-semibold hover:border-foreground hover:bg-background hover:text-foreground',
             isLocalStorageOpen && 'border-foreground bg-background',
           )}
         >
           <LocalStorageIcon className='local-storage-button-hover:stroke-0' />
-          Local storage
+          Библиотека
         </Button>
         <Popover
           placement='top-end'
