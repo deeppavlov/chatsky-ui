@@ -99,6 +99,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
       // 1. Запуск рана и получение run_id
       const { run_id } = await run_start(build_id, {
         end_status,
+        preset: 'none', // удалить после обновления API
         ...restParams,
       })
 

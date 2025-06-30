@@ -65,8 +65,6 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
   const buildStart = async ({
     end_status = 'completed',
     name,
-    preset,
-    messenger,
   }: buildPresetType): Promise<{
     status: buildApiStatusType
     build_id?: number
@@ -77,8 +75,8 @@ export const BuildProvider = ({ children }: { children: React.ReactNode }) => {
       const { build_id } = await build_start({
         end_status,
         name,
-        preset,
-        messenger,
+        messenger: 'web',
+        preset: 'none',
       })
 
       let started_build = await get_builds(build_id)

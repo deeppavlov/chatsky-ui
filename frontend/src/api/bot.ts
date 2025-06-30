@@ -1,3 +1,5 @@
+import { IFormData as IBuildFormData } from '@/components/deliver/BuildForm'
+import { IFormData as IStartRunFormData } from '@/components/deliver/StartRunForm'
 import { $v1 } from '.'
 
 export type buildApiStatusType =
@@ -54,18 +56,18 @@ export type runMinifyApiType = {
   }
 }
 
-export type buildPresetType = {
+export interface buildPresetType extends IBuildFormData {
   end_status: buildApiStatusType
   name: string
-  messenger: messengerType
-  preset: string
+  messenger?: messengerType
+  preset?: string
 }
 
-export type runPresetType = {
+export interface runPresetType extends IStartRunFormData {
   end_status: buildApiStatusType
   name: string
   build_name: string
-  preset: string
+  preset?: string
   tg_bot_token?: string
 }
 

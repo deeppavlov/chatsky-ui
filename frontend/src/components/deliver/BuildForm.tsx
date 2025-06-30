@@ -1,23 +1,17 @@
-import { checkBuildIsChanged, messengerType } from '@/api/bot'
+import { checkBuildIsChanged } from '@/api/bot'
 import { buildContext } from '@/contexts/buildContext'
 import { PopUpContext } from '@/contexts/popUpContext'
 import { workspaceContext } from '@/contexts/workspaceContext'
 import RebuildModal from '@/modals/RebuildModal/RebuildModal'
-import { Button, Input, Select, SelectItem } from '@nextui-org/react'
+import { Button } from '@/UI/button'
+import { Input } from '@/UI/Input'
 import { QuestionMarkIcon } from '@radix-ui/react-icons'
 import { useContext, useEffect, useState } from 'react'
 import FormControl from '../../UI/FormControl'
 
 export interface IFormData {
   name: string
-  messenger: messengerType
-  preset: string
 }
-
-const messengers = [
-  { label: 'Telegram', key: 'telegram' },
-  { label: 'Preview', key: 'web' },
-]
 
 const BuildForm = () => {
   const { buildFormData, setBuildFormData } = useContext(workspaceContext)
@@ -25,9 +19,8 @@ const BuildForm = () => {
   const { openPopUp } = useContext(PopUpContext)
 
   const initialData: IFormData = {
-    name: `Build ${builds.length}`,
-    messenger: 'web',
-    preset: 'None',
+    name: `Сборка ${builds.length}`,
+    // тут могут быть дополнительные поля, такие как messenger, preset, etc
   }
   const [formData, setFormData] = useState<IFormData>(
     buildFormData ?? initialData,
@@ -40,23 +33,6 @@ const BuildForm = () => {
     }))
   }
 
-  const handleMessengerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!e.target.value) {
-      return
-    }
-    setFormData(
-      (prev) =>
-        ({
-          ...prev,
-          messenger: e.target.value,
-        }) as IFormData,
-    )
-  }
-
-  const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, preset: e.target.value || 'None' }))
-  }
-
   const handleConfirmRebuild = () => {
     openPopUp(
       <RebuildModal
@@ -64,8 +40,8 @@ const BuildForm = () => {
         onRebuild={async () => {
           await buildStart({
             end_status: 'success',
-            ...formData,
-            name: formData.name || `Build ${builds.length}`,
+            // ...formData,
+            name: formData.name || `Сборка ${builds.length}`,
           })
         }}
       />,
@@ -84,12 +60,12 @@ const BuildForm = () => {
     await buildStart({
       end_status: 'success',
       ...formData,
-      name: formData.name || `Build ${builds.length}`,
+      name: formData.name || `Сборка ${builds.length}`,
     })
   }
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, name: `Build ${builds.length}` }))
+    setFormData((prev) => ({ ...prev, name: `Сборка ${builds.length}` }))
   }, [builds])
 
   useEffect(() => {
@@ -110,80 +86,33 @@ const BuildForm = () => {
       <div className='flex flex-grow flex-col'>
         {/* NAME FIELD */}
         <FormControl
-          label='Name'
+          label='Имя сборки'
           input={
             <Input
-              placeholder={`Build ${builds.length}`}
+              placeholder={`Сборка ${builds.length}`}
               value={formData.name}
               onChange={handleNameChange}
-              disableAnimation
-              size='sm'
-              variant='underlined'
-              classNames={{
-                inputWrapper: [
-                  'border-none',
-                  'data-[focus=true]:after:h-0',
-                  'shadow-none',
-                ],
-                input: ['w-full', 'truncate', 'placeholder:text-input-border'],
-              }}
+              borderless
             />
-          }
-        />
-
-        {/* MESSENGER FIELD */}
-        <FormControl
-          label='Messenger'
-          input={
-            <Select
-              aria-label='Messenger'
-              labelPlacement='outside'
-              placeholder='Preview'
-              selectedKeys={[formData.messenger]}
-              value={formData.messenger}
-              onChange={handleMessengerChange}
-              radius='sm'
-              size='sm'
-            >
-              {messengers.map((item) => (
-                <SelectItem key={item.key}>{item.label}</SelectItem>
-              ))}
-            </Select>
-          }
-        />
-
-        {/* PRESET FIELD */}
-        <FormControl
-          label='Preset'
-          input={
-            <Select
-              aria-label='Preset'
-              placeholder='No preset'
-              labelPlacement='outside'
-              defaultSelectedKeys={['None']}
-              value={formData.preset}
-              onChange={handlePresetChange}
-              radius='sm'
-              size='sm'
-            >
-              {[{ key: 'None', label: 'No preset' }].map((item) => (
-                <SelectItem key={item.key}>{item.label}</SelectItem>
-              ))}
-            </Select>
           }
         />
       </div>
 
       <div className='flex gap-3'>
-        <Button isIconOnly className='rounded-full'>
+        <Button
+          variant='primary'
+          isIconOnly
+          className='flex-shrink-0 rounded-full bg-btn-accent'
+        >
           <QuestionMarkIcon className='h-5 w-5' />
         </Button>
         <Button
+          variant='primary'
           onClick={handleBuild}
           isDisabled={buildPending}
-          className='w-full rounded-lg bg-foreground font-semibold text-background'
+          className='w-full rounded-lg bg-btn-accent font-semibold text-background'
         >
-          Build
+          Начать
         </Button>
       </div>
     </div>
