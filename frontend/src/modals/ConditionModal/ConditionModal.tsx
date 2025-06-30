@@ -449,7 +449,6 @@ const ConditionModal = ({
 
   return (
     <Modal
-      data-tesid='condition-modal'
       isOpen={true}
       onClose={onCloseHandler}
       size='3xl'

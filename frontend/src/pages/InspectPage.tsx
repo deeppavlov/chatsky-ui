@@ -72,7 +72,11 @@ const Inspect = memo(() => {
           <h1 className='text-[24px] font-semibold leading-9'>Logs</h1>
         </div>
 
-        <ScrolledContainer className='h-0 flex-grow'>
+        <ScrolledContainer
+          scrollbarOffset='-18px'
+          scrollbarPadding='6px'
+          className='h-0 flex-grow'
+        >
           <Accordion.Root
             value={
               currentItem?.type === 'run'

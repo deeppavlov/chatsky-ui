@@ -114,7 +114,8 @@ export const Select = ({
                 {items.map((item) => (
                   <RadixSelect.Item
                     key={item.key}
-                    value={item.value}
+                    value={item.key}
+                    textValue={item.value}
                     disabled={item.disabled}
                     className={cn(
                       'flex cursor-pointer items-center justify-between overflow-hidden truncate whitespace-nowrap rounded-[8px] p-1.5 outline-none data-[highlighted]:bg-select-item-hover',

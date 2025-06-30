@@ -1,6 +1,6 @@
 .hasScrollbar {
-  margin-right: -18px;
-  padding-right: 6px;
+  margin-right: var(--offset);
+  padding-right: var(--padding);
 }
 .scrolled_container::-webkit-scrollbar {
   height: 12px;

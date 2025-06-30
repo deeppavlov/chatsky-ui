@@ -171,6 +171,7 @@ const ResponseModal = ({
             <TabsList className='!h-8 w-full'>
               {tabItems.map((item) => (
                 <TabsTrigger
+                  key={item.title}
                   value={item.value}
                   className='h-8'
                   disabled={disabledItemValues.includes(item.value)}

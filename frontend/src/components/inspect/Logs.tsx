@@ -164,7 +164,12 @@ const Logs = ({ item }: IProps) => {
           </div>
         </div>
       )}
-      <ScrolledContainer ref={containerRef} className='h-0 flex-grow pt-2'>
+      <ScrolledContainer
+        scrollbarOffset='-18px'
+        scrollbarPadding='6px'
+        ref={containerRef}
+        className='h-0 flex-grow pt-2'
+      >
         <div className='px-4'>
           {logs?.map((string, i) => (
             <p key={i} className='text-sm font-medium text-text-secondary'>

@@ -65,7 +65,7 @@ const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
             </Button>
           </div>
         </div>
-        <div className='flex w-full gap-2 px-3 py-2'>
+        <div className='flex w-full cursor-default gap-2 px-3 py-2'>
           <div className='flex w-full flex-col gap-2'>
             <div className='flex h-[28px] h-full items-center justify-between gap-2'>
               <div className='w-[82px] text-left'>
@@ -74,9 +74,10 @@ const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
 
               <div className='flex w-[166px] items-center'>
                 <Select
+                  placeholder='Выберите модель'
                   textSize='text-xs'
                   className='h-[28px] items-end'
-                  defaultValue='GPT-4.1 mini'
+                  defaultValue='1'
                   items={[
                     { key: '1', value: 'GPT-4.1 mini' },
                     { key: '2', value: 'GPT-4.1' },
@@ -136,7 +137,7 @@ const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
                 <Select
                   className='h-[28px] w-[165px] items-end'
                   textSize='text-xs'
-                  defaultValue='Оптимизированный'
+                  defaultValue='1'
                   items={[
                     { key: '1', value: 'Оптимизированный' },
                     { key: '2', value: 'Полный' },
@@ -147,7 +148,7 @@ const AgentNode = memo(({ data }: { data: DefaultAgentDataType }) => {
             </div>
           </div>
         </div>
-        <div className='flex w-full flex-col gap-2 border-t border-border px-3 py-2 text-left'>
+        <div className='flex w-full cursor-default flex-col gap-2 border-t border-border px-3 py-2 text-left'>
           <Handle
             data-testid={`${data.id}-input-handle`}
             position={Position.Left}

@@ -10,20 +10,19 @@ text-sm font-normal ring-offset-white \
 transition-colors transition-transform \
 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground-800 focus-visible:ring-offset-2 \
 disabled:pointer-events-none disabled:opacity-50 \
-[&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0 \
+[&_svg]:pointer-events-none [&_svg]:shrink-0 \
 dark:ring-offset-foreground-800 dark:focus-visible:ring-foreground-300 \
 active:scale-[0.97] \
-relative overflow-hidden text-foreground'
+relative overflow-hidden text-foreground transition-transform-colors-opacity'
 
 const buttonVariants = cva(defaultClassName, {
   variants: {
     variant: {
       default:
-        'bg-foreground text-foreground-50 hover:bg-foreground-800/80 text-color-foreground',
+        'bg-foreground text-foreground-50 hover:opacity-80 text-color-foreground',
       primary: 'hover:bg-foreground-200/80',
-      // secondary:
-      //   'bg-foreground-100 text-foreground-900 hover:bg-foreground-500 dark:bg-foreground-800 dark:text-foreground-50 \
-      //   dark:hover:bg-foreground-600 text-sm font-normal',
+      secondary:
+        'bg-btn-accent text-foreground-900 hover:opacity-80 text-sm font-normal',
       // destructive:
       //   'bg-red-500 text-ёё-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90',
       // outline:
@@ -38,7 +37,7 @@ const buttonVariants = cva(defaultClassName, {
       default: 'h-10 px-4',
       sm: 'h-9 rounded-md px-3',
       lg: 'h-11 rounded-md px-8',
-      icon: 'h-10 w-10 p-0 flex items-center justify-center [&_svg]:size-6 bg-foreground-300/90 hover:bg-foreground-200/90 rounded-full',
+      icon: 'h-10 w-10 p-0 flex items-center justify-center hover:opacity-8 rounded-full',
     },
   },
   defaultVariants: {
@@ -70,29 +69,23 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const sttleIsLoading = isLoading ? 'opacity-50' : 'opacity-100'
+    const settleIsLoading = isLoading ? 'opacity-50' : 'opacity-100'
     const buttonSize = isIconOnly ? 'icon' : size
 
     const Comp = asChild ? Slot : 'button'
     return (
-      <div
+      <Comp
         className={cn(
-          'inline-flex items-center gap-2',
-          sttleIsLoading,
+          settleIsLoading,
           isDisabled && 'pointer-events-none opacity-50',
+          buttonVariants({ variant, size: buttonSize, className }),
         )}
+        ref={ref}
+        {...props}
       >
-        <Comp
-          className={cn(
-            buttonVariants({ variant, size: buttonSize, className }),
-          )}
-          ref={ref}
-          {...props}
-        >
-          {isLoading && <Spinner size='3' />}
-          {props.children}
-        </Comp>
-      </div>
+        {isLoading && <Spinner size='3' />}
+        {props.children}
+      </Comp>
     )
   },
 )

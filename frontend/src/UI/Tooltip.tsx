@@ -5,10 +5,10 @@ import {
   TooltipTrigger,
 } from '@radix-ui/react-tooltip'
 import cn from 'classnames'
-import { ReactNode } from 'react'
+import { ReactElement, ReactNode } from 'react'
 
 interface IProps {
-  children: ReactNode
+  children: ReactElement
   content: ReactNode
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
@@ -31,6 +31,7 @@ export const Tooltip = ({
   return (
     <TooltipRoot>
       <TooltipTrigger
+        asChild={children.type === 'button'}
         className={cn('flex items-center justify-center', classNames?.trigger)}
       >
         {children}
