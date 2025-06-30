@@ -16,6 +16,9 @@ from chatsky.core.ctx_utils import ContextMainInfo
 class ChatskyUIContextStorage(SQLContextStorage):
     """A 'wrapper' class for all methods using `ctx_id`, making them use composite id's."""
 
+    telegram_keyboard_states: dict = dict()
+    # Storing Telegram `reply` keyboard states for every Context.
+
     def __init__(self, path: str, run_id: int, **kwargs):
         self.run_id = str(run_id)
         super().__init__(path, **kwargs)

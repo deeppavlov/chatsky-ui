@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from ...schemas.front_graph_components.node import SlotsNode
 from ...schemas.front_graph_components.slot import GroupSlot, RegexpSlot
@@ -43,7 +43,7 @@ class SlotsConverter(BaseConverter):
             groups=slots_node["data"]["groups"],
         )
 
-    def map_slots(self):
+    def map_slots(self) -> Dict[str, str]:
         """Creates and returns a map of all slots with slot_id's as keys and respective group and slot names,
         divided by a '.', as values. For example, "mapped_slots[id] == group_name.slot_name"
         Doesn't modify the class object, it's a static method.

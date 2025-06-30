@@ -25,6 +25,7 @@ from typing import Optional
 import nest_asyncio
 import typer
 from cookiecutter.main import cookiecutter
+from dotenv import load_dotenv
 
 # Patch nest_asyncio before importing Chatsky
 nest_asyncio.apply = lambda: None
@@ -208,6 +209,8 @@ def run_scenario(
     settings.set_config(work_directory=project_dir)
 
     command_to_run = f"{project_dir}/app.py --working-dir {project_dir} --run-id {run_id}"
+
+    load_dotenv(settings.work_directory / ".env", override=True)
     try:
         asyncio.run(_execute_command("python " + command_to_run))
     except FileNotFoundError:
@@ -279,6 +282,7 @@ def init(
             "https://github.com/deeppavlov/chatsky-ui-template.git",
             no_input=no_input,
             overwrite_if_exists=overwrite_if_exists,
+            checkout="feat/llm2",
         )
     finally:
         os.chdir(original_dir)

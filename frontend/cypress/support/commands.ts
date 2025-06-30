@@ -38,7 +38,7 @@
 
 Cypress.Commands.add('saveFlow', () => {
   cy.get('body').trigger('keydown', {
-    key: 's',
+    code: 'KeyS',
     ctrlKey: true,
     bubbles: true,
   })
@@ -53,6 +53,7 @@ Cypress.Commands.add(
     cy.get('[data-testid=response-modal]')
       .should('exist')
       .find('input')
+      .first()
       .clear()
       .type(title)
     cy.get('[data-testid=response-modal]')

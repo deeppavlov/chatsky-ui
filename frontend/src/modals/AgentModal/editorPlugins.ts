@@ -3,7 +3,6 @@ import { StateEffect, StateField } from '@codemirror/state'
 import {
   Decoration,
   EditorView,
-  hoverTooltip,
   MatchDecorator,
   ViewPlugin,
   ViewUpdate,

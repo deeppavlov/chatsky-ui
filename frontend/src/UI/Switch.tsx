@@ -1,7 +1,6 @@
 import { Switch as SwitchRoot, SwitchThumb } from '@radix-ui/react-switch'
-import classNames from 'classnames'
 import cn from 'classnames'
-import { ElementType, ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 interface IProps {
   checked: boolean

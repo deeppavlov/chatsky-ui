@@ -166,6 +166,7 @@ const StartRunForm = () => {
       </div>
       <div>
         <Button
+          variant='primary'
           onClick={handleStartRun}
           isDisabled={
             runStarting ||
@@ -173,7 +174,7 @@ const StartRunForm = () => {
             !!fieldErrors.tokenName ||
             !!fieldErrors.tokenValue
           }
-          className='w-full rounded-lg bg-foreground font-semibold text-background'
+          className='w-full rounded-lg bg-btn-accent font-semibold text-background'
         >
           Запустить
         </Button>

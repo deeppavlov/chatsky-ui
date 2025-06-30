@@ -9,14 +9,12 @@ import classNames from 'classnames'
 import { BellRing, EditIcon, Rocket, Settings } from 'lucide-react'
 import { Key, memo, useCallback, useContext, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { MetaContext } from '../../contexts/metaContext'
 import { NotificationsContext } from '../../contexts/notificationsContext'
 import { PageType } from '../../contexts/workspaceContext'
 import MonitorIcon from '../../icons/buildmenu/MonitorIcon'
 import LocalStorageIcon from '../../icons/footbar/LocalStorageIcon'
 import { Logo } from '../../icons/Logo'
 import LocalStorage from '../../modals/LocalStorage/LocalStorage'
-import { parseSearchParams } from '../../utils'
 import { NotificationsWindow } from '../notifications/NotificationsWindow'
 
 const FootBar = memo(() => {
@@ -26,7 +24,6 @@ const FootBar = memo(() => {
     onClose: onLocalStorageClose,
   } = useDisclosure()
 
-  const { version } = useContext(MetaContext)
   const [searchParams, setSearchParams] = useSearchParams()
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const { notifications, notification } = useContext(NotificationsContext)
@@ -40,11 +37,10 @@ const FootBar = memo(() => {
     (key: Key) => {
       const pageKey = key as PageType
       setSearchParams({
-        ...parseSearchParams(searchParams),
         page: pageKey,
       })
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   )
 
   return (

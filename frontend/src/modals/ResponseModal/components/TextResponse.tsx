@@ -15,7 +15,7 @@ const TextResponse = ({
   useEffect(() => {
     if (!response.data[0].text) {
       Object.prototype.hasOwnProperty.call(responseStor, 'text')
-        ? setData(responseStor['text'])
+        ? setData({ ...responseStor['text'], name: response.name })
         : setData({
             ...response,
             type: 'text',

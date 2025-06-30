@@ -109,7 +109,7 @@ export const RunProvider = ({ children }: { children: React.ReactNode }) => {
         await delay(500)
         started_run = await get_runs(run_id)
       }
-      setRunsHandler([...runs, started_run])
+      setRunsHandler([started_run, ...runs])
       setBuilds((builds) =>
         builds.map((b) =>
           b.id === started_run.build_id

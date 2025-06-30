@@ -5,6 +5,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import Chat from './Chat'
 import '@testing-library/jest-dom'
 import { buildApiStatusType, messengerType } from '@/api/bot'
+import { TooltipProvider } from '@radix-ui/react-tooltip'
 import axios from 'axios'
 import { useState } from 'react'
 
@@ -169,11 +170,14 @@ describe('Chat Component', () => {
     await act(async () =>
       render(
         <ChatContextMock>
-          <runContext.Provider value={mockRunContext}>
-            <workspaceContext.Provider value={mockWorkspaceContext}>
-              <Chat />
-            </workspaceContext.Provider>
-          </runContext.Provider>
+          {' '}
+          <TooltipProvider>
+            <runContext.Provider value={mockRunContext}>
+              <workspaceContext.Provider value={mockWorkspaceContext}>
+                <Chat />
+              </workspaceContext.Provider>
+            </runContext.Provider>
+          </TooltipProvider>
         </ChatContextMock>,
       ),
     )
@@ -255,13 +259,15 @@ describe('Chat Component', () => {
     await act(async () =>
       render(
         <ChatContextMock>
-          <runContext.Provider
-            value={{ ...mockRunContext, runs: [stoppedRun] }}
-          >
-            <workspaceContext.Provider value={mockWorkspaceContext}>
-              <Chat />
-            </workspaceContext.Provider>
-          </runContext.Provider>
+          <TooltipProvider>
+            <runContext.Provider
+              value={{ ...mockRunContext, runs: [stoppedRun] }}
+            >
+              <workspaceContext.Provider value={mockWorkspaceContext}>
+                <Chat />
+              </workspaceContext.Provider>
+            </runContext.Provider>
+          </TooltipProvider>
         </ChatContextMock>,
       ),
     )

@@ -1,15 +1,14 @@
-import { NextUIProvider } from '@nextui-org/react';
-import { Theme } from '@radix-ui/themes';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import ContextWrapper from './contexts';
-import PopUpProvider from './contexts/popUpContext';
-import Fallback from './pages/Fallback';
-import Home from './pages/Home';
-import Index from './pages/Index';
+import { NextUIProvider } from '@nextui-org/react'
+import { Theme } from '@radix-ui/themes'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import ContextWrapper from './contexts'
+import PopUpProvider from './contexts/popUpContext'
+import Fallback from './pages/Fallback'
+import Home from './pages/Home'
+import Index from './pages/Index'
 import TabsWrapper from './pages/TabsWrapper'
-import { Preloader } from './UI/Preloader/Preloader';
+import { Preloader } from './UI/Preloader/Preloader'
 import '@radix-ui/themes/styles.css'
-
 
 const App = () => {
   const router = createBrowserRouter([

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button, Tooltip, useDisclosure } from '@nextui-org/react'
 import { Handle, Position, useReactFlow } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -17,7 +18,6 @@ import ConditionModal from '../../modals/ConditionModal/ConditionModal'
 import NodeModal from '../../modals/NodeModal/NodeModal'
 import ResponseModal from '../../modals/ResponseModal/ResponseModal'
 import { DefaultToolDataType } from '../../types/NodeTypes'
-import Select from '../../UI/Select'
 import { Textarea2 } from '../../UI/textarea'
 // import { Button } from '../../UI/button'
 import Condition from './conditions/Condition'

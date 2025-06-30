@@ -55,7 +55,7 @@ const Logs = ({ item }: IProps) => {
   }, [logs])
 
   return (
-    <div className='flex w-full flex-col pe-6 ps-9'>
+    <div className='flex w-full flex-col px-9'>
       {item.type === 'build' ? (
         <div>
           <h4 className='my-4 flex items-center gap-1 text-xl font-semibold'>

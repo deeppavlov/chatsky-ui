@@ -1,12 +1,11 @@
-import * as ContextMenu from '@radix-ui/react-context-menu';
-import { Handle, Position, useReactFlow } from '@xyflow/react';
-import { useContext, useEffect, useState } from 'react';
-import { conditionTypeIcons } from '../../../consts';
-import { PopUpContext } from '../../../contexts/popUpContext';
-import ConditionModal from '../../../modals/ConditionModal/ConditionModal';
-import { conditionLabelType } from '../../../types/ConditionTypes';
-import { NodeComponentConditionType } from '../../../types/NodeTypes';
-
+import * as ContextMenu from '@radix-ui/react-context-menu'
+import { Handle, Position, useReactFlow } from '@xyflow/react'
+import { useContext, useEffect, useState } from 'react'
+import { conditionTypeIcons } from '../../../consts'
+import { PopUpContext } from '../../../contexts/popUpContext'
+import ConditionModal from '../../../modals/ConditionModal/ConditionModal'
+import { conditionLabelType } from '../../../types/ConditionTypes'
+import { NodeComponentConditionType } from '../../../types/NodeTypes'
 
 const Condition = ({ data, condition }: NodeComponentConditionType) => {
   const { openPopUp } = useContext(PopUpContext)
@@ -24,16 +23,10 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
 
   const conditionOpenHandler = () => {
     openPopUp(
-      <ConditionModal
-        id='condition-condition-modal'
-        data={data}
-        condition={condition}
-      />,
-      'condition-condition-modal',
+      <ConditionModal id='condition-modal' data={data} condition={condition} />,
+      'condition-modal',
     )
   }
-
-
 
   return (
     <ContextMenu.Root>
@@ -53,7 +46,10 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
             <Handle
               data-testid={`${condition.id}-output-handle`}
               isConnectableStart
-              isConnectable={edges.filter((edge) => edge.sourceHandle === condition.id).length === 0}
+              isConnectable={
+                edges.filter((edge) => edge.sourceHandle === condition.id)
+                  .length === 0
+              }
               position={Position.Right}
               type='source'
               id={`${condition.id}`}

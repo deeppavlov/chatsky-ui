@@ -659,6 +659,8 @@ const BasicCondition = ({
       },
     }
 
+    // console.log(newCondition)
+
     setData(newCondition, (data) => setState({ ...state, ...data }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])

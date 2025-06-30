@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -87,16 +88,27 @@ class TestMessengerConverter:
 
 class TestPipelineConverter:
     def test_pipeline_converter(
-        self, dummy_build_id, flow, chatsky_telegram_messenger, converted_group_slot, chatsky_flow
+        self,
+        mocker,
+        dummy_build_id,
+        flow,
+        chatsky_telegram_messenger,
+        converted_group_slot,
+        chatsky_flow,
+        llm_models_config,
+        chatsky_llm_models,
     ):
-        pipeline = {"flows": [flow]}
+        pipeline = {"flows": [flow], "llmConfigurations": llm_models_config}
         pipeline_path = Path(__file__).parent / "test_pipeline.yaml"
         with open(pipeline_path, "w") as file:
             yaml.dump(pipeline, file)
         # TODO: when adding the token validator to messenger:
         # os.environ[UNIQUE_BUILD_TOKEN.format(build_id=dummy_build_id)] = "some_token"
+        os.environ["OPENAI_API_KEY"] = "some_token"
 
-        PipelineConverter()(dummy_build_id, pipeline_path, Path(__file__).parent, "telegram", None)
+        pipeline_converter = PipelineConverter()
+        mocker.patch.object(pipeline_converter, "read_llm_configurations", return_value=llm_models_config)
+        pipeline_converter(dummy_build_id, pipeline_path, Path(__file__).parent, "telegram", None)
 
         output_file = Path(__file__).parent / "build.yaml"
         with open(output_file) as file:
@@ -110,4 +122,5 @@ class TestPipelineConverter:
             "slots": converted_group_slot,
             "start_label": ["test_flow", "test_node"],
             "fallback_label": ["test_flow", "test_node"],
+            "models": chatsky_llm_models,
         }
