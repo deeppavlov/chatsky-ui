@@ -55,6 +55,21 @@ class SQLiteExtractor:
         raise sqlite3.Error("Failed to reconnect to the database after 3 attempts.")
 
     async def execute_statement(self, stmt: str, args: tuple = tuple()):
+        """
+        Executes a given SQL statement with optional arguments and returns the result.
+
+        Args:
+            stmt (str): The SQL statement to execute.
+            args (tuple, optional): A tuple of arguments to pass to the SQL statement. Defaults to an empty tuple.
+
+        Returns:
+            list: A list of rows fetched from the database if the query is successful.
+            None: If an error occurs during the execution of the SQL statement.
+
+        Raises:
+            sqlite3.Error: Logs the database error if an exception occurs.
+        """
+        """"""
         try:
             self._ensure_connection()
             with self.connection as conn:
@@ -69,26 +84,26 @@ class SQLiteExtractor:
     async def extract_chat_ids(self):
         return await self.execute_statement("SELECT id FROM chatsky_table_main")
 
-    async def get_context(self, run_id: str, user_id: int):
+    async def get_context(self, run_id: int, user_id: int):
         """Get the `Context` object for these run_id and user_id.
         In case there isn't a Context found, Context.connected() automatically creates
         an empty Context for those ids. In that case start_label == context.labels[0] == None,
         so we delete the new unnecessary Context and return None.
         """
         try:
-            context = await Context.connected(await self.get_database(run_id), id=str(user_id))
+            context = await Context.connected(await self.get_database(run_id), id=f"{run_id}_{str(user_id)}")
             if await context.labels[0] is None:
                 await context.delete()
                 context = None
             return context
-        except ValidationError:
+        except ValidationError as e:
             self.logger.error(
-                "Extracted Context doesn't match the current Chatsky version's Context." "(it's probably outdated)"
+                f"Extracted Context doesn't match the current Chatsky version's Context. (it's probably outdated): {e}"
             )
             return None
 
-    async def fetch_chat_records(self, run_id: Union[int, str], user_id: int):
-        context = await self.get_context(str(run_id), user_id)
+    async def fetch_chat_records(self, run_id: int, user_id: int):
+        context = await self.get_context(run_id, user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
         requests = context.requests
@@ -106,9 +121,9 @@ class SQLiteExtractor:
         ids = [item[0] for item in ids]
         return ids
 
-    async def fetch_message_label(self, run_id: Union[int, str], user_id: int, message_id: int):
+    async def fetch_message_label(self, run_id: int, user_id: int, message_id: int):
         """Gets the node label of the current Chatsky turn."""
-        context = await self.get_context(str(run_id), user_id)
+        context = await self.get_context(run_id, user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
         label = await context.labels.get(message_id, None)
@@ -116,8 +131,8 @@ class SQLiteExtractor:
             return {"flow_name": label.flow_name, "node_name": label.node_name}
         return None
 
-    async def delete_chat_records(self, run_id: Union[int, str], user_id: int):
-        context = await self.get_context(str(run_id), user_id)
+    async def delete_chat_records(self, run_id: int, user_id: int):
+        context = await self.get_context(run_id, user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
         await context.delete()

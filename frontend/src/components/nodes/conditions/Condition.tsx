@@ -23,12 +23,8 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
 
   const conditionOpenHandler = () => {
     openPopUp(
-      <ConditionModal
-        id='condition-condition-modal'
-        data={data}
-        condition={condition}
-      />,
-      'condition-condition-modal',
+      <ConditionModal id='condition-modal' data={data} condition={condition} />,
+      'condition-modal',
     )
   }
 
@@ -48,6 +44,7 @@ const Condition = ({ data, condition }: NodeComponentConditionType) => {
         {label === 'manual' && (
           <ContextMenu.Trigger>
             <Handle
+              data-testid={`${condition.id}-output-handle`}
               isConnectableStart
               isConnectable={
                 edges.filter((edge) => edge.sourceHandle === condition.id)

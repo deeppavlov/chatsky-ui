@@ -30,7 +30,7 @@ const PythonResponse = ({
   useEffect(() => {
     if (!response.data[0].python) {
       Object.prototype.hasOwnProperty.call(responseStor, 'python')
-        ? setData({ ...responseStor['python'] })
+        ? setData({ ...responseStor['python'], name: response.name })
         : setData({
             ...response,
             type: 'python',

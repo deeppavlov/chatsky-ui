@@ -1,7 +1,9 @@
+import asyncio
 from pathlib import Path
 from typing import Optional
 
 import yaml
+from omegaconf import OmegaConf
 
 try:
     from yaml import CDumper as Dumper
@@ -9,9 +11,12 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+from ...core.config import settings
+from ...db.base import read_conf
 from ...schemas.front_graph_components.pipeline import Pipeline
 from .base_converter import BaseConverter
 from .consts import UNIQUE_BUILD_TOKEN
+from .llm_converter import LLMModelsConverter
 from .messenger_converter import MessengerConverter
 from .script_converter import ScriptConverter
 from .slots_converter import SlotsConverter
@@ -36,12 +41,16 @@ class PipelineConverter(BaseConverter):
         """
         self.from_yaml(file_path=input_file)
 
+        loop = asyncio.get_event_loop()
+        llm_configurations = loop.run_until_complete(self.read_llm_configurations())
+
         self.pipeline = Pipeline(
             messenger={
                 messenger: {},
                 "chatsky_port": chatsky_port,
                 "tg_token_name": UNIQUE_BUILD_TOKEN.format(build_id=build_id),
             },
+            llm_configurations=llm_configurations,
             **self.graph,
         )
 
@@ -68,6 +77,11 @@ class PipelineConverter(BaseConverter):
         with open(f"{dir_path}/build.yaml", "w", encoding="UTF-8") as file:
             yaml.dump(self.converted_pipeline, file, Dumper=Dumper, default_flow_style=False, allow_unicode=True)
 
+    async def read_llm_configurations(self):
+        llm_configurations_omega = await read_conf(settings.llms_conf_path, settings.llms_path_lock)
+        llm_configurations = OmegaConf.to_container(llm_configurations_omega, resolve=True)
+        return llm_configurations if llm_configurations else None
+
     def _convert(self):
         """Converts the inputs into a Chatsky `Pipeline` and returns it. It really returns a dictionary, but since
         Chatsky's `Pipeline` is derived from Pydantic's `BaseModel`, it can be initialized from a dictionary,
@@ -81,6 +95,9 @@ class PipelineConverter(BaseConverter):
 
         return {
             "script": script_converter(slots_conf=slots_conf),
+            "models": LLMModelsConverter(self.pipeline.llm_configurations)()
+            if self.pipeline.llm_configurations
+            else {},
             "messenger_interface": MessengerConverter(self.pipeline.messenger)(),
             "slots": slots_converter(),
             "start_label": start_label,

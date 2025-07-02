@@ -7,6 +7,7 @@ const Response = ({ data }: NodeComponentType) => {
   const mapping: { [key: string]: string } = {
     text: text === '' ? 'No text response' : text,
     python: data.response.name,
+    llm: data.response.name,
   }
 
   const responseText = mapping[data.response.type]

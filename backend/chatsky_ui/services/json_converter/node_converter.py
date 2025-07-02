@@ -2,9 +2,19 @@ from chatsky import PRE_RESPONSE, PRE_TRANSITION, RESPONSE, TRANSITIONS
 
 from ...schemas.front_graph_components.node import InfoNode, LinkNode
 from .base_converter import BaseConverter
+from .logic_component_converter.buttons_converter import ButtonsConverter
 from .logic_component_converter.chatsky_condition_converter import ChatskyConditionConverter
-from .logic_component_converter.condition_converter import CustomConditionConverter, SlotConditionConverter
-from .logic_component_converter.response_converter import CustomResponseConverter, TextResponseConverter
+from .logic_component_converter.condition_converter import (
+    ButtonConditionConverter,
+    CustomConditionConverter,
+    LLMConditionConverter,
+    SlotConditionConverter,
+)
+from .logic_component_converter.response_converter import (
+    CustomResponseConverter,
+    LLMResponseConverter,
+    TextResponseConverter,
+)
 
 
 class NodeConverter(BaseConverter):
@@ -16,11 +26,14 @@ class NodeConverter(BaseConverter):
     RESPONSE_CONVERTER = {
         "text": TextResponseConverter,
         "python": CustomResponseConverter,
+        "llm": LLMResponseConverter,
     }
     CONDITION_CONVERTER = {
         "python": CustomConditionConverter,
         "slot": SlotConditionConverter,
+        "llm": LLMConditionConverter,
         "basic": ChatskyConditionConverter,
+        "button": ButtonConditionConverter,
     }
 
     def __init__(self, config: dict):
@@ -50,6 +63,8 @@ class InfoNodeConverter(NodeConverter):
             name=node["data"]["name"],
             response=node["data"]["response"],
             conditions=node["data"]["conditions"],
+            buttonsData=node["data"].get("buttonsData", None),
+            removeButtons=node["data"].get("removeButtons", None),
         )
 
     def __call__(self, *args, **kwargs):
@@ -73,13 +88,15 @@ class InfoNodeConverter(NodeConverter):
         condition_converters = [
             self.CONDITION_CONVERTER[condition["type"]](condition) for condition in self.node.conditions
         ]
-        return {
+        result = {
             RESPONSE: self.RESPONSE_CONVERTER[self.node.response["type"]](self.node.response)(),
             TRANSITIONS: [
                 {
-                    "dst": condition["dst"]
-                    if condition["data"]["transition_type"] == "manual" and "dst" in condition
-                    else self.MAP_TR2CHATSKY.get(condition["data"]["transition_type"], ""),
+                    "dst": (
+                        condition["dst"]
+                        if condition["data"]["transition_type"] == "manual" and "dst" in condition
+                        else self.MAP_TR2CHATSKY.get(condition["data"]["transition_type"], "")
+                    ),
                     "priority": condition["data"]["priority"],
                     "cnd": converter(slots_conf=self.slots_conf),
                 }
@@ -92,6 +109,21 @@ class InfoNodeConverter(NodeConverter):
             },
             PRE_RESPONSE: {"fill": {"chatsky.processing.FillTemplate": None}},
         }
+
+        remove_buttons = self.node.removeButtons
+        if remove_buttons is True:
+            result[PRE_RESPONSE].update(
+                {
+                    "1_remove_telegram_reply_keyboard": {
+                        "external:chatsky_ui.clients.telegram_buttons.RemoveButtons": None
+                    }
+                }
+            )
+        buttons = self.node.buttonsData
+        if buttons is not None:
+            result[PRE_RESPONSE].update({"2_add_buttons": ButtonsConverter(buttons)()})
+
+        return result
 
 
 class LinkNodeConverter(NodeConverter):

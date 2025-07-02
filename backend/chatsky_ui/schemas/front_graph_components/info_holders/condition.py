@@ -17,7 +17,7 @@ from ..base_component import BaseComponent
 class Condition(BaseComponent):
     """Base condition model."""
 
-    name: str
+    name: str  # TODO: this's needed only in custom conditions, so remove it from here?
 
 
 class CustomCondition(Condition):
@@ -30,6 +30,23 @@ class SlotCondition(Condition):
     """A condition associated with a slot identifier."""
 
     slot_id: str  # not the condition id
+
+
+class LLMCondition(Condition):
+    model_name: str
+    prompt: str
+
+
+class InlineButtonCondition(Condition):
+    """An 'inline' Telegram button pressed condition."""
+
+    callback_data: str  # callback_data of the inline button pressed
+
+
+class ReplyButtonCondition(Condition):
+    """A 'reply' Telegram button pressed condition."""
+
+    text: str  # text of the reply button pressed
 
 
 # --------------------------------------------------------------

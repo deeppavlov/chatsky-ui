@@ -10,7 +10,7 @@ type ItemSelectType = {
   disabled?: boolean
 }
 
-type DefSelectProps = {
+type DefSelectProps = React.HTMLAttributes<HTMLElement> & {
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -32,6 +32,7 @@ const DefSelect = ({
   mini = false,
   isInvalid = false,
   errorMessage = '',
+  ...props
 }: DefSelectProps) => {
   const [selectedValue, setSelectedValue] = useState(defaultValue || '')
 
@@ -48,8 +49,13 @@ const DefSelect = ({
 
   return (
     <div className='flex flex-col gap-1'>
-      <RadixSelect.Root value={selectedValue} onValueChange={handleChange}>
+      <RadixSelect.Root
+        value={selectedValue}
+        defaultValue={defaultValue}
+        onValueChange={handleChange}
+      >
         <RadixSelect.Trigger
+          {...props}
           disabled={disabled}
           className={classNames(
             'relative flex h-10 min-h-10 items-center justify-between rounded-[8px] border border-input-border bg-input-background px-3.5 shadow-none hover:bg-transparent *:data-[placeholder]:text-input-border',
@@ -92,6 +98,7 @@ const DefSelect = ({
                         'cursor-not-allowed opacity-50': item.disabled, // Стили для заблокированных элементов
                       },
                     )}
+                    data-testid={`selectItem-${item.value.toLowerCase().replace(' ', '-')}`}
                   >
                     <RadixSelect.ItemText>{item.value}</RadixSelect.ItemText>
                     <RadixSelect.ItemIndicator className='absolute right-2'>

@@ -3,22 +3,26 @@ export type conditionDataType = {
   transition_type: conditionLabelType
   llm?: {
     prompt: string
-    api_key: string
-    model_name: string
+    llm_config_id: string
   }
   python?: {
     action: string
   }
   slot?: string
-  button?: {
-    button_name: string
-  }
   custom?: {
     keywords: string[]
     action: string
     variables: string[]
   }
   structure?: string
+  button?: IButtonType
+}
+
+export interface IButtonType {
+  text: string
+  callback?: string
+  type: string
+  id: string
 }
 
 export type conditionTypeType =
@@ -53,4 +57,8 @@ export interface ICondition {
   structure?: string
   error?: boolean
   data?: ICondition
+}
+
+export interface ILLMConditionHandle {
+  validate: () => boolean
 }

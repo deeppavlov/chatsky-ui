@@ -146,3 +146,36 @@ def chatsky_telegram_messenger(telegram_messenger):
     return {
         "chatsky.messengers.TelegramInterface": {"token": {"external:os.getenv": telegram_messenger["tg_token_name"]}}
     }
+
+
+@pytest.fixture
+def llm_models_config():
+    return {
+        "tokens": {"tokentestid": {"name": "OPENAI_API_KEY", "provider": "openai"}},
+        "config_models": {
+            "configtestid": {
+                "name": "test_model",
+                "model_name": "gpt-4o-mini",
+                "token_id": "tokentestid",
+                "system_prompt": "test_system_prompt",
+            }
+        },
+    }
+
+
+@pytest.fixture
+def chatsky_llm_models():
+    return {
+        "test_model": {
+            "chatsky.llm.LLM_API": {
+                "model": {
+                    "external:langchain_openai.ChatOpenAI": {
+                        "model": "gpt-4o-mini",
+                        "api_key": {"external:os.getenv": "OPENAI_API_KEY"},
+                        "base_url": {"external:os.getenv": "LLM_API_BASE_URL"},
+                    }
+                },
+                "system_prompt": "test_system_prompt",
+            }
+        }
+    }

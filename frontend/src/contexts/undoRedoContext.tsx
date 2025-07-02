@@ -202,21 +202,21 @@ export function UndoRedoProvider({ children }: { children: React.ReactNode }) {
 
     const keyDownHandler = (event: KeyboardEvent) => {
       if (
-        event.key === 'z' &&
+        event.code === 'KeyZ' &&
         (event.ctrlKey || event.metaKey) &&
         event.shiftKey &&
         !disableCopyPaste
       ) {
         redo()
       } else if (
-        event.key === 'y' &&
+        event.code === 'KeyY' &&
         (event.ctrlKey || event.metaKey) &&
         !disableCopyPaste
       ) {
         event.preventDefault() // prevent the default action
         redo()
       } else if (
-        event.key === 'z' &&
+        event.code === 'KeyZ' &&
         (event.ctrlKey || event.metaKey) &&
         !disableCopyPaste
       ) {

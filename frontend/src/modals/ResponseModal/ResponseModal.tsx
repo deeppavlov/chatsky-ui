@@ -1,12 +1,21 @@
-import { Button, Input, ModalProps, Tab, Tabs } from '@nextui-org/react'
-// import ModalComponent from "../../components/ModalComponent";
+import { Button, Input, ModalProps, Switch, Tab, Tabs } from '@nextui-org/react'
 import { useReactFlow } from '@xyflow/react'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { PlusIcon } from 'lucide-react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { flowContext } from '../../contexts/flowContext'
 import { DefaultNodeDataType } from '../../types/NodeTypes'
-import { responseType, responseTypeType } from '../../types/ResponseTypes'
+import {
+  IInputError,
+  ILLMResponseHandle,
+  responseType,
+  responseTypeType,
+} from '../../types/ResponseTypes'
+import { validateResponseName } from '../../utils'
+import AddButtonModals from '../AddButtonModals/AddButtonModals'
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '../ModalComponents'
+import LLMResponse from './components/LLMResponse'
 import PythonResponse from './components/PythonResponse'
 import TextResponse from './components/TextResponse'
 
@@ -26,6 +35,28 @@ type ResponseModalProps = {
   onClose: () => void
 }
 
+const tabItems: {
+  title: ResponseModalTab
+  value: responseTypeType
+}[] = [
+  {
+    title: 'Python code',
+    value: 'python',
+  },
+  {
+    title: 'Text',
+    value: 'text',
+  },
+  {
+    title: 'Using LLM',
+    value: 'llm',
+  },
+  {
+    title: 'Basic',
+    value: 'basic',
+  },
+]
+
 const ResponseModal = ({
   isOpen,
   onClose,
@@ -34,22 +65,31 @@ const ResponseModal = ({
   response,
   size = '3xl',
 }: ResponseModalProps) => {
-  const { getNode, setNodes, getNodes } = useReactFlow()
+  const { getNode, setNodes, getNodes, updateNodeData } = useReactFlow()
   const { flows, quietSaveFlows } = useContext(flowContext)
   const { flowId } = useParams()
+
   const [selected, setSelected] = useState<responseTypeType>(
     response.type ?? 'python',
   )
-  // const [nodeDataState, setNodeDataState] = useState(data)
   const [currentResponse, setCurrentResponse] = useState(response)
+  const [isAddButtonOpen, setIsAddButtonOpen] = useState(false)
+  const [responseStor, setResponseStor] = useState({
+    [response.type]: response,
+  })
+  const [hideButtons, setHideButtons] = useState(
+    data.buttonsData?.hideButtons ?? false,
+  )
+  const [nameError, setNameError] = useState<IInputError>({
+    isInvalid: false,
+    errorMessage: '',
+  })
+  const node = getNode(data.id)
+
   const setSelectedHandler = (key: responseTypeType) => {
     setCurrentResponse({ ...currentResponse, type: key })
     setSelected(key)
   }
-
-  const [responseStor, setResponseStor] = useState({
-    [response.type]: response,
-  })
 
   useEffect(() => {
     const key = currentResponse.type
@@ -57,38 +97,20 @@ const ResponseModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentResponse])
 
-  const [errors, setErrors] = useState<{
-    name?: { isInvalid: boolean; errorMessage: string }
-  }>({})
-
-  const tabItems: {
-    title: ResponseModalTab
-    value: responseTypeType
-  }[] = useMemo(
-    () => [
-      {
-        title: 'Python code',
-        value: 'python',
-      },
-      {
-        title: 'Text',
-        value: 'text',
-      },
-      {
-        title: 'Using LLM',
-        value: 'llm',
-      },
-      {
-        title: 'Basic',
-        value: 'basic',
-      },
-    ],
-    [],
-  )
+  const childRef = useRef<ILLMResponseHandle>(null)
 
   const bodyItems = useMemo(
     () => ({
-      llm: <div>llm</div>,
+      llm: (
+        <LLMResponse
+          ref={childRef}
+          response={currentResponse}
+          setData={setCurrentResponse}
+          responseStor={responseStor}
+          nameError={nameError}
+          setNameError={setNameError}
+        />
+      ),
       python: (
         <PythonResponse
           response={currentResponse}
@@ -107,77 +129,50 @@ const ResponseModal = ({
       basic: <div>Basic</div>,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentResponse],
+    [currentResponse, nameError],
   )
 
   const saveResponse = () => {
-    if (!currentResponse.name) {
-      setErrors({
-        ...errors,
-        name: { isInvalid: true, errorMessage: 'Please fill every field' },
-      })
+    const name = currentResponse.name
+    const errors = validateResponseName(name, selected, flows, data.id)
+
+    const childIsValid = childRef.current?.validate()
+
+    setNameError(errors)
+    if (errors.isInvalid || childIsValid === false) {
       return
     }
 
-    if (
-      selected === 'python' &&
-      currentResponse.name.replace(/[A-Za-z_]|(?!^)[0-9]/g, '') !== ''
-    ) {
-      setErrors({
-        ...errors,
-        name: {
-          isInvalid: true,
-          errorMessage:
-            'Please use only Latin letters. Names cannot start with a number.',
+    const nodes = getNodes()
+    const node = getNode(data.id)
+
+    const currentFlow = flows.find((flow) => flow.name === flowId)
+    if (node && currentFlow) {
+      const new_node = {
+        ...node,
+        data: {
+          ...node.data,
+          response: currentResponse,
         },
-      })
-      return
-    }
-    if (
-      flows.some((flow) =>
-        flow.data.nodes.some(
-          (node) =>
-            node.type === 'default_node' &&
-            node.data.response.name === currentResponse.name &&
-            node.id !== data.id,
-        ),
-      )
-    ) {
-      setErrors({
-        ...errors,
-        name: {
-          isInvalid: true,
-          errorMessage: 'Response name must be unique!',
-        },
-      })
-      return
-    } else {
-      const nodes = getNodes()
-      const node = getNode(data.id)
-      const currentFlow = flows.find((flow) => flow.name === flowId)
-      if (node && currentFlow) {
-        const new_node = {
-          ...node,
-          data: {
-            ...node.data,
-            response: currentResponse,
-          },
-        }
-        const new_nodes = nodes.map((node) =>
-          node.id === data.id ? new_node : node,
-        )
-        setNodes(() => new_nodes)
-        setData({
-          ...data,
-          response: new_node.data.response,
-        })
-        // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
-        // updateFlow(currentFlow)
-        quietSaveFlows()
-        onClose()
       }
+      const new_nodes = nodes.map((node) =>
+        node.id === data.id ? new_node : node,
+      )
+      setNodes(() => new_nodes)
+      setData({
+        ...data,
+        response: new_node.data.response,
+      })
+      // currentFlow.data.nodes = nodes.map((node) => (node.id === data.id ? new_node : node))
+      // updateFlow(currentFlow)
+      quietSaveFlows()
+      onClose()
     }
   }
+
+  const buttonsCondition = (
+    node?.data as DefaultNodeDataType
+  ).conditions.filter((condition) => condition.type === 'button')
 
   return (
     <Modal
@@ -185,6 +180,7 @@ const ResponseModal = ({
       size={size}
       isOpen={isOpen}
       onClose={onClose}
+      data-testid='response-modal'
     >
       <ModalHeader className='flex items-center gap-2'>
         Edit response
@@ -192,7 +188,7 @@ const ResponseModal = ({
       <ModalBody className={'flex flex-1 flex-col gap-3 py-2'}>
         <label htmlFor=''>
           <Tabs
-            disabledKeys={['llm', 'basic']}
+            disabledKeys={['basic']}
             selectedKey={selected}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
@@ -216,36 +212,86 @@ const ResponseModal = ({
             )}
           </Tabs>
         </label>
-        <div>
-          <Input
-            label='Name'
-            variant='bordered'
-            labelPlacement='outside'
-            placeholder="Enter response's name here"
-            value={currentResponse.name}
-            isRequired
-            onChange={(e) => {
-              setCurrentResponse({
-                ...currentResponse,
-                name: e.target.value.replaceAll(' ', '_'),
-              })
-              setErrors((prevErrors) => ({
-                ...prevErrors,
-                name: { isInvalid: false, errorMessage: '' },
-              }))
-            }}
-            {...errors.name}
-          />
-        </div>
-        <div>{bodyItems[selected]}</div>
+        <AnimatePresence mode='wait'>
+          <motion.div
+            className={'flex flex-1 flex-col gap-3 py-2'}
+            key={selected}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {selected !== 'llm' && (
+              <div>
+                <Input
+                  label='Title'
+                  variant='bordered'
+                  labelPlacement='outside'
+                  placeholder="Enter response's name here"
+                  value={currentResponse.name}
+                  onChange={(e) => {
+                    setCurrentResponse({
+                      ...currentResponse,
+                      name: e.target.value.replaceAll(' ', '_'),
+                    })
+                    setNameError({ isInvalid: false, errorMessage: '' })
+                  }}
+                  {...nameError}
+                />
+              </div>
+            )}
+            <div className='h-0 flex-grow'>{bodyItems[selected]}</div>
+          </motion.div>
+        </AnimatePresence>
+        {/* {bodyItems[selected]} */}
       </ModalBody>
       <ModalFooter>
+        <Switch
+          isDisabled={buttonsCondition.length !== 0}
+          className='mr-auto h-[20px]'
+          isSelected={hideButtons}
+          onValueChange={(value) => {
+            updateNodeData(data.id, {
+              ...node?.data,
+              buttonsData: {
+                hideButtons: value,
+                ...(node?.data as DefaultNodeDataType).buttonsData,
+              },
+            })
+            quietSaveFlows()
+            setHideButtons(value)
+          }}
+        >
+          <p className='text-[12px]'>Show previous buttons</p>
+        </Switch>
+
         <Button
+          isDisabled={hideButtons}
+          data-testid='add-button-button'
+          onClick={() => setIsAddButtonOpen(true)}
+        >
+          {buttonsCondition.length === 0 ? (
+            <>
+              <PlusIcon />
+              Add buttons
+            </>
+          ) : (
+            <>Edit buttons</>
+          )}
+        </Button>
+        <Button
+          data-testid='save-response-button'
           onClick={saveResponse}
           className='bg-foreground text-background'
         >
           Save response
         </Button>
+        {isAddButtonOpen && (
+          <AddButtonModals
+            data={data}
+            isOpen={isAddButtonOpen}
+            onClose={() => setIsAddButtonOpen(false)}
+          />
+        )}
       </ModalFooter>
     </Modal>
   )

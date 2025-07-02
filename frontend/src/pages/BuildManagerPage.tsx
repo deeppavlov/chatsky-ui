@@ -143,6 +143,7 @@ const BuildManagerPage = () => {
             disabled={loading}
             className='rounded-lg bg-foreground text-background'
             onClick={buildAndRunHandler}
+            data-testid='build-and-run-btn'
           >
             {/* АНИМАЦИЯ */}
             {loading && (
@@ -185,7 +186,7 @@ const BuildManagerPage = () => {
           {/* EXISTING BUILDS */}
           <div className='relative h-full'>
             <div className='flex h-full justify-between'>
-              <ScrolledContainer>
+              <ScrolledContainer scrollbarOffset={6}>
                 {builds.map((b) => {
                   const relativeBuildTime = formatRelativeTime(b.timestamp)
                   return (
@@ -283,7 +284,7 @@ const BuildManagerPage = () => {
           {/* ALIVE RUNS */}
           <div className='relative h-full'>
             <div className='flex h-full flex-col gap-3'>
-              <ScrolledContainer className='h-0 flex-grow'>
+              <ScrolledContainer scrollbarOffset={6} className='h-0 flex-grow'>
                 {aliveRuns.map((r) => {
                   const parentBuild = builds.find((b) => b.id === r.build_id)
                   if (!parentBuild) return null
@@ -297,6 +298,9 @@ const BuildManagerPage = () => {
                         r.status === 'running' ||
                         r.id === startingRunId ||
                         stoppingRunIds.includes(r.id)
+                      }
+                      data-testid={
+                        r.status === 'alive' ? 'alive-run' : 'starting-run'
                       }
                       title={r.preset.name}
                       infoBlock={
@@ -373,7 +377,7 @@ const BuildManagerPage = () => {
 
           {/* PREVIOUS RUNS */}
           <div className='grid h-full grid-cols-1 grid-rows-2 gap-6'>
-            <ScrolledContainer className='relative'>
+            <ScrolledContainer scrollbarOffset={6} className='relative'>
               {previousRuns.map((r) => {
                 const parentBuild = builds.find((b) => b.id === r.build_id)
                 if (!parentBuild) return null
@@ -428,7 +432,7 @@ const BuildManagerPage = () => {
             {/* FAILED RUNS*/}
             <div className='flex flex-col'>
               <h4 className='mb-3 text-base font-semibold'>Failed runs</h4>
-              <ScrolledContainer className='h-0 flex-grow'>
+              <ScrolledContainer scrollbarOffset={6} className='h-0 flex-grow'>
                 {failedRuns.map((r) => {
                   const parentBuild = builds.find((b) => b.id === r.build_id)
                   if (!parentBuild) return null

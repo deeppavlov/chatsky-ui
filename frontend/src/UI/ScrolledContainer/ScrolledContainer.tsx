@@ -11,10 +11,11 @@ import cn from 'classnames'
 interface ScrolledContainerProps extends React.PropsWithChildren {
   children: ReactNode
   className?: string
+  scrollbarOffset?: number
 }
 
 const ScrolledContainer = forwardRef<HTMLDivElement, ScrolledContainerProps>(
-  ({ children, className }, ref) => {
+  ({ children, className, scrollbarOffset = 0 }, ref) => {
     const innerRef = useRef<HTMLDivElement>(null)
     const containerRef = (ref || innerRef) as RefObject<HTMLDivElement>
     const hasScrollbarRef = useRef(false)
@@ -61,11 +62,23 @@ const ScrolledContainer = forwardRef<HTMLDivElement, ScrolledContainerProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [children])
 
+    const mr = `-${12 + scrollbarOffset}px`
+    const pr = `${scrollbarOffset}px`
+
     return (
       <div className={cn('flex max-h-full w-full', className)}>
         <div
           ref={containerRef}
-          className='scrolled_container flex-grow overflow-y-auto'
+          className={cn(
+            'scrolled_container flex-grow overflow-y-auto',
+            hasScrollbarRef.current && `mr-[${mr}] pr-[${pr}]`,
+          )}
+          style={
+            {
+              '--scrollbar-margin': mr,
+              '--scrollbar-padding': pr,
+            } as React.CSSProperties
+          }
         >
           {children}
         </div>
