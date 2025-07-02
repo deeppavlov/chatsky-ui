@@ -196,7 +196,10 @@ async def test_get_chat_records(dummy_run_id):
         ("bye", "Oops, something wrong happened"),
     ]
 
-    response = await SQLiteExtractor().fetch_chat_records(dummy_run_id, user_id)
+    sqlite_extractor = SQLiteExtractor()
+    sqlite_extractor.set_logger()
+
+    response = await sqlite_extractor.fetch_chat_records(dummy_run_id, user_id)
     assert test_result == response
 
 
@@ -217,5 +220,8 @@ async def test_get_message_label(dummy_run_id):
     message_id = 0
     test_result = {"flow_name": "Greeting", "node_name": "Beginning of conversation"}
 
-    response = await SQLiteExtractor().fetch_message_label(dummy_run_id, user_id, message_id)
+    sqlite_extractor = SQLiteExtractor()
+    sqlite_extractor.set_logger()
+
+    response = await sqlite_extractor.fetch_message_label(dummy_run_id, user_id, message_id)
     assert test_result == response
