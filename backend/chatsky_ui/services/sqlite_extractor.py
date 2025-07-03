@@ -26,6 +26,7 @@ class SQLiteExtractor:
             raise ValueError("Logger has not been configured. Call set_logger() first.")
         return self._logger
 
+    # TODO: This is bugged - use master's function for this.
     async def get_database(self, run_id: int):
         if self.database is None:
             separator = "///" if system() == "Windows" else "////"
