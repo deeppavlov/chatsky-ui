@@ -91,7 +91,7 @@ class SQLiteExtractor:
         so we delete the new unnecessary Context and return None.
         """
         try:
-            context = await Context.connected(await self.get_database(run_id), id=f"{run_id}_{str(user_id)}")
+            context = await Context.connected(await self.get_database(run_id), id=str(user_id))
             if await context.labels[0] is None:
                 await context.delete()
                 context = None
