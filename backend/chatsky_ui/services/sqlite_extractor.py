@@ -1,6 +1,5 @@
 import sqlite3
 from platform import system
-from typing import Union
 
 from chatsky import Context
 from pydantic import ValidationError
