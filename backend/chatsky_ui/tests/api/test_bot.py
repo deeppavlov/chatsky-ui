@@ -12,6 +12,7 @@ from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 from chatsky_ui.main import app
 from chatsky_ui.schemas.process_status import Status
+from chatsky_ui.services.sqlite_extractor import SQLiteExtractor
 
 load_dotenv()
 
@@ -183,6 +184,26 @@ async def test_start_run(
 
 
 @pytest.mark.asyncio
+async def test_get_chat_records(dummy_run_id):
+    user_id = 0
+    test_result = [
+        ("hello", "Do you want a pizza?"),
+        ("yes", "Some cheese in pizza?"),
+        ("no", "Okay, so, your order is coming!"),
+        ("/start", "Oops, something wrong happened"),
+        ("/start", "Hello!"),
+        ("hello", "Do you want a pizza?"),
+        ("bye", "Oops, something wrong happened"),
+    ]
+
+    sqlite_extractor = SQLiteExtractor()
+    sqlite_extractor.set_logger()
+
+    response = await sqlite_extractor.fetch_chat_records(dummy_run_id, user_id)
+    assert test_result == response
+
+
+@pytest.mark.asyncio
 async def test_get_chat_ids():
     test_result = ["0_0"]
 
@@ -191,3 +212,16 @@ async def test_get_chat_ids():
 
         assert get_response.status_code == 200
         assert test_result == get_response.json()
+
+
+@pytest.mark.asyncio
+async def test_get_message_label(dummy_run_id):
+    user_id = 0
+    message_id = 0
+    test_result = {"flow_name": "Greeting", "node_name": "Beginning of conversation"}
+
+    sqlite_extractor = SQLiteExtractor()
+    sqlite_extractor.set_logger()
+
+    response = await sqlite_extractor.fetch_message_label(dummy_run_id, user_id, message_id)
+    assert test_result == response

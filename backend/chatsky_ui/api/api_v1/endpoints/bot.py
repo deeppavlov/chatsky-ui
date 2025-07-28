@@ -483,11 +483,13 @@ async def get_chat_records(
     try:
         return await sqlite_extractor.fetch_chat_records(run_id, user_id)
     except IndexError as e:
+        sqlite_extractor.logger.error("Error fetching chat records: %s", e)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User with the given id not found in the database.",
         ) from e
     except Exception as e:
+        sqlite_extractor.logger.error("Error fetching chat records: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
@@ -501,7 +503,7 @@ async def get_chat_ids(
     """Gets all chat ids as they are stored in the database.
 
     Args:
-        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the chat ids with.
 
     Raises:
         HTTPException: With status code 500 if there is an Exception caught or an internal server error.
@@ -509,6 +511,43 @@ async def get_chat_ids(
     try:
         return await sqlite_extractor.fetch_chat_ids()
     except Exception as e:
+        sqlite_extractor.logger.error("Error fetching all chat ids: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+@router.get("/chat/label/{run_id}/{user_id}/{message_id}", response_model=Optional[dict], status_code=200)
+async def get_message_label(
+    run_id: int,
+    user_id: int,
+    message_id: int,
+    sqlite_extractor: SQLiteExtractor = Depends(deps.get_sqlite_extractor),
+) -> Optional[List[str]]:
+    """Gets the node label of this turn from a user's chat.
+
+    Args:
+        run_id (int): The id of the `Run` process to get the message label from.
+        user_id (int): ID of the user.
+        message_id (int): ID of the turn. (one turn contains both a message from the user and
+            the bot, starting from zero)
+        sqlite_extractor (SQLiteExtractor): The database extractor dependency to find the node label with.
+
+    Raises:
+        HTTPException: With status code 404 if the user with the given id is not found in the database.
+        HTTPException: With status code 500 if there is an Exception caught or an internal server error.
+    """
+    try:
+        return await sqlite_extractor.fetch_message_label(run_id, user_id, message_id)
+    except IndexError as e:
+        sqlite_extractor.logger.error("Error fetching the node label of this turn: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given id not found in the database.",
+        ) from e
+    except Exception as e:
+        sqlite_extractor.logger.error("Error fetching the node label of this turn: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),

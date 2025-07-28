@@ -7,8 +7,8 @@ from ....core.config import settings
 from ....schemas.front_graph_components.info_holders.condition import (
     CustomCondition,
     InlineButtonCondition,
-    ReplyButtonCondition,
     LLMCondition,
+    ReplyButtonCondition,
     SlotCondition,
 )
 from ..base_converter import BaseConverter

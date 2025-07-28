@@ -1,11 +1,10 @@
 import sqlite3
 from platform import system
-from typing import Union
 
 from chatsky import Context
-from chatsky.context_storages.sql import SQLContextStorage
 from pydantic import ValidationError
 
+from chatsky_ui.clients.context_storage import ChatskyUIContextStorage
 from chatsky_ui.core.config import settings
 from chatsky_ui.core.logger_config import get_logger
 
@@ -26,12 +25,13 @@ class SQLiteExtractor:
             raise ValueError("Logger has not been configured. Call set_logger() first.")
         return self._logger
 
-    async def get_database(self):
-        separator = "///" if system() == "Windows" else "////"
-
-        db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
+    # TODO: This is bugged - use master's function for this.
+    async def get_database(self, run_id: int):
         if self.database is None:
-            self.database = SQLContextStorage(db_uri)
+            separator = "///" if system() == "Windows" else "////"
+            db_uri = f"sqlite+aiosqlite:{separator}{settings.database_path.absolute()}"
+
+            self.database = ChatskyUIContextStorage(db_uri, run_id)
             await self.database.connect()
         return self.database
 
@@ -84,14 +84,14 @@ class SQLiteExtractor:
     async def extract_chat_ids(self):
         return await self.execute_statement("SELECT id FROM chatsky_table_main")
 
-    async def get_context(self, run_id: str, user_id: int):
+    async def get_context(self, run_id: int, user_id: int):
         """Get the `Context` object for these run_id and user_id.
         In case there isn't a Context found, Context.connected() automatically creates
         an empty Context for those ids. In that case start_label == context.labels[0] == None,
         so we delete the new unnecessary Context and return None.
         """
         try:
-            context = await Context.connected(await self.get_database(), id=f"{run_id}_{str(user_id)}")
+            context = await Context.connected(await self.get_database(run_id), id=str(user_id))
             if await context.labels[0] is None:
                 await context.delete()
                 context = None
@@ -102,8 +102,8 @@ class SQLiteExtractor:
             )
             return None
 
-    async def fetch_chat_records(self, run_id: Union[int, str], user_id: int):
-        context = await self.get_context(str(run_id), user_id)
+    async def fetch_chat_records(self, run_id: int, user_id: int):
+        context = await self.get_context(run_id, user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
         requests = context.requests
@@ -121,8 +121,18 @@ class SQLiteExtractor:
         ids = [item[0] for item in ids]
         return ids
 
-    async def delete_chat_records(self, run_id: Union[int, str], user_id: int):
-        context = await self.get_context(str(run_id), user_id)
+    async def fetch_message_label(self, run_id: int, user_id: int, message_id: int):
+        """Gets the node label of the current Chatsky turn."""
+        context = await self.get_context(run_id, user_id)
+        if context is None:
+            raise ValueError("No context found for the given run_id and user_id.")
+        label = await context.labels.get(message_id, None)
+        if label is not None:
+            return {"flow_name": label.flow_name, "node_name": label.node_name}
+        return None
+
+    async def delete_chat_records(self, run_id: int, user_id: int):
+        context = await self.get_context(run_id, user_id)
         if context is None:
             raise ValueError("No context found for the given run_id and user_id.")
         await context.delete()
